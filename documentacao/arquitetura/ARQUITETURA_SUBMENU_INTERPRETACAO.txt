@@ -1,0 +1,19 @@
+SUBMENU DE INTERPRETAÇÃO LINGUÍSTICA
+
+Ajuste realizado
+- A interpretação linguística deixou de aparecer diretamente no menu Sobre.
+- O botão Sobre agora abre um menu principal simples.
+- Dentro do menu Sobre foi criado o item Interpretação linguística.
+- Ao passar o mouse ou clicar nesse item, é exibido um submenu lateral com os dados da interpretação.
+
+Critérios de interface mantidos
+- mesmo padrão visual dos menus internos já existentes;
+- menu acionado por mouse over e também por mouse click;
+- ocultação automática quando o cursor sai da área dos menus;
+- manutenção do botão Sobre na mesma linha horizontal dos botões Idioma e Tipo.
+
+Critérios de arquitetura
+- o menu Sobre funciona como menu agregador;
+- o painel de interpretação linguística passou a ser um submenu independente;
+- a geração do conteúdo do submenu continua reaproveitando o ResultadoInterpretacao;
+- o centro da tela permanece reservado aos diagramas e à atividade do usuário.

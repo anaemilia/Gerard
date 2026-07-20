@@ -1,0 +1,18 @@
+PDFs atualizados - pacote documental C99
+
+Corpus incorporado até C98.
+
+Arquivos principais na raiz:
+- ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+- ANALISE_COMPLEXIDADE_GERARD.pdf
+
+Ciclos incorporados desde a atualização C94:
+- C96: análise da modelagem somente após posicionamento efetivo;
+- C97: tema visual da janela de análise;
+- C98: criação incremental e sincronizada de quadradinhos.
+
+Contagem documental:
+- 95 ciclos consistentes;
+- 32 estruturais e de generalização;
+- 24 de consistência teórica e metodológica;
+- 39 de refinamento visual e operacional.

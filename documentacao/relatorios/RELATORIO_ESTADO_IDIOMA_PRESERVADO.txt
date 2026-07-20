@@ -1,0 +1,35 @@
+Alteração realizada: preservação do estado da tela ao trocar idioma
+
+Objetivo
+- Ao selecionar um idioma no menu de idiomas, a tela não deve ser reinicializada.
+- Os elementos já presentes na tela devem permanecer.
+- Os valores já posicionados no diagrama de Vergnaud, no diagrama de Venn e no eixo dos inteiros devem permanecer.
+
+Mudanças feitas
+1. A seleção de idioma no menu passou a chamar aplicarIdiomaSelecionadoMantendoEstadoTela().
+2. A rotina antiga aplicarIdiomaSelecionado() foi mantida para os casos em que a aplicação deve iniciar/reiniciar a situação, como sorteio ou mudança de tipo de situação.
+3. A nova rotina apenas atualiza:
+   - idioma ativo da localização;
+   - textos dos botões e menus;
+   - título da janela;
+   - rótulos do diagrama de Vergnaud, sem reposicionar os elementos;
+   - repaint da tela.
+4. A nova rotina não executa:
+   - novo sorteio de situação-problema;
+   - limpeza dos itens arrastáveis;
+   - limpeza dos quadradinhos do Venn;
+   - limpeza do eixo dos inteiros;
+   - reinicialização do diagrama de Vergnaud;
+   - reinicialização do diagrama de Venn;
+   - loggerInteracaoGerard.novoProblema().
+
+Garantia preservada
+- Itens arrastados permanecem no mesmo lugar.
+- Valores colocados no diagrama de Vergnaud permanecem no mesmo lugar.
+- Quadradinhos do Venn permanecem presentes.
+- Estado do eixo dos inteiros permanece presente.
+- A sincronização entre as representações não é apagada pela troca de idioma.
+
+Teste
+- Compilação executada com: ant clean jar
+- Resultado: BUILD SUCCESSFUL

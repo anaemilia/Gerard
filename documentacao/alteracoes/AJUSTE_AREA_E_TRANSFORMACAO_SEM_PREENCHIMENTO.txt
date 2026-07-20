@@ -1,0 +1,5 @@
+Ajustes desta versão:
+- a área delimitadora da renderização dos diagramas de Vergnaud foi ampliada verticalmente;
+- a área útil interna dos diagramas também foi aumentada;
+- quando a transformação exigir mais de um passo, os diagramas são renderizados centralizados como um bloco dentro da área ampliada;
+- nessa situação, os diagramas compostos ficam sem preenchimento automático.

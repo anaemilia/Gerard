@@ -1,0 +1,15 @@
+AJUSTE DO SUBMENU DE INTERPRETAÇÃO LINGUÍSTICA
+
+Objetivo
+- reduzir o campo visual do submenu de interpretação linguística para que ele ocupe apenas o espaço necessário ao texto exibido.
+
+Alteração realizada
+- o submenu deixou de usar largura e altura fixas como referência visual final;
+- após a criação dos rótulos, o tamanho preferencial do painel é calculado;
+- o painel passa a usar setBounds com base no tamanho real do conteúdo.
+
+Critério aplicado
+- manter o padrão visual dos menus existentes;
+- reduzir área vazia no submenu;
+- preservar a posição lateral do submenu do botão Sobre;
+- manter intactos os demais recursos da interface.

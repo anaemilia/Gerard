@@ -1,0 +1,9 @@
+PDFs atualizados na versão C121
+
+ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+- artigo de co-design humano-IA, corpus até C121, 112 ciclos.
+
+ANALISE_COMPLEXIDADE_GERARD.pdf
+- análise arquitetural e assintótica atualizada até C121.
+
+A C121 adiciona drag-and-drop massa-mola-amortecedor com momento visual e soltura exata, preservando integralmente as regras semânticas e quantitativas da C120.

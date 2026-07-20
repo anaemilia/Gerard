@@ -1,0 +1,29 @@
+VÍNCULO ENTRE SITUAÇÃO-PROBLEMA E TRADUÇÕES — SEM BANCO DE DADOS
+
+Objetivo
+- Manter a simplicidade operacional do Gérard.
+- Preservar o armazenamento em arquivo TSV.
+- Representar explicitamente que diferentes idiomas podem ser versões da mesma situação-problema conceitual.
+
+Novos campos persistidos
+- situacao_grupo_id: identificador comum da situação conceitual.
+- tipo_versao: original ou traducao.
+- versao_origem_id: id da versão textual usada como origem da tradução.
+
+Identificadores
+- id continua identificando uma versão linguística específica.
+- situacao_grupo_id identifica o problema independentemente do idioma.
+
+Compatibilidade
+- Arquivos antigos continuam sendo lidos.
+- Quando um arquivo antigo não contém os campos de vínculo, o repositório cria vínculos legados em memória sem apagar os metadados existentes.
+- Ao salvar novamente pela curadoria, o arquivo passa a usar o novo cabeçalho e persiste os vínculos.
+
+Curadoria
+- A tela específica mostra os campos de vínculo na disposição vertical.
+- O salvamento continua automático ao fechar.
+- Nenhum banco de dados, servidor ou biblioteca externa foi introduzido.
+
+Troca de idioma
+- O repositório procura primeiro uma versão com o mesmo situacao_grupo_id.
+- As heurísticas anteriores por contexto e valores permanecem como compatibilidade/fallback.

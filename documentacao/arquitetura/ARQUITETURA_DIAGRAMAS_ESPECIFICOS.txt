@@ -1,0 +1,38 @@
+MÓDULO DE DIAGRAMAS ESPECÍFICOS DO CAMPO ADITIVO
+
+Objetivo
+- renderizar automaticamente, após o clique no menu de categorias, os elementos visuais específicos de cada tipo do campo aditivo.
+
+Pacotes adicionados
+- src/gerard/campoaditivo/diagrama/modelo
+  * TipoFiguraDiagrama
+  * FiguraDiagrama
+  * ConectorDiagrama
+  * CenaDiagramaAditivo
+
+- src/gerard/campoaditivo/diagrama/servico
+  * RenderizadorDiagramaAditivo
+  * RenderizadorDiagramaAditivoBase
+  * RenderizadorComposicaoMedidas
+  * RenderizadorTransformacaoMedidas
+  * RenderizadorComparacaoMedidas
+  * RenderizadorComposicaoTransformacoes
+  * RenderizadorTransformacaoRelacao
+  * RenderizadorComposicaoRelacoes
+  * FabricaRenderizadoresDiagramaAditivo
+  * GeradorCenaDiagramaAditivo
+
+- src/gerard/campoaditivo/diagrama/apresentacao
+  * RenderizadorSwingDiagramaAditivo
+
+Critérios de arquitetura adotados
+- separação clara entre domínio, serviço e apresentação;
+- uso de fábrica para seleção do renderizador por categoria;
+- uma classe renderizadora por tipo do campo aditivo;
+- cena de diagrama desacoplada da interface principal;
+- Main.java atuando apenas como orquestrador de interface.
+
+Comportamento
+- no mouseclick do menu de categorias, o tipo selecionado atualiza o enunciado, a interpretação linguística e a cena do diagrama;
+- cada categoria renderiza elementos e conectores próprios;
+- os valores extraídos do texto continuam sendo mostrados dentro dos elementos do diagrama.

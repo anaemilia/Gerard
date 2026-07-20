@@ -1,0 +1,12 @@
+Pacote corrigido a partir da última versão estável enviada.
+
+Correções/validações:
+- Imagem gerard_vergnaud.png restaurada da versão estável, evitando o erro de leitura de imagem truncada.
+- Estrutura de projeto NetBeans preservada: nbproject, build.xml, manifest.mf e src.
+- Mantida a alteração de duplo clique para editar textos em elementos do diagrama.
+- Projeto recompilado com Ant e JAR gerado em dist/.
+
+Para abrir:
+1. Extraia o ZIP.
+2. No NetBeans, use Arquivo > Abrir Projeto.
+3. Selecione a pasta GerardNetBeans_ESTAVEL_IMAGEM_CORRIGIDA_DUPLO_CLIQUE.

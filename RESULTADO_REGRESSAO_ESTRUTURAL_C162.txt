@@ -1,0 +1,266 @@
+== Compilação ==
+Buildfile: /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build.xml
+
+-init:
+
+clean:
+   [delete] Deleting directory /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build
+   [delete] Deleting directory /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/dist
+
+-init:
+    [mkdir] Created dir: /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build/classes
+    [mkdir] Created dir: /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/dist
+
+-copy-resources:
+     [copy] Copying 9 files to /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build/classes
+     [copy] Copied 76 empty directories to 66 empty directories under /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build/classes
+
+compile:
+    [javac] Compiling 271 source files to /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 8
+    [javac] warning: [options] source value 8 is obsolete and will be removed in a future release
+    [javac] warning: [options] target value 8 is obsolete and will be removed in a future release
+    [javac] warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] 4 warnings
+
+jar:
+      [jar] Building jar: /mnt/data/GerardNetBeans_funil_distribuicao_trapezoidal_c162/dist/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar
+
+BUILD SUCCESSFUL
+Total time: 8 seconds
+
+[OK] ant clean jar
+[OK] JAR gerado
+== Internacionalização ==
+[OK] mapa português localizado
+[OK] mesmas chaves explícitas em pt/en/fr
+[OK] mapa espanhol herda todas as chaves e está registrado
+[OK] chave localizada em pt/en/fr: ui.tooltip.restore.elements
+[OK] chave localizada em pt/en/fr: ui.tooltip.correctCuration
+[OK] chave localizada em pt/en/fr: ui.integerAxis.hide
+== Estrutura atual ==
+[OK] Main preserva ControladorContextoSituacao
+[OK] Main preserva sincronizarDiagramaVennComRepresentacoes
+[OK] Main preserva ScaffoldingProximidade
+[OK] curadoria/vínculo preserva situacao_grupo_id
+[OK] curadoria/vínculo preserva tipo_versao
+[OK] curadoria/vínculo preserva versao_origem_id
+[OK] curadoria/vínculo preserva ValidadorVinculosTraducoes.validarOuFalhar
+[OK] log contém situacao_versao_id
+[OK] log contém situacao_grupo_id
+[OK] log contém idioma_situacao
+[OK] visão do pesquisador expõe getSituacaoGrupoId()
+[OK] visão do pesquisador expõe situacaoGrupoId
+[OK] id de grupo protegido contra edição livre
+[OK] origem escolhida apenas entre versões originais
+[OK] botão pequeno de tradução preservado
+[OK] criação de tradução recupera a curadoria original
+[OK] duplicidade de idioma no grupo é evitada
+== Qualidade da interface ==
+[OK] rótulo de categoria claro em pt
+[OK] rótulo de categoria claro em en
+[OK] rótulo de categoria claro em fr
+[OK] rótulo de categoria claro em es
+[OK] tooltip objetivo da categoria em pt
+[OK] tooltip objetivo da categoria em en
+[OK] tooltip objetivo da categoria em fr
+[OK] tooltip objetivo da categoria em es
+[OK] categoria documentada e renderizada acima do enunciado
+[OK] fonte principal do enunciado preservada
+[OK] fonte secundária compacta preservada
+[OK] contraste do texto principal sobre o fundo
+[OK] contraste do texto secundário sobre o fundo
+[OK] fluxo de nova atividade preservado
+[OK] fluxo de preservação do estado preservado
+[OK] seleção de categoria inicia nova atividade
+[OK] ausência de tradução não limpa a modelagem
+[OK] troca textual atualiza rótulos sem reposicionar a modelagem
+[OK] inicialização e restauração explícitas do diagrama preservadas
+[OK] regra de diagrama inicialmente vazio documentada no código
+== Padrões de projeto ==
+[OK] política de estado distingue reinício e preservação
+[OK] controlador de estado integrado ao fluxo principal
+[OK] fachada de carregamento integrada
+[OK] contexto imutável de carregamento preservado
+[OK] Strategy centraliza estilos de interação
+[OK] scaffolding delega comportamento à estratégia
+[OK] Factory de representações preservada
+[OK] representações com unidades expõem contrato-base
+[OK] contratos de adição e remoção herdam do contrato-base
+[OK] herança centraliza o estado comum das representações com unidades
+[OK] implementação concreta aplica herança e múltiplos contratos
+[OK] tela usa polimorfismo em vez de depender da implementação concreta
+[OK] ordem visual e ordem semântica são separadas por contrato
+[OK] herança centraliza a validação dos mapeamentos
+[OK] comparação mapeia referido, referendo e valor relativo corretamente
+[OK] seleção do mapeamento ocorre polimorficamente por fábrica
+== Política semântica de valores ==
+[OK] catálogo centraliza índices e papéis semânticos
+[OK] natureza diferencia quantidades de valores assinados
+[OK] política única impede quantidade negativa sem bloquear relações
+[OK] questionamento delega mapeamento ao catálogo central
+[OK] estado compartilhado delega validade à política semântica
+[OK] duração do tip é controlada fora da tela principal
+== Affordance de pickup ==
+[OK] pickup é exposto por contrato
+[OK] herança centraliza escala, elevação e sombra do pickup
+[OK] pickup usa escala discreta de 106%
+[OK] pickup usa mão nativa no mouseover e cursor de movimentação no arraste
+[OK] elemento segurado é retirado da passagem normal e redesenhado em primeiro plano
+[OK] cursor diferencia disponibilidade e arraste ativo
+== Arraste físico ==
+[OK] seguimento elástico é exposto por contrato
+[OK] herança centraliza mola, amortecimento e temporização
+[OK] mola concreta limita o atraso e preserva resposta discreta
+[OK] buraco de origem usa contrato e implementação herdada
+[OK] tela integra fantasma, seguimento elástico e soltura exata
+== Contrato de posicionamento incorreto manipulável ==
+[OK] proxy incorreto sobre o diagrama possui política explícita de permanência
+[OK] descarte do proxy fica restrito à soltura fora do diagrama
+[OK] item semanticamente incorreto é promovido a elemento manipulável do diagrama
+[OK] erro reutiliza tip persistente consolidado
+[OK] som e tremor permanecem ligados ao item sem removê-lo
+[OK] ramo de erro semântico não remove o item do diagrama
+[OK] matriz explícita de regressão funcional existe no projeto
+[OK] matriz registra contrato: som sutil
+[OK] matriz registra contrato: tremor leve
+[OK] matriz registra contrato: tip contextual
+[OK] matriz registra contrato: item incorreto permanece no diagrama
+[OK] matriz registra contrato: texto original permanece no enunciado
+== Conclusão da modelagem ==
+[OK] tip de conclusão é controlado para não repetir continuamente
+[OK] conclusão depende de todos os papéis matemáticos semanticamente corretos
+[OK] conclusão aceita somente valores numéricos naturais, assinados ou decimais
+[OK] estado de conclusão registra e valida o conteúdo numérico
+[OK] conclusão exige posicionar a incógnita e preenchê-la pelo protocolo mouse/texto
+[OK] preenchimento automático da incógnita fica bloqueado até o protocolo
+[OK] conclusão inspeciona cada elemento do diagrama por mouse ou teclado
+[OK] destaque azul abrange elementos, conectores e itens do Vergnaud
+[OK] tip de conclusão usa radio buttons Sim e Não
+[OK] escolha Sim aciona o botão Sortear consolidado
+[OK] botão Sortear preserva o fluxo consolidado de nova tarefa na categoria selecionada
+[OK] tela verifica conclusão após soltura e a suspende durante nova manipulação
+[OK] matriz registra contrato de conclusão: destaque azul Gérard
+[OK] matriz registra contrato de conclusão: radio buttons Sim e Não
+[OK] matriz registra contrato de conclusão: Não mantém a situação atual
+[OK] matriz registra contrato de conclusão: Sim inicia uma nova situação-problema
+[OK] matriz registra contrato de conclusão: todos os elementos semânticos do diagrama
+[OK] matriz registra contrato de conclusão: interrogação, mesmo corretamente posicionada
+[OK] matriz registra contrato de conclusão: protocolo de mouse/texto
+== Aba Construir situação-problema ==
+[OK] nova aba de construção integrada ao Main
+[OK] alternância da aba preserva contextos de tentativa
+[OK] escopo inicial cobre composição, transformação e comparação de medidas
+[OK] diagramas incompletos não entram na construção
+[OK] frases contextuais são agrupadas para evitar pistas superficiais
+[OK] blocos não compatíveis são gerados e deduplicados
+[OK] metadados semânticos permanecem internos ao modelo do bloco
+[OK] renderizador não expõe visualmente blocos corretos e não compatíveis
+[OK] logger oferece fotografia restaurável do contexto
+[OK] diagrama preenchido reutiliza o renderizador oficial
+[OK] definição da categoria não fica permanentemente desenhada na construção
+[OK] definição aparece somente no onmouseover do nome da categoria
+[OK] nomenclatura portuguesa usa Construir e Construa
+[OK] catálogo de referência garante variedade mínima em três categorias
+[OK] botão Novo diagrama evita repetição imediata e alterna categoria quando possível
+[OK] chave da construção localizada em pt/en/fr: ui.tab.assembly
+[OK] chave da construção localizada em pt/en/fr: montagem.title
+[OK] chave da construção localizada em pt/en/fr: montagem.instruction
+[OK] chave da construção localizada em pt/en/fr: montagem.diagram.title
+[OK] chave da construção localizada em pt/en/fr: montagem.available
+[OK] chave da construção localizada em pt/en/fr: montagem.assembly
+[OK] chave da construção localizada em pt/en/fr: montagem.button.validate
+[OK] chave da construção localizada em pt/en/fr: montagem.feedback.correct
+== Controles de unidades no diagrama complementar ==
+[OK] controle de adição integrado ao diagrama complementar
+[OK] clique cria uma nova unidade no agrupamento
+[OK] adição continua vinculada ao estado semântico compartilhado
+[OK] sinal de adição é desenhado sem dependência de fonte
+[OK] tooltip de adição localizado em pt/en/fr
+[OK] edição de unidades depende apenas de o diagrama de Vergnaud não estar vazio
+[OK] clique antecipado no + é bloqueado sem criar unidade
+[OK] adição e remoção respeitam zero, limites curados e consistência aditiva
+[OK] controles + e - comunicam visualmente estados bloqueados
+[OK] orientação para iniciar a modelagem localizada em pt/en/fr
+[OK] limite inferior zero localizado em pt/en/fr
+== Vínculos e metadados ==
+OK: 210 versões, 72 grupos conceituais, vínculos e metadados coerentes.
+
+[OK] teste de vínculos entre traduções
+== Compatibilidade do log ==
+[OK] leitura compatível com logs antigos e novos
+[OK] normalização C/E respeita o esquema novo e o legado
+APROVADO: compilação, vínculos, curadoria, log, i18n, usabilidade e integração estrutural consistentes.
+== Papéis semânticos no enunciado ==
+[OK] interpretação usa o texto efetivamente renderizado
+[OK] todos os números recebem o papel pela ordem curada
+[OK] interrogação recebe o papel desconhecido curado
+[OK] realce visual depende do papel semântico
+[OK] mobilidade dos elementos textuais permanece
+[OK] símbolo canônico de desconhecido preservado como interrogação ocidental
+[OK] papel semântico do desconhecido independe do glifo
+== Sincronização dos elementos semânticos do texto ==
+[OK] elementos do enunciado expõem contrato semântico comum
+[OK] herança centraliza a propagação do snapshot ao texto
+[OK] formatação aditiva é selecionada polimorficamente
+[OK] atualização de qualquer representação também atualiza o enunciado
+[OK] sincronização textual não sobrescreve itens já posicionados nos diagramas
+[OK] valor original permanece estável para incógnita, logs e validações
+[OK] contrato textual identifica polimorficamente a incógnita original
+[OK] sincronização preserva a interrogação em vez de revelar a resposta
+APROVADO: sincronização textual mantém valores conhecidos e preserva a interrogação.
+== Processo concreto de transformação ==
+[OK] transformação de medidas seleciona representação de processo própria
+[OK] geometria do canal e das zonas fica fora da tela principal
+[OK] canal e funis são delegados ao renderizador especializado
+[OK] quadradinhos são posicionados nos estados e no funil correspondente
+[OK] retirada/inserção decorre do próprio número inteiro
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.title
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.description
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.before
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.change
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.in
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.out
+[OK] chave do processo localizada em pt/en/fr: ui.transformationBoard.after
+[OK] processo reutiliza a sincronização semântica consolidada
+[OK] interações concretas preservam a relação aditiva e a não negatividade dos estados
+APROVADO: processo de transformação integrado sem remover os contratos consolidados.
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+Teste do modelo sem?ntico expl?cito aprovado: 23 verifica??es.
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+TestePickupIncognitaEGestoEstrutural: OK
+Teste estrutural de integração da incógnita e do gesto estrutural: OK
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+Teste de r?tulos sem?nticos/i18n aprovado: 16 verifica??es.
+Teste estrutural de rótulos semânticos e i18n: OK
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+Teste de decimais integrais e quadradinhos aprovado: 13 verifica??es.
+Teste estrutural da sincronização decimal da transformação: OK
+OK: 20 verifica??es de grandezas quantitativas contextuais.

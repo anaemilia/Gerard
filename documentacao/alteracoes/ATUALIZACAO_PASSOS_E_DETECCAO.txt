@@ -1,0 +1,18 @@
+Atualizações adicionais implementadas:
+
+1) Detecção linguística mais robusta dos passos
+- o sistema agora tenta inferir o sinal de cada transformação separadamente,
+  observando o contexto local de cada número (por exemplo: comeu, perdeu, ganhou, recebeu etc.);
+- quando um segundo número aparece na continuação da mesma ação verbal,
+  ele herda o sinal do passo anterior (ex.: "comeu 2 ontem e 5 hoje").
+
+2) Visualização dos passos
+- o enunciado passa a exibir um resumo textual dos passos detectados,
+  como "Passos detectados: Passo 1 • Passo 2";
+- cada diagrama renderizado recebe um rótulo visual: "Passo 1", "Passo 2", "Passo 3" etc.
+
+3) Encadeamento automático ajustado
+- o estado final de um passo intermediário é automaticamente reutilizado
+  como estado inicial do passo seguinte;
+- o último estado final permanece livre para resolução pelo usuário,
+  em vez de vir automaticamente preenchido.

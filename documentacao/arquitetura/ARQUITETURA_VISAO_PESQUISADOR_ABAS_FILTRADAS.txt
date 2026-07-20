@@ -1,0 +1,22 @@
+Visão de pesquisador - abas filtradas
+
+A janela Visão de pesquisador foi ajustada para manter apenas as abas sintéticas solicitadas.
+
+Removidas da interface:
+- Tabela 5 - Formato
+- Tabela 9 - Ações
+- Tabelas 16/17 - Agente
+- Log bruto
+- Exportação
+
+Mantidas na interface:
+- Síntese
+- Tabela 4 - Problemas
+- Tabela 6 - Usuários
+- Tabela 7 - Objetos
+- Tabela 13 - Neutras
+- Tabela 14 - Problemas
+- Tabela 15 - Grupos
+- Gráficos
+
+Observação: os dados continuam sendo calculados a partir dos arquivos de log. Apenas as abas solicitadas foram retiradas da apresentação visual.

@@ -1,0 +1,27 @@
+AJUSTE DA CATEGORIA COMPOSIÇÃO DE RELAÇÕES
+
+Objetivo
+- adequar o diagrama da categoria Composição de Relações ao esquema solicitado:
+  [Elemento A] --(R1)--> [Elemento B] --(R2)--> [Elemento C]
+   com uma relação composta R3 entre A e C.
+
+O que foi corrigido
+- o diagrama central deixou de mostrar apenas relações isoladas;
+- agora ele renderiza explicitamente:
+  * Elemento A
+  * Elemento B
+  * Elemento C
+  * Relação R1 entre A e B
+  * Relação R2 entre B e C
+  * Relação composta R3 entre A e C
+
+Preservações
+- os elementos continuam visualmente vazios;
+- números e interrogação continuam sendo posicionados apenas pelo usuário;
+- a estrutura de zonas semânticas foi ajustada especificamente para esta categoria.
+
+Arquitetura
+- atualização do renderizador específico:
+  * RenderizadorComposicaoRelacoes
+- atualização das zonas semânticas em Main.java para suportar
+  três elementos e cinco conectores desta categoria.

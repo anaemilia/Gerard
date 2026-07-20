@@ -1,0 +1,1 @@
+Ajuste adicional: o bloco de diagramas da transformação composta em mais de um passo foi deslocado 20 pixels para cima, preservando a centralização geral e evitando ultrapassar o topo da área visível.

@@ -1,0 +1,12 @@
+AJUSTE DO MOUSE OVER DO TEXTO
+
+Objetivo
+- manter todos os recursos anteriores, mas simplificar a mensagem exibida quando o cursor passa sobre qualquer elemento do enunciado.
+
+Comportamento
+- no mouse over de palavras, números e interrogação dentro do texto do problema, a interface exibe apenas a mensagem definida em ui.tooltip.textMoveOnly.
+- em português, a mensagem é: Oi você me mudar de posição
+
+Critério de arquitetura
+- a mensagem foi adicionada ao ServicoLocalizacao, preservando o módulo de internacionalização.
+- a mudança ficou restrita à regra de apresentação do mouseMoved, sem alterar a inferência dos papéis numéricos nem os demais módulos.

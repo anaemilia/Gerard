@@ -1,0 +1,40 @@
+ALTERAÇÕES - DIAGRAMAS OFICIAIS DE VERGNAUD
+
+Fonte usada como referência visual:
+- OficinaMatemática.doc, páginas 5 e 6, seção "Legenda de Vergnaud".
+
+Correções aplicadas no Gerard:
+1. Composição de medidas
+   - Removida a seta extra entre a chave e a medida total.
+   - Mantido apenas o arranjo oficial: duas medidas quadradas, chave vertical e medida resultante quadrada.
+
+2. Transformação de medidas
+   - Corrigido para: medida inicial quadrada, seta horizontal, medida final quadrada e transformação circular acima da seta.
+   - Removido o modelo anterior em que a transformação ficava como nó intermediário da seta.
+
+3. Comparação de medidas
+   - Corrigido para: duas medidas quadradas em eixo vertical, seta vertical e relação/diferença circular ao lado.
+   - Removidas as setas ligando quadrado-círculo-quadrado.
+
+4. Composição de transformações
+   - Corrigido para o diagrama oficial com três medidas quadradas, duas transformações circulares sobre as setas e transformação resultante em círculo abaixo do arco.
+   - Adicionada seta curva para representar a transformação composta resultante.
+
+5. Transformação de uma relação
+   - Corrigido para: relação inicial circular, seta horizontal, relação final circular e transformação circular acima da seta.
+   - Removidas linhas auxiliares que não fazem parte da representação oficial.
+
+6. Composição de relações
+   - Corrigido para: duas relações circulares, chave vertical e relação resultante circular.
+   - Removidos retângulos arredondados, setas e linhas auxiliares.
+
+Critério adotado:
+- Os diagramas permanecem com traço simples, fundo branco e sem rótulos automáticos dentro ou acima das figuras.
+- Os números do enunciado continuam disponíveis para manipulação pelo usuário, mas não são inseridos automaticamente nos diagramas.
+- Foram preservadas as demais funcionalidades do projeto.
+
+Validação técnica:
+- Projeto recompilado com Ant.
+- JAR gerado em dist/GerardNetBeans_Venn_Transformacao.jar.
+
+2026-07-01 - Incluído submenu Sobre > Legenda com a descrição dos diagramas oficiais de Vergnaud.

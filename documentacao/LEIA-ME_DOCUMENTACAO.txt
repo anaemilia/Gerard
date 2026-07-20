@@ -1,0 +1,66 @@
+
+ATUALIZAÇÃO C33 - MONTAGEM DA SITUAÇÃO-PROBLEMA
+- Nova aba baseada em diagrama preenchido e blocos textuais.
+- Distância semântica controlada entre blocos corretos e não compatíveis.
+- Intervenção explícita do pesquisador registrada em relatorios/.
+- Arquitetura, alteração, regressão e artigo de co-design atualizados.
+
+DOCUMENTAÇÃO EVOLUTIVA DO GÉRARD
+
+O arquivo ANALISE_COMPLEXIDADE_GERARD.pdf integra a documentação técnica do projeto.
+Ele reúne a análise da complexidade, as decisões arquiteturais e a linha do tempo das versões consistentes.
+
+ATUALIZAÇÃO DE UMA VERSÃO CONSISTENTE
+
+Use o alvo Ant "versao-consistente". Esse alvo:
+1. incorpora o PDF indicado à documentação do projeto;
+2. registra data, hora, nome da versão e SHA-256 no histórico;
+3. compila o projeto;
+4. copia a documentação para dist/documentacao.
+
+Exemplo, na raiz do projeto:
+
+ant -Ddocumentacao.pdf="/caminho/analise_atualizada.pdf" \
+    -Dversao.nome="descricao-da-versao" versao-consistente
+
+Se -Ddocumentacao.pdf não for informado, o alvo reutiliza o PDF já presente em:
+
+documentacao/ANALISE_COMPLEXIDADE_GERARD.pdf
+
+IMPORTANTE
+
+O alvo deve ser executado somente depois das verificações de consistência e regressão da versão.
+A atualização automática registra e empacota o PDF fornecido; ela não redige automaticamente novas decisões.
+O conteúdo do PDF deve ser atualizado antes da execução quando houver mudanças arquiteturais ou metodológicas.
+
+ARTIGO DE CO-DESIGN HUMANO-IA
+-----------------------------
+O arquivo ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf apresenta a análise dos ciclos de decisão do desenvolvimento do Gérard.
+O projeto LaTeX atualizável encontra-se em documentacao/artigo_codesign.
+
+Os ciclos são classificados em três níveis:
+1. estruturais e de generalização;
+2. consistência teórica e metodológica;
+3. refinamento visual e operacional.
+
+Para incorporar um novo ciclo consistente ao artigo:
+1. acrescente-o em documentacao/artigo_codesign/dados/versoes_consistentes.csv;
+2. atribua uma das três classes analíticas;
+3. execute make dentro de documentacao/artigo_codesign;
+4. substitua documentacao/ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf pelo PDF gerado;
+5. execute o alvo Ant versao-consistente para copiar toda a documentação para dist/documentacao.
+
+REGRESSÃO DOCUMENTAL DO ARTIGO
+Toda nova decisão metodológica ou de tratamento de dados deve ser registrada em
+`artigo_codesign/dados/decisoes_metodologicas.csv` e aparecer no resumo, nos
+resultados e na discussão. O alvo `versao-consistente` interrompe a compilação
+quando a retroalimentação não é encontrada.
+
+ATUALIZAÇÃO DO ARTIGO — CORPUS E FONTES DOCUMENTAIS
+A versão incorporada distingue conversas de desenvolvimento, artefatos de implementação, evidências de verificação e documentos de fundamentação/acompanhamento. As quantidades ainda não auditadas são apresentadas como inventário em andamento, sem estimativas não verificadas. Permanecem confirmados 35 ciclos de decisão: 18 estruturais e de generalização, 7 de consistência teórica e metodológica e 10 de refinamento visual e operacional.
+
+ATUALIZAÇÃO C35 - CONSTRUIR SITUAÇÃO-PROBLEMA E DEFINIÇÃO SOB DEMANDA
+- A aba e o título interno passaram a usar "Construir" e "Construa".
+- A definição da categoria foi retirada da exposição permanente no diagrama.
+- A definição localizada aparece somente ao passar o mouse sobre o nome da categoria.
+- A intervenção do pesquisador e a regressão correspondente estão registradas em relatorios/ e regressao/.

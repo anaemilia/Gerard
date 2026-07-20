@@ -1,0 +1,7 @@
+Atualização D3 - Matriz de efetividade do feedback/scaffolding
+
+A terceira visualização analítica deixou de ser uma rede de três colunas, pois repetia a mesma informação em nós equivalentes: intervenção -> ação seguinte -> interpretação da ação seguinte.
+
+Agora ela é uma matriz: linhas = intervenção do computador/interface; colunas = ação imediatamente seguinte do sujeito. Cada célula mostra a quantidade e o percentual dentro daquela intervenção.
+
+A análise continua baseada nos trios temporais S -> C -> S do log fiel aos quadros, mas a apresentação evita redundância e favorece leitura comparativa.

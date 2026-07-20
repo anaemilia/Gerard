@@ -1,0 +1,26 @@
+RÓTULO DE CONTAGEM DE QUESTÕES
+
+Objetivo
+- reposicionar o rótulo de questão para a extrema direita da barra superior, respeitando os limites visuais da interface.
+- registrar a contagem das questões sorteadas/resolvidas durante a sequência de uso.
+
+Comportamento implementado
+- o rótulo aparece como um pequeno marcador na extrema direita da barra superior.
+- o formato é: Questão N/N.
+- ao iniciar uma categoria, a contagem começa em Questão 1/1.
+- ao clicar em Sortear, a contagem avança para Questão 2/2, Questão 3/3, e assim sucessivamente.
+- ao trocar a categoria, a contagem é reiniciada para Questão 1/1, preservando a sequência por categoria.
+
+Arquitetura
+- campos adicionados em TelaGerard:
+  * numeroQuestaoAtual
+  * quantidadeQuestoesResolvidas
+- métodos adicionados:
+  * resetarContagemQuestoes()
+  * avancarContagemQuestao()
+  * obterRotuloContagemQuestao()
+  * desenharRotuloContagemQuestao(...)
+
+Internacionalização
+- chave adicionada:
+  * ui.header.questionCounter

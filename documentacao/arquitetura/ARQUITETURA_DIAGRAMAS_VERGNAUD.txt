@@ -1,0 +1,55 @@
+MÓDULO DE DIAGRAMAS DE VERGNAUD
+
+Objetivo
+- renderizar, no clique do menu de categorias, diagramas mais próximos da notação de Vergnaud usada no Gerard.
+
+Base conceitual aplicada
+- quadrado: medida;
+- círculo: relação, transformação ou número relativo;
+- seta: orientação da transformação ou da relação;
+- chave: composição entre medidas, transformações ou relações.
+
+Categorias implementadas
+1. Composição de medidas
+   - duas medidas-parte à esquerda;
+   - chave de composição;
+   - medida-todo à direita.
+
+2. Transformação de medidas
+   - medida inicial;
+   - círculo da transformação;
+   - medida final;
+   - setas horizontais indicando o percurso.
+
+3. Comparação de medidas
+   - medida referente;
+   - círculo da relação;
+   - medida referida;
+   - seta vertical indicando a comparação.
+
+4. Composição de transformações
+   - duas transformações;
+   - chave de composição;
+   - transformação resultante.
+
+5. Transformação de uma relação
+   - relação inicial;
+   - transformação;
+   - relação final.
+
+6. Composição de relações
+   - duas relações;
+   - chave de composição;
+   - relação resultante.
+
+Pacotes principais
+- gerard.campoaditivo.diagrama.modelo
+- gerard.campoaditivo.diagrama.servico
+- gerard.campoaditivo.diagrama.apresentacao
+
+Critérios de arquitetura
+- Modelo separado da apresentação Swing;
+- um renderizador por categoria;
+- fábrica de renderizadores;
+- Main.java apenas orquestra a troca de estado;
+- os diagramas não dependem diretamente de eventos de mouse ou componentes Swing.

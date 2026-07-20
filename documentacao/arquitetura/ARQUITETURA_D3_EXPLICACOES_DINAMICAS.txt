@@ -1,0 +1,27 @@
+Atualização: explicações dinâmicas das visualizações D3
+
+A aba Visualizações da Visão de pesquisador passou a apresentar, abaixo de cada visualização D3.js, uma leitura automática baseada nos próprios dados brutos do log.
+
+Para cada visualização, o Gerard calcula um exemplo observado:
+
+1. Mapa de calor dos eventos por problema
+- Lê um problema disponível no log, priorizando o Problema 01 quando existente.
+- Informa a quantidade total de eventos e a distribuição por tipo: acerto, erro, feedback, ajuda, dúvida, neutra, interface e sujeito.
+- Explica que a cor identifica o tipo de evento e que a intensidade da célula representa a frequência.
+- Explica a relevância da visão para localizar concentração de dificuldades, erros e necessidades de revisão do feedback/scaffolding.
+
+2. Rede de transições entre eventos
+- Identifica a transição mais frequente entre tipos de evento, por exemplo Erro -> Feedback.
+- Informa a quantidade de ocorrências dessa transição.
+- Informa o tipo de evento mais presente na rede.
+- Explica que nós maiores indicam eventos mais frequentes e linhas mais espessas indicam transições mais recorrentes.
+- Explica a relevância da visão para observar mediação, persistência de erro e possíveis ciclos de ajuda insuficiente.
+
+3. Sequência temporal das ações por ocorrência
+- Seleciona a ocorrência exibida com maior número de ações.
+- Informa o total de ações, a quantidade de ações do sujeito e do computador, o primeiro e o último tipo de evento.
+- Resume a composição da sequência por tipo de evento.
+- Explica que a posição horizontal indica a ordem da ação, a cor indica o tipo de evento e a borda escura indica ação do computador/interface.
+- Explica a relevância da visão para acompanhar o percurso interacional sem depender apenas de totais agregados.
+
+A internacionalização foi mantida em português, inglês e francês.

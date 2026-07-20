@@ -1,0 +1,23 @@
+REDESIGN VISUAL DA INTERFACE
+
+Objetivo
+- melhorar a leitura, a hierarquia visual e a consistência da interface sem alterar as funcionalidades já implementadas.
+
+Ajustes aplicados
+- paleta visual mais consistente, com fundo claro, azul como cor de ação e cinzas neutros para separação;
+- cabeçalho com gradiente discreto para destacar a área de navegação;
+- botões principais com maior contraste, cursor de mão e bordas consistentes;
+- menus internos com fundo branco, borda suave e realce no mouse over;
+- área da situação-problema em card arredondado, preservando a fonte e o tamanho do texto;
+- área central e área do diagrama de Venn com aparência de superfície limpa;
+- elementos de Vergnaud com preenchimento claro, borda azul e áreas internas tracejadas;
+- números e marcadores com cores mais estáveis, evitando excesso de variação cromática;
+- dicas de mouse over com melhor contraste e bordas mais suaves.
+
+Critérios de design usados
+- contraste visual entre ação, conteúdo e apoio;
+- redução de ruído visual;
+- agrupamento por proximidade;
+- consistência de cores e formas;
+- affordance visual para elementos clicáveis e arrastáveis;
+- preservação da estrutura pedagógica já implementada.

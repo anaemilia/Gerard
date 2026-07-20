@@ -1,0 +1,6 @@
+Comparação SHA-256 de dados curados C161/C162
+
+IDENTICO  dados/situacoes_pdf_nao_aditivas_referencia.tsv
+IDENTICO  dados/situacoes_vergnaud.tsv
+IDENTICO  src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+IDENTICO  src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv

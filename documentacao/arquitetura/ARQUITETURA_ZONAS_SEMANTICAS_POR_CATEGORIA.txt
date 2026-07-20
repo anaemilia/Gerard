@@ -1,0 +1,31 @@
+ZONAS SEMÂNTICAS POR CATEGORIA DE VERGNAUD
+
+Objetivo
+- garantir que a restrição de movimento dos elementos do diagrama de Vergnaud seja específica para cada categoria do campo aditivo.
+
+O que mudou
+- as zonas semânticas deixaram de ser genéricas por proximidade da posição inicial;
+- agora cada categoria possui zonas próprias para cada papel/posição do diagrama;
+- isso impede trocas indevidas, como:
+  * estado final indo para o estado inicial;
+  * parte indo para o lugar do todo;
+  * referente indo para o lugar do referido;
+  * relação/transformação indo para o lugar de medida.
+
+Categorias cobertas
+- Composição de medidas
+- Transformação de medidas
+- Comparação de medidas
+- Composição de transformações
+- Transformação de uma relação
+- Composição de relações
+
+Decisão de arquitetura
+- criação de regras por categoria em funções dedicadas:
+  * obterZonaBaseElementoPorCategoria(...)
+  * obterZonaBaseConectorPorCategoria(...)
+- uso do tipo de situação selecionada para definir as zonas permitidas de cada elemento e conector.
+
+Benefício
+- a manipulação continua livre dentro de uma faixa coerente,
+  mas preserva a interpretação linguística e estrutural da categoria de Vergnaud.

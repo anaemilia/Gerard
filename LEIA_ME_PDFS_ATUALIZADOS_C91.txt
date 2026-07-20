@@ -1,0 +1,20 @@
+PDFS ATUALIZADOS - CORPUS C91
+Data: 16/07/2026
+
+1. ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+   - Corpus atualizado para 91 ciclos consistentes.
+   - Distribuição: 31 ciclos estruturais e de generalização; 22 de consistência teórica e metodológica; 38 de refinamento visual e operacional.
+   - Inclui os ciclos C70 a C91: atualização de personagens, controle de menus em construção, relato contextual de bugs, memória institucional, estabilização da curadoria, semântica somente na versão original, remoção do subtipo, bloqueio dinâmico de traduções, integração com Gmail, feedback multissensorial e ajuda contextual "E agora?".
+   - Fonte editável: documentacao/artigo_codesign/main.tex.
+
+2. ANALISE_COMPLEXIDADE_GERARD.pdf
+   - Atualização acumulada até C91.
+   - Inclui os impactos de persistência multilíngue, relato de falhas, feedback multissensorial e ajuda contextual.
+   - Fonte editável: documentacao/ANALISE_COMPLEXIDADE_GERARD_C91.tex.
+
+Cópias versionadas:
+- documentacao/Artigo_codesign_Gerard_consistente_C91.pdf
+- documentacao/ANALISE_COMPLEXIDADE_GERARD_C91.pdf
+- documentacao/Analise_complexidade_Gerard_atualizada_C91.pdf
+
+Os PDFs C69 e C68 anteriores foram mantidos como registros históricos.

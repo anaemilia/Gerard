@@ -1,0 +1,41 @@
+MOUSE OVER COM PAPÉIS EXCLUSIVOS DOS NÚMEROS E DA INTERROGAÇÃO
+
+Objetivo
+- Exibir, no mouse over de cada número e da interrogação, o papel conceitual que aquele elemento exerce na situação-problema.
+- Cada número ou interrogação assume apenas um papel por categoria.
+
+Mensagem exibida
+- Português: "Olá, eu sou o {papel}."
+- Inglês: "Hello, I am the {role}."
+- Francês: "Bonjour, je suis le rôle : {rôle}."
+
+Papéis canônicos usados no mouse over
+- parte
+- todo
+- estado inicial
+- transformação
+- estado final
+- referente
+- referido
+- diferença
+- relação
+
+Decisão de arquitetura
+- A inferência detalhada dos papéis continua no módulo de interpretação linguística.
+- A tela usa uma conversão canônica para simplificar o mouse over e evitar que um mesmo elemento assuma mais de um papel.
+- Papéis como Parte 1 e Parte 2 são apresentados no mouse over como "parte".
+- Papéis como Relação inicial, Relação 1 e Relação final são apresentados no mouse over como "relação".
+- Papéis como Transformação 1, Transformação 2 e Transformação final são apresentados no mouse over como "transformação".
+
+Classes afetadas
+- Main.java
+  * passou a consultar o papel do elemento textual no mouseMoved;
+  * passou a preservar a chave do papel nos itens arrastáveis;
+  * passou a exibir a mensagem contextual no mouse over.
+
+- ServicoLocalizacao.java
+  * recebeu as chaves de mensagem para o mouse over;
+  * recebeu papéis canônicos para Português, Inglês e Francês.
+
+Compatibilidade
+- Foram mantidas as funcionalidades anteriores: idioma, categorias, diagramas vazios, diagrama central de Vergnaud, diagrama de Venn dinâmico, arraste de números/interrogação e painel de interpretação linguística.

@@ -1,0 +1,14 @@
+package gerard.semantica.pista;
+
+public enum TipoPistaLinguistica {
+    TEMPORAL_INICIAL,
+    TEMPORAL_FINAL,
+    TRANSFORMACAO_POSITIVA,
+    TRANSFORMACAO_NEGATIVA,
+    COMPOSICAO,
+    TOTALIZACAO,
+    COMPARACAO_SUPERIOR,
+    COMPARACAO_INFERIOR,
+    POSSE,
+    OUTRA
+}

@@ -1,0 +1,23 @@
+C166 — RESULTADO DOS TESTES DIRECIONADOS
+
+APROVADOS:
+- Compilação NetBeans/Ant e geração do JAR.
+- Teste do gráfico de barras de comparação, incluindo:
+  - alinhamento vertical com o diagrama de Vergnaud em painel ampliado;
+  - preservação dos rótulos em painel compacto;
+  - manutenção dos papéis curados referido, referendo e valor relativo.
+- Mapeamento semântico da comparação complementar.
+- Menu de comparação entre categorias.
+- Escolha obrigatória de sinal na curadoria.
+- Valor relativo assinado sem permitir quantidades negativas.
+- Sincronização de controles por categoria.
+- Estado semântico compartilhado.
+- Rótulos semânticos e internacionalização.
+- Curadoria semântica somente na versão original.
+- Bloqueio dinâmico de idioma na curadoria.
+- Remoção do subtipo da curadoria.
+
+REGRESSÃO GLOBAL:
+O verificador global continua registrando 24 falhas preexistentes na C165,
+principalmente verificações antigas de localização textual. A lista de falhas
+é idêntica antes e depois da alteração; nenhuma falha nova foi introduzida.

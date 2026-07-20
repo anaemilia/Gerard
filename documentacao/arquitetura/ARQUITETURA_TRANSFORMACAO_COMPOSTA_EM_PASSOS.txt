@@ -1,0 +1,11 @@
+Ajuste realizado:
+- foi criada a opção de tipo "Transformação composta em dois passos" no Gerard;
+- quando esse tipo é selecionado, o sistema renderiza uma sequência de diagramas de Transformação de Medidas;
+- o número de diagramas renderizados passa a acompanhar a quantidade de passos numéricos identificados no enunciado;
+- o estado final de cada passo é calculado e inserido automaticamente como estado inicial do passo seguinte;
+- o encadeamento preserva a estrutura formal de cada diagrama individual, sem acrescentar elementos permanentes estranhos ao modelo de Vergnaud.
+
+Exemplo incluído:
+- Geisa tinha uma caixa com 25 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?
+  Passo 1: 25 -> 2 -> 23
+  Passo 2: 23 -> 5 -> 18

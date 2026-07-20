@@ -1,0 +1,23 @@
+Visão de pesquisador no Gerard
+
+Foi criado o botão "Visão de pesquisador" na barra superior da interface. Ao ser acionado,
+o botão abre uma janela não modal com abas quantitativas relacionadas ao estudo que fundamenta
+o Gerard.
+
+Pacote criado:
+- src/gerard/pesquisador/
+
+Classe principal:
+- TelaVisaoPesquisador.java
+
+A tela apresenta abas com:
+- Síntese quantitativa: 5 usuários, 26 situações-problema analisadas e 556 ações.
+- Perfil dos usuários.
+- Problemas utilizados nos dados analisados.
+- Quantidade de situações e ações por usuário.
+- Objetos presentes no contexto da ação.
+- Erros previstos e retornos/apoios associados.
+- Invariantes operatórios mobilizados.
+
+A funcionalidade foi construída como uma camada de observação para o pesquisador. Ela não altera
+a atividade do aluno, não interfere na modelagem e não modifica o diagrama.

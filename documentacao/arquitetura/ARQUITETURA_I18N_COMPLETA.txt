@@ -1,0 +1,32 @@
+MÓDULO DE INTERNACIONALIZAÇÃO FLEXÍVEL
+
+Objetivo
+- garantir que a escolha do idioma afete todos os textos visíveis da interface, e não apenas o enunciado da situação-problema.
+
+Solução adotada
+- criação do pacote: src/gerard/i18n
+- classe central: gerard.i18n.ServicoLocalizacao
+
+Responsabilidades do módulo
+- armazenar mensagens por chave para Português, Inglês e Francês;
+- expor acesso centralizado por meio de texto(chave) e formatar(chave, ...);
+- traduzir textos da interface, painéis, tooltips, diálogos, rótulos e descrições de diagramas;
+- oferecer métodos auxiliares para nomes de idiomas, categorias e tipos.
+
+Boas práticas aplicadas
+- centralização de mensagens em um único serviço;
+- eliminação de textos hardcoded espalhados pela interface;
+- separação entre domínio e apresentação, com dependência controlada do serviço de localização;
+- atualização reativa da interface quando o idioma é alterado;
+- reuso do mesmo serviço para Main, interpretação linguística e diagramas.
+
+Textos cobertos
+- título da janela;
+- botões e tooltips;
+- cabeçalho da tela;
+- painel de interpretação linguística;
+- avisos e relações prováveis;
+- título e descrição da área do diagrama de Venn;
+- diálogos de entrada e erro;
+- mensagens de mouse over;
+- rótulos dos diagramas de Vergnaud e descrições das categorias.

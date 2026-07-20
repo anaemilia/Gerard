@@ -1,0 +1,10 @@
+Ajuste realizado:
+- o espaço delimitador dos diagramas foi ampliado verticalmente;
+- a área central dos diagramas agora começa um pouco mais acima e possui maior altura útil;
+- para o tipo "Transformação composta em dois passos", os diagramas deixam de ocupar toda a coluna de cima a baixo;
+- em vez disso, o bloco com os dois diagramas passa a ser centralizado verticalmente dentro do espaço ampliado.
+
+Efeito esperado:
+- mais respiro visual no quadro dos diagramas;
+- melhor distribuição vertical;
+- em problemas de dois passos, os diagramas ficam visualmente centrados no espaço disponível.

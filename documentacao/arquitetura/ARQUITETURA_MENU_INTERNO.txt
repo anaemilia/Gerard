@@ -1,0 +1,17 @@
+MENU INTERNO VERTICAL POR MOUSE OVER
+
+Alteração implementada:
+- Substituição das janelas de escolha por painéis verticais internos na tela principal.
+- O botão "Idioma" mostra opções PT/EN/FR ao passar o mouse.
+- O botão "Tipo" mostra os seis tipos do campo aditivo ao passar o mouse.
+
+Decisão arquitetural:
+- A escolha de idioma continua separada no pacote gerard.idioma.
+- A escolha do tipo continua separada no pacote gerard.campoaditivo.
+- A interface apenas consome esses modelos e serviços.
+- Os menus são componentes Swing internos, mantendo a interação dentro da área do Gerard.
+
+Comportamento:
+- mouse over no botão: exibe menu vertical;
+- clique na opção: atualiza texto, tipo, diagrama e interpretação linguística;
+- saída do cursor: oculta o menu após pequeno atraso.

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="GerardNetBeans_Venn_Transformacao" default="default" basedir=".">
+    <description>Builds, tests, runs and packages the Gerard project documentation.</description>
+
+    <!--
+      PDF padrão já versionado no projeto. Para atualizar em uma versão consistente:
+      ant -Ddocumentacao.pdf=/caminho/novo.pdf -Dversao.nome=minha-versao versao-consistente
+    -->
+    <property name="documentacao.dir" location="documentacao"/>
+    <property name="documentacao.destino" location="${documentacao.dir}/ANALISE_COMPLEXIDADE_GERARD.pdf"/>
+    <property name="documentacao.pdf" location="${documentacao.destino}"/>
+    <property name="versao.nome" value="versao-consistente"/>
+
+    <target name="validar-documentacao">
+        <available file="${documentacao.pdf}" property="documentacao.existe"/>
+        <fail unless="documentacao.existe"
+              message="PDF de documentação não encontrado: ${documentacao.pdf}"/>
+        <mkdir dir="${documentacao.dir}"/>
+        <condition property="documentacao.origem.eh.destino">
+            <equals arg1="${documentacao.pdf}" arg2="${documentacao.destino}"/>
+        </condition>
+    </target>
+
+    <target name="copiar-pdf-documentacao" depends="validar-documentacao" unless="documentacao.origem.eh.destino">
+        <copy file="${documentacao.pdf}"
+              tofile="${documentacao.destino}"
+              overwrite="true"
+              preservelastmodified="true"/>
+    </target>
+
+    <target name="atualizar-documentacao" depends="validar-documentacao,copiar-pdf-documentacao"
+            description="Atualiza o PDF e registra a versão consistente.">
+        <checksum file="${documentacao.destino}"
+                  algorithm="SHA-256"
+                  property="documentacao.sha256"/>
+        <tstamp>
+            <format property="documentacao.datahora"
+                    pattern="yyyy-MM-dd'T'HH:mm:ssZ"/>
+        </tstamp>
+        <echo file="${documentacao.dir}/HISTORICO_VERSOES_CONSISTENTES.tsv"
+              append="true">${documentacao.datahora}	${versao.nome}	${documentacao.sha256}${line.separator}</echo>
+        <echo message="Documentação atualizada: ${documentacao.destino}"/>
+        <echo message="SHA-256: ${documentacao.sha256}"/>
+    </target>
+
+    <target name="copiar-documentacao-dist" depends="validar-documentacao">
+        <mkdir dir="dist/documentacao"/>
+        <copy todir="dist/documentacao" overwrite="true">
+            <fileset dir="${documentacao.dir}"/>
+        </copy>
+    </target>
+
+    <target name="versao-consistente" depends="validar-regressao-artigo,atualizar-documentacao,clean,jar,copiar-documentacao-dist"
+            description="Atualiza documentação, compila e empacota uma versão consistente.">
+        <echo message="Versão consistente gerada com documentação em dist/documentacao."/>
+    </target>
+
+    <import file="nbproject/build-impl.xml"/>
+
+    <target name="validar-regressao-artigo">
+        <exec executable="python3" failonerror="true" dir="${documentacao.dir}/artigo_codesign">
+            <arg value="scripts/validar_regressao_artigo.py"/>
+        </exec>
+    </target>
+</project>

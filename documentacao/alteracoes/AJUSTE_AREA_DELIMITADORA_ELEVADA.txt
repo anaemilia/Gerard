@@ -1,0 +1,5 @@
+Ajuste realizado:
+- a área delimitadora da renderização dos diagramas de Vergnaud foi elevada verticalmente;
+- o topo visual da área passou para y=230;
+- a altura mínima do espaço delimitador foi ampliada para 525 pixels;
+- a área útil interna também foi elevada, mantendo espaço para os diagramas compostos centralizados.

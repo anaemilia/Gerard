@@ -1,0 +1,13 @@
+id,descricao,resumo_token,resultados_token,discussao_token,ativa
+M01,Classificação dos ciclos em três classes,ciclos foram separados em três classes,três classes analíticas,classificação em três níveis,SIM
+M02,Regressão documental entre método e seções analíticas,regressão documental cruzada,regressão documental cruzada,regressão documental cruzada,SIM
+M03,Controle da distância semântica dos blocos não compatíveis,distância semântica controlada,distância semântica controlada,distância semântica controlada,SIM
+M04,Correspondência cromática das unidades comuns na comparação de medidas,correspondência cromática das unidades comuns,correspondência cromática das unidades comuns,correspondência cromática das unidades comuns,SIM
+M05,Estado semântico compartilhado para coordenar representações,estado semântico compartilhado,estado semântico compartilhado,estado semântico compartilhado,SIM
+M06,Curadoria semântica restrita à versão original,curadoria semântica somente na versão original,curadoria semântica somente na versão original,curadoria semântica somente na versão original,SIM
+M07,Feedback multissensorial para erro de posicionamento semântico,feedback multissensorial de erro,feedback multissensorial de erro,feedback multissensorial de erro,SIM
+M08,Ajuda contextual por área e intenção do usuário,ajuda contextual por área,ajuda contextual por área,ajuda contextual por área,SIM
+M09,Preservação da estrutura visual durante estados sem conteúdo,estrutura visual estável,estrutura visual estável,estrutura visual estável,SIM
+M10,Disponibilização da análise qualitativa somente após ação efetiva de modelagem,análise da modelagem condicionada a posicionamento efetivo,análise da modelagem condicionada a posicionamento efetivo,análise da modelagem condicionada a posicionamento efetivo,SIM
+M11,Limite semântico das cardinalidades manipuláveis,limite semântico das cardinalidades manipuláveis,limite semântico das cardinalidades manipuláveis,limite semântico das cardinalidades manipuláveis,SIM
+M12,Não negatividade das quantidades de medida,invariante de não negatividade das quantidades de medida,invariante de não negatividade das quantidades de medida,invariante de não negatividade das quantidades de medida,SIM

@@ -1,0 +1,6 @@
+C165 x C166 — SHA-256 DE src/Main.java
+
+9cf38a44f707ee461612e3f6f1085391d2fe2ef25b320d3ff612bcc69e030810  C165
+9cf38a44f707ee461612e3f6f1085391d2fe2ef25b320d3ff612bcc69e030810  C166
+
+Conclusão: src/Main.java permaneceu byte a byte idêntico.

@@ -1,0 +1,22 @@
+Correção dos tips na interpretação linguística
+
+Problema identificado:
+- A inclusão do realce por proximidade exigiu papéis semânticos específicos, como papel.parte1, papel.parte2, papel.referente, papel.diferenca etc.
+- Esses papéis específicos passaram a ser reutilizados diretamente nos tips dos itens arrastáveis.
+- Além disso, nas situações de comparação com diferença declarada, a regra anterior assumia que o primeiro número era sempre a diferença. Isso falhava em enunciados como: "Paulo tem 6 bolas. José tem 8 bolas a mais que Paulo".
+
+Correção aplicada:
+1. O realce do alvo continua usando o papel específico, necessário para localizar exatamente o elemento correto no diagrama.
+2. Os tips voltaram a usar o papel canônico/localizado, evitando alteração indevida da mensagem exibida ao usuário.
+3. A inferência de comparação de medidas foi refinada: a diferença passa a ser o número imediatamente anterior à expressão comparativa, como "a mais que", "a menos que", "more than", "less than", "de plus que" etc.
+4. A ordem dos papéis foi preservada de acordo com a ordem dos números no enunciado, para que o mouseover continue associado ao item correto.
+5. As regras de português passaram a reconhecer também expressões como "a mais" e "a menos" quando a pergunta solicita a diferença sem usar explicitamente "que".
+
+Exemplo corrigido:
+- "Paulo tem 6 bolas. José tem 8 bolas a mais que Paulo. Quantas bolas tem José?"
+  - 6 -> referente
+  - 8 -> diferença
+  - ? -> referido
+
+Observação:
+A alteração não adiciona elementos permanentes à representação formal de Vergnaud. O realce continua sendo apenas um feedback visual temporário de interação.

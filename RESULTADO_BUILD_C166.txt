@@ -1,0 +1,31 @@
+Buildfile: /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build.xml
+
+-init:
+
+clean:
+   [delete] Deleting directory /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build
+   [delete] Deleting directory /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/dist
+
+-init:
+    [mkdir] Created dir: /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build/classes
+    [mkdir] Created dir: /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/dist
+
+-copy-resources:
+     [copy] Copying 13 files to /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build/classes
+     [copy] Copied 82 empty directories to 71 empty directories under /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build/classes
+
+compile:
+    [javac] Compiling 298 source files to /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 8
+    [javac] warning: [options] source value 8 is obsolete and will be removed in a future release
+    [javac] warning: [options] target value 8 is obsolete and will be removed in a future release
+    [javac] warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] 4 warnings
+
+jar:
+      [jar] Building jar: /mnt/data/gerard_c165_work/GerardNetBeans_barras_alinhadas_vergnaud_c166/dist/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar
+
+BUILD SUCCESSFUL
+Total time: 7 seconds

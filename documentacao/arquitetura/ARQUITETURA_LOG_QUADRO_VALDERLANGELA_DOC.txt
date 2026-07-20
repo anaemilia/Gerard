@@ -1,0 +1,29 @@
+Atualização: inclusão do quadro de análise instrumental de Valderlangela no log do Gerard
+
+1. Fonte incorporada
+Foi incorporado ao log semente o quadro do arquivo:
+Análise instrumental das ações do usuário Valderlangela(6).doc
+
+2. Local de inclusão
+As linhas estruturadas foram acrescentadas em:
+src/gerard/pesquisador/log/dados/quadros_analise_tarefa_seed.tsv
+
+Também foi criado o recurso auxiliar:
+src/gerard/pesquisador/log/dados/quadro_valderlangela_doc_seed.tsv
+
+3. Quantidade de linhas adicionadas
+Foram adicionadas 22 linhas estruturadas, distribuídas da seguinte forma:
+- Problema 03: 10 linhas
+- Problema 05: 7 linhas
+- Problema 06: 5 linhas
+
+4. Origem no log
+As novas linhas usam a origem:
+QUADRO_VALDERLANGELA_DOC
+
+5. Compatibilidade com logs já copiados
+O LoggerInteracaoGerard foi ajustado para verificar se o log local do usuário já contém a origem QUADRO_VALDERLANGELA_DOC.
+Se não contiver, o Gerard acrescenta automaticamente essas linhas ao arquivo local:
+Gerard/logs/gerard_quadros_analise_tarefa_seed.tsv
+
+Assim, a atualização funciona tanto para novas instalações quanto para usuários que já tinham uma versão anterior do log copiada no diretório local.

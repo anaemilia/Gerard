@@ -1,0 +1,1 @@
+Atualização: os elementos/células do mapa de calor D3.js exibem, no onmouseover, a quantidade de eventos e o enunciado da situação-problema correspondente, lido do campo enunciado do log. A busca preserva a associação pelo campo problema e não altera os logs, diagramas ou demais visualizações.

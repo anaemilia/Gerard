@@ -1,0 +1,110 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\usepackage[brazil]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Análise da Complexidade do Sistema Gérard}
+\rhead{Atualização C47}
+\cfoot{\thepage}
+\definecolor{vermelhosuave}{RGB}{235,154,154}
+\begin{document}
+
+\section*{Atualização da análise de complexidade - ciclos C36 a C47}
+
+Esta atualização complementa o relatório geral de complexidade do Gérard e registra o impacto das decisões relativas à representação de comparação de medidas, à curadoria dos participantes e à sincronização entre barras, eixo, ponto de controle e valor relativo. O ciclo C47 acrescenta uma codificação cromática da quantidade comum entre as barras de \textbf{Referido} e \textbf{Referendo}.
+
+\section{Síntese do impacto}
+
+As alterações não modificam a classificação geral do sistema: a complexidade tecnológica permanece baixa a média, enquanto as complexidades funcional e de domínio permanecem altas. A principal ampliação está na quantidade de invariantes que precisam ser preservados simultaneamente durante a manipulação direta.
+
+\begin{tabularx}{\textwidth}{p{3.7cm}p{2.7cm}X}
+\toprule
+\textbf{Dimensão} & \textbf{Avaliação} & \textbf{Impacto dos ciclos C36--C47}\\
+\midrule
+Complexidade de domínio & Alta & Papéis curados de referido, referendo e valor relativo passam a controlar a representação.\\
+Complexidade de interação & Alta & O ponto de controle, o cartão numérico e a quantidade da barra desconhecida devem permanecer sincronizados.\\
+Complexidade visual & Média para alta & A interface diferencia quantidade comum, excedente, participantes e relação sem sobreposição.\\
+Complexidade de persistência & Média & Foram acrescentados metadados de personagens, mas a codificação cromática não cria novos dados persistidos.\\
+Complexidade de renderização & Baixa para os limites atuais & A correspondência é recalculada sobre um conjunto pequeno de unidades gráficas.\\
+\bottomrule
+\end{tabularx}
+
+\section{Invariante representacional da comparação}
+
+Sejam $r$ a quantidade do referido e $e$ a quantidade do referendo. A quantidade comum é:
+\[
+ c = \min(r,e).
+\]
+
+As primeiras $c$ unidades de cada barra, ordenadas de baixo para cima, recebem preenchimento \textcolor{vermelhosuave}{vermelho suave}. As unidades restantes da barra maior permanecem neutras. Logo, o número de unidades excedentes é:
+\[
+ d = |e-r|.
+\]
+
+Essa regra transforma a cor em uma codificação semântica: vermelho suave representa correspondência quantitativa; cinza representa excedente. O destaque não depende do personagem, da posição textual dos números nem da ordem em que os valores aparecem no enunciado.
+
+\section{Complexidade temporal da renderização}
+
+Considere $q=r+e$ como o total de quadradinhos nas duas barras. A atualização cromática executa três etapas:
+
+\begin{enumerate}
+  \item identifica a qual barra pertence cada quadradinho: $O(q)$;
+  \item ordena as unidades de cada barra de baixo para cima: $O(r\log r + e\log e)$;
+  \item seleciona e colore as primeiras $\min(r,e)$ unidades: $O(\min(r,e))$.
+\end{enumerate}
+
+Assim, o custo assintótico por atualização visual é:
+\[
+ O(q\log q),
+\]
+com memória auxiliar $O(q)$. O desenho final de todos os quadradinhos continua $O(q)$.
+
+No uso educacional esperado, $q$ é pequeno e limitado pela capacidade visual das barras. Portanto, a ordenação não representa gargalo prático. Caso o sistema passe a representar centenas ou milhares de unidades, a correspondência poderá ser calculada no momento da alteração das quantidades e armazenada em cache, reduzindo o trabalho de cada repaint.
+
+\section{Complexidade da sincronização reativa}
+
+O movimento contínuo do ponto azul possui posição real ao longo do eixo, mas o número de unidades é discreto. A posição é convertida em um valor inteiro por arredondamento. A barra desconhecida só precisa ser reconstruída quando esse inteiro muda. Para uma alteração do valor relativo para $v$, o referendo positivo é representado por:
+\[
+ e = r + v.
+\]
+
+Após a reconstrução, a correspondência cromática é recalculada. O fluxo reativo é:
+
+\begin{center}
+Ponto de controle $\rightarrow$ valor inteiro $\rightarrow$ quantidade da barra desconhecida $\rightarrow$ pareamento cromático $\rightarrow$ repaint.
+\end{center}
+
+Essa cadeia aumenta a complexidade funcional, mas reduz inconsistências entre representações. A fonte do limite do eixo continua sendo o valor relativo curado; o estado corrente do ponto não pode diminuir a extensão do eixo.
+
+\section{Complexidade de manutenção}
+
+A decisão do ciclo C47 introduz uma regra explícita e testável, em vez de uma escolha visual genérica. Isso aumenta moderadamente o código de apresentação, mas reduz ambiguidade de manutenção. Os principais invariantes são:
+
+\begin{itemize}
+  \item exatamente $\min(r,e)$ unidades de cada barra devem receber vermelho suave;
+  \item a contagem deve iniciar na base da barra;
+  \item unidades excedentes devem permanecer neutras;
+  \item a regra deve ser recalculada após toda alteração das quantidades;
+  \item a cor não deve alterar os valores curados nem os logs semânticos.
+\end{itemize}
+
+A implementação mantém a regra na camada de representação. Não foram criados novos campos no modelo de domínio nem no TSV para armazenar cores, porque a cor é derivada do estado corrente das quantidades.
+
+\section{Classificação do ciclo C47}
+
+O ciclo C47 é classificado como \textbf{consistência teórico-metodológica e representacional}. Embora a alteração seja visível, sua finalidade não é meramente estética. Ela determina como a igualdade parcial entre medidas é comunicada e preserva a leitura semântica da comparação. A intervenção do pesquisador definiu tanto a quantidade destacada quanto sua direção de pareamento, evitando que a cor fosse aplicada arbitrariamente a toda a barra.
+
+\section{Conclusão}
+
+Os ciclos C36 a C47 elevaram a complexidade interacional da comparação de medidas, mas também tornaram suas regras mais explícitas. O custo computacional do pareamento cromático é pequeno para os limites atuais. O ganho principal está na coerência entre curadoria, manipulação direta e representação: a parte comum e o excedente passam a ser visualmente distinguíveis sem introduzir novos dados persistentes.
+
+\end{document}

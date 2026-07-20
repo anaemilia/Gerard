@@ -1,0 +1,12 @@
+Ajuste: preenchimento de interrogação sem sinal positivo explícito
+
+Quando uma interrogação posicionada no diagrama é editada e preenchida com um número, o sinal positivo explícito deixa de ser exibido ao lado do número após a confirmação.
+
+Regras preservadas:
+- Sinal negativo continua sendo exibido quando escolhido ou informado.
+- O menu de radio buttons do número relativo continua funcionando.
+- A interface e o fluxo de arrastar/editar permanecem inalterados.
+
+Arquivos alterados:
+- src/Main.java
+- src/gerard/Scaffolding/ScaffoldingNumeroRelativo.java

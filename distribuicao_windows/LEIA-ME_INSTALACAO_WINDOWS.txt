@@ -1,0 +1,42 @@
+INSTALADOR DO GERARD PARA WINDOWS
+=================================
+
+ARQUIVO PARA O USUARIO FINAL
+----------------------------
+1. Baixe o arquivo Instalar_Gerard.bat.
+2. Clique duas vezes nele.
+3. O instalador baixa o Eclipse Temurin JRE 21 de 64 bits, valida o SHA-256,
+   instala o Gerard em %LOCALAPPDATA%\Gerard, cria atalhos na Area de Trabalho
+   e no menu Iniciar e abre o programa.
+4. Nao e necessario instalar Java manualmente nem usar uma conta de administrador.
+
+O instalador tambem tenta baixar JavaFX 21 para manter as visualizacoes D3 dentro
+ do Gerard. Se a rede bloquear o Maven Central, o programa continua funcionando e
+oferece a abertura dessas visualizacoes no navegador.
+
+ATUALIZACAO
+-----------
+Executar Instalar_Gerard.bat novamente substitui o Gerard.jar e preserva o Java
+local quando ele ja estiver instalado.
+
+DESINSTALACAO
+-------------
+Use "Desinstalar Gerard" no menu Iniciar ou em Configuracoes > Aplicativos.
+
+INTEGRIDADE DOS ARQUIVOS EMBUTIDOS
+----------------------------------
+Gerard.jar SHA-256: 70AFD37FB09B10806314F2CBBE11F32DE84E04D25B8F14D683C6B2B6DECDCEFE
+Gerard.ico SHA-256: 5C3179A3CB5BC7D1295B6C0CE60254633DBA11815A5315F0AD699318933B228B
+
+GERACAO DE UM EXE NATIVO
+------------------------
+A pasta inclui GERAR_EXE_COM_JPACKAGE.bat. Esse arquivo e destinado ao pesquisador,
+nao ao usuario final. Ele precisa ser executado em Windows com JDK 21 e, conforme o
+ambiente, WiX Toolset. O jpackage nao gera instaladores Windows fora do Windows.
+
+LIMITACOES
+----------
+- O instalador de um clique precisa de Internet na primeira execucao.
+- Windows ou o antivirus pode exibir uma advertencia porque o arquivo .bat nao tem
+  assinatura digital. A assinatura exige um certificado de codigo do distribuidor.
+- Redes institucionais podem bloquear api.adoptium.net, GitHub ou Maven Central.

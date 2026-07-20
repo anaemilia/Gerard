@@ -1,0 +1,12 @@
+REVISÃO ANALÍTICA C102
+
+O artigo foi revisto sem alterar o corpus de software, que permanece em C100 com 96 ciclos consistentes.
+
+A nova versão substitui a conclusão genérica sobre velocidade e supervisão por resultados comparativos e próprios do caso:
+- 96/96 decisões consolidadas exigiram modificação da proposta inicial;
+- 57/96 ciclos (59,4%) alteraram arquitetura, generalização ou validade teórico-metodológica;
+- custo de coordenação epistêmica;
+- critérios de aceitação semântico, representacional, arquitetural e evidencial;
+- validade metodológica dos dados como dimensão de qualidade.
+
+A análise de complexidade permanece na versão C100, pois esta revisão alterou a interpretação dos resultados do artigo, não a arquitetura do software.

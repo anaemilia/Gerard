@@ -1,0 +1,14 @@
+AJUSTE VISUAL DOS DIAGRAMAS
+
+Objetivo
+- remover os elementos tracejados que apareciam dentro dos diagramas.
+
+O que foi alterado
+- foram removidos os contornos internos tracejados do diagrama de Vergnaud;
+- foram removidos os contornos internos tracejados do diagrama de Venn.
+
+O que foi preservado
+- a estrutura dos diagramas;
+- a manipulação dos elementos;
+- a lógica semântica por categoria;
+- o preenchimento dos números e da interrogação continua sendo papel do usuário.

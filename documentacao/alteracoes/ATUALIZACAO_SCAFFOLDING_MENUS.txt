@@ -1,0 +1,21 @@
+Atualizacao: reorganizacao do menu de radio buttons do numero relativo.
+
+Foi criado o pacote:
+
+src/gerard/Scaffolding/menus/
+
+Nesse pacote foi incluida a classe:
+
+MenuSinalNumeroRelativo.java
+
+Essa classe concentra a criacao e exibicao do menu com radio buttons para escolha do sinal positivo (+) ou negativo (-) quando numeros ou interrogacao sao inseridos em elementos circulares de relacao/transformacao.
+
+A classe ScaffoldingNumeroRelativo foi mantida como modulo de regra/fachada do numero relativo. Ela continua oferecendo os metodos usados pela interface, mas agora delega a parte visual do menu para gerard.Scaffolding.menus.MenuSinalNumeroRelativo.
+
+A interface foi mantida sem alteracao visual aparente e as chamadas existentes no Main.java foram preservadas.
+
+Verificacao realizada:
+
+ant clean jar
+
+Resultado: BUILD SUCCESSFUL.

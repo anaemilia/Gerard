@@ -1,0 +1,454 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont[
+  Path=/usr/share/fonts/truetype/dejavu/,
+  UprightFont=DejaVuSerif.ttf,
+  BoldFont=DejaVuSerif-Bold.ttf,
+  ItalicFont=DejaVuSerif-Italic.ttf,
+  BoldItalicFont=DejaVuSerif-BoldItalic.ttf
+]{DejaVuSerif}
+\setsansfont[
+  Path=/usr/share/fonts/truetype/dejavu/,
+  UprightFont=DejaVuSans.ttf,
+  BoldFont=DejaVuSans-Bold.ttf,
+  ItalicFont=DejaVuSans-Oblique.ttf,
+  BoldItalicFont=DejaVuSans-BoldOblique.ttf
+]{DejaVuSans}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\geometry{top=2.2cm,bottom=2.2cm,left=2.5cm,right=2.5cm}
+\usepackage{microtype}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{booktabs,longtable,array,tabularx,pdflscape}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage{xspace}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Co-design humano--IA no Gérard}
+\rhead{Atualização arquitetural C147}
+\cfoot{\thepage}
+\newcommand{\gerard}{Gérard\xspace}
+\newcommand{\statusartigo}{Corpus analítico até C122; atualização arquitetural C147}
+
+\title{Da proposta à versão consistente: co-design humano--IA no desenvolvimento de uma ferramenta educacional baseada na Teoria dos Campos Conceituais}
+\author{Ana Emília de Melo Queiroz\\Universidade Federal do Vale do São Francisco}
+\date{\statusartigo}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este artigo examina o co-design humano--IA no desenvolvimento iterativo do \gerard, uma ferramenta educacional fundamentada na Teoria dos Campos Conceituais. O corpus analítico permanece consolidado até a versão C122, com 113 ciclos de decisão consistentes, e esta edição incorpora a atualização arquitetural C147; os ciclos foram separados em três classes: 39 estruturais e de generalização, 27 de consistência teórica e metodológica e 47 de refinamento visual e operacional. A análise preserva a distância semântica controlada na construção de situações-problema, a correspondência cromática das unidades comuns na comparação de medidas, o estado semântico compartilhado entre representações, a regressão documental cruzada, o limite semântico das cardinalidades manipuláveis e a explicitação de capacidades por interfaces, herança e polimorfismo. Os ciclos recentes consolidaram a curadoria semântica somente na versão original, o feedback multissensorial de erro, a ajuda contextual por área, a estrutura visual estável, a análise da modelagem condicionada a posicionamento efetivo, a sincronização entre texto e diagramas, os controles quantitativos por estado semântico, o drag-and-drop com física de mola e momento e o invariante de não negatividade das quantidades de medida. No recorte codificado, nenhuma das 113 decisões consistentes correspondeu à aceitação integral da primeira proposta da IA: todas exigiram modificação pelo especialista. Além disso, 66 ciclos (58,4\%) alteraram arquitetura, generalização ou consistência teórica e metodológica, enquanto 47 (41,6\%) concentraram-se em refinamento visual e operacional. Em diálogo com Ulfsnes et al. (2024), Song, Agarwal e Wen (2024), Zhang et al. (2024) e Gao et al. (2024), os resultados confirmam ganhos de materialização e mudanças no fluxo de trabalho, mas identificam um custo de coordenação epistêmica composto por alinhamento semântico, regressão entre artefatos e verificação da validade dos dados produzidos. O caso amplia a literatura ao propor critérios de aceitação multinível para software educacional teoricamente fundamentado: semântico, representacional, arquitetural e evidencial.
+\end{abstract}
+
+\noindent\textbf{Palavras-chave:} inteligência artificial generativa; co-design humano--IA; software educacional; design rationale; Teoria dos Campos Conceituais; engenharia de software.
+
+\section{Introdução}
+Ferramentas baseadas em modelos de linguagem passaram a participar de atividades de levantamento de requisitos, geração de código, depuração, documentação e manutenção de software. Estudos recentes descrevem ganhos de produtividade, mudanças no fluxo de trabalho e novos custos de coordenação associados a essas ferramentas \citep{ulfsnes2024transforming,song2024impact}. Ao mesmo tempo, a literatura aponta desafios de consistência semântica entre requisitos e código, avaliação da qualidade e integração dos modelos ao ciclo de vida do software \citep{zhang2024agilegen,gao2024challenges}.
+
+Grande parte dessas análises trata a atividade de desenvolvimento em termos gerais. Em software educacional fundamentado teoricamente, porém, uma implementação tecnicamente plausível pode ser conceitualmente inadequada. Elementos visuais adicionais, preenchimentos automáticos, associações semânticas fixas ou registros incompletos podem comprometer a correspondência entre a teoria, a interface e os dados de pesquisa.
+
+Este trabalho analisa o desenvolvimento iterativo do \gerard, uma ferramenta educacional baseada na Teoria dos Campos Conceituais de Gérard Vergnaud \citep{vergnaud1990theorie,vergnaud1991nino,vergnaud1997nature}. O sistema deriva de uma proposta anterior de design de software educacional para investigar significados mobilizados por usuários na resolução de problemas aditivos \citep{braga2008design}. A nova versão foi desenvolvida em ciclos conversacionais nos quais uma IA generativa propôs soluções e produziu artefatos, enquanto o pesquisador avaliou, restringiu, corrigiu e consolidou decisões.
+
+O problema de pesquisa é: \emph{como as intervenções de um pesquisador de domínio transformam propostas geradas por IA em decisões consistentes de design e implementação de uma ferramenta educacional teoricamente fundamentada?}
+
+As questões específicas são:
+\begin{enumerate}[label=QP\arabic*.]
+  \item Que tipos de proposta da IA foram aceitos, modificados ou rejeitados?
+  \item Quais decisões exigiram conhecimento especializado do domínio?
+  \item Como requisitos, interface, arquitetura e registros de interação coevoluíram?
+  \item Que inconsistências e regressões motivaram novas iterações?
+  \item Como se distribuíram as contribuições do pesquisador e da IA?
+\end{enumerate}
+
+As contribuições pretendidas são: (i) um esquema de análise baseado em ciclos de decisão; (ii) uma linha do tempo rastreável da evolução do sistema; (iii) uma taxonomia preliminar das intervenções do pesquisador; e (iv) implicações para IHC, Engenharia de Software e Informática na Educação.
+
+\section{Fundamentação teórica}
+\subsection{IA generativa no desenvolvimento de software}
+A IA generativa pode acelerar tarefas repetitivas, apoiar aprendizagem e ampliar a autonomia operacional do desenvolvedor, mas também desloca interações antes realizadas entre membros da equipe \citep{ulfsnes2024transforming}. Evidências em projetos abertos indicam ganhos de produtividade acompanhados por aumento do tempo de integração, sugerindo que a geração de código não elimina custos de coordenação \citep{song2024impact}. No caso estudado, o principal custo não é apenas integrar código, mas assegurar que a implementação preserve regras conceituais e metodológicas.
+
+\subsection{Co-design humano--IA}
+O termo co-design é utilizado aqui para descrever a produção iterativa de decisões por dois agentes com capacidades diferentes. A IA oferece alternativas, reformulações, código e documentação; o pesquisador fornece critérios de validade, conhecimento de domínio, prioridades pedagógicas e aceitação final. Essa relação é assimétrica: a autoridade epistemológica não é compartilhada igualmente.
+
+\subsection{Design rationale e prática reflexiva}
+O registro de questões, opções, critérios e decisões permite explicar por que uma solução foi adotada e quais alternativas foram descartadas \citep{macleam1991qoc}. O processo também se aproxima da reflexão-na-ação descrita por \citet{schon1983reflective}: propostas materializadas tornam-se objetos de inspeção, provocando novas formulações do problema.
+
+\subsection{Teoria dos Campos Conceituais e o sistema Gérard}
+Na Teoria dos Campos Conceituais, um conceito pode ser descrito pela tríade de situações, invariantes e representações. O domínio progressivo de um campo depende da diversidade de situações, das propriedades reconhecidas pelo sujeito e das formas simbólicas utilizadas \citep{vergnaud1990theorie,vergnaud1997nature}. No campo aditivo, categorias distintas podem conduzir à mesma operação numérica, embora mobilizem papéis semânticos diferentes.
+
+O processo iterativo de desenvolvimento permitiu constatar que o \gerard articula quatro dimensões interdependentes: situação-problema, invariantes operatórios, estilos de interação e representações. Essa organização não é apresentada como uma decorrência direta da teoria de Vergnaud. A Teoria dos Campos Conceituais fundamenta a classificação das situações aditivas, a identificação dos papéis semânticos e a estrutura das representações formais. Por sua vez, requisitos como a ausência de preenchimento automático, a preservação da modelagem durante a troca de idioma, a atualização sincronizada das representações e a obtenção dinâmica dos elementos semânticos a partir da categoria foram explicitados progressivamente durante a interação entre especialista, IA, protótipos executáveis e testes de regressão.
+
+\section{Metodologia}
+\subsection{Delineamento}
+Foi adotado um estudo de caso instrumental, documental e longitudinal. O caso é instrumental porque permite examinar a colaboração humano--IA em um contexto no qual o conhecimento de domínio exerce forte controle sobre a implementação.
+
+\subsection{Corpus}
+O corpus documental foi organizado em quatro conjuntos de fontes, que possuem funções diferentes no estudo. O primeiro reúne as \textbf{conversas de desenvolvimento humano--IA}, nas quais foram registrados requisitos, propostas iniciais, intervenções da pesquisadora, refinamentos e decisões de aceitação ou reabertura. O segundo compreende os \textbf{artefatos de implementação}, formados por arquivos ZIP do projeto e pelas respectivas versões do código-fonte Java. O terceiro reúne as \textbf{evidências de verificação}, incluindo capturas de tela usadas na inspeção visual, registros de compilação e testes de integridade dos arquivos compactados. O quarto contém os \textbf{documentos de fundamentação e acompanhamento}, como artigos teóricos, PDFs de análise da complexidade e o próprio manuscrito sobre o processo de co-design.
+
+O histórico disponível confirma 113 ciclos de decisão consistentes até a versão C122, mas ainda não permite publicar, sem auditoria, totais exatos de conversas, ZIPs, versões de código, imagens e compilações. Há reenvios do mesmo arquivo, recompactações, cópias com nomes diferentes e várias imagens referentes à inspeção de uma única versão. Por essa razão, foi incorporada uma etapa de \textbf{inventário e deduplicação documental}. Cada item deverá ser identificado por tipo, nome, data, ciclo associado e, quando possível, hash do conteúdo. Os totais abaixo distinguem o que já está confirmado do que permanece em apuração.
+
+\begin{table}[ht]
+\centering
+\caption{Inventário das fontes documentais do corpus.}
+\label{tab:inventario-fontes}
+\begin{tabularx}{\textwidth}{p{4.2cm}p{4.1cm}p{2.4cm}X}
+\toprule
+\textbf{Conjunto documental} & \textbf{Unidade de contagem} & \textbf{Quantidade} & \textbf{Função no estudo}\\
+\midrule
+Conversas humano--IA & conversa ou thread distinta & Em inventário & Registro do processo decisório\\
+Arquivos ZIP & arquivo válido e não duplicado & Em inventário & Evidência de versão entregue\\
+Versões do código & estado distinto do código-fonte & Em inventário & Materialização das decisões\\
+Imagens de interface & captura única & Em inventário & Inspeção visual e identificação de problemas\\
+Registros de compilação & execução documentada e vinculada a uma versão & Em inventário & Verificação técnica\\
+PDFs de complexidade & versão documental distinta & Em inventário & Acompanhamento arquitetural\\
+Documentos teóricos & publicação utilizada na análise & Em inventário & Fundamentação conceitual\\
+Ciclos de decisão & ciclo analítico consolidado & 100 & Unidade de análise\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Uma versão consistente deve apresentar evidência composta por: artefato ZIP identificável; código-fonte disponível; registro de compilação bem-sucedida; evidência de inspeção funcional ou visual; preservação das funcionalidades anteriormente consolidadas; e ausência de regressão conhecida no momento de sua aceitação. A simples declaração conversacional de que uma alteração foi realizada não é suficiente. Arquivos repetidos ou apenas recompactados não são contados como novas versões, e várias imagens relativas a uma única versão são tratadas como evidências visuais, não como ciclos independentes.
+
+\subsection{Unidade de análise}
+A unidade de análise é o \textbf{ciclo de decisão}:
+\begin{center}
+\small requisito $\rightarrow$ proposta da IA $\rightarrow$ intervenção do pesquisador $\rightarrow$ implementação $\rightarrow$ verificação $\rightarrow$ decisão
+\end{center}
+Um ciclo pode terminar em aceitação, modificação, rejeição ou reabertura.
+
+\subsection{Regressão documental cruzada}
+Para preservar a coerência interna do artigo em evolução, foi estabelecida uma regra de regressão documental cruzada. Toda inclusão ou alteração de procedimento metodológico, critério de seleção, esquema de codificação ou tratamento de dados deve produzir atualização correspondente em três regiões: resumo, resultados e discussão. A verificação é executada antes da compilação por um registro de decisões metodológicas e por termos de controle específicos para cada região. A compilação é interrompida quando uma decisão ativa não está representada nas três partes.
+
+\subsection{Esquema de codificação}
+Cada ciclo é codificado por data, objetivo, componente afetado, proposta inicial, intervenção do pesquisador, tipo de conhecimento mobilizado, resultado e impacto arquitetural. As intervenções são classificadas preliminarmente como conceituais, representacionais, semânticas, interacionais, arquiteturais, metodológicas, de persistência, de interface ou de regressão.
+
+O comportamento da IA é classificado como proposta aproveitada, proposta aproveitada com refinamento, proposta rejeitada, implementação incompleta, implementação com regressão, implementação consistente ou justificativa posterior.
+
+\subsection{Procedimentos de análise}
+A análise combina codificação aberta e comparação constante. Primeiramente são identificados episódios decisórios. Em seguida, os episódios são classificados em três níveis analíticos. Os \textbf{ciclos estruturais e de generalização} alteram arquitetura, modelo de domínio, persistência, regras reutilizáveis ou responsabilidades entre componentes. Os \textbf{ciclos de consistência teórica e metodológica} preservam a validade das representações, a semântica das categorias, os papéis dos participantes e a interpretação dos dados. Os \textbf{ciclos de refinamento visual e operacional} ajustam tipografia, dimensões, alinhamento, menus, rolagem, responsividade e carga visual, sem modificar o núcleo conceitual. Por fim, examina-se a coevolução entre requisitos, arquitetura, interface, dados e critérios de consistência.
+
+\subsection{Rastreabilidade e atualização do corpus}
+Os ciclos consolidados são mantidos em um arquivo CSV versionado. Uma rotina gera automaticamente a tabela LaTeX da linha do tempo. Novas versões consistentes podem ser incorporadas acrescentando uma linha ao arquivo de dados e recompilando o artigo. Essa estratégia preserva a separação entre dados empíricos e texto analítico.
+
+\section{Resultados preliminares}
+A regressão documental cruzada passou a integrar o processo de atualização do corpus e do manuscrito. Na versão analisada, doze decisões metodológicas ativas foram verificadas nas regiões exigidas: a organização dos ciclos em três classes analíticas, a regressão documental cruzada entre método e seções analíticas, a distância semântica controlada dos blocos não compatíveis, a correspondência cromática das unidades comuns, o estado semântico compartilhado, a curadoria semântica somente na versão original, o feedback multissensorial de erro, a ajuda contextual por área, a estrutura visual estável durante a inicialização sem categoria e a análise da modelagem condicionada a posicionamento efetivo, o limite semântico das cardinalidades manipuláveis e o invariante de não negatividade das quantidades de medida. A distinção entre inventário das fontes documentais e unidade de análise permanece como regra adicional de tratamento do corpus.
+
+\subsection{Estado do inventário documental}
+O primeiro resultado do novo tratamento do corpus é a separação entre \emph{quantidade de fontes} e \emph{quantidade de ciclos}. O número de 113 refere-se aos ciclos de decisão consolidados e não pode ser convertido diretamente em 113 conversas, 113 ZIPs ou 113 versões do código. A numeração das versões não coincide integralmente com a quantidade de ciclos consistentes: C92, C95, C99, C101 e C102 foram atualizações documentais, enquanto C93 foi uma implementação intermediária rejeitada; esses identificadores não foram adicionados ao total analítico. Um mesmo artefato pode incorporar vários ciclos, enquanto um único ciclo pode exigir diversas versões intermediárias e várias capturas de tela. Até a conclusão da deduplicação, apenas a quantidade de ciclos e sua classificação analítica são apresentadas como totais confirmados; os demais conjuntos permanecem identificados como ``em inventário''. Essa decisão evita inflar o corpus com reenvios e recompactações e torna explícito o nível de evidência de cada contagem.
+
+\subsection{Distribuição dos ciclos por nível de decisão}
+A ordem cronológica permanece registrada no arquivo de dados, mas a apresentação analítica separa decisões de pesos distintos. Essa divisão evita equiparar uma mudança na fonte de verdade dos elementos semânticos a um ajuste de tamanho de fonte ou alinhamento de painel. Dos 113 ciclos consistentes, 39 foram classificados como estruturais e de generalização, 27 como consistência teórica e metodológica e 47 como refinamento visual e operacional.
+
+\input{secoes/linha_tempo_gerada.tex}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.55cm}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{8.35cm}@{}}
+\caption{Extensão do corpus entre C48 e C122.}
+\label{tab:extensao-c48-c98}\\
+\toprule
+\textbf{Faixa} & \textbf{Ênfase} & \textbf{Decisões consolidadas}\\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\tablename\ \thetable{} -- continuação}\\
+\toprule
+\textbf{Faixa} & \textbf{Ênfase} & \textbf{Decisões consolidadas}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{Continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C48--C59 & Rótulos e legibilidade & Papéis semânticos e personagens foram generalizados, com ajustes de posição, cor e espaçamento; representações inadequadas foram removidas ou iniciadas vazias.\\
+C60--C67 & Sincronização e estado compartilhado & Eixos, cartões, barras, Venn e Vergnaud tornaram-se bidirecionais e passaram a ser coordenados por um único estado semântico.\\
+C68--C69 & Cardinalidade e distribuição & A grade adaptativa eliminou o limite visual de unidades e a composição de coleções recebeu nova distribuição espacial.\\
+C70--C75 & Curadoria, navegação e relato de falhas & Personagens passaram a atualizar imediatamente; menus incompletos foram bloqueados; relatos de bug passaram a registrar contexto e representações.\\
+C76--C84 & Memória institucional e menus & Fotografias, rótulo histórico, indicador vetorial e alinhamento do submenu foram refinados sem alterar as representações formais.\\
+C85--C89 & Persistência, traduções e Gmail & O fechamento da curadoria foi estabilizado, a semântica ficou restrita à versão original, o subtipo foi removido e o Gmail passou a receber o relato preenchido.\\
+C90--C91 & Scaffolding situado & Erros de posicionamento recebem tremor, som e tooltip contextual; interrogações nas três áreas oferecem dúvida, continuidade e próximo passo.\\
+C93--C94 & Inicialização e invariante visual & A implementação intermediária ocultou os painéis; a correção preservou as três divisões da tela e condicionou apenas o conteúdo educativo à escolha da categoria.\\
+C96--C97 & Análise da modelagem & A janela qualitativa passou a exigir ao menos um posicionamento atual no diagrama de Vergnaud e recebeu o mesmo tema visual da interface principal.\\
+C98 & Coleções manipuláveis & Controles de adição ao lado dos agrupamentos criam novas unidades, reorganizam a grade, registram a ação e propagam a quantidade ao estado compartilhado.\\
+C100 & Remoção incremental de unidades & Controles de subtração aparecem somente em agrupamentos com quadradinhos visíveis, removem uma unidade, reorganizam a coleção e sincronizam a cardinalidade nas representações.\\
+C103--C104 & Legibilidade dos controles & Os ícones de adição e remoção foram afastados dos números de cardinalidade e reposicionados na borda superior lateral das representações.\\
+C105 & Limite semântico das coleções & A criação de quadradinhos é bloqueada ao atingir o valor curado ou derivado; tremor, som e tooltip informam que a quantidade do texto foi alcançada.\\
+C107 & Contratos de capacidade & Interfaces declaram unidades consultáveis, adicionáveis e removíveis; uma classe abstrata centraliza o estado comum e os controles operam por polimorfismo.\\
+C109--C116 & Affordance e arraste físico & Personagens e unidades ganharam hierarquia visual; pickup, cursores, origem fantasma e mola amortecida foram separados da semântica da tarefa.\\
+C117--C120 & Sincronização e controles quantitativos & Valores conhecidos do texto acompanham o estado, a interrogação permanece desconhecida e os controles de adição e remoção obedecem a Vergnaud, limites curados, piso zero e relação aditiva.\\
+C121 & Mola e momento explícitos & O controlador massa--mola--amortecedor acrescenta inércia discreta, limite de velocidade e soltura exata sem alterar a C120.\\
+C122 & Sinal relativo sem quantidade negativa & A escolha de sinal é validada antes da propagação: transformação e valor relativo podem ser assinados, mas estados, referido, referendo, partes e todo permanecem maiores ou iguais a zero.\\
+\end{longtable}
+\endgroup
+
+\subsection{Resultados em diálogo com a literatura recente}
+A comparação com estudos recentes permite deslocar a interpretação dos resultados para além da afirmação genérica de que a IA ``acelera'' o desenvolvimento. \citet{ulfsnes2024transforming} observaram maior eficiência, aprendizagem mais rápida e redução de tarefas repetitivas, mas também mudanças no circuito de colaboração das equipes, porque desenvolvedores passaram a solicitar ajuda à IA em situações antes mediadas por colegas. \citet{song2024impact} encontraram aumento de 6,5\% na produtividade dos projetos e de 5,5\% na produtividade individual, acompanhado por crescimento de 41,6\% no tempo de integração; os autores também verificaram que desenvolvedores centrais, por conhecerem melhor o projeto, obtiveram benefícios superiores. \citet{zhang2024agilegen} destacam que requisitos brutos são incompletos, que necessidades implícitas escapam aos usuários e que erros cumulativos podem produzir discrepâncias entre requisitos e código; sua proposta utiliza requisitos testáveis e participação humana para preservar consistência semântica. Já \citet{gao2024challenges} sistematizam 26 desafios distribuídos por sete dimensões do ciclo de vida do software, evidenciando que a incorporação de modelos de linguagem não é um problema restrito à geração de código.
+
+No corpus do \gerard, todas as 113 decisões consolidadas foram classificadas como \textbf{propostas modificadas}. Isso não significa que nenhum fragmento de código ou formulação tenha sido aproveitado diretamente; significa que, na unidade analítica adotada, nenhuma decisão consistente resultou da aceitação integral da primeira solução apresentada. A contribuição da IA concentrou-se na redução do custo de produzir uma alternativa inspecionável, enquanto a transformação dessa alternativa em decisão válida exigiu critérios fornecidos pela pesquisadora.
+
+A distribuição dos ciclos torna esse resultado mais específico. Sessenta e seis decisões (58,4\%) pertencem às classes estrutural/generalização ou consistência teórica/metodológica; portanto, a maioria das intervenções não se limitou a acabamento gráfico. Elas alteraram fonte de verdade, responsabilidades arquiteturais, semântica das categorias, persistência, validade do logging ou condições para produção de dados. Os 47 ciclos visuais e operacionais (41,6\%) também não foram necessariamente cosméticos: vários deles definiram legibilidade, proximidade entre comando e objeto, estabilidade espacial ou momento adequado de apresentação de um instrumento qualitativo.
+
+A triangulação entre literatura e caso produz quatro resultados analíticos:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{p{3.0cm}p{5.25cm}p{5.25cm}}
+\caption{Relação entre achados da literatura e extensões analíticas produzidas pelo caso Gérard.}\label{tab:literatura-extensoes}\\
+\toprule
+\textbf{Achado da literatura} & \textbf{Evidência no caso} & \textbf{Extensão analítica}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Achado da literatura} & \textbf{Evidência no caso} & \textbf{Extensão analítica}\\
+\midrule
+\endhead
+Eficiência e alteração do circuito de colaboração \citep{ulfsnes2024transforming} & A IA materializou rapidamente alternativas; a especialista avaliou artefatos executáveis e converteu critérios tácitos em requisitos, invariantes e testes. & \textbf{Ciclo reflexivo materializado}: a interação com IA externaliza conhecimento de domínio por meio da inspeção e correção de artefatos.\\
+Produtividade acompanhada de maior tempo de integração e maior benefício para desenvolvedores centrais \citep{song2024impact} & As 113 decisões exigiram modificação, e 58,4\% envolveram arquitetura ou validade teórico-metodológica. & \textbf{Custo de coordenação epistêmica}: além de integrar código, é necessário alinhar teoria, semântica, interface, persistência e evidência de pesquisa.\\
+Requisitos incompletos, erros cumulativos e necessidade de consistência semântica testável \citep{zhang2024agilegen} & Em C93, a instrução de iniciar ``sem texto e sem diagramas'' foi satisfeita de forma literal, mas removeu indevidamente a estrutura dos painéis; C94 converteu a correção em invariante verificável. & \textbf{Critérios de aceitação multinível}: requisitos devem ser testados nos níveis semântico, representacional, arquitetural e evidencial.\\
+Desafios distribuídos pelo ciclo de vida do software \citep{gao2024challenges} & Uma alteração local frequentemente exigiu revisar código, interface, logs, documentação, traduções, persistência e testes de regressão. & \textbf{Validade metodológica como camada de qualidade}: em software de pesquisa educacional, a qualidade inclui proteger a interpretação dos dados produzidos pela interação.\\
+\bottomrule
+\end{longtable}
+\endgroup
+
+O primeiro resultado que vai além da literatura é que o custo de coordenação não se manifesta apenas no tempo de integração. No caso, ele assume pelo menos três formas: \textbf{coordenação semântica}, para manter papéis, categorias e representações coerentes; \textbf{coordenação documental}, para retroalimentar código, testes, registros e manuscrito; e \textbf{coordenação evidencial}, para assegurar que os dados de pesquisa possuam uma ação observável como referente. Essa decomposição ajuda a explicar por que uma solução pode compilar, parecer plausível e ainda assim ser rejeitada.
+
+O segundo resultado é que requisitos testáveis precisam representar camadas distintas do sistema. O episódio C93--C94 mostrou que testar apenas ``a categoria carrega depois da seleção'' não detectava a remoção das divisões da tela. A aceitação passou a exigir simultaneamente: preservação dos contêineres, ocultação apenas do conteúdo educativo, carregamento correto da categoria e manutenção das transições de estado. Em outros ciclos, critérios equivalentes foram necessários para semântica matemática, sincronização entre diagramas, persistência multilíngue e abertura dos instrumentos qualitativos.
+
+O terceiro resultado é a ampliação da noção de qualidade. Estudos de engenharia de software normalmente tratam consistência, integração, manutenção e avaliação do código. No \gerard, essas dimensões são necessárias, mas insuficientes: uma implementação também precisa preservar a validade das inferências educacionais. O registro de uma explicação antes de qualquer posicionamento, por exemplo, seria tecnicamente armazenável, mas metodologicamente inválido, porque não teria uma ação de modelagem como referente empírico.
+
+\subsection{Regressão de escopo na inicialização}
+O pedido de iniciar o sistema sem texto e sem diagramas gerou, em C93, uma interpretação excessivamente literal: a condição de ausência de conteúdo foi aplicada aos painéis que estruturavam a interface. A implementação compilava e carregava a categoria posteriormente, mas eliminava as divisões visuais que deveriam permanecer disponíveis desde a abertura. O erro foi primário porque confundiu dois níveis já distintos no projeto: a \textbf{estrutura visual estável} e o \textbf{estado educativo transitório}.
+
+A correção C94 preservou o painel superior do enunciado, o painel inferior do diagrama de Vergnaud e o painel inferior da representação complementar, mantendo-os vazios até a escolha da categoria. Somente enunciados, títulos educativos, formas, conectores, valores e controles contextuais passaram a depender do estado \emph{categoria selecionada}. A inspeção visual separada da verificação funcional tornou-se critério explícito de aceitação. O episódio demonstra que compilação, testes de carregamento e ausência de exceções podem coexistir com uma regressão evidente de layout.
+
+\subsection{Disponibilidade da análise e manipulação incremental das coleções}
+O ciclo C96 estabeleceu que a janela de análise qualitativa não deve aparecer antes de uma ação efetiva de modelagem. A análise da modelagem condicionada a posicionamento efetivo impede a produção de formulários cinza, fotografias vazias e protocolos descritos como inexistentes antes de o usuário iniciar a tentativa. A condição é verificada tanto na visibilidade do controle quanto na própria rotina de abertura, e volta a ser falsa quando a restauração remove todos os elementos posicionados.
+
+O ciclo C97 preservou essa regra e tratou a janela como parte da mesma interface educacional: fundo claro, cartões brancos, títulos azuis, campos com bordas azul--cinza e botões compatíveis com o tema do Gérard. A intervenção foi visual, sem alterar respostas por tentativa, limites de caracteres, protocolos ou persistência.
+
+No ciclo C98, cada agrupamento complementar que representa unidades por quadradinhos passou a dispor de um controle vetorial de adição. O clique cria uma unidade, redistribui a coleção na grade adaptativa, preserva textos existentes, registra a ação e publica a nova quantidade no estado semântico compartilhado. O controle não aparece em relações, transformações ou valores relativos que não representam coleções discretas. Assim, a manipulação direta é ampliada sem transformar o diagrama complementar em uma fonte semântica independente.
+
+No ciclo C100, a manipulação incremental tornou-se bidirecional por meio de um controle vetorial de subtração. O ícone aparece apenas quando o agrupamento possui ao menos um quadradinho visível; cada acionamento remove exatamente uma unidade, preserva os textos das unidades remanescentes, recalcula a disposição adaptativa, registra a ação e publica a nova cardinalidade no estado semântico compartilhado. O recurso foi generalizado para todas as categorias em que a representação complementar contém coleções discretas, mantendo oculto o controle em estruturas sem quadradinhos.
+
+Os ciclos C103 e C104 mostraram que a presença funcional dos controles não bastava para garantir legibilidade. A primeira disposição ocupava a mesma faixa visual dos números de cardinalidade; o reposicionamento inicial eliminou a sobreposição, mas ainda preservou proximidade excessiva. A inspeção da interface levou a um segundo refinamento, que aproximou os controles da borda superior lateral da representação e ampliou a separação em relação aos numerais. Esses ciclos foram classificados como refinamentos visuais e operacionais porque não alteraram a semântica nem a cardinalidade, mas reduziram ambiguidade perceptiva na associação entre ação e agrupamento.
+
+No ciclo C105, a liberdade de acrescentar unidades recebeu uma restrição semântica. Para cada agrupamento com quadradinhos, o sistema consulta o valor definido na curadoria; quando o papel é desconhecido, o limite é derivado dos outros dois papéis pela relação da categoria. Ao atingir o valor ou tentar ultrapassá-lo, a adição é interrompida e a mesma linguagem de feedback do posicionamento incorreto é reutilizada: tremor leve, som sutil e tooltip com a mensagem ``Foi atingida a quantidade que consta no texto''. A remoção de uma unidade elimina a mensagem e torna a adição novamente possível. O limite semântico das cardinalidades manipuláveis impede que a manipulação direta produza uma representação incompatível com a situação-problema e confirma que os controles gráficos não constituem uma fonte de verdade independente.
+
+\subsection{Drag-and-drop físico sem alteração do estado semântico}
+Os ciclos C116 e C121 distinguem duas trajetórias simultâneas durante o arraste. A primeira é a trajetória do cursor, usada no registro granular e na coordenada final de soltura. A segunda é a trajetória visual do elemento, calculada por um modelo massa--mola--amortecedor. A distância visual ao cursor é limitada, a velocidade é amortecida e um pequeno momento mantém continuidade quando a direção muda. No evento de soltura, a animação é encerrada e o objeto é colocado exatamente na coordenada do mouse antes da detecção de alvo, da validação e da publicação no estado compartilhado.
+
+Essa separação evita que uma melhoria de affordance altere dados da tarefa. O efeito não modifica valores curados, papéis de Vergnaud, zonas semânticas, limites de cardinalidade ou relações aditivas. Por isso, as regras da C120 permanecem independentes da animação: com Vergnaud vazio, os controles de adição e remoção ficam inabilitados; depois de qualquer preenchimento válido, cada controle é recalculado individualmente; a adição termina no valor curado; a remoção termina em zero; e texto, Vergnaud, coleções e barras continuam sendo projeções do mesmo snapshot.
+
+\subsection{Comparação entre as três classes}
+Os ciclos estruturais concentraram mudanças na arquitetura, no modelo de log, na definição dinâmica das categorias, na rastreabilidade das tentativas e na criação de modos de atividade reutilizáveis. Os ciclos teórico-metodológicos concentraram intervenções em que uma solução tecnicamente possível precisava ser restringida para preservar a Teoria dos Campos Conceituais, a interpretação dos papéis semânticos ou a validade dos dados. Os ciclos visuais e operacionais atuaram sobre legibilidade e ergonomia, sendo relevantes para a usabilidade, mas com impacto arquitetural menor.
+Os ciclos C28 a C47 combinaram refinamentos da tela comparativa com decisões teórico-metodológicas. A interface passou a destacar que a mesma solução numérica não implica a mesma estrutura matemática; diálogos e menus foram padronizados; classes gráficas foram extraídas de \texttt{Main.java}; a atividade de construção passou a usar alternativas com distância semântica controlada; e a comparação de medidas foi redesenhada com barras, papéis curados, eixo manipulável, cartão de valor relativo e correspondência cromática das unidades comuns.
+
+Os ciclos C48 a C69 ampliaram rótulos, personagens, edição direta, sincronização bidirecional, cardinalidade visual e distribuição das coleções. O ciclo C67 consolidou o estado semântico compartilhado, o C68 removeu o limite fixo de unidades e o C69 ajustou a composição para manter a resultante legível. Entre C70 e C75, a curadoria passou a atualizar personagens imediatamente, menus incompletos foram desabilitados e o relato de bugs ganhou persistência local, e-mail e contexto das representações. Os ciclos C76 a C84 trataram memória institucional, fotografias e convenções de submenu. Nos ciclos C85 a C89, o fluxo de persistência foi estabilizado, a curadoria semântica somente na versão original tornou-se regra, o campo redundante de subtipo foi removido, o bloqueio passou a reagir à troca de idioma e o Gmail Web passou a abrir com o relato preenchido. Por fim, C90 implementou feedback multissensorial de erro em todas as categorias e C91 introduziu ajuda contextual por área, sem inserir elementos estranhos nas representações formais. O episódio C93--C94 explicitou um novo invariante: a tela pode iniciar sem enunciado e sem diagramas, mas sua estrutura de painéis deve permanecer visível e estável. A primeira implementação aplicou a ocultação no nível dos painéis e foi rejeitada; a correção limitou a condição aos conteúdos educativos. C96 condicionou a análise qualitativa à existência de ao menos um posicionamento no diagrama de Vergnaud; C97 integrou essa janela à identidade visual do Gérard; e C98 acrescentou controles de adição de unidades nos agrupamentos complementares, com redistribuição adaptativa, logging e sincronização com o estado semântico compartilhado. C100 completou esse mecanismo com controles de remoção condicionados à existência de quadradinhos visíveis, garantindo edição incremental bidirecional da cardinalidade. C103 e C104 refinaram a separação espacial entre controles e numerais, e C105 vinculou a adição ao valor semântico curado ou derivado, impedindo cardinalidades superiores às previstas na situação. O ciclo C107 converteu criação e remoção em capacidades declaradas por contratos: interfaces especializadas herdam de um contrato-base, uma classe abstrata centraliza o estado comum e os controles operam polimorficamente sem depender da implementação concreta do agrupamento. Entre C109 e C116, rótulos, quadradinhos, cursores e pickup receberam uma linguagem visual consistente; o arraste passou a usar origem fantasma e mola amortecida, mas a coordenada real de soltura continuou sendo a única usada na validação. C117 sincronizou os valores conhecidos do enunciado com o estado compartilhado, C118 preservou a interrogação original, C119 impediu que a representação complementar antecipasse a modelagem e C120 generalizou os controles quantitativos por estado semântico, limites curados, piso zero e consistência aditiva. C121 explicitou massa, momento e limite de velocidade no controlador de arraste sem transformar o efeito visual em fonte de estado. C122 consolidou que o sinal pertence somente à transformação ou ao valor relativo: qualquer escolha que produziria uma quantidade negativa é bloqueada antes da sincronização, preservando a relação aditiva e os valores curados.
+
+A distribuição também evidencia papéis distintos na colaboração. Nos ciclos visuais, a IA frequentemente materializou diretamente a alteração solicitada. Nos ciclos estruturais e teórico-metodológicos, a intervenção da pesquisadora foi mais decisiva para redefinir o problema, estabelecer restrições e determinar a solução aceitável.
+
+\subsection{Tipos de intervenção do pesquisador}
+Os ciclos iniciais mostram recorrência de cinco formas de intervenção. A primeira é a correção conceitual, observada quando uma solução tecnicamente possível introduzia elementos estranhos à representação formal. A segunda é a correção semântica, especialmente na definição dinâmica dos elementos de cada categoria. A terceira é a correção metodológica, como a distinção entre respostas do usuário e registros do pesquisador. A quarta é a correção arquitetural, presente na separação entre tarefa matemática e tarefa de interação. A quinta é o controle visual e de regressão, envolvendo fontes, alinhamento, rolagem, responsividade e preservação de funcionalidades anteriores. Os ciclos C30 e C31 mostram que esse controle também alcança componentes periféricos: menus e diálogos precisam compartilhar o mesmo padrão tipográfico e comportamental, e sinais redundantes podem ser removidos quando o onmouseover oferece descoberta suficiente sem comprometer a alternativa por clique. No ciclo C33, a intervenção foi diretamente pedagógica: o pesquisador recusou um conjunto de alternativas muito afastadas dos blocos corretos e definiu que a dificuldade deveria decorrer da relação semântica entre as quantidades, não de diferenças de personagens, objetos, números, tamanho ou estilo visual. O ciclo C35 acrescentou uma intervenção de nomenclatura e ajuda contextual: ``construir'' foi escolhido para explicitar a atividade interpretativa, e a definição da categoria foi deslocada para o onmouseover do título, aplicando divulgação progressiva sem alterar a representação formal. O ciclo C47 acrescentou uma intervenção representacional: a cor deixou de decorar as barras e passou a codificar correspondência quantitativa, limitando o vermelho suave exatamente ao número de unidades presentes em ambas as medidas. Os ciclos C86 a C88 acrescentaram uma intervenção metodológica sobre a fonte de verdade: apenas a versão original pode definir os dados semânticos, enquanto traduções herdam esses valores e permitem somente curadoria linguística. Os ciclos C90 e C91 acrescentaram intervenções de scaffolding situado: o erro semântico produz feedback multissensorial de erro e a ajuda contextual por área oferece orientação sem ocupar permanentemente o diagrama. O episódio C93--C94 acrescentou uma intervenção de regressão visual: a pesquisadora distinguiu a estrutura persistente da tela do conteúdo educativo transitório e exigiu que testes de inicialização verificassem separadamente ambos os níveis.
+Os ciclos C96 a C122 acrescentaram intervenções sobre validade do momento de coleta, coerência visual e manipulação direta: a análise qualitativa somente se torna disponível depois de uma ação observável no diagrama, sua aparência permanece integrada à atividade, e unidades visuais podem ser criadas ou removidas pelo usuário com propagação explícita ao modelo compartilhado; o limite semântico das cardinalidades manipuláveis impede que essa liberdade ultrapasse a quantidade estabelecida pela curadoria.
+
+\begin{table}[ht]
+\centering
+\caption{Exemplos de episódios decisórios.}
+\label{tab:episodios}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{p{0.9cm}p{2.6cm}X X p{2.3cm}}
+\toprule
+\textbf{Ciclo} & \textbf{Requisito} & \textbf{Proposta inicial} & \textbf{Intervenção do pesquisador} & \textbf{Impacto}\\
+\midrule
+C24 & Fonte dos elementos semânticos & Fonte global indistinta & Limitar a categoria à tarefa matemática & Separação entre domínio e interação\\
+C25 & Classificação das ações & Ação genérica & Separar modelagem/navegabilidade e natureza/efeito & Log mais preciso\\
+C26 & Comparação entre categorias & Painéis ou cinco colunas & Exigir tabela com quatro colunas & Novo modo comparativo\\
+C27 & Representação da categoria & Diagrama preenchido e interativo & Torná-lo vazio, estático e não interativo & Separação entre estrutura e instância\\
+C33 & Construção da situação & Blocos de outras categorias sem proximidade controlada & Preservar contexto e valores, variando a relação semântica & Raciocínio semântico sem pistas superficiais\\
+C35 & Nomenclatura e ajuda contextual & ``Montar'' e definição permanentemente visível & Usar ``Construir'' e mostrar a definição no onmouseover do nome & Ação cognitiva explícita e apoio sob demanda\\
+C67 & Consistência entre representações & Sincronizações locais entre pares de componentes & Centralizar quantidades, relações e origem da ação em um estado semântico compartilhado & Generalização arquitetural e redução de inconsistências\\
+C86 & Fonte semântica multilíngue & Permitir semântica independente em traduções & Manter a curadoria semântica somente na versão original & Fonte de verdade única para o conceito\\
+C90 & Posicionamento incompatível & Aviso genérico e pouco situado & Combinar tremor, som sutil e tooltip junto ao elemento & Feedback multissensorial e correção observável\\
+C91 & Pedido de ajuda & Instruções gerais fora do contexto & Inserir interrogações externas às formas e oferecer três intenções por área & Ajuda contextual sem alterar a notação formal\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Evolução dos requisitos e da arquitetura}
+O processo deslocou o sistema de soluções localizadas para responsabilidades mais explícitas. A categoria passou a fornecer os elementos da tarefa matemática, enquanto um catálogo independente define protocolos de interação. O log passou a combinar as duas dimensões e a registrar natureza e efeito da ação. Essa mudança aumentou a quantidade de campos, mas reduziu ambiguidades conceituais.
+
+\subsection{Papel do conhecimento de domínio}
+As decisões mais relevantes não decorreram apenas da inspeção do código. Elas exigiram reconhecer que duas estruturas podem compartilhar a mesma solução numérica sem pertencer à mesma categoria; que o ponto de interrogação pode ocupar diferentes papéis semânticos; que a representação da categoria não é uma instância preenchida; que blocos concorrentes precisam manter distância semântica controlada para não reduzir a atividade à eliminação perceptiva; e que elementos formais documentados não devem receber adornos estranhos; que traduções não podem possuir semântica independente da versão original; e que feedback e ajuda devem pertencer à camada de interação, não à notação formal.
+
+\subsection{Papel da IA}
+A IA contribuiu com geração rápida de alternativas, materialização de interfaces, reorganização de código, elaboração de documentação e síntese das decisões. Sua contribuição foi mais efetiva quando havia critérios explícitos de aceitação e quando as alterações eram submetidas a inspeção e regressão.
+
+\subsection{Da recorrência interacional ao contrato arquitetural}
+O ciclo C107 acrescenta um resultado arquitetural ao processo de co-design. A recorrência dos pedidos para criar, remover, limitar e sincronizar quadradinhos mostrou que ``possuir unidades'', ``permitir adição'' e ``permitir remoção'' não eram detalhes exclusivos do diagrama de Venn, mas capacidades independentes. A interação com os protótipos permitiu transformar essa constatação em contratos explícitos: um contrato-base descreve a quantidade e o papel semântico; contratos especializados declaram adição e remoção; uma classe abstrata concentra o estado comum; e implementações concretas são consumidas polimorficamente pelos controles.
+
+Esse resultado não decorre diretamente da Teoria dos Campos Conceituais. Ele emerge da observação de repetição, acoplamento e variação durante o desenvolvimento. A teoria continua fornecendo os papéis e limites semânticos, enquanto a interação entre especialista, IA e artefatos executáveis explicita a forma arquitetural mais adequada para sustentar essas regras. O princípio consolidado é usar interfaces como contratos, herança somente quando houver relação conceitual estável e polimorfismo para substituir condicionais por categoria ou classe concreta.
+
+\section{Discussão}
+\subsection{Co-design assimétrico e supervisionado}
+Os resultados preliminares não sustentam uma interpretação de parceria igualitária. A IA ampliou a capacidade de explorar e materializar opções, mas o pesquisador determinou o que era teoricamente válido. O fato de as 113 decisões consolidadas terem exigido modificação mostra que a supervisão não ocorreu apenas ao final, como revisão de qualidade: ela participou da formulação do problema, da delimitação do escopo, da construção dos critérios de aceitação e da definição do que contaria como evidência. Propõe-se, portanto, a noção de \textbf{co-design assimétrico e supervisionado}: a produção é conjunta, mas a autoridade epistemológica permanece com o especialista de domínio.
+
+Esse resultado converge com \citet{song2024impact}, para quem desenvolvedores centrais obtêm maior benefício da IA por conhecerem melhor o projeto, e com \citet{ulfsnes2024transforming}, que descrevem mudanças no fluxo de aprendizagem e colaboração. O caso amplia esses achados ao indicar que o conhecimento especializado não apenas aumenta a produtividade do uso da ferramenta; ele define as condições sob as quais o artefato gerado pode ser considerado teoricamente e metodologicamente válido.
+
+\subsection{Do custo de integração ao custo de coordenação epistêmica}
+O aumento do tempo de integração observado por \citet{song2024impact} sugere que a geração mais rápida não elimina o trabalho de coordenação. No \gerard, esse trabalho foi deslocado e ampliado. Não se tratou apenas de integrar trechos de código, mas de verificar se uma alteração preservava simultaneamente a Teoria dos Campos Conceituais, a arquitetura do estado compartilhado, a identidade das traduções, os registros de interação e a interpretação metodológica dos dados.
+
+Denomina-se \textbf{custo de coordenação epistêmica} o esforço necessário para alinhar o artefato produzido com os critérios de validade do domínio. Esse custo possui três componentes observados no corpus: alinhamento semântico, regressão entre artefatos e verificação evidencial. A categoria ajuda a explicar por que métricas de velocidade de geração ou número de funcionalidades entregues não são suficientes para avaliar produtividade em software educacional teoricamente fundamentado.
+
+\subsection{Critérios de aceitação multinível}
+A consistência semântica testável proposta por \citet{zhang2024agilegen} encontra apoio no caso, mas precisa ser ampliada. Uma história de usuário pode estar funcionalmente satisfeita e ainda produzir uma interface conceitualmente incorreta ou um registro metodologicamente inválido. Os ciclos analisados indicam quatro níveis complementares de aceitação: \textbf{semântico}, referente à categoria, aos papéis e às relações matemáticas; \textbf{representacional}, referente às formas, cores, posições e estados visuais; \textbf{arquitetural}, referente à fonte de verdade, persistência e sincronização; e \textbf{evidencial}, referente à rastreabilidade e à validade dos dados de pesquisa.
+
+Essa formulação também especifica os desafios transversais discutidos por \citet{gao2024challenges}. No software analisado, requisitos, implementação, testes, manutenção e avaliação não podem ser tratados como etapas independentes, porque uma mudança em qualquer uma delas pode alterar o significado educacional do artefato e dos dados que ele produz.
+
+\subsection{Distância semântica e exigência cognitiva}
+O ciclo C33 evidencia que a proximidade entre alternativas é uma variável de design pedagógico. Sem distância semântica controlada, blocos muito diferentes permitem resposta por eliminação visual ou lexical; blocos excessivamente próximos podem criar ambiguidade e admitir mais de uma solução. A intervenção do pesquisador definiu uma faixa intermediária: preservar personagens, contexto, objeto, valores e forma linguística, alterando prioritariamente a relação entre as quantidades. A restrição não é decorativa, pois determina se a atividade mobiliza interpretação da estrutura aditiva ou apenas comparação superficial de frases.
+
+\subsection{Nomenclatura e divulgação progressiva}
+O ciclo C35 mostra que a escolha de um verbo na interface pode orientar a interpretação da própria tarefa. ``Montar'' favorecia a leitura de encaixe e ordenação; ``construir'' aproxima a ação visível do objetivo de relacionar diagrama, papéis semânticos e enunciado. A transferência da definição para o onmouseover do nome da categoria mantém o suporte acessível sem convertê-lo em informação permanentemente antecipada. Essa decisão não altera a notação de Vergnaud: o tooltip pertence à camada de interação e reutiliza a definição localizada já existente.
+
+\subsection{Correspondência cromática e leitura da comparação}
+A correspondência cromática das unidades comuns transforma a cor em uma codificação semântica. Em vez de colorir toda a barra ou alternar cores por personagem, o procedimento ordena as unidades de baixo para cima e aplica vermelho suave somente às primeiras $\min(r,e)$ unidades de cada barra, em que $r$ é a quantidade do referido e $e$ a quantidade do referendo. As unidades excedentes permanecem neutras e materializam visualmente o valor relativo. A decisão reduz a necessidade de inferir a parte comum apenas pela altura das barras, mas preserva a distinção entre equivalência de unidades e diferença entre medidas. Como a correspondência é recalculada após a manipulação do ponto de controle, a codificação acompanha o estado corrente da representação.
+
+\subsection{Representações manipuláveis e estado semântico compartilhado}
+Os ciclos C60 a C69 mostraram que a sincronização ponto a ponto entre componentes não era suficiente. Quando um eixo atualizava uma barra, mas não o círculo de relação; ou quando quadradinhos atualizavam um valor, mas não a coleção dependente, cada representação passava a manter uma versão parcial do problema. A solução consolidada foi tratar Vergnaud, Venn, barras, cartões e eixos como projeções de um mesmo estado semântico.
+
+O estado compartilhado registra os três papéis principais, os valores efetivamente modelados, o papel alterado, a origem da ação e uma versão do snapshot. Para as categorias aditivas atuais, a consistência é expressa pela forma geral $A+B=C$. A alteração de um termo determina qual dependência deve ser recalculada; em seguida, todas as representações são atualizadas a partir do mesmo snapshot. Uma trava de sincronização impede que a atualização de uma visualização seja reinterpretada como uma nova ação do usuário, evitando ciclos recursivos.
+
+Essa arquitetura distingue o estado matemático de suas formas visuais. Manipular uma barra, um quadradinho, um eixo ou um nó de Vergnaud deixa de ser uma operação local: é uma ação sobre o modelo compartilhado. A decisão tem relevância pedagógica e metodológica, pois reduz o risco de o usuário observar simultaneamente quantidades contraditórias e preserva a validade dos registros de interação.
+
+\subsection{Curadoria multilíngue e fonte de verdade}
+A curadoria semântica somente na versão original evita que uma mesma situação-problema adquira categorias, valores, sinais, participantes ou termos desconhecidos distintos em cada tradução. Inglês e francês permanecem versões linguísticas do mesmo objeto conceitual. O bloqueio dinâmico reage à escolha do idioma, e a persistência reaplica os dados herdados da original. A retirada do campo \emph{subtipo} reduz redundância e impede contradições com categoria, papéis e termo desconhecido.
+
+\subsection{Feedback situado e orientação progressiva}
+O feedback multissensorial de erro combina tremor leve, som sutil e tooltip que pergunta se o número corresponde ao papel semântico e à categoria escolhida. A mensagem desaparece quando a incompatibilidade é corrigida, mantendo o erro como evento transitório e observável. A ajuda contextual por área utiliza interrogações nos cabeçalhos do texto, do diagrama de Vergnaud e do diagrama complementar, com três intenções: dúvida, continuidade e próximo passo. Os elementos pertencem à camada de scaffolding e não modificam as formas publicadas dos diagramas.
+
+\subsection{Suporte e rastreabilidade operacional}
+O relato de falhas passou a incluir situação, categoria, idiomas, representações exibidas e versão do sistema, com cópia local e abertura do compositor do Gmail. Essa decisão reduz a perda de contexto entre ocorrência e diagnóstico. As alterações de fotografias e menus foram classificadas separadamente como refinamentos visuais e operacionais, pois apoiam memória institucional e navegação, mas não alteram o modelo matemático.
+
+\subsection{Estrutura visual estável e conteúdo educativo transitório}
+O episódio C93--C94 evidencia uma limitação típica do desenvolvimento assistido por IA: uma instrução local pode ser satisfeita por uma alteração de escopo maior do que a pretendida. ``Iniciar sem texto e sem diagramas'' descrevia o estado dos conteúdos, não a remoção das regiões estruturais da interface. Ao ocultar os painéis, a proposta preservou parte do comportamento funcional, mas rompeu a continuidade espacial da atividade e a previsibilidade da tela.
+
+A correção transformou essa observação em invariante verificável: os contêineres e suas divisões permanecem renderizados; apenas os componentes educativos internos dependem da categoria selecionada. Esse caso reforça que a supervisão especializada não se limita à teoria matemática. Ela também define fronteiras de escopo, distingue componente de conteúdo e exige regressão visual sobre estados vazios, carregados e alternados. A falha intermediária não foi incorporada como ciclo consistente; foi mantida como episódio rejeitado que explica a decisão consolidada em C94.
+
+\subsection{Quando a solução plausível não é válida}
+Um padrão recorrente foi a necessidade de rejeitar soluções visualmente ou tecnicamente plausíveis. O preenchimento do diagrama da categoria na tela comparativa, por exemplo, parecia coerente com a sincronização entre representações, mas confundia uma estrutura geral com uma instância de situação-problema. A intervenção do pesquisador redefiniu o componente como referência vazia, estática e não interativa.
+
+\subsection{Peso analítico das decisões}
+A extração das classes gráficas evidencia outro aspecto do co-design: uma refatoração arquitetural só foi considerada consolidada quando acompanhada por compilação e evidência executável. A inspeção textual ajudou a selecionar um recorte de baixo acoplamento, mas não foi tratada como prova suficiente de equivalência comportamental. O teste headless não substitui a inspeção integral da interface, porém reduz o risco de regressões nas operações geométricas e de desenho diretamente afetadas pela extração.
+
+A classificação em três níveis mostra que nem toda iteração possui o mesmo alcance. Ajustes de fonte, margens e dimensões são evidências de refinamento iterativo e atenção à usabilidade, mas não devem dominar a interpretação do co-design. As contribuições centrais do caso estão nos ciclos que produziram generalizações arquiteturais ou corrigiram inconsistências teóricas e metodológicas. A análise cronológica é, portanto, complementada por uma análise de impacto.
+O refinamento da tela comparativa mostra, contudo, que decisões visuais podem carregar uma função pedagógica específica. Destacar a solução numérica comum e manter a identidade cromática dos valores não constitui uma nova generalização arquitetural, mas melhora a leitura da relação entre cálculo e estrutura. Assim, os ciclos visuais devem permanecer analiticamente separados sem serem tratados como meramente decorativos.
+
+\subsection{Regressão documental cruzada como controle de coerência}
+A regressão documental cruzada transforma a atualização do artigo em parte do próprio processo de engenharia do conhecimento. Uma mudança no método não pode permanecer isolada na seção metodológica: ela precisa alterar a síntese do estudo, a apresentação dos achados e a interpretação de suas consequências. Esse controle reduz o risco de um manuscrito evolutivo acumular resultados ou argumentos baseados em procedimentos que não aparecem no resumo, ou de descrever métodos sem efeitos visíveis na análise.
+
+\subsection{Distinção entre fontes e unidades de análise}
+A explicitação das fontes documentais corrige uma ambiguidade metodológica importante. Conversas, ZIPs, versões de código, imagens e compilações são evidências de naturezas diferentes; nenhuma delas, isoladamente, equivale a um ciclo de decisão. A deduplicação por nome, data, vínculo com o ciclo e hash, quando disponível, reduz o risco de superestimar o volume empírico e permite distinguir produção documental, materialização técnica e verificação. Essa etapa também reforça o caráter evolutivo do estudo: novos totais só devem ser incorporados ao artigo depois de auditados e, pela regressão documental cruzada, deverão atualizar o resumo, os resultados e a discussão.
+
+\subsection{Ação observável como pré-condição do registro qualitativo}
+A análise da modelagem condicionada a posicionamento efetivo transforma um detalhe de visibilidade em regra metodológica. Uma resposta explicativa só pode ser vinculada a uma tentativa que contenha ao menos uma ação de modelagem observável; caso contrário, a interface induziria o preenchimento de justificativas sem referente empírico e registraria uma fotografia anterior à própria atividade. A dupla verificação - no controle de acesso e na rotina de abertura - reduz o risco de estados indiretos violarem essa condição.
+
+A criação incremental de quadradinhos reforça a mesma lógica: cada clique é uma ação atômica registrada, modifica uma coleção identificável e produz uma atualização rastreável do estado compartilhado. A representação complementar permanece manipulável, mas sua contribuição ao dado de pesquisa é explicitada por eventos e por sincronização, não por inferência silenciosa.
+
+\subsection{Implicações para IHC}
+Para IHC, o caso mostra que a interação com IA pode ser analisada como processo de design rationale. Prompts, respostas, artefatos e correções formam uma cadeia de justificativas que deve ser preservada. Também evidencia a necessidade de separar ações de modelagem de ações de navegabilidade e de registrar pedidos de ajuda, feedback de erro, continuidade e criação de unidades como eventos contextuais da atividade. A disponibilidade progressiva da análise e os controles de adição próximos aos agrupamentos reduzem ações sem referente e aproximam comando, objeto e efeito. O arraste massa--mola--amortecedor acrescenta continuidade perceptiva, mas preserva a coordenada final exata; desse modo, resposta visual e decisão semântica permanecem desacopladas.
+
+\subsection{Implicações para Engenharia de Software}
+Para Engenharia de Software, o caso reforça a importância de critérios de aceitação, rastreabilidade e testes de regressão em desenvolvimento assistido por IA. A centralização dos elementos semânticos na definição da categoria reduziu complexidade acidental, mesmo tendo aumentado a formalização inicial do domínio. O ciclo C67 acrescenta que aplicações com múltiplas visualizações manipuláveis devem separar o estado do domínio de suas projeções gráficas: ações são aplicadas ao modelo compartilhado e as representações são atualizadas por snapshot. Os ciclos C85 a C89 mostram que persistência, bloqueio dinâmico de campos e integração externa precisam compartilhar o mesmo critério de fonte de verdade e tratamento de falhas. O episódio C93--C94 mostra adicionalmente que testes de regressão devem distinguir estrutura do contêiner, visibilidade do conteúdo e transições de estado; verificar apenas compilação e carregamento não detecta a remoção indevida das divisões da tela. Os ciclos C96, C98, C100 e C105 acrescentam que critérios de habilitação e manipulações incrementais precisam ser testados junto com logging, restauração e sincronização, pois uma interface aparentemente correta pode produzir registros prematuros ou estados quantitativos divergentes. A presença do controle de remoção deve depender da cardinalidade visível, evitando ações sem efeito em coleções vazias, e o limite semântico das cardinalidades manipuláveis deve ser consultado antes de cada adição para impedir estados incompatíveis com a curadoria. C107 mostra que, quando diferentes representações compartilham capacidades operacionais, essas capacidades devem ser expressas por interfaces e consumidas polimorficamente. A classe abstrata é adequada apenas para estado e comportamento realmente comuns; nos demais casos, a composição deve prevalecer sobre herança acidental. C117--C120 reforçam que texto e diagramas precisam publicar e consumir o mesmo estado sem modificar a curadoria, C121 mostra que animações de arraste devem operar somente sobre coordenadas visuais intermediárias e concluir na coordenada real antes da validação, e C122 explicita o invariante de não negatividade das quantidades de medida, validado antes de qualquer propagação entre representações.
+
+\subsection{Implicações para Informática na Educação}
+Para Informática na Educação, o estudo sugere que modelos generativos não substituem conhecimento pedagógico e teórico. Em ferramentas destinadas a produzir dados de pesquisa, erros de representação ou de logging podem comprometer não apenas a usabilidade, mas a validade das inferências sobre aprendizagem. A curadoria semântica somente na versão original, o scaffolding situado, a análise posterior à primeira ação e a criação explícita de unidades exemplificam controles que protegem simultaneamente a coerência conceitual, a validade do registro e a experiência do usuário.
+
+\section{Ameaças à validade}
+O estudo examina um único sistema e uma relação específica entre pesquisador e IA. Os resultados não devem ser generalizados para todos os projetos. O corpus também contém ciclos com diferentes níveis de evidência, razão pela qual a análise distingue decisão conversacional, implementação gerada e versão consistente verificada. A codificação inicial foi realizada pelo próprio participante do processo, o que demanda posteriormente revisão independente ou codificação por segundo pesquisador.
+
+Outra ameaça é a evolução contínua do sistema. Decisões consideradas consistentes podem ser reabertas quando novas categorias, representações ou requisitos forem incorporados. O artigo deve, portanto, indicar a versão do corpus e manter histórico de alterações.
+
+
+\section{Atualização arquitetural C147: modelo semântico explícito}
+
+A evolução posterior ao corpus analítico revelou que a regra de sinal não deveria continuar associada à categoria, ao índice visual nem a uma representação específica. Um mesmo valor matemático aparece no enunciado, no diagrama de Vergnaud, no eixo dos inteiros, nas barras e no tabuleiro concreto. Portanto, a possibilidade de assumir valores negativos precisa ser uma propriedade do próprio valor, definida pelo papel semântico ao qual ele está vinculado.
+
+\subsection{Universos numéricos como objetos do domínio}
+
+A versão C147 introduziu os universos numéricos $\mathbb{N}_0$ e $\mathbb{Z}$ como tipos explícitos. Estados, partes, todo, referido e referendo pertencem a $\mathbb{N}_0$; transformação e número ou valor relativo pertencem a $\mathbb{Z}$. A incógnita preserva o universo esperado, embora ainda não possua valor conhecido. Assim, uma transformação desconhecida pode posteriormente receber $-4$, $0$ ou $+6$, enquanto um estado final desconhecido continua restrito aos naturais.
+
+A validação deixa de ser repetida nas visualizações. O objeto \texttt{NumeroNatural} rejeita valores negativos; \texttt{NumeroInteiro} preserva valores negativos, zero e positivos; e \texttt{ValorDesconhecido} mantém o domínio esperado. O estado semântico compartilhado passou a transportar esses objetos, mantendo métodos de compatibilidade para as camadas existentes. O sinal positivo explícito, por exemplo ``+6'', permanece uma decisão de apresentação; o valor armazenado é o inteiro 6.
+
+\subsection{Contexto, entidades e pistas linguísticas}
+
+O modelo foi ampliado para representar referentes contextuais, unidades de medida e personagens sem criar uma subclasse para cada substantivo ou nome próprio. ``Bolas'', ``carrinhos'' e ``reais'' são instâncias de \texttt{ReferenteContextual}; ``Ana'' e ``Paulo'' são instâncias de \texttt{Personagem}. Essa decisão evita explosão de classes e permite que a mesma estrutura seja utilizada nos três idiomas do sistema.
+
+Palavras e expressões como ``ontem'', ``hoje'', ``ganhou'', ``perdeu'', ``juntos'', ``a mais que'' e ``a menos que'' foram modeladas como pistas linguísticas configuráveis. Elas são evidências localizadas no texto, não regras suficientes para determinar uma categoria. Cada ocorrência registra expressão, posição e tipo de pista, preservando a necessidade de interpretação da estrutura completa da situação-problema.
+
+\subsection{Categorias como composites de elementos semânticos}
+
+As categorias aditivas passaram a ser descritas por esquemas compostos de papéis quantitativos, restrições e relações. Uma transformação simples reúne estado inicial, transformação e estado final; uma comparação reúne referido, valor relativo e referendo; uma composição reúne parte 1, parte 2 e todo. Categorias de dois passos utilizam o padrão Composite para reunir esquemas simples e compartilhar estados intermediários.
+
+Essa organização inverte a dependência anterior. A categoria não inventa quais posições aceitam sinal; ela agrega papéis que já declaram seus universos numéricos. Classificações de compatibilidade como ``com relação assinada'' podem continuar existindo para decisões amplas de interface, mas passam a ser derivadas do esquema, e não fontes da verdade matemática.
+
+\subsection{Representações como projeções do mesmo modelo}
+
+Texto, Vergnaud, barras, eixo e tabuleiro concreto continuam sendo projeções sincronizadas. Cada representação consulta o mesmo \texttt{ValorNumerico} associado a um papel. Ao receber um valor, a camada visual não pergunta qual é a categoria para decidir se aceita sinal; ela apenas solicita a operação ao objeto de domínio. A arquitetura reduz duplicação de regras e impede que uma transformação seja aceita como negativa no eixo e rejeitada no texto, ou que uma medida cardinal se torne negativa em uma representação complementar.
+
+A atualização preserva as interfaces antigas por fachadas de compatibilidade. \texttt{PoliticaValoresAditivos}, \texttt{CatalogoPapeisSemanticosAditivos} e os perfis de categoria delegam ao novo modelo, permitindo migração incremental sem retirar funcionalidades consolidadas.
+
+\section{Conclusões}
+O caso do \gerard{} mostra que a IA generativa pode atuar como instrumento de proposição, implementação e documentação, mas não garante validade teórica ou consistência arquitetural. No recorte codificado, todas as 113 decisões consistentes exigiram modificação da proposta inicial, e 66 delas (58,4\%) envolveram arquitetura, generalização ou consistência teórico-metodológica. O resultado indica que a principal unidade de produtividade não é o código produzido, mas a alternativa que pode ser inspecionada, criticada e transformada em decisão válida.
+
+Em relação à literatura, o estudo confirma ganhos de materialização e alterações no fluxo de trabalho descritos por \citet{ulfsnes2024transforming}, bem como a coexistência entre produtividade e custos de integração observada por \citet{song2024impact}. O caso vai além ao identificar um \textbf{custo de coordenação epistêmica}, composto por alinhamento semântico, regressão entre artefatos e verificação evidencial. Também amplia a consistência semântica testável discutida por \citet{zhang2024agilegen} ao propor critérios de aceitação em quatro níveis: semântico, representacional, arquitetural e evidencial. Por fim, acrescenta aos desafios do ciclo de vida sistematizados por \citet{gao2024challenges} uma exigência própria do software de pesquisa educacional: proteger a validade das inferências produzidas a partir dos registros de interação.
+
+O conhecimento do pesquisador foi decisivo para distinguir categoria e instância, tarefa matemática e tarefa de interação, modelagem e navegabilidade, fórmula publicada e formalização derivada, resposta do usuário e observação do pesquisador, além de distinguir alternativas produtivamente próximas de diferenças superficiais que dispensam raciocínio semântico. A consolidação do estado semântico compartilhado mostra ainda que correções locais reiteradas podem revelar uma necessidade arquitetural mais geral: quando diferentes diagramas representam a mesma estrutura matemática, a consistência deve ser garantida no modelo de domínio. Os ciclos C70 a C122 ampliam essa conclusão ao mostrar que traduções, persistência, relato de falhas, feedback multissensorial, ajuda contextual e inicialização da atividade precisam respeitar a mesma separação entre semântica, representação e interação. O episódio C93--C94 acrescenta que testes funcionais não substituem a verificação da estrutura visual estável: a interface deve preservar suas divisões mesmo quando o conteúdo educativo ainda não foi carregado. Os ciclos C96--C122 mostram ainda que o momento de abertura dos instrumentos qualitativos, a coerência visual entre janelas e a edição incremental das coleções devem permanecer vinculados às ações observáveis e ao estado semântico compartilhado. C107 acrescenta que a generalização não deve ser obtida por condicionais crescentes na tela: capacidades de representação precisam ser declaradas por contratos e exercidas por polimorfismo, mantendo a semântica curada independente da implementação concreta. C117--C120 ampliam esse princípio para o enunciado e para os controles quantitativos, C121 evidencia que até uma física visual de arraste deve permanecer subordinada ao estado semântico e à soltura exata, e C122 consolida que somente relações e transformações podem ser assinadas, enquanto quantidades de medida permanecem não negativas em todas as projeções.
+
+Trabalhos futuros incluem concluir o inventário e a deduplicação das fontes documentais, publicar as quantidades auditadas de conversas, ZIPs, versões de código, imagens e compilações, ampliar o corpus, quantificar propostas aceitas e modificadas, analisar regressões, comparar ciclos com e sem artefatos verificáveis e submeter a codificação a avaliação independente.
+
+\begin{thebibliography}{99}
+\bibitem[Braga, Queiroz e Gomes(2008)]{braga2008design}
+BRAGA, M. M.; QUEIROZ, A. E. M.; GOMES, A. S. Design de Software Educacional Baseado na Teoria dos Campos Conceituais. \emph{Anais do XIX Simpósio Brasileiro de Informática na Educação}, p. 239--248, 2008.
+
+\bibitem[Gao et al.(2024)]{gao2024challenges}
+GAO, C. et al. The Current Challenges of Software Engineering in the Era of Large Language Models. \emph{arXiv preprint arXiv:2412.14554}, 2024.
+
+\bibitem[MacLean et al.(1991)]{macleam1991qoc}
+MACLEAN, A.; YOUNG, R. M.; BELLOTTI, V. M. E.; MORAN, T. P. Questions, Options, and Criteria: Elements of Design Space Analysis. In: \emph{Human-Computer Interaction}. Cambridge University Press, 1991.
+
+\bibitem[Schön(1983)]{schon1983reflective}
+SCHÖN, D. A. \emph{The Reflective Practitioner: How Professionals Think in Action}. New York: Basic Books, 1983.
+
+\bibitem[Song, Agarwal e Wen(2024)]{song2024impact}
+SONG, F.; AGARWAL, A.; WEN, W. The Impact of Generative AI on Collaborative Open-Source Software Development: Evidence from GitHub Copilot. \emph{arXiv preprint arXiv:2410.02091}, 2024.
+
+\bibitem[Ulfsnes et al.(2024)]{ulfsnes2024transforming}
+ULFSNES, R.; MOE, N. B.; STRAY, V.; SKARPEN, M. Transforming Software Development with Generative AI: Empirical Insights on Collaboration and Workflow. \emph{arXiv preprint arXiv:2405.01543}, 2024.
+
+\bibitem[Vergnaud(1990)]{vergnaud1990theorie}
+VERGNAUD, G. La théorie des champs conceptuels. \emph{Recherches en Didactique des Mathématiques}, v. 10, n. 2--3, p. 133--170, 1990.
+
+\bibitem[Vergnaud(1991)]{vergnaud1991nino}
+VERGNAUD, G. \emph{El niño, las matemáticas y la realidad: problemas de la enseñanza de las matemáticas en la escuela primaria}. México: Trillas, 1991.
+
+\bibitem[Vergnaud(1997)]{vergnaud1997nature}
+VERGNAUD, G. The Nature of Mathematical Concepts. In: NUNES, T.; BRYANT, P. (org.). \emph{Learning and Teaching Mathematics: An International Perspective}. Psychology Press, 1997. p. 5--28.
+
+\bibitem[Zhang et al.(2024)]{zhang2024agilegen}
+ZHANG, S. et al. Empowering Agile-Based Generative Software Development through Human-AI Teamwork. \emph{arXiv preprint arXiv:2407.15568}, 2024.
+\end{thebibliography}
+\end{document}

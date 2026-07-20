@@ -1,0 +1,17 @@
+MENU SOBRE COM INTERPRETAÇÃO LINGUÍSTICA
+
+Ajuste realizado:
+- criação do botão "Sobre" na mesma linha dos botões "Idioma" e "Tipo";
+- a interpretação linguística foi movida do centro da tela para um menu interno;
+- o menu segue o mesmo padrão visual dos menus já existentes: painel vertical, borda, fundo claro e exibição por mouse over/click;
+- o centro da tela ficou reservado aos diagramas e à tarefa do usuário.
+
+Comportamento:
+- ao passar o mouse ou clicar no botão "Sobre", o menu "Interpretação linguística" é exibido;
+- o menu mostra idioma detectado, confiança, categoria provável, números, relação provável, pistas, papéis e avisos;
+- os menus de Idioma, Tipo e Sobre são mutuamente exclusivos: ao abrir um, os outros fecham.
+
+Organização:
+- a renderização da interpretação permanece baseada em ResultadoInterpretacao;
+- a interface principal apenas monta o painel de apresentação;
+- os textos do botão, do tooltip e do título do menu foram adicionados ao serviço de internacionalização.

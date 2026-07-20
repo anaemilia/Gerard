@@ -1,0 +1,19 @@
+DIAGRAMAS DE VERGNAUD SEM PREENCHIMENTO AUTOMÁTICO
+
+Objetivo
+- manter os diagramas como estruturas vazias para que o preenchimento seja tarefa do usuário.
+
+Ajustes realizados
+- o diagrama central de Vergnaud não mostra mais valores numéricos extraídos automaticamente do texto;
+- cada figura exibe apenas seu rótulo conceitual e uma área interna tracejada para indicar espaço de preenchimento;
+- o diagrama de Venn dinâmico também deixou de gerar quadradinhos e valores automaticamente;
+- os números e a interrogação continuam disponíveis no enunciado para serem arrastados pelo usuário.
+
+Justificativa pedagógica
+- o sistema apresenta a estrutura conceitual da categoria;
+- o usuário realiza a modelagem, posicionando os elementos relevantes;
+- isso evita que a interface entregue a solução antes da ação do aprendiz.
+
+Critério de arquitetura
+- a alteração foi feita no nível de apresentação/renderização, preservando os modelos e os serviços que mantêm os valores extraídos para interpretação, diagnóstico ou validação futura;
+- assim, a interface não preenche os diagramas, mas o sistema ainda pode usar os dados internamente em etapas posteriores.

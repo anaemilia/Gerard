@@ -1,0 +1,16 @@
+PDFs incluídos nesta versão
+============================
+
+1. ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+   - Artigo completo recompilado com o novo resumo fornecido pela pesquisadora.
+
+2. ANALISE_COMPLEXIDADE_GERARD.pdf
+   - Análise de complexidade atualizada até o ciclo C68, incluindo a remoção do limite de 12 quadradinhos e a grade adaptativa.
+
+Cópias versionadas também estão disponíveis em:
+- documentacao/Artigo_codesign_Gerard_resumo_atualizado_C68.pdf
+- documentacao/Analise_complexidade_Gerard_atualizada_C68.pdf
+
+Os arquivos-fonte LaTeX permanecem em:
+- documentacao/artigo_codesign/main.tex
+- documentacao/ANALISE_COMPLEXIDADE_GERARD_C68.tex

@@ -1,0 +1,72 @@
+ARQUITETURA - CONSTRUÇÃO DE SITUAÇÃO-PROBLEMA COM BLOCOS SEMÂNTICOS
+Data: 14/07/2026
+
+1. RESPONSABILIDADE
+
+O módulo gerard.campoaditivo.montagem implementa uma tarefa inversa à modelagem tradicional: o diagrama preenchido é a representação de partida, e o usuário deve construir uma situação-problema compatível com essa representação.
+
+2. COMPONENTES
+
+BlocoTextoMontagem
+- representa um trecho textual;
+- guarda internamente categoria, papel semântico, ordem e condição de pertencimento;
+- esses metadados não são exibidos ao usuário.
+
+ConjuntoBlocosMontagem
+- reúne a situação curada, os blocos embaralhados, a sequência correta e os valores do diagrama;
+- expõe coleções imutáveis para impedir alterações acidentais.
+
+GeradorBlocosMontagem
+- seleciona somente situações validadas e completas;
+- segmenta o enunciado curado;
+- preserva os blocos corretos literalmente;
+- gera blocos não compatíveis com os mesmos valores e distância semântica controlada;
+- agrupa frases apenas contextuais ao bloco quantitativo seguinte, evitando pistas óbvias;
+- preserva o sinal de transformações e valores relativos;
+- embaralha o conjunto final.
+
+PainelDiagramaPreenchido
+- reutiliza o modelo e o renderizador oficial dos diagramas do Gérard;
+- apresenta a representação preenchida em modo somente leitura;
+- não introduz elementos estranhos à notação formal.
+
+TelaMontagemSituacao
+- coordena seleção, arraste, ordenação, reinício e validação;
+- atribui o mesmo renderizador visual a todos os blocos;
+- mantém um contexto próprio de tentativa no logger;
+- atualiza textos em português, inglês e francês.
+
+3. INTEGRAÇÃO
+
+Main.java inclui a aba entre Gérard e Curadoria. A alternância de abas chama ativarAba() e desativarAba(), preservando a tentativa que estava ativa anteriormente.
+
+LoggerInteracaoGerard recebeu uma fotografia restaurável do contexto atual. O recurso evita que uma atividade independente reutilize ou sobrescreva dados de uma tentativa da aba principal.
+
+4. INVARIANTES
+
+- o diagrama precisa estar completamente preenchido;
+- há uma única sequência correta;
+- os blocos corretos são fragmentos literais da situação curada;
+- os blocos não compatíveis não podem ser identificados por cor, rótulo ou formatação;
+- os valores numéricos permanecem os mesmos;
+- a principal variação deve ser a relação semântica;
+- o número de alternativas não compatíveis permanece controlado, inicialmente entre três e quatro;
+- a construção possui tentativa e log próprios;
+- somente português, inglês e francês são usados.
+
+5. EXTENSIBILIDADE
+
+O conjunto TIPOS_SUPORTADOS delimita o escopo atual. Novas categorias podem ser incorporadas por meio de:
+
+- mapeamento dos valores para o diagrama;
+- regras de segmentação e papéis corretos;
+- famílias de blocos semanticamente próximos;
+- testes que assegurem unicidade e ausência de pistas superficiais.
+
+6. NOMENCLATURA E AJUDA CONTEXTUAL (C35)
+
+A nomenclatura visível usa "Construir situação-problema" e "Construa a situação-problema". O termo "montagem" permanece apenas em nomes internos históricos de pacote e classes, evitando uma refatoração nominal sem efeito pedagógico.
+
+Na atividade de construção, o nome da categoria permanece visível, mas sua definição é apresentada somente no onmouseover desse nome. O PainelDiagramaPreenchido calcula a área do título após escala e centralização. O tooltip não é ativado sobre figuras, conectores, valores ou espaços vazios.
+
+RenderizadorSwingDiagramaAditivo mantém o método original, que continua mostrando título e descrição. Uma sobrecarga com o parâmetro mostrarDescricao permite que somente a aba de construção oculte a descrição permanente. Dessa forma, as demais telas não sofrem mudança de comportamento.

@@ -1,0 +1,1 @@
+Ao confirmar a edição de texto em um elemento do diagrama de transformação composta, se o elemento editado for o estado final de um passo, o mesmo texto é propagado automaticamente para o estado inicial do passo seguinte. Isso atende ao caso do estado final do passo 1 preenchendo o estado inicial do passo 2.

@@ -1,0 +1,24 @@
+ÁREA CENTRAL INVISÍVEL PARA DIAGRAMAS DE VERGNAUD
+
+Objetivo
+- criar um espaço lógico, invisível e delimitador no centro da tela para renderização e manipulação dos diagramas de Vergnaud.
+- permitir que o diagrama seja arrastado com liberdade horizontal e vertical, mas sem sair dos limites dessa área.
+
+Comportamento implementado
+- o espaço delimitador não desenha moldura, fundo ou contorno visível;
+- os diagramas de Vergnaud continuam visíveis e vazios, para preenchimento pelo usuário;
+- ao pressionar e arrastar dentro do diagrama central, o conjunto é movimentado como uma unidade;
+- o movimento é limitado ao retângulo lógico central;
+- a área do diagrama de Venn à direita permanece independente e preservada.
+
+Decisões de engenharia
+- a área invisível é calculada por método próprio em Main.java: obterLimiteInvisivelDiagramaVergnaud();
+- a área renderizada do diagrama é calculada por obterAreaDiagramaCentralVergnaud();
+- o controle de arraste fica separado em moverDiagramaVergnaud();
+- a apresentação do diagrama foi preservada no módulo RenderizadorSwingDiagramaAditivo;
+- o renderizador não desenha mais fundo ou borda para a área central, mantendo apenas os elementos do diagrama.
+
+Liberdade de manipulação
+- eixo horizontal: permitido dentro do limite lógico central;
+- eixo vertical: permitido dentro do limite lógico central;
+- limite visual: invisível para o usuário, mas ativo para impedir que o diagrama saia da área de trabalho.

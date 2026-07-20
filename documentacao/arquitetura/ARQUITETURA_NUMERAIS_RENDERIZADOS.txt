@@ -1,0 +1,8 @@
+Ajuste realizado:
+- quando o enunciado da situação-problema é carregado, o sistema normaliza numerais escritos por extenso para algarismos arábicos no texto renderizado;
+- a normalização é conservadora: ela só converte palavras numéricas quando o enunciado ainda possui menos de dois números em algarismos, evitando introduzir números contextuais irrelevantes em problemas que já possuem valores suficientes;
+- o objetivo é melhorar a leitura e permitir o arraste dos valores numéricos principais sem alterar permanentemente a estrutura formal do diagrama.
+
+Exemplos:
+- "Paulo tinha seis bolas... ganhou oito..." -> "Paulo tinha 6 bolas... ganhou 8..."
+- "Alice tem sete fivelas... ganhou mais quatro..." -> "Alice tem 7 fivelas... ganhou mais 4..."

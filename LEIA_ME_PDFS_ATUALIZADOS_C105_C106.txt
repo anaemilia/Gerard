@@ -1,0 +1,6 @@
+PDFs atualizados
+
+- ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf: corpus C105, atualização documental C106, 45 páginas.
+- ANALISE_COMPLEXIDADE_GERARD.pdf: atualização C105, 11 páginas.
+
+A atualização inclui a distinção entre fundamento teórico de Vergnaud e requisitos constatados no processo iterativo, além do limite semântico da criação de quadradinhos.

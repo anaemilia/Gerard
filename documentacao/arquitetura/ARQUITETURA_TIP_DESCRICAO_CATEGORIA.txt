@@ -1,0 +1,25 @@
+TIP DA DESCRIÇÃO DA CATEGORIA NO TÍTULO DO ENUNCIADO
+
+Objetivo
+- retirar a descrição textual que ficava visível imediatamente abaixo do título da categoria;
+- manter o título da categoria abaixo da situação-problema com a formatação original;
+- exibir a descrição correspondente como tip no mouse over do próprio título da categoria.
+
+Comportamento implementado
+- o texto da categoria, por exemplo "Transformação de Medidas", permanece visível abaixo do enunciado;
+- a descrição explicativa da categoria deixa de ocupar espaço fixo na tela;
+- ao passar o mouse sobre o título da categoria, a descrição aparece como anotação/tip;
+- a descrição exibida é dinâmica e depende da categoria selecionada.
+
+Categorias contempladas
+- Composição de medidas
+- Transformação de medidas
+- Comparação de medidas
+- Composição de transformações
+- Transformação de uma relação
+- Composição de relações
+
+Implementação
+- foi criada uma área lógica de mouse over para o título da categoria;
+- a descrição é obtida da cena do diagrama de Vergnaud da categoria atual;
+- o tip usa o mesmo mecanismo de anotação já empregado para os demais elementos da interface.

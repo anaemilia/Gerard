@@ -1,0 +1,10 @@
+Correção do submenu Gérard Vergnaud
+
+Alteração realizada:
+- O texto descritivo do submenu Gérard Vergnaud deixou de ser exibido em JLabel HTML simples e passou a usar JTextArea não editável, transparente, com quebra automática de linha e altura calculada pelo conteúdo.
+- A imagem de Gérard Vergnaud foi colocada dentro de um painel auxiliar com FlowLayout centralizado, preservando o alinhamento central dentro do submenu.
+- O submenu manteve largura compacta, evitando crescimento horizontal desnecessário.
+- O script Ant foi ajustado para copiar recursos não Java do diretório src para build/classes antes de gerar o JAR, garantindo que a imagem e os arquivos TSV sejam incluídos no executável.
+
+Objetivo:
+Evitar que o texto fique parcialmente encoberto no submenu e manter a imagem centralizada.

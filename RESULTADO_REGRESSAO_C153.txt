@@ -1,0 +1,21 @@
+REGRESSÃO C153
+Data: 2026-07-17
+
+1) Compilação do projeto
+Comando: ant clean jar
+Resultado: PASSOU
+
+2) Verificação semântica rápida em modo headless
+- Catálogo de definições para TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
+  PT: Estado inicial | Transformação 1 | Estado intermediário
+  EN: Initial state | Transformation 1 | Intermediate state
+  FR: État initial | Transformation 1 | État intermédiaire
+Resultado: PASSOU
+
+3) Verificação de aplicação curada em COMPOSICAO_MEDIDAS
+- Rótulos aplicados: Parte 1 | Parte 2 | Todo
+Resultado: PASSOU
+
+4) Limitações desta regressão
+- Não foi executado teste visual manual com interface Swing aberta neste ambiente headless.
+- A validação visual final recomendada continua sendo abrir a aplicação e conferir cada categoria na interface.

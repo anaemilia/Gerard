@@ -1,0 +1,23 @@
+ZONAS SEMÂNTICAS DOS ELEMENTOS DO DIAGRAMA DE VERGNAUD
+
+Objetivo
+- permitir a manipulação individual dos elementos do diagrama sem permitir a troca de papéis conceituais.
+
+Comportamento implementado
+- cada elemento do diagrama de Vergnaud continua arrastável individualmente;
+- cada elemento possui uma zona semântica própria de movimentação;
+- o elemento não pode sair de sua zona funcional;
+- isso impede, por exemplo, que o quadrado do estado final seja movido para a posição do estado inicial ou para o círculo da transformação/número relativo;
+- conectores também possuem zonas locais de movimentação;
+- a interpretação linguística da categoria selecionada é preservada.
+
+Decisão de arquitetura
+- a área central invisível continua sendo o contêiner lógico geral;
+- dentro dela, cada elemento recebe uma zona semântica restrita;
+- as classes ElementoVergnaud e ConectorVergnaud passam a armazenar sua própria zonaPermitida;
+- Main.java apenas orquestra eventos de mouse e chama moverPara/mover, sem decidir o papel semântico durante o arraste.
+
+Efeito esperado
+- o usuário pode ajustar a posição dos elementos;
+- o usuário não consegue transformar um papel em outro por deslocamento espacial;
+- a categoria de Vergnaud escolhida continua determinando a estrutura e os papéis dos elementos.

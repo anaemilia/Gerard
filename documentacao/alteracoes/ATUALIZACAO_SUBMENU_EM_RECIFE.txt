@@ -1,0 +1,6 @@
+
+Atualização - Submenu Em Recife
+
+- Adicionado o recurso src/gerard/imagens/em_recife_rostos.png com recorte apenas dos rostos da foto editada.
+- Adicionado o submenu Em Recife dentro do painel Gérard Vergnaud, acessado por Sobre > Gérard Vergnaud > Em Recife.
+- Mantidos os demais submenus e funcionalidades da interface.

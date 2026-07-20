@@ -1,0 +1,34 @@
+ARQUITETURA CONCEITUAL DO GÉRARD — QUATRO PILARES
+
+                         Conceito
+                            |
+        ---------------------------------------------------------
+        |                 |                    |                 |
+     Situação         Invariantes       Estilo de interação  Representações
+        |                 |                    |                 |
+   enunciado          papéis             arrastar e soltar    texto
+   categoria          regras             duplo clique         diagramas
+   valores            restrições         movimentação         idiomas
+   idioma             estado             scaffolding          Venn
+   contexto           coerência          feedback             redes de transição
+
+Princípio de independência
+--------------------------
+1. Situação define o contexto e os dados do problema.
+2. Invariantes mantêm os papéis e regras conceituais.
+3. Estilo de interação define como o sujeito age sobre uma representação.
+4. Representações exteriorizam o conceito sem possuir o estilo de interação.
+
+O mesmo EstiloInteracao pode ser aplicado ao texto, ao diagrama de Vergnaud,
+ao diagrama de Venn e a representações futuras. A troca de idioma, de
+representação ou de estilo não reinicia a modelagem.
+
+Somente duas ações restauram o diagrama:
+- Sortear outra situação;
+- Restaurar explicitamente a atividade.
+
+Implementação
+-------------
+O enum gerard.estilointeracao.EstiloInteracao é a fonte única dos estilos.
+O pacote gerard.Scaffolding.proximidade contém somente os mecanismos que
+aplicam esses estilos, sem ser o proprietário conceitual deles.

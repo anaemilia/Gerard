@@ -1,0 +1,12 @@
+Correção: internacionalização do conteúdo da Tabela 4 na Visão de pesquisador.
+
+A Tabela 4 agora internacionaliza não apenas título, descrição e cabeçalhos, mas também o conteúdo das linhas reconhecidas no modelo analítico do estudo:
+- rótulo do problema;
+- tipo esperado;
+- enunciado da situação-problema.
+
+Os dados continuam sendo derivados do log bruto. Para os seis problemas-padrão do estudo, a interface usa chaves de localização para mostrar o conteúdo em português, inglês ou francês. Para problemas não reconhecidos, mantém o texto original registrado no log, pois pode ser uma situação-problema criada pelo usuário.
+
+Classes alteradas:
+- src/gerard/pesquisador/TelaVisaoPesquisador.java
+- src/gerard/i18n/ServicoLocalizacao.java

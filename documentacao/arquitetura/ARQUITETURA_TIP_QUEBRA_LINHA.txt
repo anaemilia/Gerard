@@ -1,0 +1,11 @@
+TIP COM QUEBRA DE LINHA
+
+Objetivo
+- melhorar a leitura dos textos longos exibidos no onmouseover.
+
+Implementação
+- o texto do tip agora é quebrado automaticamente em múltiplas linhas;
+- a largura máxima do tip é limitada para evitar que ultrapasse a tela;
+- a altura é ajustada conforme a quantidade de linhas;
+- palavras muito longas também são quebradas quando necessário;
+- o posicionamento do tip continua respeitando os limites visuais da janela.

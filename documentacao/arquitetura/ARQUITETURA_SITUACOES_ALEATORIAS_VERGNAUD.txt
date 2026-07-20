@@ -1,0 +1,32 @@
+BANCO DE SITUAÇÕES-PROBLEMA POR CATEGORIA DE VERGNAUD
+
+Objetivo
+- incluir no Gerard um arquivo externo com situações-problema agrupadas por categoria do campo aditivo de Vergnaud.
+- permitir que, ao escolher uma categoria, o sistema selecione aleatoriamente uma situação-problema daquela categoria.
+
+Arquivos adicionados
+- dados/situacoes_vergnaud.tsv
+- dados/situacoes_pdf_nao_aditivas_referencia.tsv
+- src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+- src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+
+Formato do arquivo principal
+idioma | tipo | contexto | enunciado | fonte
+
+Tipos usados no sorteio
+- COMPOSICAO_MEDIDAS
+- TRANSFORMACAO_MEDIDAS
+- COMPARACAO_MEDIDAS
+- COMPOSICAO_TRANSFORMACOES
+- TRANSFORMACAO_RELACAO
+- COMPOSICAO_RELACOES
+
+Comportamento implementado
+- o RepositorioSituacoesAditivas deixou de trabalhar com uma única situação por categoria;
+- agora cada categoria possui uma lista de situações-problema;
+- ao selecionar uma categoria, o repositório sorteia uma situação daquela categoria;
+- foi criado o botão "Sortear" para trocar a situação-problema mantendo a categoria atual.
+
+Observação
+- as situações multiplicativas/divisivas do PDF foram preservadas em arquivo de referência,
+  mas não entram no sorteio atual porque o Gerard, nesta versão, está organizado para as seis categorias aditivas já implementadas.

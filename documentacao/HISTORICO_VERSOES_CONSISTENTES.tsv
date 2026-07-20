@@ -1,0 +1,103 @@
+data_hora	versao	sha256_pdf
+2026-07-14T01:35:56+0000	acoes-modelagem-navegabilidade-e-linha-do-tempo	2a5c3f97a87ebe96dbc8e20840522c51dea270be8da059b5170c9f01386ce07c
+2026-07-14T13:53:10+0000	menu-categorias-compacto-hierarquico	2a5c3f97a87ebe96dbc8e20840522c51dea270be8da059b5170c9f01386ce07c
+2026-07-14T14:31:50+0000	comparacao-categorias-fontes-ampliadas	2a5c3f97a87ebe96dbc8e20840522c51dea270be8da059b5170c9f01386ce07c
+
+2026-07-14T14:43:53+0000	representacao-categoria-estatica	5ad956fc2956c2a46b46b38927dd365f7c47331ff6cf4570503da992b3459278
+
+2026-07-14	artigo-ciclos-classificados	Ciclos divididos em estrutural/generalização, consistência teórico-metodológica e refinamento visual/operacional; artigo LaTeX/PDF incorporado.	c685658a7972a05bbd047aa08f1e8bbe786f3170126e4e03296cffc65d39b26b
+
+2026-07-14	artigo_resumo_criterio_classificacao_ciclos	Resumo atualizado para explicitar a separação dos 27 ciclos e os critérios de alcance: estrutural/generalização, consistência teórico-metodológica e refinamento visual-operacional.	DOCUMENTACAO
+
+2026-07-14	regressao_documental_artigo	PENDENTE_SHA256
+2026-07-14T16:15:09+0000	regressao-documental-artigo	5ad956fc2956c2a46b46b38927dd365f7c47331ff6cf4570503da992b3459278
+2026-07-14T16:38:51+0000	comparacao_visual_mesma_solucao	d0c20b979c6eb17df0c57321c64971ea55ce888b71ff9510242e733dbc8b4e65
+2026-07-14	montagem-situacao-blocos-distancia-semantica-controlada	DOCUMENTACAO_C33_E_TESTES
+2026-07-14	correcao-novo-diagrama-variedade-c33	Botão Novo diagrama sem repetição imediata; catálogo mínimo de composição, transformação e comparação em pt/en/fr; regressão aprovada.	70afd37fb09b10806314f2cbbe11f32de84e04d25b8f14d683c6b2b6decdcefe
+2026-07-14	construir-situacao-tooltip-categoria-c35	Nomenclatura de construção; definição da categoria sob demanda no nome; logs e documentação atualizados; regressão aprovada.	DOCUMENTACAO_C35_E_TESTES
+2026-07-15	comparacao-grafico-barras-manipulavel-c36	Substituição do Venn por barras manipuláveis na comparação de medidas; documentação e i18n atualizadas.	DOCUMENTACAO_C36_E_TESTES
+2026-07-15	comparacao-barras-mapeamento-curadoria-c37	Correção da ordem semântica: referido, valor relativo e referendo; incógnita preservada como ?; escala manipulável ampliada.	DOCUMENTACAO_C37_E_TESTES
+2026-07-15	curadoria-sem-campos-id-c38	Identificadores técnicos retirados da interface; vínculos e persistência preservados internamente.	DOCUMENTACAO_C38_E_TESTES
+2026-07-15	curadoria-personagens-objetos-c39	Campos personagem_1, personagem_2 e personagem_3 adicionados ao formulário, modelo e TSV; retrocompatibilidade preservada.	DOCUMENTACAO_C39_E_TESTES
+2026-07-15	quebra-texto-grafico-comparacao-c40	Descrição do gráfico com quebra automática e limite de duas linhas; i18n e regressão verificadas.	DOCUMENTACAO_C40_E_TESTES
+2026-07-15	comparacao-segmento-controle-personagens-c41	Remoção do texto explicativo; segmento 0..n com ponto de controle e personagens abaixo de referido/referendo.	DOCUMENTACAO_C41_E_TESTES
+2026-07-15	comparacao-ponto-manipulavel-cartao-relativo-c42	Ponto azul do segmento tornou-se manipulável e o cartão do valor relativo foi restaurado e sincronizado.	DOCUMENTACAO_C42_E_TESTES
+2026-07-15	comparacao-ajuste-ponto-sobreposicao-c43	Ponto azul com área de interação ampliada; arraste também pela escala; cartão reposicionado e rótulos do eixo movidos para evitar sobreposição.	DOCUMENTACAO_C43_E_TESTES
+2026-07-15	comparacao-eixo-fixo-ponto-suave-c44	Eixo do valor relativo fixado pelo dado curado; ponto azul com posição contínua e valor exibido por arredondamento.	DOCUMENTACAO_C44_E_TESTES
+2026-07-15	comparacao-arraste-continuo-referendo-c45	MouseDragged passa a controlar continuamente o ponto; barra do referendo muda ao cruzar cada valor inteiro.	DOCUMENTACAO_C45_E_TESTES
+2026-07-15	comparacao-cartao-relativo-compacto-c46	Cartão do valor relativo reduzido a um quadrado compacto; rótulo externo e valor com sinal centralizado.	DOCUMENTACAO_C46_E_TESTES
+2026-07-15	comparacao-unidades-comuns-vermelho-suave-c47	As primeiras min(referido,referendo) unidades de ambas as barras, ordenadas de baixo para cima, recebem vermelho suave; excedentes permanecem neutras.	DOCUMENTACAO_C47_E_TESTES
+2026-07-15	rotulos-nos-diagrama-vergnaud-c48	Inclusão de rótulos dos nós diretamente no diagrama de Vergnaud, alinhados ao estilo informacional usado no gráfico de barras.	DOCUMENTACAO_C48_E_TESTES
+2026-07-15	remocao-venn-transformacao-medidas-c49	Na transformação de medidas, o diagrama de Venn foi ocultado e o diagrama de Vergnaud passou a ocupar toda a área disponível.	DOCUMENTACAO_C49_E_TESTES
+2026-07-15	grafico-comparacao-inicial-vazio-c50	O gráfico de barras da comparação passa a iniciar vazio até que o usuário posicione números no diagrama de Vergnaud.	DOCUMENTACAO_C50_E_TESTES
+2026-07-15	consistencia-semantica-comparacao-c51	Correção dos rótulos e do mapeamento interno entre diagrama de Vergnaud e gráfico de barras na comparação de medidas.	DOCUMENTACAO_C51_E_TESTES
+2026-07-15	generalizacao-semantica-curadoria-c52	Papéis, valores, sinais, termo desconhecido e participantes passam a ser obtidos por uma fonte semântica central alimentada pela curadoria em todas as categorias aditivas.	DOCUMENTACAO_C52_E_TESTES
+2026-07-15	preenchimento-seletivo-barras-comparacao-c53	Na comparação, cada barra passa a ser preenchida apenas quando seu papel correspondente é explicitamente posicionado no diagrama de Vergnaud.	DOCUMENTACAO_C53_E_TESTES
+2026-07-15	compactacao-quadradinhos-eixo-fixo-c54	Quadradinhos compactados de baixo para cima e eixo do valor relativo fixado à geometria das barras.	DOCUMENTACAO_C54_E_TESTES
+2026-07-15	eixo-inteiros-escala-estavel-c55	A redução do valor relativo passa a mover somente o ponto azul, preservando extremos, marcas e espaçamento do eixo dos inteiros.	DOCUMENTACAO_C55_E_TESTES
+2026-07-15	personagens-nos-nos-vergnaud-c56	Adicionados subtítulos com nomes de personagens/objetos nos nós do diagrama de Vergnaud, em leitura análoga ao gráfico de barras.	DOCUMENTACAO_C56_E_TESTES
+2026-07-15	rotulo-referendo-acima-c57	Na comparação de medidas, o rótulo do referendo e o nome do personagem foram movidos para cima do quadrado superior para evitar intersecção com a seta.	DOCUMENTACAO_C57_E_TESTES
+2026-07-15	personagem-acima-referendo-c58	No nó superior da comparação, o nome do personagem passou a ser exibido acima do rótulo Referendo.	DOCUMENTACAO_C58_E_TESTES
+2026-07-15	personagens-vermelho-suave-c59	Os rótulos de personagens nos diagramas de Vergnaud passaram a usar vermelho suave em todas as categorias.	DOCUMENTACAO_C59_E_TESTES
+2026-07-15	sincronizacao-vertical-com-vergnaud-c60	Alterações no eixo vertical da comparação passam a atualizar também os elementos correspondentes do diagrama de Vergnaud e o eixo x do número relativo.	DOCUMENTACAO_C60_E_TESTES
+2026-07-15	sincronia-bidirecional-valor-relativo-c61	O valor relativo da comparação foi sincronizado em todas as ações e nas duas direções entre Vergnaud, gráfico de barras e eixos.	DOCUMENTACAO_C61_E_TESTES
+2026-07-15	edicao-valor-relativo-grafico-c62	Correção da edição direta do cartão de valor relativo, com atualização bidirecional de Vergnaud, barras e eixos.	DOCUMENTACAO_C62_E_TESTES
+2026-07-15	personagens-todas-categorias-espaco-referendo-c63	Rótulos de personagens generalizados para todas as categorias; nome do personagem acima do Referendo com maior espaçamento.	DOCUMENTACAO_C63_E_TESTES
+2026-07-15	bidirecionalidade-quadradinhos-venn-c64	Movimentações e remoções de quadradinhos nas áreas de Venn passam a atualizar os valores correspondentes no diagrama de Vergnaud.	DOCUMENTACAO_C64_E_TESTES
+2026-07-15	venn-inicia-vazio-e-preenche-pelo-vergnaud-c65	O diagrama de Venn passa a iniciar vazio e só recebe quadradinhos quando os valores são posicionados/preenchidos no diagrama de Vergnaud.	DOCUMENTACAO_C65_E_TESTES
+2026-07-15	correcao-todo-composicao-venn-c66	A coleção Todo passou a receber quadradinhos e refletir bidirecionalmente o valor modelado no diagrama de Vergnaud.	DOCUMENTACAO_C66_E_TESTES
+2026-07-15	estado-semantico-compartilhado-c67	Representações manipuláveis passam a atualizar um estado semântico único; Vergnaud, diagrama complementar e eixos são reconstruídos consistentemente a partir do mesmo snapshot.	DOCUMENTACAO_C67_E_TESTES
+2026-07-15	correcao-resultante-composicao-sem-limite-c68	Removido o limite de 12 unidades nas coleções; a grade adaptativa passa a representar a quantidade semântica completa.	DOCUMENTACAO_C68_E_TESTES
+2026-07-15	distribuicao-espacamento-composicao-colecoes-c69	Refinada a distribuição espacial do diagrama de composição de coleções, com seta menor e melhor acomodação do valor do Todo.	DOCUMENTACAO_C69_E_TESTES
+2026-07-15	personagens-atualizados-apos-curadoria-c70	Os nomes de personagens da curadoria passam a ser reaplicados imediatamente nos nós já renderizados do diagrama de Vergnaud.	DOCUMENTACAO_C70_E_TESTES
+2026-07-15	remocao-texto-explicativo-diagrama-venn-c71	Removido o texto explicativo abaixo do título do diagrama complementar, preservando título, valores, manipulação e sincronização.	DOCUMENTACAO_C71_E_TESTES
+2026-07-15	menus-em-construcao-c72	Transformações compostas, Relações e Comparação entre categorias foram desabilitadas com tooltip Em construção.	DOCUMENTACAO_C72_E_TESTES
+2026-07-15	botao-reportar-bug-c73	Adicionado botão discreto no menu principal com formulário multilinha e registro local do contexto da atividade.	DOCUMENTACAO_C73_E_TESTES
+2026-07-15	email-relato-bug-c74	O botão Reportar bug salva uma cópia local e abre o cliente de e-mail padrão com mensagem preenchida para ana.queiroz@univasf.edu.br.	DOCUMENTACAO_C74_E_TESTES
+2026-07-15	representacoes-no-relato-bug-c75	O e-mail e a cópia local do relato de bug passam a registrar as representações exibidas, incluindo Vergnaud, eixos, Venn, coleções, barras e extensões futuras da curadoria.	DOCUMENTACAO_C75_E_TESTES
+2026-07-15	foto-recife-no-menu-c76	Substituída a foto exibida no submenu Em Recife, preservando o redimensionamento automático para caber no menu.	DOCUMENTACAO_C76_E_TESTES
+2026-07-15	duas-fotos-em-recife-c77	O submenu Em Recife passa a exibir a foto original e a nova foto lado a lado, com redimensionamento automático.	DOCUMENTACAO_C77_E_TESTES
+2026-07-15	substituicao-foto-mulher-proporcao-c78	Substituída a foto da mulher no submenu Em Recife, preservando a proporção e o layout lado a lado com a foto dos dois homens.	DOCUMENTACAO_C78_E_TESTES
+2026-07-15	titulo-ufpe-2009-sem-legenda-c79	A opção/submenu Em Recife foi renomeada para Na UFPE em 2009 e a legenda inferior das fotos foi removida.	DOCUMENTACAO_C79_E_TESTES
+2026-07-15	email-bug-anaemilia-c80	O destinatário dos relatos de bug foi alterado para anaemilia@gmail.com, mantendo a cópia local e o envio pelo cliente de e-mail do usuário.	DOCUMENTACAO_C80_E_TESTES
+2026-07-15	posicionamento-menu-ufpe-seta-c81	A opção Na UFPE em 2009 recebeu ajuste de posicionamento e uma seta discreta para indicar submenu.	DOCUMENTACAO_C81_E_TESTES
+2026-07-15	seta-apos-rotulo-menu-ufpe-c82	A seta indicadora do submenu Na UFPE em 2009 foi movida para depois do texto, seguindo o padrão visual de menus hierárquicos.	DOCUMENTACAO_C82_E_TESTES
+2026-07-15	seta-submenu-sem-glifo-c83	A seta após Na UFPE em 2009 passou a ser um ícone vetorial Swing, eliminando o quadrado causado por glifo ausente.	DOCUMENTACAO_C83_E_TESTES
+2026-07-15	alinhamento-submenu-ufpe-c84	A opção Na UFPE em 2009 ocupa toda a largura do menu, com texto à esquerda e seta discreta na extremidade direita.	DOCUMENTACAO_C84_E_TESTES
+2026-07-15	correcao-travamento-fechamento-curadoria-c85	Eliminada a persistência duplicada no fechamento da curadoria; botão e X usam salvamento único e traduções numericamente divergentes são salvas como não validadas.	DOCUMENTACAO_C85_E_TESTES
+2026-07-15	curadoria-semantica-somente-original-c86	Traduções permitem editar apenas enunciado e validação; dados semânticos ficam bloqueados e são herdados da versão original.	DOCUMENTACAO_C86_E_TESTES
+2026-07-15	remocao-subtipo-curadoria-c87	Removido o campo subtipo da tela de curadoria; compatibilidade interna legada preservada.	DOCUMENTACAO_C87_E_TESTES
+2026-07-15	bloqueio-dinamico-idioma-curadoria-c88	Ao selecionar no editor de tradução um idioma diferente da versão aberta, a curadoria semântica e o enunciado original são bloqueados dinamicamente; somente a tradução e sua validação permanecem editáveis.	DOCUMENTACAO_C88_E_TESTES
+
+2026-07-15	preenchimento-gmail-relato-bug-c89	O relato de bug passa a abrir diretamente o compositor do Gmail Web com destinatário, assunto e corpo preenchidos; mailto permanece como contingência.	DOCUMENTACAO_C89_E_TESTES
+2026-07-15	feedback-multissensorial-posicionamento-errado-c90	Tentativas de posicionamento semântico incorreto mantêm o item na cena e combinam tremor leve, som sutil e tooltip contextual; a mensagem desaparece após a correção.	DOCUMENTACAO_C90_E_TESTES
+2026-07-16	ajuda-contextual-e-agora-c91	Interrogações nas áreas do texto, Vergnaud e diagrama complementar abrem painel contextual com dúvida, continuidade e próximo passo.	DOCUMENTACAO_C91_E_TESTES
+2026-07-16	atualizacao-pdfs-c91-no-zip-c92	Artigo e análise de complexidade atualizados até C91, com fontes, PDFs canônicos, cópias versionadas, regressão documental e inclusão no ZIP completo.	DOCUMENTACAO_C92_E_TESTES
+2026-07-16	inicializacao-sem-conteudo-c93	Gérard inicia sem enunciado e sem diagramas; o conteúdo é carregado somente após a escolha explícita da categoria.	DOCUMENTACAO_C93_E_TESTES
+2026-07-16	painéis-iniciais-vazios-c94	Mantém as divisões da tela e os três painéis visíveis na inicialização, sem exibir conteúdos educativos antes da escolha da categoria.	DOCUMENTACAO_C94_E_TESTES
+2026-07-16	atualizacao-pdfs-c94-c95	PDFs atualizados com o episódio de regressão C93-C94, o invariante de estrutura visual estável e a exigência de regressão visual separada da verificação funcional.	DOCUMENTACAO_C95
+2026-07-16	analise-apos-posicionamento-c96	A análise da modelagem só aparece quando existe ao menos um posicionamento atual no diagrama de Vergnaud; restauração sem elementos volta a ocultá-la.	TESTE_UI_E_REGRESSAO
+2026-07-16	tema-visual-analise-modelagem-c97	Janela Análise da modelagem adaptada à paleta visual do Gérard, sem mudanças nos dados ou fluxos funcionais.	COMPILACAO_TESTE_VISUAL_REGRESSAO
+2026-07-16	adicao-quadradinhos-venn-c98	Ícone de adição ao lado de cada agrupamento com unidades; criação de quadradinho e sincronização entre representações.	COMPILACAO_E_REGRESSAO
+2026-07-16	PDFs-atualizados-C98-C99	Artigo e análise de complexidade incorporam C96, C97 e C98, incluindo condição de análise após posicionamento, tema visual e criação sincronizada de quadradinhos.	DOCUMENTACAO_C99
+2026-07-16	remocao-quadradinhos-c100	Controle de subtração remove unidades visíveis dos agrupamentos, reorganiza a grade e sincroniza a cardinalidade em todas as categorias aplicáveis.	CODIGO_DOCUMENTACAO_TESTES
+2026-07-16	revisao-analitica-resultados-c102	Resultados do artigo triangulados com Ulfsnes, Song, Zhang e Gao; incluídos dados do corpus, custo de coordenação epistêmica, critérios de aceitação multinível e validade metodológica como camada de qualidade.	DOCUMENTACAO_C102
+2026-07-15	controles-venn-sem-sobreposicao-c103	Controles de adição e remoção de quadradinhos foram reposicionados para evitar sobreposição com os números das representações.	DOCUMENTACAO_C103_E_TESTES
+2026-07-15	controles-venn-afastamento-refinado-c104	Refinado o afastamento entre os controles de quadradinhos e os números de contagem nas representações com quadradinhos.	DOCUMENTACAO_C104_E_TESTES
+2026-07-16	limite-semantico-quadradinhos-c105	A criação de quadradinhos é bloqueada no valor semântico curado ou derivado, com tremor, som e tooltip contextual.	DOCUMENTACAO_C105_E_TESTES
+2026-07-16	atualizacao-documental-c106	Artigo distingue fundamento de Vergnaud de requisitos constatados na interação e incorpora C103-C105; análise de complexidade atualizada.	DOCUMENTACAO_C106
+2026-07-16	contratos-heranca-polimorfismo-unidades-c107	Adição e remoção de unidades visuais foram refatoradas por interfaces de capacidade, classe abstrata comum e implementação polimórfica; diretriz adotada para evoluções futuras.	DOCUMENTACAO_C107_E_TESTES
+2026-07-16	atualizacao-documental-c108	Artigo e análise de complexidade atualizados para incorporar C107, com interfaces como contratos, herança e polimorfismo.	PDFS_C107_C108
+2026-07-16	personagens-negrito-todos-diagramas-c109	Nomes dos personagens passam a ser renderizados em negrito nos diagramas de Vergnaud e nas representações complementares que os exibem.	DOCUMENTACAO_C109_E_TESTES
+2026-07-16	affordance-25d-quadradinhos-c110	Quadradinhos receberam relevo discreto no estado normal e affordance intensificada no foco/arraste, implementada por contratos, herança e polimorfismo.	DOCUMENTACAO_C110_E_TESTES
+2026-07-16	mapeamento-visual-semantico-comparacao-c112	A ordem visual referido-referendo-valor relativo foi desacoplada da ordem semântica referido-valor relativo-referendo; um clique no referendo acrescenta exatamente uma unidade.	DOCUMENTACAO_C112_E_TESTES
+2026-07-16	affordance-pickup-c113	Cursor de mão aberta/fechada, escala de 106%, elevação, sombra e prioridade visual para elementos manipuláveis, por contratos, herança e polimorfismo.	DOCUMENTACAO_C113_E_TESTES
+2026-07-16	padronizacao-cursor-mao-c114	Todas as interações com mãozinha passam a usar o cursor nativo HAND_CURSOR já adotado nos controles laterais do gráfico de barras.	DOCUMENTACAO_C114_E_TESTES
+2026-07-16	cursor-pickup-mao-movimento-c115	Mão nativa no mouseover e cursor nativo de movimentação durante o arraste, preservando as affordances de pickup e as funcionalidades existentes.	DOCUMENTACAO_C115_E_TESTES
+2026-07-16	arraste-fisico-origem-mola-c116	Arrastes exibem contorno fantasma na origem e seguimento por mola amortecida com atraso máximo de 26 px; a soltura permanece exata e as funções semânticas são preservadas.	DOCUMENTACAO_C116_E_TESTES
+2026-07-16	sincronizacao-elementos-texto-diagramas-c117	Os elementos semânticos manipuláveis do enunciado passam a refletir o mesmo snapshot dos diagramas, preservando pontuação, deslocamentos e a origem da incógnita.	DOCUMENTACAO_C117_E_TESTES
+2026-07-16	interrogacao-preservada-sincronizacao-c118	A sincronização atualiza valores conhecidos do enunciado sem substituir a interrogação original, que permanece vinculada ao papel semântico desconhecido.	DOCUMENTACAO_C118_E_TESTES
+2026-07-16	bloqueio-adicao-antes-vergnaud-c119	O controle de adição de quadradinhos só é liberado após o posicionamento explícito dos três elementos semânticos ativos no diagrama de Vergnaud; estado bloqueado recebe aparência cinza e orientação localizada.	DOCUMENTACAO_C119_E_TESTES
+2026-07-16	controles-quantidades-positivas-c120	Controles + e - são condicionados ao estado semântico de Vergnaud, operam independentemente, respeitam limite curado, piso zero e relação aditiva, sem alterar a curadoria.	DOCUMENTACAO_C120_E_TESTES
+2026-07-16	drag-mola-momento-c121	Arraste massa-mola-amortecedor com momento, limite de velocidade e soltura exata, preservando a semântica e as regras quantitativas da C120.	DOCUMENTACAO_C121_E_TESTES
+2026-07-16	sinal-relativo-sem-quantidade-negativa-c122	A seleção de sinal é validada antes da propagação; transformação e valor relativo podem ser assinados, mas quantidades de medida permanecem maiores ou iguais a zero em todas as representações.	DOCUMENTACAO_C122_E_TESTES

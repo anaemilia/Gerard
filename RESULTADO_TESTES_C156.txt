@@ -1,0 +1,34 @@
+=== teste específico C156 ===
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+Teste de decimais integrais e quadradinhos aprovado: 13 verifica??es.
+Teste estrutural da sincronização decimal da transformação: OK
+=== processo transformação ===
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+Teste do processo de transforma??o aprovado: 32 verifica??es.
+Teste estrutural do processo de transformação sem legado: OK
+=== estado compartilhado ===
+=== estado compartilhado ===
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+TESTE_ESTADO_SEMANTICO_COMPARTILHADO_OK
+=== primeiro posicionamento ===
+TestePoliticaInteracaoRepresentacoes: OK
+Teste estrutural: valores semânticos bloqueados; componente flutuante preservado: OK
+=== arraste físico ===
+TesteArrasteFisico: OK
+Teste estrutural de arraste físico: OK
+=== conclusão ===
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+Teste de conclus?o da modelagem aprovado: 21 verifica??es.
+Conclus?o padronizada nas oito categorias: 16 verifica??es.
+Teste de posicionamento do tip aprovado: 6 verifica??es.
+Teste de posicionamento do selo aprovado: 12 verifica??es.
+Teste do sequenciador de conclus?o aprovado: 9 verifica??es.
+Textos da conclus?o progressiva aprovados: 6 verifica??es.

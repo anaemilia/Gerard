@@ -1,0 +1,15 @@
+REDESIGN SUAVE DA INTERFACE
+
+Ajuste realizado
+- substituição do visual mais intenso por uma paleta mais suave e menos saturada;
+- remoção do cabeçalho em gradiente escuro;
+- botões passam a usar fundo claro, bordas discretas e texto escuro;
+- cards e áreas de trabalho receberam sombras mais leves;
+- cores de destaque, quadradinhos e contornos foram suavizadas.
+
+Critérios adotados
+- menor contraste cromático sem perder legibilidade;
+- fundo quente e claro para reduzir ruído visual;
+- uso moderado de bordas e preenchimentos;
+- preservação da organização funcional já existente;
+- manutenção de todas as funcionalidades anteriores.

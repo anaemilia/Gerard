@@ -1,0 +1,12 @@
+TEXTO DE VERGNAUD ABAIXO DO ENUNCIADO
+
+Objetivo
+- retirar o título e a descrição da categoria da área próxima ao diagrama de Vergnaud;
+- reposicionar esse texto abaixo da situação-problema, próximo ao limite inferior da área do enunciado;
+- manter a formatação original do texto que antes aparecia junto ao diagrama.
+
+Alteração realizada
+- o diagrama central ficou visualmente mais limpo, contendo apenas os elementos manipuláveis;
+- o título da categoria permanece em negrito;
+- a descrição da categoria permanece em fonte menor, como na apresentação anterior;
+- a informação conceitual continua visível, mas agora fica associada ao enunciado da situação-problema.

@@ -1,0 +1,8 @@
+C122 — valor relativo assinado sem quantidade negativa
+
+Somente transformação e valor relativo podem ter sinal. Estados, referido,
+referendo, partes e todo permanecem maiores ou iguais a zero. Uma escolha de
+sinal incompatível é bloqueada antes da sincronização. As regras de controles
+quantitativos da C120 e o arraste físico da C121 foram preservados.
+
+Consulte documentacao/relatorios/RELATORIO_QUANTIDADES_NAO_NEGATIVAS_C122_2026-07-16.md.

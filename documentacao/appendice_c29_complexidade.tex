@@ -1,0 +1,21 @@
+\documentclass[12pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\usepackage{parskip}
+\usepackage{xcolor}
+\begin{document}
+\section*{Apêndice de atualização -- ciclo C29}
+\textbf{Decisão incorporada.} Na tela comparativa entre categorias, a mensagem explicativa da faixa superior foi substituída pela formulação:\\
+
+{\large\bfseries No Gérard, a mesma solução numérica não implica a mesma estrutura matemática.}\\
+{\large A construção dos diagramas torna visíveis essas distinções entre categorias.}
+
+\textbf{Classificação do ciclo.} Refinamento visual e operacional.
+
+\textbf{Justificativa.} A alteração não modifica a arquitetura, o modelo de domínio, a persistência, a classificação das categorias nem as regras de sincronização entre representações. Seu papel é reforçar, com maior hierarquia visual, a tese central que já orientava o modo comparativo.
+
+\textbf{Impacto na complexidade do Gérard.} O acréscimo de complexidade é baixo e localizado. A mudança concentrou-se em dois pontos: (i) atualização das chaves de internacionalização da explicação da tela comparativa; e (ii) ajuste da composição visual do cabeçalho dessa mesma tela. Não houve criação de novos objetos de domínio, novos fluxos de interação, nem novos tipos de log. Em termos analíticos, trata-se de um refinamento de comunicação pedagógica, e não de ampliação estrutural.
+
+\textbf{Efeito pedagógico esperado.} A interface passa a explicitar com maior força argumentativa que soluções numericamente equivalentes podem corresponder a estruturas matemáticas distintas, tornando mais evidente o motivo pelo qual o Gérard solicita a construção de diagramas diferentes para categorias diferentes.
+\end{document}

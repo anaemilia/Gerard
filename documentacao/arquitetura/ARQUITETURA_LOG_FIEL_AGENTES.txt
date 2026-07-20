@@ -1,0 +1,7 @@
+Atualização: log fiel à coluna Agente da ação dos quadros anexados
+
+Nesta versão, o log semente da Visão de pesquisador foi mantido fiel aos quadros anexados. A coluna agente_da_acao preserva somente os valores originais do modelo analítico: S para sujeito/usuário e C para computador/interface.
+
+A coluna C/E permanece separada da coluna agente_da_acao. Ela é preenchida apenas quando o agente é S, conforme indicado nos quadros. Para linhas em que o agente é C, C/E fica vazia.
+
+Na primeira execução desta versão, os logs TSV antigos da pasta local Gerard/logs são apagados uma única vez e substituídos pela nova semente fiel aos quadros anexados. Depois disso, o Gerard continua registrando novos eventos normalmente.

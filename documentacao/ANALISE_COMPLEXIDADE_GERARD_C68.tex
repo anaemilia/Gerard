@@ -1,0 +1,201 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\usepackage[brazil]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Análise da Complexidade do Sistema Gérard}
+\rhead{Atualização C68}
+\cfoot{\thepage}
+\definecolor{vermelhosuave}{RGB}{194,104,104}
+\begin{document}
+
+\section*{Atualização da análise de complexidade - ciclos C36 a C68}
+
+Esta atualização amplia a análise anterior da comparação de medidas e incorpora a generalização arquitetural do ciclo C67 e a correção de renderização do ciclo C68. O sistema passou a tratar os diagramas de Vergnaud, os diagramas complementares, as barras, os cartões e os eixos como projeções manipuláveis de um \textbf{estado semântico compartilhado}. Uma ação deixa de atualizar diretamente outra representação: ela altera o estado do domínio, que resolve a relação matemática e redistribui um mesmo snapshot para todas as visualizações.
+
+\section{Síntese do impacto}
+
+A complexidade tecnológica geral permanece baixa a média, mas a complexidade funcional e de domínio permanece alta. O ciclo C67 reduz a complexidade acidental provocada por cadeias locais de sincronização, ao custo de introduzir uma camada explícita de coordenação. O ciclo C68 remove o limite fixo de 12 unidades nas coleções e introduz uma grade adaptativa, garantindo que a quantidade visualizada seja igual à quantidade do estado semântico compartilhado.
+
+\begin{tabularx}{\textwidth}{p{3.8cm}p{2.8cm}X}
+\toprule
+\textbf{Dimensão} & \textbf{Avaliação} & \textbf{Impacto acumulado até C68}\\
+\midrule
+Complexidade de domínio & Alta & Papéis semânticos, sinais, incógnita e relações devem permanecer coerentes entre representações distintas.\\
+Complexidade de interação & Alta & Arraste, edição, exclusão, eixos e protocolos podem iniciar a mesma transação semântica.\\
+Complexidade arquitetural & Média para alta & Foi criado um estado compartilhado com snapshot, origem da ação, papel alterado e proteção contra recursão.\\
+Complexidade de renderização & Baixa a média & Coleções e barras são reconstruídas a partir das quantidades consolidadas.\\
+Complexidade de manutenção & Média & Invariantes passam a estar centralizados, reduzindo correções duplicadas em componentes visuais.\\
+\bottomrule
+\end{tabularx}
+
+\section{Modelo semântico compartilhado}
+
+Para os três papéis principais das categorias atuais, o estado é representado por:
+\[
+S = (T, V, K, i, o, \nu),
+\]
+em que $T$ é a categoria, $V=(v_1,v_2,v_3)$ contém os valores, $K=(k_1,k_2,k_3)$ indica quais valores foram efetivamente modelados, $i$ identifica o papel alterado, $o$ registra a origem da ação e $\nu$ é a versão do snapshot.
+
+A relação canônica utilizada no nível dos três papéis é:
+\[
+v_1 + v_2 = v_3.
+\]
+
+Essa forma cobre, entre outros casos:
+\begin{itemize}[noitemsep]
+  \item Parte 1 $+$ Parte 2 $=$ Todo;
+  \item Estado inicial $+$ Transformação $=$ Estado final;
+  \item Referido $+$ Valor relativo $=$ Referendo;
+  \item Relação inicial $+$ Transformação $=$ Relação final;
+  \item Transformação 1 $+$ Transformação 2 $=$ Transformação resultante.
+\end{itemize}
+
+O papel alterado define a direção da resolução. Se $v_3$ é alterado e $v_1$ é conhecido, então $v_2=v_3-v_1$. Se $v_1$ ou $v_2$ é alterado e ambos são conhecidos, então $v_3=v_1+v_2$. Quando não há papel explicitamente alterado, somente um termo ausente é derivado.
+
+\section{Fluxo reativo}
+
+O fluxo consolidado é:
+
+\begin{center}
+Ação do usuário $\rightarrow$ captura dos valores $\rightarrow$ estado compartilhado $\rightarrow$ resolução $A+B=C$ $\rightarrow$ snapshot $\rightarrow$ atualização de todas as representações.
+\end{center}
+
+As origens previstas são Vergnaud, diagrama complementar, eixo x, eixo vertical, edição textual, arraste, exclusão e protocolo de scaffolding. Uma trava booleana de aplicação impede que o redesenho provocado pelo snapshot seja interpretado como uma nova ação. Sem essa trava, uma atualização Vergnaud $\rightarrow$ Venn poderia acionar novamente Venn $\rightarrow$ Vergnaud, produzindo recursão ou oscilações.
+
+\section{Complexidade temporal}
+
+Considere $p=3$ como o número de papéis principais, $r$ como o número de representações coordenadas e $q$ como o total de unidades gráficas manipuláveis.
+
+\subsection{Captura e resolução}
+
+A leitura dos três elementos de Vergnaud e a resolução da relação são constantes:
+\[
+O(p)=O(1).
+\]
+
+No diagrama complementar, a contagem dos quadradinhos percorre as unidades. Como há número constante de regiões, o custo é:
+\[
+O(q).
+\]
+
+A criação do snapshot e a escolha do termo dependente permanecem $O(1)$.
+
+\subsection{Aplicação nas representações}
+
+Atualizar os três valores textuais de Vergnaud custa $O(1)$. Reconstruir as coleções ou barras custa $O(q')$, em que $q'$ é o número de unidades do novo estado. No ciclo C68, o cálculo do número de linhas, colunas, tamanho e espaçamento da grade é constante; a criação das unidades continua linear em $q'$. Atualizar os eixos e cartões é $O(1)$.
+
+Na comparação de medidas, a correspondência cromática ainda exige ordenar as unidades de cada barra de baixo para cima. Para $q=r_f+r_e$:
+\[
+O(r_f\log r_f+r_e\log r_e)=O(q\log q).
+\]
+
+Logo, o custo total de uma transação é:
+\[
+O(q) \quad \text{nas coleções simples},
+\]
+e
+\[
+O(q\log q) \quad \text{na comparação com pareamento cromático}.
+\]
+
+Como as quantidades educacionais são pequenas e limitadas pela área de desenho, esse custo não representa gargalo prático.
+
+\section{Impacto específico do ciclo C68}
+
+Antes do ciclo C68, a função de renderização limitava a quantidade visual das coleções a 12 quadradinhos. Esse limite produzia uma inconsistência observável: o estado semântico e o diagrama de Vergnaud podiam registrar, por exemplo, $8+6=14$, enquanto a coleção resultante exibia somente 12 unidades.
+
+A correção substituiu a supressão de unidades por uma grade adaptativa. Para uma região de largura útil $L$, altura útil $H$ e quantidade $q$, o número de colunas é estimado por
+\[
+c=\left\lceil\sqrt{q\cdot\frac{L}{H}}\right\rceil,
+\]
+e o número de linhas por
+\[
+l=\left\lceil\frac{q}{c}\right\rceil.
+\]
+O tamanho e o espaçamento são então ajustados às dimensões disponíveis. O cálculo geométrico é $O(1)$ e a materialização dos $q$ quadradinhos é $O(q)$. A mudança preserva o invariante de que a quantidade de unidades gráficas deve ser exatamente igual ao valor semântico representado.
+
+\section{Complexidade espacial}
+
+O estado compartilhado armazena apenas três valores, três indicadores e metadados constantes, portanto utiliza:
+\[
+O(1).
+\]
+
+As unidades gráficas continuam dominando a memória:
+\[
+O(q).
+\]
+
+A centralização não duplica os quadradinhos no modelo de domínio. O snapshot contém quantidades, não cópias das figuras.
+
+\section{Invariantes de consistência}
+
+Após qualquer transação, devem ser verdadeiras as seguintes condições:
+\begin{enumerate}[noitemsep]
+  \item todas as representações exibem o mesmo valor para cada papel conhecido;
+  \item a relação $v_1+v_2=v_3$ é preservada quando há informação suficiente;
+  \item o sinal do segundo termo é preservado nos números relativos;
+  \item a incógnita permanece desconhecida até ser modelada ou derivada pela relação;
+  \item eixos, cartões e pontos de controle refletem o mesmo valor da relação;
+  \item quadradinhos e rótulos numéricos representam a mesma quantidade, sem truncamento por limite visual fixo;
+  \item uma atualização de renderização não cria uma segunda ação do usuário.
+\end{enumerate}
+
+\section{Impacto sobre a manutenção}
+
+Antes do C67, correções eram adicionadas em pares: eixo vertical para barras, barras para Vergnaud, cartão para eixo, Venn para valores e valores para Venn. Esse desenho aumenta o número potencial de conexões entre $r$ representações para até:
+\[
+O(r^2).
+\]
+
+Com o estado compartilhado, cada representação se conecta ao coordenador, reduzindo a topologia conceitual para:
+\[
+O(r).
+\]
+
+O ganho é de manutenção, não necessariamente de tempo de execução. Novas representações precisam implementar duas operações: publicar alterações no estado e renderizar um snapshot. Elas não precisam conhecer todas as demais visualizações.
+
+\section{Riscos e controles}
+
+Os principais riscos introduzidos pela centralização são:
+\begin{itemize}[noitemsep]
+  \item derivar um termo que o desenho pedagógico deveria manter vazio;
+  \item escolher o termo dependente errado quando duas regiões são alteradas na mesma ação;
+  \item reconstruir componentes durante um arraste contínuo em frequência excessiva;
+  \item apagar a distinção entre valor curado e valor efetivamente modelado pelo usuário.
+\end{itemize}
+
+Os controles implementados incluem indicadores de valor conhecido, registro do papel alterado, origem da ação, inicialização vazia e trava contra recursão. A validação deve continuar incluindo inspeção visual por categoria, além dos testes do modelo.
+
+\section{Verificação dos ciclos C67 e C68}
+
+Foram executadas:
+\begin{itemize}[noitemsep]
+  \item compilação completa pelo Ant/NetBeans;
+  \item regressão estrutural, de internacionalização, vínculos, curadoria e logs;
+  \item teste isolado do estado compartilhado;
+  \item casos de composição $8+6=14$, alteração do Todo, comparação $6+8=14$ e transformação $10+(-3)=7$.
+\end{itemize}
+
+A inspeção visual exaustiva de todas as combinações de arraste permanece necessária, pois testes unitários do estado não verificam sobreposição, posicionamento ou fluidez da interface.
+
+\section{Classificação dos ciclos C67 e C68}
+
+O ciclo C67 é classificado como \textbf{estrutural e de generalização}. O ciclo C68 é classificado como \textbf{consistência teórica e metodológica}, pois elimina uma divergência entre a quantidade matemática consolidada e a quantidade efetivamente desenhada. Ele não corrige apenas uma figura específica. Formaliza uma regra arquitetural válida para todas as categorias: representações manipuláveis são projeções de um mesmo estado matemático e devem ser atualizadas consistentemente após toda ação.
+
+\section{Conclusão}
+
+A introdução do estado semântico compartilhado aumenta a formalização do domínio, mas reduz a complexidade acidental das sincronizações locais. O custo assintótico permanece dominado pela quantidade de unidades gráficas, enquanto o estado e a resolução da relação são constantes. O principal benefício é a coerência: Vergnaud, Venn, barras, cartões e eixos deixam de competir como fontes de verdade e passam a representar o mesmo snapshot matemático.
+
+\end{document}

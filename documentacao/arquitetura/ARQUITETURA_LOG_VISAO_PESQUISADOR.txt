@@ -1,0 +1,72 @@
+Visão de pesquisador com dados gerados em tempo de uso
+======================================================
+
+Esta versão substitui a visão de pesquisador baseada em dados fixos por uma visão baseada em log de interação.
+
+Modelo adotado
+--------------
+O modelo de análise foi inspirado nos quadros de análise da tarefa anexados pelo usuário. O Gerard registra uma linha para cada ação relevante, preservando as colunas centrais do estudo:
+
+- Agente da ação: S = sujeito/usuário; C = computador/interface
+- Problema
+- Tentativa
+- Tarefa
+- C/E
+- Instrumento - Organização
+- Instrumento - Artefato
+- Função do artefato
+- Objeto
+- Regras
+
+Foram acrescentados campos técnicos para permitir análise automática:
+
+- timestamp
+- sessão
+- usuário
+- categoria
+- enunciado
+- origem_evento
+- detalhes
+
+Arquivos gerados
+----------------
+Os logs são salvos em:
+
+<home do usuário>/Gerard/logs/
+
+Cada execução cria um arquivo TSV:
+
+gerard_interacao_YYYYMMDD_HHMMSS.tsv
+
+Pacotes criados
+---------------
+src/gerard/pesquisador/log/
+
+Classes:
+
+- EventoLogGerard.java
+- LoggerInteracaoGerard.java
+- EstatisticasLogGerard.java
+- ExportadorLogGerard.java
+
+Classe ajustada:
+
+- src/gerard/pesquisador/TelaVisaoPesquisador.java
+
+Comportamento
+-------------
+A cada uso do Gerard, ações como apresentação da questão, seleção de categoria, seleção de numeral, soltura no diagrama, escolha de sinal, navegação no eixo, edição textual e restauração são registradas.
+
+O botão "Visão de pesquisador" abre uma janela que lê os arquivos TSV e gera, em tempo de uso:
+
+- síntese quantitativa;
+- gráfico de eventos por agente;
+- gráfico de erros por categoria;
+- tabela do log bruto;
+- acertos e erros por categoria;
+- eventos por categoria;
+- eventos por tarefa;
+- eventos por artefato;
+- indicação do arquivo da sessão e diretório dos logs.
+
+A visão de pesquisador não interfere na modelagem do aluno.

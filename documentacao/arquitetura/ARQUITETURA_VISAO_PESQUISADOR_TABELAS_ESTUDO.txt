@@ -1,0 +1,17 @@
+Visão de pesquisador baseada nas tabelas do estudo
+===================================================
+
+Esta versão modifica a janela "Visão de pesquisador" para usar o modelo tabular do estudo
+Design de Interfaces Inteligentes para o Ensino de Matemática, mas sem usar valores fixos do relatório.
+
+Os dados são lidos dos arquivos TSV de log gerados em tempo de uso do Gerard e do log de semente importado
+dos quadros anexados. A janela passa a apresentar abas no formato das tabelas do estudo:
+
+- Tabela 6 - Usuários: quantidade de situações-problema, ações do sujeito, ações da interface, acertos e erros.
+- Tabela 4 - Problemas: identificação dos problemas, categorias, enunciados e contagens de eventos.
+- Tabela 5 - Formato: agrupamento das tarefas com instrumentos, artefatos, funções, objetos e avaliação predominante.
+- Tabela 7 - Objetos: objetos da ação conforme a ontologia da análise instrumental e ocorrências no log.
+- Tabela 9 - Ações: codificação granular das ações instrumentais com agente, problema, tentativa, C/E, instrumento, função, objeto e regras.
+
+A aba de gráficos permanece, mas agora funciona como complemento quantitativo das tabelas.
+A aba Log bruto continua disponível para inspeção e exportação dos dados originais.

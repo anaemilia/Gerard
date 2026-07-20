@@ -1,0 +1,37 @@
+MÓDULO DE CAMPO ADITIVO - ORGANIZAÇÃO
+
+Pacotes adicionados:
+- src/gerard/campoaditivo/modelo
+  * TipoSituacaoAditiva.java
+  * DefinicaoDiagramaAditivo.java
+  * SituacaoProblemaAditiva.java
+
+- src/gerard/campoaditivo/servico
+  * RepositorioSituacoesAditivas.java
+  * CatalogoDefinicoesAditivas.java
+
+Objetivo:
+- organizar os tipos do campo aditivo em pacote próprio;
+- separar modelo, repositório e definição visual do diagrama;
+- permitir extensão futura sem acoplamento direto com a interface.
+
+Tipos incorporados:
+1. Composição de medidas
+2. Transformação de medidas
+3. Comparação de medidas
+4. Composição de transformações
+5. Transformação de uma relação
+6. Composição de relações
+
+Integração com a interface:
+- botão "Tipo" para escolher a estrutura aditiva;
+- botão "Idioma" para trocar o enunciado em PT/EN/FR;
+- painel de interpretação linguística atualizado;
+- diagrama conceitual à direita com rótulos dinâmicos conforme o tipo.
+
+Boas práticas adotadas:
+- separação por responsabilidade;
+- encapsulamento de regras e dados;
+- enumerações para tipos estáveis de domínio;
+- repositório dedicado para situações-problema;
+- serviço dedicado para definição visual do tipo.

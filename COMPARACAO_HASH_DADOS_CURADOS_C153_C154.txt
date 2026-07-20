@@ -1,0 +1,43 @@
+Comparação SHA-256 dos arquivos de dados C153/C154
+Resultado geral: IDÊNTICOS
+Arquivos comparados: 13
+
+IGUAL  build/classes/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+  C153: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+  C154: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IGUAL  build/classes/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+  C153: 62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+  C154: 62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+IGUAL  build/classes/gerard/interpretacao/classificacao/exemplos_treino_vergnaud.tsv
+  C153: bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3
+  C154: bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3
+IGUAL  build/classes/gerard/pesquisador/log/dados/quadros_analise_tarefa_seed.tsv
+  C153: b9aafc2098a132083ad9bc8439560d9cf700960aa7d2d411ae22cb3192ace5b1
+  C154: b9aafc2098a132083ad9bc8439560d9cf700960aa7d2d411ae22cb3192ace5b1
+IGUAL  dados/situacoes_pdf_nao_aditivas_referencia.tsv
+  C153: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+  C154: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IGUAL  dados/situacoes_vergnaud.tsv
+  C153: a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389
+  C154: a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389
+IGUAL  documentacao/HISTORICO_VERSOES_CONSISTENTES.tsv
+  C153: b765ad9dcc10f13dc4f5cd2916fd86e0417be6c7106d52190aa276017b188f71
+  C154: b765ad9dcc10f13dc4f5cd2916fd86e0417be6c7106d52190aa276017b188f71
+IGUAL  documentacao/artigo_codesign/dados/decisoes_metodologicas.csv
+  C153: b55a9f91eab526e85c251e0a6049b9e59da062939b4556f079e4368080cf31da
+  C154: b55a9f91eab526e85c251e0a6049b9e59da062939b4556f079e4368080cf31da
+IGUAL  documentacao/artigo_codesign/dados/versoes_consistentes.csv
+  C153: 4dcb2d259d4a62dfffc5a4b457568d617b2bc974c01a353b0e2ac905fa03f91f
+  C154: 4dcb2d259d4a62dfffc5a4b457568d617b2bc974c01a353b0e2ac905fa03f91f
+IGUAL  src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+  C153: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+  C154: 2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IGUAL  src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+  C153: 62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+  C154: 62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+IGUAL  src/gerard/interpretacao/classificacao/exemplos_treino_vergnaud.tsv
+  C153: bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3
+  C154: bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3
+IGUAL  src/gerard/pesquisador/log/dados/quadros_analise_tarefa_seed.tsv
+  C153: b9aafc2098a132083ad9bc8439560d9cf700960aa7d2d411ae22cb3192ace5b1
+  C154: b9aafc2098a132083ad9bc8439560d9cf700960aa7d2d411ae22cb3192ace5b1

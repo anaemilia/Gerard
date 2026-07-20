@@ -1,0 +1,7 @@
+Ajustes desta versão:
+- havia uma área delimitadora invisível usada como referência para renderização, movimentação e zonas semânticas dos diagramas de Vergnaud;
+- essa área foi substituída por uma área visível única dos diagramas de Vergnaud;
+- a renderização, o posicionamento e o teste de mouse agora usam a mesma área visível;
+- a transformação composta em mais de um passo foi redesenhada em formato mais compacto, sem usar o deslocamento vertical fixo do renderizador simples de Transformação de Medidas;
+- os diagramas de dois passos são centralizados verticalmente dentro da área visível;
+- os diagramas compostos permanecem sem preenchimento automático.

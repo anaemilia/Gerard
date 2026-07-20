@@ -1,0 +1,9 @@
+Atualização do log fiel aos quadros anexados
+
+A coluna agente_da_acao foi mantida fiel ao modelo dos quadros: C = computador/interface e S = sujeito/usuário.
+
+A coluna C/E permanece independente e é preenchida apenas quando o agente é S. Para linhas do agente C, C/E permanece vazio, conforme o padrão dos quadros.
+
+A inicialização do Gerard apaga uma única vez os logs TSV antigos com o marcador logs_regerados_quadros_fieis_agente_cs_v7.flag e copia a semente regenerada a partir dos quadros anexados.
+
+Também foi acrescentada normalização defensiva: caso algum log local antigo contenha Computador, Interface, Sujeito, Usuário ou Usuária na coluna agente_da_acao, o carregamento local normaliza para C ou S.

@@ -1,0 +1,24 @@
+INTERAÇÃO INDIVIDUAL COM OS ELEMENTOS DO DIAGRAMA DE VERGNAUD
+
+Objetivo
+- substituir o arraste do diagrama inteiro pelo arraste individual de cada elemento do diagrama de Vergnaud.
+
+Comportamento implementado
+- cada figura do diagrama (retângulo, elipse ou retângulo arredondado) pode ser selecionada e arrastada individualmente;
+- cada conector do diagrama (seta, linha ou chave) também pode ser selecionado e arrastado individualmente;
+- todos os elementos permanecem limitados à área central invisível destinada ao diagrama de Vergnaud;
+- o diagrama continua iniciando vazio, para preenchimento pelo usuário.
+
+Decisões de arquitetura
+- criação de objetos de apresentação mutáveis para o diagrama central:
+  * ElementoVergnaud
+  * ConectorVergnaud
+- separação entre:
+  * geração da cena lógica (GeradorCenaDiagramaAditivo)
+  * instanciação dos elementos manipuláveis da interface
+- preservação da área invisível como contêiner lógico para restrição do arraste.
+
+Benefícios
+- maior granularidade de manipulação;
+- coerência com a proposta de que o usuário monte e reorganize o diagrama;
+- menor acoplamento entre a lógica do tipo de problema e a forma de interação na interface.

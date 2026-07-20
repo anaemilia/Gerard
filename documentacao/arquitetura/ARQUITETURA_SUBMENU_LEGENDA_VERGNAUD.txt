@@ -1,0 +1,14 @@
+Submenu Legenda no menu Sobre
+
+Foi incluído no menu Sobre um terceiro submenu denominado Legenda.
+O submenu apresenta a descrição textual dos diagramas oficiais de Vergnaud usados no Gerard:
+
+1. Composição de medidas: duas medidas, chave e medida resultante, sem seta extra.
+2. Transformação de medidas: medida inicial, seta, medida final e transformação circular acima da seta.
+3. Comparação de medidas: duas medidas verticais, seta vertical e relação circular ao lado.
+4. Composição de transformações: três medidas, duas transformações sobre as setas e transformação resultante em arco inferior.
+5. Transformação de uma relação: relação inicial, seta, relação final e transformação circular acima.
+6. Composição de relações: duas relações circulares, chave e relação resultante circular.
+
+A implementação preserva a estrutura de menus flutuantes já existente: Sobre -> Legenda.
+O submenu é exibido por clique ou passagem do mouse e desaparece junto com os demais menus internos.

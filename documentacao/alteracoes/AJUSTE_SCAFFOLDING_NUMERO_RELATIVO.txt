@@ -1,0 +1,1 @@
+Feature implementada: quando um número ou interrogação é inserido em um círculo de número relativo por soltura ou por edição de texto, é exibido um scaffolding com dois radio buttons para escolha do sinal positivo ou negativo. Após a escolha, o menu é ocultado e o sinal é prefixado ao valor dentro do círculo/elemento. O código de apoio foi isolado no pacote gerard.Scaffolding.

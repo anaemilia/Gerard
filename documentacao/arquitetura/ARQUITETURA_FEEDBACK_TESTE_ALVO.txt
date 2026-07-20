@@ -1,0 +1,23 @@
+ALTERAÇÃO: CATEGORIAS DE FEEDBACK VISUAL DE ALVO
+
+Foi criado um botão superior denominado "Teste" para escolher o comportamento de feedback visual usado quando números ou a interrogação são arrastados do enunciado para o diagrama de Vergnaud.
+
+Modos disponíveis:
+
+1. Proximidade visual
+   O alvo formal semanticamente correto muda de cor quando o item se aproxima dele.
+
+2. Drop target highlighting
+   O alvo muda de cor apenas quando o centro do item entra na área válida de soltura do alvo correto.
+
+3. Drag-over feedback
+   Durante o arraste, o alvo correto muda de cor quando o item está sobre ou próximo dele.
+
+4. Feedback por affordance
+   Enquanto o item é arrastado no diagrama, o alvo correto sinaliza visualmente que pode recebê-lo. Ao aproximar o item, o realce fica mais forte.
+
+5. Atração magnética / snap-to-target
+   Quando o item se aproxima do alvo correto, ele é atraído visualmente. Ao soltar dentro da zona de proximidade, o item é centralizado no alvo.
+
+Observação metodológica:
+Os modos usam a interpretação linguística apenas para identificar o papel do número ou da interrogação e seu alvo formal correspondente. O feedback é temporário e não insere elementos permanentes no diagrama, preservando a representação formal documentada.

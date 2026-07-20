@@ -1,0 +1,21 @@
+Atualização: leitura interpretativa das redes de transição no D3.js
+
+Arquivo alterado:
+- src/gerard/pesquisador/visualizacao/gerard_d3_visualizacoes.js
+- build/classes/gerard/pesquisador/visualizacao/gerard_d3_visualizacoes.js
+
+Objetivo da alteração:
+Inserir, abaixo de cada painel da visualização de redes da Visão do Pesquisador, uma explicação interpretativa no formato:
+- Leitura da rede de transições;
+- Exemplo lido da visualização;
+- Relevância para o pesquisador;
+- Possível significado no Gerard;
+- Como o pesquisador pode usar.
+
+Painéis contemplados:
+1. Regulação da interação: leitura por trios S → C → S.
+2. Recorrência de erros: leitura dos trios em que a primeira ação do sujeito foi classificada como erro.
+3. Matriz de efetividade do feedback/scaffolding: leitura da intervenção do computador em relação à ação seguinte do sujeito.
+
+Critério preservado:
+A alteração não modifica os cálculos das redes, a classificação dos agentes S/C, os tipos de ação, os nós, as arestas, a matriz de efetividade ou os tooltips. A mudança apenas acrescenta blocos textuais calculados a partir dos dados já usados pela visualização.

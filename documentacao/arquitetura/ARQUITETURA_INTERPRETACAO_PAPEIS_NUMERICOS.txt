@@ -1,0 +1,38 @@
+MÓDULO DE INTERPRETAÇÃO DOS PAPÉIS NUMÉRICOS
+
+Objetivo
+- enriquecer a interpretação linguística para identificar o papel que cada número exerce na situação-problema do campo aditivo.
+- diferenciar papéis conceituais como parte, todo, estado inicial, transformação, estado final, referente, referido, diferença, relações e transformações compostas.
+
+Pacotes/classes adicionados
+- src/gerard/interpretacao/modelo/PapelElementoInterpretado.java
+- src/gerard/interpretacao/servico/InferidorPapeisNumericos.java
+
+Integração
+- ResultadoInterpretacao passa a carregar uma lista de papéis inferidos.
+- InterpretadorLinguistico usa InferidorPapeisNumericos após identificar categoria, números e pistas linguísticas.
+- O painel de interpretação linguística passa a mostrar também a linha "Papéis".
+
+Critérios de inferência incorporados
+1. Composição de medidas:
+   Parte 1 + Parte 2 = Todo.
+2. Transformação de medidas:
+   Estado inicial + Transformação = Estado final.
+3. Comparação de medidas:
+   Referente, referido e diferença/relação.
+4. Composição de transformações:
+   Transformação 1 + Transformação 2 = Transformação final.
+5. Transformação de uma relação:
+   Relação inicial + Transformação = Relação final.
+6. Composição de relações:
+   Relação 1 + Relação 2 = Relação final.
+
+Boas práticas aplicadas
+- criação de serviço dedicado para inferência de papéis;
+- separação entre extração numérica, classificação linguística e atribuição conceitual;
+- preservação da interface como camada de apresentação;
+- internacionalização dos nomes dos papéis em PT/EN/FR;
+- inferência explícita do elemento desconhecido "?" quando a pergunta indica o papel ausente.
+
+Observação
+- A inferência é baseada em regras linguísticas e posição dos números. Ela não substitui a validação pedagógica, mas oferece ao Gerard uma base mais rica para orientar feedbacks e futuros agentes diagnósticos.

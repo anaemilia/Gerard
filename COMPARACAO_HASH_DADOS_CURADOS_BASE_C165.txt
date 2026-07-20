@@ -1,0 +1,22 @@
+Comparação SHA-256 dos dados curados entre a base enviada e C165
+
+src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+base  62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+c165  62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+status IDÊNTICO
+
+src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+base  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+c165  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+status IDÊNTICO
+
+dados/situacoes_vergnaud.tsv
+base  a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389
+c165  a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389
+status IDÊNTICO
+
+dados/situacoes_pdf_nao_aditivas_referencia.tsv
+base  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+c165  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+status IDÊNTICO
+

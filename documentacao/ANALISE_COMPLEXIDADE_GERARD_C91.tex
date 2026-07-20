@@ -1,0 +1,246 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\usepackage[brazil]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Análise da Complexidade do Sistema Gérard}
+\rhead{Atualização C91}
+\cfoot{\thepage}
+\definecolor{vermelhosuave}{RGB}{194,104,104}
+\begin{document}
+
+\section*{Atualização da análise de complexidade - ciclos C36 a C91}
+
+Esta atualização amplia a análise anterior da comparação de medidas e incorpora os ciclos C69 a C91. O sistema mantém os diagramas de Vergnaud, os diagramas complementares, as barras, os cartões e os eixos como projeções manipuláveis de um \textbf{estado semântico compartilhado}. Sobre essa base foram adicionados: atualização imediata de personagens após a curadoria; controle de funcionalidades em construção; relato contextual de falhas; memória institucional por imagens; estabilização do fluxo de persistência; curadoria semântica restrita à versão original; integração com o Gmail Web; feedback multissensorial para erro de posicionamento; e ajuda contextual nas áreas do texto, de Vergnaud e do diagrama complementar.
+
+\section{Síntese do impacto}
+
+A complexidade tecnológica geral permanece baixa a média, mas a complexidade funcional, interacional e de domínio permanece alta. Os ciclos C67 e C68 reduziram a complexidade acidental das sincronizações e eliminaram o truncamento visual. Entre C69 e C91, o crescimento ocorreu principalmente na coordenação de estados de interface, na persistência multilíngue e no scaffolding. As novas funcionalidades são localizadas e, em geral, constantes por evento, mas aumentam o número de condições que precisam preservar a fonte semântica única e não alterar a notação formal.
+
+\begin{tabularx}{\textwidth}{p{3.8cm}p{2.8cm}X}
+\toprule
+\textbf{Dimensão} & \textbf{Avaliação} & \textbf{Impacto acumulado até C91}\\
+\midrule
+Complexidade de domínio & Alta & Papéis semânticos, sinais, incógnita e relações devem permanecer coerentes entre representações distintas.\\
+Complexidade de interação & Alta & Arraste, edição, exclusão, eixos, feedback de erro, painéis de ajuda e relato de falhas podem iniciar eventos distintos sobre o mesmo contexto.\\
+Complexidade arquitetural & Média para alta & O estado compartilhado foi mantido e surgiram módulos específicos para suporte, curadoria multilíngue, feedback e ajuda contextual.\\
+Complexidade de renderização & Baixa a média & Coleções e barras continuam lineares no número de unidades; ícones, tooltips, tremor e painéis contextuais possuem custo constante por quadro.\\
+Complexidade de manutenção & Média para alta & A centralização reduz duplicações, mas internacionalização, persistência, Gmail e scaffolding exigem regressão cruzada entre fluxos.\\
+\bottomrule
+\end{tabularx}
+
+\section{Modelo semântico compartilhado}
+
+Para os três papéis principais das categorias atuais, o estado é representado por:
+\[
+S = (T, V, K, i, o, \nu),
+\]
+em que $T$ é a categoria, $V=(v_1,v_2,v_3)$ contém os valores, $K=(k_1,k_2,k_3)$ indica quais valores foram efetivamente modelados, $i$ identifica o papel alterado, $o$ registra a origem da ação e $\nu$ é a versão do snapshot.
+
+A relação canônica utilizada no nível dos três papéis é:
+\[
+v_1 + v_2 = v_3.
+\]
+
+Essa forma cobre, entre outros casos:
+\begin{itemize}[noitemsep]
+  \item Parte 1 $+$ Parte 2 $=$ Todo;
+  \item Estado inicial $+$ Transformação $=$ Estado final;
+  \item Referido $+$ Valor relativo $=$ Referendo;
+  \item Relação inicial $+$ Transformação $=$ Relação final;
+  \item Transformação 1 $+$ Transformação 2 $=$ Transformação resultante.
+\end{itemize}
+
+O papel alterado define a direção da resolução. Se $v_3$ é alterado e $v_1$ é conhecido, então $v_2=v_3-v_1$. Se $v_1$ ou $v_2$ é alterado e ambos são conhecidos, então $v_3=v_1+v_2$. Quando não há papel explicitamente alterado, somente um termo ausente é derivado.
+
+\section{Fluxo reativo}
+
+O fluxo consolidado é:
+
+\begin{center}
+Ação do usuário $\rightarrow$ captura dos valores $\rightarrow$ estado compartilhado $\rightarrow$ resolução $A+B=C$ $\rightarrow$ snapshot $\rightarrow$ atualização de todas as representações.
+\end{center}
+
+As origens previstas são Vergnaud, diagrama complementar, eixo x, eixo vertical, edição textual, arraste, exclusão e protocolo de scaffolding. Uma trava booleana de aplicação impede que o redesenho provocado pelo snapshot seja interpretado como uma nova ação. Sem essa trava, uma atualização Vergnaud $\rightarrow$ Venn poderia acionar novamente Venn $\rightarrow$ Vergnaud, produzindo recursão ou oscilações.
+
+\section{Complexidade temporal}
+
+Considere $p=3$ como o número de papéis principais, $r$ como o número de representações coordenadas e $q$ como o total de unidades gráficas manipuláveis.
+
+\subsection{Captura e resolução}
+
+A leitura dos três elementos de Vergnaud e a resolução da relação são constantes:
+\[
+O(p)=O(1).
+\]
+
+No diagrama complementar, a contagem dos quadradinhos percorre as unidades. Como há número constante de regiões, o custo é:
+\[
+O(q).
+\]
+
+A criação do snapshot e a escolha do termo dependente permanecem $O(1)$.
+
+\subsection{Aplicação nas representações}
+
+Atualizar os três valores textuais de Vergnaud custa $O(1)$. Reconstruir as coleções ou barras custa $O(q')$, em que $q'$ é o número de unidades do novo estado. No ciclo C68, o cálculo do número de linhas, colunas, tamanho e espaçamento da grade é constante; a criação das unidades continua linear em $q'$. Atualizar os eixos e cartões é $O(1)$.
+
+Na comparação de medidas, a correspondência cromática ainda exige ordenar as unidades de cada barra de baixo para cima. Para $q=r_f+r_e$:
+\[
+O(r_f\log r_f+r_e\log r_e)=O(q\log q).
+\]
+
+Logo, o custo total de uma transação é:
+\[
+O(q) \quad \text{nas coleções simples},
+\]
+e
+\[
+O(q\log q) \quad \text{na comparação com pareamento cromático}.
+\]
+
+Como as quantidades educacionais são pequenas e limitadas pela área de desenho, esse custo não representa gargalo prático.
+
+\subsection{Custos dos ciclos C69 a C91}
+Seja $m$ o tamanho textual do relato de falha, $a$ o número de áreas de ajuda e $u$ o número de opções por painel. No projeto atual, $a=3$ e $u=3$, portanto ambos são constantes.
+
+\begin{itemize}[noitemsep]
+  \item atualização de rótulos, bloqueio de campos, abertura de menu, tremor, som e tooltip: $O(1)$ por evento;
+  \item geração do painel de ajuda: $O(a\cdot u)=O(1)$;
+  \item serialização do relato de bug e composição da URL do Gmail: $O(m)$;
+  \item cópia dos dados semânticos da versão original para uma tradução: $O(f)$, em que $f$ é o número fixo de campos curados, logo $O(1)$ no modelo atual;
+  \item redimensionamento de fotografias: $O(P)$ em relação ao número de pixels processados no carregamento, sem participação nas transações matemáticas.
+\end{itemize}
+
+Assim, o limite assintótico das transações matemáticas continua sendo $O(q)$ nas coleções e $O(q\log q)$ na comparação. Os recursos de suporte acrescentam custo constante ou linear apenas no comprimento da mensagem.
+
+\section{Impacto específico do ciclo C68}
+
+Antes do ciclo C68, a função de renderização limitava a quantidade visual das coleções a 12 quadradinhos. Esse limite produzia uma inconsistência observável: o estado semântico e o diagrama de Vergnaud podiam registrar, por exemplo, $8+6=14$, enquanto a coleção resultante exibia somente 12 unidades.
+
+A correção substituiu a supressão de unidades por uma grade adaptativa. Para uma região de largura útil $L$, altura útil $H$ e quantidade $q$, o número de colunas é estimado por
+\[
+c=\left\lceil\sqrt{q\cdot\frac{L}{H}}\right\rceil,
+\]
+e o número de linhas por
+\[
+l=\left\lceil\frac{q}{c}\right\rceil.
+\]
+O tamanho e o espaçamento são então ajustados às dimensões disponíveis. O cálculo geométrico é $O(1)$ e a materialização dos $q$ quadradinhos é $O(q)$. A mudança preserva o invariante de que a quantidade de unidades gráficas deve ser exatamente igual ao valor semântico representado.
+
+
+\section{Impacto acumulado dos ciclos C69 a C91}
+
+\subsection{C69 a C72: distribuição, atualização e controle de navegação}
+O ciclo C69 alterou apenas a geometria da composição de coleções: a seta foi reduzida e a resultante reposicionada. O custo de cálculo permanece $O(1)$, enquanto a renderização das unidades continua $O(q)$. O ciclo C70 reaplica nomes curados em elementos já renderizados, percorrendo uma quantidade pequena e fixa de papéis. C71 remove informação textual redundante e C72 adiciona estados desabilitados a menus incompletos. Esses ciclos aumentam pouco a complexidade computacional, mas reduzem ambiguidades e caminhos inválidos.
+
+\subsection{C73 a C75: relato de falhas com contexto}
+O formulário de bug reúne descrição, situação, categoria, idiomas e representações exibidas. O registro local e o corpo do e-mail são produzidos em tempo linear no tamanho do texto, $O(m)$. A complexidade relevante é de rastreabilidade: o relato precisa capturar o contexto sem modificar a tentativa em andamento e deve permanecer útil mesmo quando o cliente de e-mail não é aberto.
+
+\subsection{C76 a C84: imagens e convenções de submenu}
+As fotografias são carregadas e redimensionadas no momento de apresentação do submenu. O custo depende do número de pixels, mas não afeta o modelo semântico. A substituição do glifo por ícone vetorial reduz dependência de fontes. Alinhamento, largura e posição da seta são estados puramente visuais com custo constante.
+
+\subsection{C85 a C89: persistência e curadoria multilíngue}
+A correção do fechamento elimina duas gravações sucessivas e estabelece um fluxo único para o botão e o fechamento da janela. A curadoria semântica somente na versão original transforma a relação entre versões linguísticas em uma dependência explícita: traduções editam enunciado e validação, enquanto categoria, papéis, valores, sinais, participantes e termo desconhecido são herdados. O bloqueio dinâmico precisa reagir à troca do idioma, e a camada de persistência reaplica os campos originais para impedir divergências introduzidas por estados antigos da interface. A abertura do Gmail Web acrescenta codificação de parâmetros de URL em $O(m)$.
+
+\subsection{C90: feedback multissensorial de erro}
+A avaliação compara o papel semântico do número com o papel do elemento-alvo. Como o conjunto de papéis por categoria é pequeno e fixo, a decisão é $O(1)$. O tremor utiliza uma sequência curta de deslocamentos e um temporizador; o som é emitido uma vez; e o tooltip permanece associado ao elemento até que a compatibilidade seja restabelecida. O principal risco é produzir loops de animação ou deixar o aviso persistente após a correção, controlado por estado explícito de feedback.
+
+\subsection{C91: ajuda contextual por área}
+Há três áreas de ajuda e três intenções por área. A matriz de orientações possui tamanho constante e é internacionalizada em português, inglês e francês. A abertura por passagem do mouse ou clique exige controle de visibilidade, foco e fechamento ao clicar fora. Os ícones ficam no cabeçalho dos cartões, fora das formas de Vergnaud e das estruturas complementares, preservando a fidelidade representacional.
+
+\section{Complexidade espacial}
+
+O estado compartilhado armazena apenas três valores, três indicadores e metadados constantes, portanto utiliza:
+\[
+O(1).
+\]
+
+As unidades gráficas continuam dominando a memória:
+\[
+O(q).
+\]
+
+Mensagens de bug e orientações contextuais utilizam espaço $O(m)$ apenas enquanto estão em memória; os estados de feedback, idioma e painel são constantes.
+
+A centralização não duplica os quadradinhos no modelo de domínio. O snapshot contém quantidades, não cópias das figuras.
+
+\section{Invariantes de consistência}
+
+Após qualquer transação, devem ser verdadeiras as seguintes condições:
+\begin{enumerate}[noitemsep]
+  \item todas as representações exibem o mesmo valor para cada papel conhecido;
+  \item a relação $v_1+v_2=v_3$ é preservada quando há informação suficiente;
+  \item o sinal do segundo termo é preservado nos números relativos;
+  \item a incógnita permanece desconhecida até ser modelada ou derivada pela relação;
+  \item eixos, cartões e pontos de controle refletem o mesmo valor da relação;
+  \item quadradinhos e rótulos numéricos representam a mesma quantidade, sem truncamento por limite visual fixo;
+  \item uma atualização de renderização não cria uma segunda ação do usuário;
+  \item traduções não redefinem a semântica da situação original;
+  \item a mensagem de erro desaparece quando o posicionamento se torna compatível;
+  \item os ícones e painéis de ajuda não alteram as formas documentadas dos diagramas;
+  \item relatos de falha capturam o contexto sem modificar o estado matemático.
+\end{enumerate}
+
+\section{Impacto sobre a manutenção}
+
+Antes do C67, correções eram adicionadas em pares: eixo vertical para barras, barras para Vergnaud, cartão para eixo, Venn para valores e valores para Venn. Esse desenho aumenta o número potencial de conexões entre $r$ representações para até:
+\[
+O(r^2).
+\]
+
+Com o estado compartilhado, cada representação se conecta ao coordenador, reduzindo a topologia conceitual para:
+\[
+O(r).
+\]
+
+O ganho é de manutenção, não necessariamente de tempo de execução. Novas representações precisam implementar duas operações: publicar alterações no estado e renderizar um snapshot. Elas não precisam conhecer todas as demais visualizações. Os ciclos posteriores acrescentam uma segunda regra de manutenção: recursos de suporte devem consultar o estado e registrar contexto, mas não podem tornar-se novas fontes da semântica. A curadoria multilíngue e o scaffolding permanecem consumidores ou mediadores do modelo compartilhado.
+
+\section{Riscos e controles}
+
+Os principais riscos introduzidos pela centralização são:
+\begin{itemize}[noitemsep]
+  \item derivar um termo que o desenho pedagógico deveria manter vazio;
+  \item escolher o termo dependente errado quando duas regiões são alteradas na mesma ação;
+  \item reconstruir componentes durante um arraste contínuo em frequência excessiva;
+  \item apagar a distinção entre valor curado e valor efetivamente modelado pelo usuário;
+  \item permitir que uma tradução grave valores semânticos divergentes;
+  \item manter tremor, som ou tooltip após a correção;
+  \item abrir painéis de ajuda acidentalmente e impedir o retorno ao diagrama;
+  \item perder parâmetros do relato ao delegar o envio ao navegador.
+\end{itemize}
+
+Os controles implementados incluem indicadores de valor conhecido, registro do papel alterado, origem da ação, inicialização vazia, trava contra recursão, fluxo único de persistência, herança semântica das traduções, estado explícito do feedback e fechamento controlado dos painéis. A validação deve continuar incluindo inspeção visual e auditiva por categoria, além dos testes do modelo.
+
+\section{Verificação dos ciclos C67 a C91}
+
+Foram executadas:
+\begin{itemize}[noitemsep]
+  \item compilação completa pelo Ant/NetBeans;
+  \item regressão estrutural, internacionalização, vínculos, curadoria e logs;
+  \item validação documental dos 91 ciclos e das três classes analíticas;
+  \item compilação e renderização dos PDFs atualizados;
+  \item testes específicos de estado compartilhado, grade adaptativa, bloqueio de traduções, composição do Gmail, feedback multissensorial e ajuda contextual.
+\end{itemize}
+
+A inspeção visual e auditiva exaustiva em ambiente Windows continua sendo necessária para avaliar fluidez do tremor, intensidade do som, posicionamento dos tooltips e comportamento do Gmail autenticado.
+
+\section{Classificação dos ciclos C67 a C91}
+
+C67, C73, C75, C85, C90 e C91 representam mudanças estruturais ou de generalização; C68, C70, C86, C87 e C88 preservam consistência teórica e metodológica; os demais ciclos desse intervalo concentram refinamento visual e operacional. A classificação não afirma que ciclos visuais sejam irrelevantes: eles reduzem ruído, melhoram descoberta e podem sustentar funções pedagógicas. A separação indica apenas o alcance predominante da decisão.
+
+\section{Conclusão}
+
+A introdução do estado semântico compartilhado aumenta a formalização do domínio, mas reduz a complexidade acidental das sincronizações locais. Até C91, o custo assintótico permanece dominado pela quantidade de unidades gráficas; persistência, feedback e ajuda acrescentam custos constantes por evento ou lineares no tamanho das mensagens. O principal benefício é a coerência: Vergnaud, Venn, barras, cartões, eixos, traduções e recursos de scaffolding deixam de competir como fontes de verdade. Cada camada passa a consultar ou modificar o modelo segundo responsabilidades explícitas, preservando a semântica e a notação formal.
+
+\end{document}

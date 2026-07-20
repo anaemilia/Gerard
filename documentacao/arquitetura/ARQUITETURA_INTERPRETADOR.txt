@@ -1,0 +1,66 @@
+ARQUITETURA DO MODULO DE INTERPRETACAO LINGUISTICA
+
+Objetivo
+O modulo interpreta enunciados de situacoes-problema por regras linguisticas em portugues, ingles e frances. Ele nao depende da tabela de tipos; usa pistas textuais para estimar a categoria matematica.
+
+Organizacao dos pacotes
+
+1. gerard.interpretacao.modelo
+Contem os objetos de dominio e transferencia de dados:
+- CategoriaProblema
+- IdiomaProblema
+- NumeroEncontrado
+- PistaLinguistica
+- ResultadoInterpretacao
+
+2. gerard.interpretacao.regras
+Contem as regras por idioma:
+- RegraLinguistica
+- RegrasBase
+- RegrasPortugues
+- RegrasIngles
+- RegrasFrances
+
+3. gerard.interpretacao.servico
+Contem os servicos de aplicacao:
+- InterpretadorLinguistico
+- ExtratorNumeros
+
+4. gerard.interpretacao.util
+Contem funcoes auxiliares:
+- NormalizadorTexto
+
+Fluxo de uso
+1. A tela principal chama InterpretadorLinguistico.interpretar(textoProblema).
+2. O texto e normalizado.
+3. O idioma provavel e estimado.
+4. As regras do idioma detectado sao aplicadas.
+5. Os numeros sao extraidos.
+6. A categoria com maior pontuacao e escolhida.
+7. O resultado e devolvido para a interface.
+
+Extensao futura
+Para adicionar novas expressoes, altere a classe de regras do idioma correspondente.
+Para adicionar outro idioma, crie uma nova classe que estenda RegrasBase e registre-a no construtor de InterpretadorLinguistico.
+
+Atualização arquitetural - pacote de idioma
+-------------------------------------------
+Foi adicionado o pacote gerard.idioma para separar a responsabilidade de apresentação multilíngue da responsabilidade de interpretação linguística.
+
+Pacote adicionado:
+- gerard.idioma
+
+Classes adicionadas:
+- IdiomaInterface: enumera os idiomas disponíveis na interface.
+- SituacaoProblemaTraduzida: encapsula uma situação-problema em determinado idioma.
+- RepositorioSituacoesProblema: concentra os enunciados traduzidos e fornece a situação-problema adequada ao idioma escolhido.
+
+Fluxo adotado:
+1. O usuário clica no botão Idioma.
+2. A interface abre uma janela de escolha: Português, Inglês ou Francês.
+3. O repositório retorna o enunciado no idioma escolhido.
+4. A tela recria os elementos do texto e limpa itens posicionados anteriormente.
+5. O módulo de interpretação linguística interpreta o novo enunciado.
+6. O painel de interpretação passa a mostrar o idioma detectado, a categoria provável e as pistas encontradas para o novo texto.
+
+Com essa organização, novas traduções ou novas situações-problema podem ser adicionadas no repositório sem modificar diretamente as regras linguísticas.

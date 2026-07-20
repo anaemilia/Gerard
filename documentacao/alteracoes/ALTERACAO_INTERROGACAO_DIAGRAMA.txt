@@ -1,0 +1,9 @@
+ALTERAÇÃO — ITEM DESCONHECIDO E DIAGRAMA VAZIO
+
+1. O papel indicado em termo_desconhecido passa a ser representado sempre por "?" na estrutura curada.
+2. Ao salvar a curadoria, o campo semântico correspondente ao papel desconhecido é normalizado para "?".
+3. O diagrama de Vergnaud não recebe a interrogação automaticamente.
+4. A interrogação permanece no enunciado como elemento móvel e só aparece no diagrama após arraste e posicionamento pelo usuário.
+5. Registros legados que ainda contenham valor numérico no campo desconhecido são interpretados como "?", sem preencher o diagrama.
+
+Verificação: compilação Ant concluída com sucesso.

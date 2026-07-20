@@ -1,0 +1,39 @@
+Arquitetura - Scaffolding.questionamento
+
+Objetivo
+--------
+O pacote gerard.Scaffolding.questionamento concentra a avaliação do posicionamento de números e interrogações no diagrama de Vergnaud.
+
+Regra aplicada
+--------------
+1. Cada número ou interrogação mantém um papel semântico extraído da interpretação linguística do enunciado, por exemplo:
+   - papel.estadoInicial
+   - papel.transformacao
+   - papel.estadoFinal
+   - papel.referente
+   - papel.diferenca
+   - papel.referido
+
+2. Cada elemento do diagrama possui um papel esperado conforme a categoria selecionada e a posição do elemento no diagrama.
+
+3. Ao soltar um item numérico ou uma interrogação sobre um elemento do diagrama, o sistema compara:
+   - papel linguístico do item;
+   - papel diagramático do alvo.
+
+4. Se os papéis forem incompatíveis, a interface mostra a pergunta:
+   "Tem certeza que esse é o {papel do numeral na situação-problema}?"
+
+Classes
+-------
+ScaffoldingQuestionamento.java
+- Calcula o papel do alvo no diagrama.
+- Compara o papel linguístico com o papel diagramático.
+- Gera a pergunta de confirmação quando o posicionamento parece incompatível.
+
+ResultadoQuestionamento.java
+- Representa o resultado da avaliação.
+- Indica se a avaliação é aplicável, se o posicionamento está correto e qual mensagem deve ser exibida.
+
+Integração
+----------
+Main.java mantém a interface visual e apenas aciona o módulo no mouseReleased, após a soltura do item.

@@ -1,0 +1,4 @@
+Comparação SHA-256 de Main.java entre a base enviada e C165
+9cf38a44f707ee461612e3f6f1085391d2fe2ef25b320d3ff612bcc69e030810  /mnt/data/work_curadoria_signo/GerardNetBeans_funil_distribuicao_trapezoidal_c162/src/Main.java
+9cf38a44f707ee461612e3f6f1085391d2fe2ef25b320d3ff612bcc69e030810  /mnt/data/GerardNetBeans_curadoria_sinal_obrigatorio_c165/src/Main.java
+status IDÊNTICO

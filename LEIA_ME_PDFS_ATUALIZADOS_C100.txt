@@ -1,0 +1,9 @@
+PDFs atualizados até o ciclo C100.
+
+Conteúdo incorporado:
+- controle vetorial de remoção de quadradinhos;
+- exibição condicionada à existência de unidades visíveis;
+- preservação dos textos remanescentes;
+- reorganização adaptativa da coleção;
+- sincronização da cardinalidade com o estado semântico compartilhado;
+- generalização para todas as categorias com agrupamentos discretos visíveis.

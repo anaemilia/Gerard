@@ -1,0 +1,15 @@
+ALTERAÇÃO: feedback explícito dos estilos de interação por proximidade
+
+Durante o arraste, o sistema apresenta um cartão temporário com:
+- nome do estilo ativo;
+- propriedade característica do estilo;
+- mudança observável correspondente ao estado atual (distante, próximo ou dentro do alvo).
+
+Diferenças visuais:
+- Proximidade visual: linha tracejada e contorno do alvo apenas na aproximação.
+- Drop target highlighting: preenchimento translúcido e prévia de encaixe somente quando o item entra na área válida.
+- Drag-over feedback: ligação e contorno progressivos, mais intensos dentro do alvo.
+- Feedback por affordance: cantos de enquadramento visíveis desde o início do arraste, sem símbolos matemáticos.
+- Atração magnética: deslocamento automático e seta direcional na aproximação.
+
+Todos os elementos são transitórios e não integram a representação formal permanente dos diagramas de Vergnaud.

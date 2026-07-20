@@ -1,0 +1,18 @@
+Visão de pesquisador - tabelas sintéticas do estudo
+
+Esta versão altera a Visão de pesquisador para usar o formato analítico das tabelas do estudo, mas sem fixar seus dados. As tabelas são geradas em tempo de consulta a partir dos arquivos TSV de log armazenados em <home>/Gerard/logs/.
+
+Tabelas renderizadas:
+- Tabela 4: identificação dos problemas utilizados.
+- Tabela 5: formato de codificação das ações instrumentais.
+- Tabela 6: quantidade de situações-problema e ações por usuário.
+- Tabela 7: objetos presentes no contexto da ação.
+- Tabela 9: codificação das ações instrumentais.
+- Tabela 13: exemplos de ações neutras.
+- Tabela 14: quantidade de ações agrupadas por problema.
+- Tabela 15: agrupamento qualitativo dos episódios.
+- Tabelas 16 e 17: camadas do comportamento do agente.
+
+Os dados são sintetizados a partir do log bruto. O log continua sendo preservado em aba própria para auditoria e exportação.
+
+A tabela 14 passa a sintetizar os indicadores centrais: ocorrências por problema, ações do sujeito, ações da interface, total, acertos, erros e ações neutras. A tabela 15 usa regras de consulta para agrupar episódios em autonomia operacional, erro de regra de representação, erro de posicionamento, ajuda insuficiente e reorganização após ajuda. As tabelas 16 e 17 organizam indícios para o comportamento do agente.

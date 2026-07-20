@@ -1,0 +1,18 @@
+RENDERIZAÇÃO CENTRAL DOS DIAGRAMAS DE VERGNAUD
+
+Ajuste realizado:
+- os diagramas específicos das categorias do campo aditivo passaram a ser renderizados na área central da tela, que antes exibia apenas o diagrama fixo de transformação de medidas.
+- a área à direita foi preservada para o diagrama de Venn, conforme solicitado.
+
+Critérios de arquitetura:
+- reaproveitamento do módulo existente gerard.campoaditivo.diagrama;
+- separação entre geração da cena (serviço) e renderização Swing (apresentação);
+- manutenção do Main.java como orquestrador da interface;
+- atualização da renderização por clique no menu de categorias, sem acoplamento adicional à lógica de domínio.
+
+Fluxo:
+1. clique no menu de categorias;
+2. atualização do tipo selecionado;
+3. atualização do enunciado e da interpretação linguística;
+4. geração da cena do diagrama de Vergnaud para a área central;
+5. renderização do diagrama de Venn na área da direita.

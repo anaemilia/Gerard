@@ -1,0 +1,1 @@
+Ajuste aplicado: os diagramas de cada passo da transformação composta em dois passos foram elevados verticalmente em 18 pixels dentro de cada subárea, mantendo a centralização horizontal e os rótulos dos passos.

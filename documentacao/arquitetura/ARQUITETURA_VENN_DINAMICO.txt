@@ -1,0 +1,35 @@
+MÓDULO DE DIAGRAMA DE VENN DINÂMICO
+
+Objetivo
+- renderizar dinamicamente, na área do diagrama de Venn, uma configuração visual coerente com a categoria selecionada no menu.
+- preservar o estilo visual já existente na tela: elipses, setas, rótulos, valores e quadradinhos internos quando apropriado.
+
+Pacotes adicionados
+- src/gerard/campoaditivo/venn/modelo
+  * NoDiagramaVenn
+  * ConectorDiagramaVenn
+  * CenaDiagramaVenn
+
+- src/gerard/campoaditivo/venn/servico
+  * GeradorCenaDiagramaVenn
+
+Decisões de arquitetura
+- separação entre modelo de cena e geração da cena;
+- Main.java passa a apenas orquestrar a atualização visual do diagrama de Venn;
+- a escolha da categoria determina, por serviço dedicado, a posição e a função de cada elemento do diagrama;
+- preservação das interações já existentes com quadradinhos e elementos do painel.
+
+Comportamento implementado
+- ao clicar em uma categoria, o sistema:
+  1. atualiza o tipo selecionado;
+  2. atualiza o enunciado e o diagrama central de Vergnaud;
+  3. gera dinamicamente uma nova cena para o diagrama de Venn à direita;
+  4. mantém o estilo gráfico anterior, mas com disposição adequada à categoria.
+
+Categorias cobertas
+- Composição de medidas
+- Transformação de medidas
+- Comparação de medidas
+- Composição de transformações
+- Transformação de uma relação
+- Composição de relações

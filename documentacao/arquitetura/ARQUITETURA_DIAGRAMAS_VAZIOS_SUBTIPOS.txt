@@ -1,0 +1,19 @@
+DIAGRAMAS VAZIOS COM SUBTIPOS PRESERVADOS
+
+Objetivo
+- manter a inferência de subtipos/incógnitas sem preencher automaticamente os elementos do diagrama.
+
+Ajuste realizado
+- a interrogação que era desenhada automaticamente no elemento inferido como incógnita foi removida;
+- o destaque visual automático da incógnita também foi retirado;
+- os elementos permanecem vazios, com apenas a área interna tracejada para o usuário posicionar números e interrogação.
+
+Comportamento preservado
+- inferência linguística dos papéis dos números;
+- inferência do subtipo/incógnita no submenu de interpretação linguística;
+- manipulação individual dos elementos do diagrama;
+- restrições por zonas semânticas em cada categoria;
+- suporte a português, inglês e francês.
+
+Decisão pedagógica
+- o sistema pode interpretar e registrar o papel da incógnita, mas não deve resolver visualmente a tarefa pelo usuário.

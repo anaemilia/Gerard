@@ -1,0 +1,38 @@
+REFINAMENTO DOS SUBTIPOS / INCÓGNITAS POR CATEGORIA DE VERGNAUD
+
+Objetivo
+- refinar a representação dos diagramas para distinguir, dentro de cada categoria,
+  qual papel está sendo tratado como incógnita principal.
+
+O que foi implementado
+1. Inferência do subtipo
+- foi criado um módulo específico para inferir o subtipo da situação a partir da categoria
+  e dos papéis numéricos identificados pela interpretação linguística.
+- a inferência cobre as seis categorias do campo aditivo.
+
+2. Representação visual da incógnita
+- o elemento do diagrama correspondente à incógnita principal passa a receber destaque visual;
+- o destaque é suave: borda diferenciada e indicação de interrogação no espaço interno,
+  sem preencher o diagrama com respostas.
+
+3. Integração com a interpretação linguística
+- o submenu de interpretação linguística agora exibe o subtipo / incógnita inferido;
+- o mouse over no título da categoria mostra a descrição da categoria acrescida do subtipo atual.
+
+Categorias e subtipos cobertos
+- Composição de medidas: parte 1, parte 2, todo
+- Transformação de medidas: estado inicial, transformação, estado final
+- Comparação de medidas: referente, diferença, referido
+- Composição de transformações: transformação 1, transformação 2, transformação final
+- Transformação de uma relação: relação inicial, transformação, relação final
+- Composição de relações: relação 1, relação 2, relação final
+
+Decisão de engenharia de software
+- criação de classes dedicadas:
+  * gerard.interpretacao.modelo.SubtipoVergnaud
+  * gerard.interpretacao.servico.InferidorSubtipoVergnaud
+- preservação do baixo acoplamento entre:
+  * interpretação linguística,
+  * inferência de subtipo,
+  * geração da cena do diagrama,
+  * renderização Swing.

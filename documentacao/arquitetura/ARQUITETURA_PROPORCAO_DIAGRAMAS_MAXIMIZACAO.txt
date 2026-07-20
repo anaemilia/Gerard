@@ -1,0 +1,27 @@
+Ajuste: proporção das áreas dos diagramas na maximização
+
+Objetivo
+- Manter, ao maximizar a janela, a mesma proporção relativa de tamanho existente na tela-base entre a área do diagrama de Vergnaud e a área do diagrama de Venn.
+
+Implementação
+- O cálculo das áreas foi centralizado no método obterAreasDiagramasProporcionais().
+- A proporção horizontal usa como referência a tela-base 1240 x 760:
+  - Vergnaud: 655 px de largura.
+  - Venn: 500 px de largura.
+  - Espaço entre áreas: 35 px.
+- Ao redimensionar a janela, a largura disponível é repartida mantendo a razão 655:500 entre as duas áreas.
+- A altura da área de Venn também passa a preservar sua proporção de referência em relação à área de Vergnaud, respeitando o limite inferior da janela.
+- A linha divisória deixou de usar posição fixa em x=700 e passou a ser calculada dinamicamente por obterXDivisorDiagramas().
+
+Arquivos alterados
+- src/Main.java
+
+Funcionalidades preservadas
+- Diagramas de Vergnaud e Venn.
+- Redesign visual suave.
+- Interpretação linguística e incógnita generalizada.
+- Filtro de numerais contextuais.
+- Scaffolding de proximidade, menus, questionamento, gráfico e reação.
+- Eixo x navegável e botão Esconder.
+- Botões Restaurar.
+- Categorias já existentes, incluindo Composição seguida de transformação.

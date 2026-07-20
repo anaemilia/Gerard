@@ -1,0 +1,8 @@
+REMOÇÃO TEMPORÁRIA DO RÓTULO DE CONTAGEM
+
+Ajuste realizado
+- o rótulo visual "Questão 1/1" foi retirado do cabeçalho da interface.
+
+Observação
+- a estrutura interna de contagem foi preservada no código para reaproveitamento futuro, caso a contagem volte a ser exibida.
+- a área do cabeçalho foi liberada para o status de idioma e tipo.

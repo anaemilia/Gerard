@@ -1,0 +1,13 @@
+TEXTO DA CATEGORIA NA ÁREA DO ENUNCIADO
+
+Ajuste realizado
+- foi inserido, abaixo do texto da situação-problema, um texto com o título da categoria selecionada.
+- o texto usa a mesma fonte e o mesmo tamanho visual do enunciado: Arial, negrito, 20.
+- a posição fica próxima ao limite inferior da área do texto, sem criar novo painel ou nova área visual.
+
+Comportamento
+- ao trocar a categoria, o texto exibido acompanha a categoria selecionada.
+- ao trocar o idioma, o texto acompanha a internacionalização já existente.
+
+Objetivo
+- tornar explícita, ainda dentro da área do enunciado, a estrutura de Vergnaud associada à situação-problema.

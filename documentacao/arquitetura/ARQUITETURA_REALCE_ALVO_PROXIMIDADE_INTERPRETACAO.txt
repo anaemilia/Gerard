@@ -1,0 +1,15 @@
+REALCE TEMPORÁRIO DO ALVO POR PROXIMIDADE COM BASE NA INTERPRETAÇÃO LINGUÍSTICA
+
+Alteração implementada:
+- Ao arrastar um número ou a interrogação do enunciado para a área do diagrama, o sistema consulta o papel linguístico inferido para aquele item.
+- O alvo formal correspondente no diagrama de Vergnaud muda temporariamente de cor quando o item está próximo do local correto.
+- O realce é removido quando o item é afastado, quando o mouse é solto ou quando o cursor sai da área.
+
+Critério usado:
+- O item arrastado conserva a chave do papel interpretado, por exemplo: papel.estadoInicial, papel.transformacao, papel.estadoFinal, papel.parte1, papel.parte2, papel.todo, papel.referente, papel.diferenca, papel.referido, papel.relacaoInicial, papel.relacaoFinal etc.
+- Cada papel é associado ao elemento formal correspondente da categoria de Vergnaud atualmente selecionada.
+- O alvo só muda de cor se o item aproximado for o item semanticamente correto para aquele alvo.
+
+Observação sobre fidelidade formal:
+- A representação formal não recebeu elementos novos.
+- O realce é apenas feedback visual temporário de interação por proximidade.

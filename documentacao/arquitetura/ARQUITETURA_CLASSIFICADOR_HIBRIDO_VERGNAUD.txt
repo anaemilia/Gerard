@@ -1,0 +1,55 @@
+Classificador híbrido de categorias de Vergnaud
+================================================
+
+Foi criado o pacote:
+
+src/gerard/interpretacao/classificacao/
+
+Classes principais:
+
+- ExemploSituacaoVergnaud.java
+  Representa um enunciado rotulado com a categoria correta.
+
+- ExtratorAtributosLinguisticos.java
+  Extrai atributos explicáveis do enunciado: verbos de ganho/perda,
+  marcadores como "ao todo", "a mais", "ontem", "hoje", quantidade de
+  numerais e pistas temporais/sequenciais.
+
+- ClassificadorCategoriaVergnaud.java
+  Interface comum para classificadores de categoria.
+
+- ClassificadorNaiveBayesVergnaud.java
+  Modelo treinável leve, implementado sem bibliotecas externas.
+
+- ResultadoClassificacaoVergnaud.java
+  Guarda categoria prevista, confiança, origem da decisão e pistas usadas.
+
+- ClassificadorHibridoVergnaud.java
+  Combina modelo treinado, regras linguísticas de segurança e fallback manual.
+
+- CarregadorExemplosSituacaoVergnaud.java
+  Carrega exemplos de treino a partir de exemplos_treino_vergnaud.tsv.
+
+Arquivo de treino:
+
+src/gerard/interpretacao/classificacao/exemplos_treino_vergnaud.tsv
+
+Integração:
+
+O antigo ClassificadorTipoSituacaoAditiva foi preservado como adaptador,
+mas agora delega a decisão ao ClassificadorHibridoVergnaud.
+
+Fluxo:
+
+1. O enunciado passa pelos filtros linguísticos já existentes.
+2. O classificador híbrido avalia a categoria.
+3. Regras fortes podem corrigir a categoria.
+4. O modelo Naive Bayes sugere categoria e confiança.
+5. Se a confiança for baixa, a categoria manual/atual é preservada.
+6. A interpretação linguística de papéis continua responsável por numerais e incógnita.
+
+Observação:
+
+Para exemplos já rotulados no repositório, o modelo atua como sugestão explicável.
+A correção automática ocorre apenas quando há regra linguística forte, evitando que
+um modelo treinado com poucos exemplos desloque rótulos manuais de forma opaca.

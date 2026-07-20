@@ -1,0 +1,37 @@
+Inserção de situações-problema do PDF Queiroz/Gomes
+===================================================
+
+Arquivo de origem:
+- Situações-problema[1](2).pdf
+
+Objetivo:
+- Inserir no banco do Gerard as situações do campo aditivo compatíveis com as categorias de Vergnaud já implementadas.
+- Preservar, em arquivo separado de referência, as situações de divisão, multiplicação, metade e proporcionalidade, pois elas pertencem a estruturas multiplicativas e ainda não devem entrar no sorteio dos diagramas aditivos.
+
+Arquivos modificados:
+- dados/situacoes_vergnaud.tsv
+- src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+- dados/situacoes_pdf_nao_aditivas_referencia.tsv
+- src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv
+
+Categorias ativas em português depois da revisão:
+- TRANSFORMACAO_MEDIDAS: 27 situações
+- COMPOSICAO_MEDIDAS: 19 situações
+- COMPARACAO_MEDIDAS: 6 situações
+- COMPOSICAO_TRANSFORMACOES: 6 situações
+- TRANSFORMACAO_COMPOSTA_DOIS_PASSOS: 2 situações
+- COMPOSICAO_TRANSFORMACAO_MEDIDAS: 2 situações
+- TRANSFORMACAO_RELACAO: 2 situações
+- COMPOSICAO_RELACOES: 2 situações
+
+Decisões de classificação aplicadas:
+- Enunciados com estado inicial e uma única mudança numérica permanecem como transformação de medidas.
+- Enunciados com partes formando um todo permanecem como composição de medidas.
+- Enunciados com “a mais”, “a menos” e diferença entre medidas permanecem como comparação de medidas.
+- Enunciados com duas transformações sucessivas, marcadores temporais ou expressão de resultado acumulado ficam em composição de transformações ou transformação composta em dois passos, conforme a estrutura.
+- Enunciados com duas partes iniciais e depois uma retirada/acréscimo ficam em composição seguida de transformação.
+- Enunciados com divisão, repartição equitativa, metade, tabela proporcional ou multiplicação por agrupamento foram preservados em situacoes_pdf_nao_aditivas_referencia.tsv, sem entrar no sorteio atual.
+
+Observações:
+- O exemplo “Pedro tinha duas caixas de brinquedos, cada caixa tinha 3 carros, 2 bonecos e uma bola” foi retirado do banco ativo aditivo e preservado na referência não aditiva, pois exige composição multiplicativa.
+- A base ativa continua compatível com os diagramas de Vergnaud já implementados no Gerard.

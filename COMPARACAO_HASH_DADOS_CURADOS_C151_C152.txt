@@ -1,0 +1,9 @@
+C151:
+62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a  /mnt/data/GerardNetBeans_funil_quadradinhos_compactos_c151/src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389  /mnt/data/GerardNetBeans_funil_quadradinhos_compactos_c151/dados/situacoes_vergnaud.tsv
+C152:
+62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a  /mnt/data/GerardNetBeans_rotulos_semanticos_i18n_c152/src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv
+a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389  /mnt/data/GerardNetBeans_rotulos_semanticos_i18n_c152/dados/situacoes_vergnaud.tsv
+COMPARACAO:
+src: IDENTICO
+dados: IDENTICO

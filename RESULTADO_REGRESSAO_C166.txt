@@ -1,0 +1,8 @@
+C166 — COMPARAÇÃO DE REGRESSÃO COM A C165
+
+Resultado do verificador global na C165 original: 24 falhas.
+Resultado do verificador global na C166: 24 falhas.
+Diferença entre as linhas [ERRO] das duas execuções: nenhuma.
+
+Conclusão: a alteração do alinhamento vertical não acrescentou falhas ao
+conjunto de regressão existente.

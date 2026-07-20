@@ -1,0 +1,55 @@
+C159 — TESTES DIRECIONADOS
+1. Consistência da incógnita curada
+OK: 30 verifica??es de consist?ncia entre curadoria e sem?ntica.
+2. Estado semântico compartilhado
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+TESTE_ESTADO_SEMANTICO_COMPARTILHADO_OK
+3. Processo concreto de transformação
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+Teste do processo de transforma??o aprovado: 32 verifica??es.
+Teste estrutural do processo de transformação sem legado: OK
+4. Regra do primeiro posicionamento
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+TestePoliticaInteracaoRepresentacoes: OK
+Teste estrutural: valores semânticos bloqueados; componente flutuante preservado: OK
+5. Conclusão e protocolo da incógnita
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+Teste de conclus?o da modelagem aprovado: 26 verifica??es.
+Conclus?o padronizada nas oito categorias: 24 verifica??es.
+Prote??o da inc?gnita aprovada: 7 verifica??es.
+Teste de posicionamento do tip aprovado: 6 verifica??es.
+Teste de posicionamento do selo aprovado: 12 verifica??es.
+Teste do sequenciador de conclus?o aprovado: 9 verifica??es.
+Textos da conclus?o progressiva aprovados: 6 verifica??es.
+6. Grandezas contextuais
+OK: 20 verifica??es de grandezas quantitativas contextuais.
+7. Curadoria somente na versão original
+CURADORIA_SEMANTICA_SOMENTE_ORIGINAL_OK
+8. Arraste físico
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+4 warnings
+TesteArrasteFisico: OK
+Teste estrutural de arraste físico: OK

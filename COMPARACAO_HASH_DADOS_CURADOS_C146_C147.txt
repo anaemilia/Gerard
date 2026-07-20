@@ -1,0 +1,4 @@
+Comparação SHA-256 dos dados curados C146 x C147
+
+IDENTICO  ./situacoes_pdf_nao_aditivas_referencia.tsv  C146=2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c  C147=2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IDENTICO  ./situacoes_vergnaud.tsv  C146=62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a  C147=62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a

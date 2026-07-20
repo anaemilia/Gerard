@@ -1,0 +1,19 @@
+# Logs iniciais da Visão de pesquisador
+
+A Visão de pesquisador continua usando dados gerados em tempo de uso do Gerard.
+Para que a tela já possua dados iniciais, foi incluído um arquivo TSV de semente
+extraído dos quadros de análise da tarefa fornecidos pelo pesquisador.
+
+Arquivo de recurso:
+  src/gerard/pesquisador/log/dados/quadros_analise_tarefa_seed.tsv
+
+Na primeira execução, LoggerInteracaoGerard copia esse arquivo para:
+  <home do usuário>/Gerard/logs/gerard_quadros_analise_tarefa_seed.tsv
+
+A partir daí, a tela lê esse log inicial junto com os logs das sessões reais do
+Gerard. O arquivo de semente segue o mesmo cabeçalho dos logs produzidos em tempo
+de uso: timestamp, sessão, usuário, agente da ação, problema, tentativa, tarefa,
+C/E, instrumento, função do artefato, regras, categoria, enunciado, origem e detalhes.
+
+Assim, o estudo fornece o modelo e os primeiros dados de referência; as próximas
+linhas são alimentadas automaticamente conforme o usuário utiliza o Gerard.

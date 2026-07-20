@@ -1,0 +1,9 @@
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+Teste de conclus?o da modelagem aprovado: 21 verifica??es.
+Conclus?o padronizada nas oito categorias: 16 verifica??es.
+Teste de posicionamento do tip aprovado: 6 verifica??es.
+Teste de posicionamento do selo aprovado: 12 verifica??es.
+Teste do sequenciador de conclus?o aprovado: 9 verifica??es.
+Textos da conclus?o progressiva aprovados: 6 verifica??es.

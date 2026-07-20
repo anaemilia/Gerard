@@ -1,0 +1,22 @@
+SUBMENU DE REGISTRO DO GERARD
+
+Objetivo
+- incluir, no menu Sobre, um submenu com informação sintética sobre o registro do programa Gerard.
+
+O que foi incluído
+- novo item no menu Sobre:
+  * Registro do Gerard
+- novo submenu lateral com os principais dados do certificado:
+  * registro do programa no INPI;
+  * número do processo;
+  * título do programa;
+  * data de criação;
+  * autores;
+  * linguagens registradas.
+
+Decisão de interface
+- o submenu segue o mesmo padrão visual dos menus internos já usados pela interface;
+- o conteúdo foi mantido sucinto para não ocupar espaço excessivo na tela.
+
+Internacionalização
+- foram adicionadas chaves em português, inglês e francês para o novo submenu.

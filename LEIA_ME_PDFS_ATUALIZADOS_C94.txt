@@ -1,0 +1,20 @@
+PDFs atualizados - corpus até C94
+Data: 2026-07-16
+Pacote documental: C95
+
+Arquivos principais:
+- ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+- ANALISE_COMPLEXIDADE_GERARD.pdf
+
+Conteúdo incorporado:
+- episódio C93-C94 sobre a interpretação indevida da inicialização sem conteúdo;
+- distinção entre estrutura visual estável e conteúdo educativo transitório;
+- preservação dos painéis de texto, Vergnaud e representação complementar;
+- registro de C93 como implementação intermediária rejeitada;
+- incorporação de C94 como 92º ciclo consistente;
+- exigência de regressão visual separada da verificação funcional.
+
+Distribuição analítica:
+- 31 ciclos estruturais e de generalização;
+- 23 ciclos de consistência teórica e metodológica;
+- 38 ciclos de refinamento visual e operacional.

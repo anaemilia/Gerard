@@ -1,0 +1,13 @@
+Alteração: botão Restaurar na área do diagrama
+
+Foi adicionado um segundo botão "Restaurar" dentro da área visual do diagrama de Vergnaud.
+
+Função:
+- limpar os itens numéricos/interrogação usados na modelagem;
+- limpar textos editáveis dos elementos do diagrama ao redesenhar a cena;
+- remover questionamentos persistentes, realces, foco e eixo x flutuante ativo;
+- reconstruir o diagrama de Vergnaud para a situação-problema atual;
+- reconstruir o diagrama auxiliar/área de modelagem associada;
+- restaurar o texto da situação-problema para permitir que o usuário recomece a modelagem.
+
+A alteração mantém o botão Restaurar já existente no final do enunciado. O botão do enunciado continua restaurando apenas elementos arrastados que estão fora do diagrama; o novo botão da área do diagrama limpa a modelagem e redesenha o diagrama.

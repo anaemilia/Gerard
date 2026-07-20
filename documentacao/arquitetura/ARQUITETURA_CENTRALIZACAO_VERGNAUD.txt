@@ -1,0 +1,17 @@
+CENTRALIZAÇÃO VERTICAL DO DIAGRAMA DE VERGNAUD
+
+Objetivo
+- corrigir o posicionamento vertical dos elementos do diagrama de Vergnaud para que eles sejam renderizados centralizados dentro da área central delimitadora.
+
+Problema corrigido
+- alguns diagramas eram gerados com deslocamento vertical para baixo, ficando visualmente abaixo da área reservada.
+
+Solução implementada
+- após a geração da cena lógica do diagrama, a interface calcula a caixa delimitadora real dos elementos e conectores;
+- em seguida, aplica um deslocamento horizontal e vertical para centralizar essa caixa dentro da área de conteúdo do diagrama;
+- as zonas semânticas de manipulação também são deslocadas junto com os elementos, preservando as restrições de cada categoria.
+
+Impacto
+- os elementos continuam manipuláveis individualmente;
+- as categorias de Vergnaud continuam com zonas semânticas próprias;
+- o diagrama passa a iniciar centralizado no espaço correto.

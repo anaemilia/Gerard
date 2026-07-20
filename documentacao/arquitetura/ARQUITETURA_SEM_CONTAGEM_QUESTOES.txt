@@ -1,0 +1,18 @@
+REMOÇÃO DA CONTAGEM DE QUESTÕES
+
+Objetivo
+- retirar temporariamente qualquer contagem de questões resolvidas da interface e da lógica interna.
+
+Alterações realizadas
+- removidos os campos internos de contagem de questão atual e quantidade resolvida;
+- removida a atualização da contagem no botão Sortear;
+- removido o reset da contagem ao trocar de categoria;
+- removido o método de renderização do rótulo de contagem;
+- removidas as chaves de localização específicas da contagem Questão {0}/{1}.
+
+Preservado
+- sorteio aleatório das situações-problema por categoria;
+- troca de categoria;
+- interpretação linguística;
+- diagramas de Vergnaud;
+- diagramas vazios para preenchimento pelo usuário.

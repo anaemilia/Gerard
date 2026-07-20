@@ -1,0 +1,11 @@
+C160 — testes do aviso de termo desconhecido
+
+PASSOU: compilação completa via Ant.
+PASSOU: aviso visível quando termo_desconhecido está vazio.
+PASSOU: aviso desaparece após seleção explícita.
+PASSOU: aviso informa harmonização automática a partir de um único ?.
+PASSOU: aviso oculto quando a semântica é herdada pela tradução.
+PASSOU: consistência da incógnita curada.
+PASSOU: semântica somente na versão original.
+PASSOU: bloqueio dinâmico de idioma na curadoria.
+PASSOU: regressão estrutural consolidada.

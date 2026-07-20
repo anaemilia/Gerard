@@ -1,0 +1,2 @@
+C136 e C137 possuem hashes idênticos para todos os arquivos em src/gerard/campoaditivo/dados.
+Nenhum dado curado foi alterado.

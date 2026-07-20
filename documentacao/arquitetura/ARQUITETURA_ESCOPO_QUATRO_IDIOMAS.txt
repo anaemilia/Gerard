@@ -1,0 +1,15 @@
+ARQUITETURA — ESCOPO LINGUÍSTICO CONTROLADO
+
+Idiomas suportados:
+- pt-BR — Português (Brasil)
+- en — Inglês
+- fr — Francês
+- es — Espanhol
+
+Princípios:
+1. Os quatro idiomas usam escrita latina, orientação LTR e algarismos arábicos.
+2. O item desconhecido usa exclusivamente o símbolo canônico ?.
+3. O espanhol pode usar ¿ como pontuação comum; ele não representa o item desconhecido.
+4. Papéis semânticos, modelagem, representações e estilos de interação permanecem independentes do idioma.
+5. Arquivos antigos com outros idiomas são ignorados e o catálogo persistente é regravado no escopo canônico.
+6. A arquitetura geral de internacionalização é preservada, mas regras sem uso para RTL, scripts não latinos e símbolos alternativos foram removidas.

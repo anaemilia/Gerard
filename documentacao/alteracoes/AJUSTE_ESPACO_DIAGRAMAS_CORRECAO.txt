@@ -1,0 +1,6 @@
+Correção adicional:
+- a borda visual do espaço delimitador agora usa o mesmo retângulo da área lógica dos diagramas;
+- o espaço visual foi ampliado para baixo e começa mais acima;
+- no modo Transformação composta em dois passos, a área de conteúdo usa menor deslocamento superior;
+- os dois diagramas são tratados como um bloco e centralizados verticalmente dentro do espaço ampliado;
+- o rótulo Passo 1 / Passo 2 foi movido para dentro da subárea de cada diagrama, evitando que fique fora da borda visual.

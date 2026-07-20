@@ -1,0 +1,21 @@
+ALTERAÇÃO — CURADORIA ESPECÍFICA COM SALVAMENTO AUTOMÁTICO
+
+1. Foram retirados da interface os comandos redundantes:
+   - Salvar e aplicar metadados curados;
+   - Gerar auditoria;
+   - Aplicar na tabela;
+   - Aplicar e salvar curadoria.
+
+2. Na tela específica de cada situação-problema:
+   - o checkbox "Validada" foi colocado à esquerda do rótulo "Situação-problema";
+   - existe apenas o botão "Fechar";
+   - fechar pelo botão ou pelo X captura o estado atual dos campos;
+   - a linha correspondente é atualizada na tabela;
+   - todos os metadados curados são persistidos automaticamente;
+   - em caso de erro de gravação, a janela permanece aberta e exibe a falha.
+
+3. Verificação de regressão:
+   - categoria, idioma e contexto mantêm sua edição na tabela principal;
+   - os campos de transformação, comparação, sinais, termo desconhecido, representação e observações permanecem na tela específica;
+   - o callback de aplicação da curadoria continua sendo executado após a persistência;
+   - compilação Ant concluída com sucesso em Java 8.

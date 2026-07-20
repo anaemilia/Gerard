@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+ant -q compile
+mkdir -p build/test-classes
+javac -source 8 -target 8 -encoding UTF-8 -cp build/classes \
+  -d build/test-classes scripts/testes/TesteSincronizacaoDecimaisTransformacao.java
+java -Djava.awt.headless=true -cp build/classes:build/test-classes \
+  gerard.campoaditivo.transformacao.processo.TesteSincronizacaoDecimaisTransformacao
+
+grep -q 'ConversorTextoParaInteiroSemantico' src/Main.java
+grep -q 'conversorTextoParaInteiroSemantico.converter(' src/Main.java
+grep -q 'texto, situacaoProblemaAtual' src/Main.java
+
+echo "Teste estrutural da sincronização decimal da transformação: OK"

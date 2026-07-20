@@ -1,0 +1,286 @@
+ATUALIZAÇÃO C121 — DRAG-AND-DROP COM MOLA E MOMENTO (16/07/2026)
+
+- O elemento arrastado persegue o cursor com atraso elástico discreto, massa, inércia e amortecimento.
+- A distância visual máxima ao cursor é limitada e a soltura permanece exata.
+- O efeito é somente visual: não modifica dados curados, papéis semânticos, colisões, logs ou sincronização.
+- As regras da C120 para `+` e `−`, limites curados, piso zero e consistência aditiva permanecem ativas.
+- Relatório: documentacao/relatorios/RELATORIO_DRAG_MOLA_MOMENTO_C121_2026-07-16.md
+
+ATUALIZAÇÃO - ABA MONTAR SITUAÇÃO-PROBLEMA (14/07/2026)
+
+- Foi criada uma nova aba entre Gérard e Curadoria.
+- O usuário recebe um diagrama de Vergnaud completamente preenchido e constrói uma situação-problema por seleção e ordenação de blocos.
+- Além dos trechos corretos, são apresentados blocos de outras categorias com os mesmos valores e distância semântica controlada.
+- Os blocos preservam personagens, contexto, objetos, vocabulário e forma linguística aproximada; a diferença principal está na relação semântica e nos papéis de Vergnaud.
+- A decisão decorreu de intervenção explícita do pesquisador para evitar uma atividade semelhante a um “jogo dos sete erros”, resolvida por eliminação superficial e potencialmente tediosa.
+- Todos os blocos têm a mesma apresentação visual, e a categoria permanece oculta.
+- A atividade possui contexto de tentativa e log próprios.
+- O escopo inicial inclui composição, transformação e comparação de medidas.
+- Documentação detalhada: documentacao/alteracoes/NOVA_ABA_MONTAGEM_SITUACAO_PROBLEMA_2026-07-14.md e documentacao/relatorios/RELATORIO_INTERVENCAO_PESQUISADOR_BLOCOS_SEMANTICAMENTE_PROXIMOS_2026-07-14.md.
+
+ATUALIZAÇÃO — REFATORAÇÃO VALIDADA DOS ELEMENTOS GRÁFICOS (14/07/2026)
+- A extração das dez classes gráficas foi preservada e validada por compilação.
+- O tema visual distingue botões principais (12 pt) e itens internos de menu (14 pt em negrito).
+- Execute `python3 scripts/testar_elementos_diagrama.py` para a regressão headless.
+- Relatório: documentacao/relatorios/RELATORIO_REFATORACAO_ELEMENTOS_GRAFICOS_VALIDADA_2026-07-14.md
+
+GERARD - CAMPO ADITIVO COMPLETO (PT/EN/FR)
+
+Nota sobre este pacote (versão de correções):
+- os elementos gráficos autônomos do diagrama (CirculoVenn, QuadradinhoVenn,
+  ElementoTextoMovel, FragmentoAnotacao, MarcadorTexto, ItemTextoArrastavel,
+  ElementoVergnaud, ConectorVergnaud, Elemento, Seta), antes definidos como
+  classes internas de Main.java, agora vivem em arquivos próprios no pacote
+  gerard.campoaditivo.diagrama.elementos, sem alteração de comportamento;
+- a fonte padronizada em negrito dos botões do menu principal foi
+  centralizada em gerard.ui.UITemaGerard (FONTE_BOTAO_MENU);
+- os scripts de scripts/ agora deixam explícito, no cabeçalho, que são
+  checagens estruturais/textuais e não testes de comportamento;
+- o histórico de mudanças (mais de 120 arquivos ARQUITETURA_*/RELATORIO_*/
+  AJUSTE_*/ATUALIZACAO_*) agora tem um índice de apoio em
+  CHANGELOG_INDICE.md; os arquivos originais foram mantidos, nada foi
+  removido.
+- Veja RELATORIO_ANALISE_CODIGO_GERARD.pdf (ou o relatório entregue
+  anteriormente) para a análise completa que motivou estas mudanças.
+
+Esta versão incorpora:
+- escolha de idioma (Português, Inglês, Francês e Espanhol);
+- escolha do tipo de situação-problema do campo aditivo;
+- manutenção do arraste de palavras, números e interrogação;
+- números e interrogação livres para posicionamento no diagrama;
+- interpretador linguístico com regras para PT/EN/FR;
+- pacote separado para os tipos do campo aditivo.
+
+Tipos disponíveis:
+- Composição de medidas
+- Transformação de medidas
+- Comparação de medidas
+- Composição de transformações
+- Transformação de uma relação
+- Composição de relações
+
+Arquitetura principal:
+- Main.java: interface principal
+- src/gerard/interpretacao: interpretador linguístico
+- src/gerard/idioma: controle do idioma da interface
+- src/gerard/campoaditivo: tipos, definições e repositório do campo aditivo
+- src/gerard/campoaditivo/diagrama/elementos: elementos gráficos autônomos
+  dos diagramas (extraídos de Main.java nesta versão)
+- src/gerard/ui: constantes visuais compartilhadas (ex.: fonte dos botões)
+
+Compilação:
+- projeto NetBeans/Ant, Java 8
+
+Atualização de interface:
+- Os botões "Idioma" e "Tipo" agora exibem menus verticais dentro da própria tela do Gerard ao passar o mouse.
+- As opções não abrem mais janelas externas para escolha.
+- O menu desaparece automaticamente quando o cursor sai do botão e do painel de opções.
+
+
+Atualização adicional:
+- menu interno por mouse over mantido;
+- no clique do menu de categorias, o diagrama agora é renderizado com elementos específicos de cada categoria do campo aditivo;
+- nova arquitetura de diagramas em pacote separado (modelo, serviço e apresentação).
+
+
+Atualização - Diagramas de Vergnaud:
+- os diagramas das categorias agora usam artefatos mais próximos da notação de Vergnaud/Gerard: quadrados para medidas, círculos para transformações/relações, setas para orientação e chaves para composição;
+- a renderização ocorre no clique do menu de categorias;
+- a lógica está separada em modelo, serviço e apresentação.
+
+
+Ajuste mais recente:
+- os diagramas de Vergnaud por categoria agora são renderizados no espaço central da tela;
+- o diagrama de Venn foi mantido na área da direita.
+
+
+Atualização de internacionalização:
+- a troca de idioma agora afeta todos os textos visíveis da interface;
+- foi criado um módulo central de i18n em gerard.i18n.ServicoLocalizacao;
+- menus, painéis, diálogos, tooltips e descrições de diagramas passam a ser traduzidos dinamicamente.
+
+
+Atualização do diagrama de Venn:
+- a área do diagrama de Venn agora também responde dinamicamente à categoria selecionada;
+- foi criado um módulo específico para geração da cena do Venn, separado do código da interface;
+- o estilo visual anterior foi mantido, com adaptação da disposição dos elementos conforme a categoria.
+
+
+Atualização pedagógica:
+- os diagramas de Vergnaud agora iniciam vazios;
+- os valores do enunciado não são mais preenchidos automaticamente nas figuras;
+- o diagrama de Venn dinâmico também não cria quadradinhos nem valores automaticamente;
+- o preenchimento passa a ser tarefa do usuário, por meio do arraste dos elementos do enunciado.
+
+
+Atualização da interpretação linguística:
+- o Gerard agora infere os papéis dos números na situação-problema;
+- foram incorporados os esquemas do campo aditivo: parte/todo, estado inicial/transformação/estado final, referente/referido/diferença, transformações e relações compostas;
+- o painel de interpretação mostra a linha "Papéis", incluindo o elemento desconhecido "?" quando aplicável;
+- os nomes dos papéis foram internacionalizados em Português, Inglês, Francês e Espanhol.
+
+
+Atualização do mouse over:
+- números e interrogação agora mostram o papel conceitual no mouse over;
+- cada símbolo assume apenas um papel por categoria;
+- papéis detalhados foram convertidos para papéis canônicos: parte, todo, estado inicial, transformação, estado final, referente, referido, diferença e relação.
+
+
+Atualização do mouse over do texto:
+- o mouse over de palavras, números e interrogação no enunciado passa a mostrar apenas: Oi você me mudar de posição.
+- a inferência dos papéis numéricos foi mantida internamente.
+
+
+Ajuste de mouse over:
+- a mensagem simples de movimentação agora aparece apenas em palavras;
+- números e interrogação mantêm a mensagem com o papel semântico inferido.
+
+
+Atualização do menu Sobre:
+- foi criado o botão Sobre na mesma linha dos botões existentes;
+- a interpretação linguística saiu do centro da tela e agora aparece em um menu interno chamado Interpretação linguística;
+- o menu segue o padrão visual dos menus já existentes na interface.
+
+
+Atualização do menu Sobre:
+- a interpretação linguística agora é um submenu do botão Sobre;
+- o menu Sobre exibe o item Interpretação linguística;
+- ao passar o mouse ou clicar no item, o submenu lateral mostra a interpretação;
+- a interpretação permanece fora do centro da tela.
+
+
+Atualização do submenu:
+- o submenu de interpretação linguística agora é compactado automaticamente ao tamanho do texto exibido;
+- o campo visual não usa mais área grande fixa;
+- o padrão visual dos menus internos foi preservado.
+
+
+Atualização da área central:
+- foi criada uma área lógica invisível no centro da tela para os diagramas de Vergnaud;
+- o diagrama central pode ser arrastado horizontalmente e verticalmente dentro dessa área;
+- o delimitador não é desenhado na interface;
+- o diagrama de Venn da direita permanece preservado.
+
+
+Atualização da manipulação do diagrama de Vergnaud:
+- o arraste do diagrama inteiro foi substituído pelo arraste individual de cada elemento;
+- figuras e conectores agora podem ser manipulados separadamente dentro da área central invisível.
+
+
+Atualização das zonas semânticas:
+- cada elemento do diagrama de Vergnaud continua manipulável, mas agora só pode se mover dentro de sua própria zona funcional;
+- isso impede a troca de papéis, como estado final ocupando o lugar do estado inicial ou da transformação;
+- conectores também ficam limitados a zonas locais coerentes com sua função.
+
+
+Atualização das zonas semânticas:
+- as restrições de posição dos elementos do diagrama de Vergnaud agora são específicas para cada categoria;
+- a interface impede trocas de papéis entre elementos de categorias diferentes dentro do mesmo diagrama.
+
+
+Atualização visual do enunciado:
+- o título da categoria selecionada passou a aparecer abaixo do texto da situação-problema, próximo ao limite inferior da área do texto;
+- o texto usa a mesma fonte e tamanho do enunciado.
+
+
+Atualização de layout:
+- o texto que ficava próximo ao diagrama de Vergnaud foi removido dessa área;
+- o mesmo texto agora aparece abaixo da situação-problema, mantendo a formatação original.
+
+
+Atualização do tip da categoria:
+- a descrição da categoria não fica mais visível abaixo do título;
+- ao passar o mouse sobre o título da categoria, a descrição aparece como tip;
+- o comportamento é dinâmico para cada categoria de Vergnaud.
+
+
+Atualização de interface:
+- paleta de cores mais consistente;
+- botões, menus e cartões visuais redesenhados;
+- áreas de texto, diagramas e dicas com melhor contraste e hierarquia visual;
+- todas as funcionalidades anteriores foram preservadas.
+
+
+Atualização visual suave:
+- a interface foi ajustada para uma paleta mais calma, com menos saturação;
+- o cabeçalho escuro foi substituído por um cabeçalho claro;
+- botões, cards e elementos gráficos foram suavizados.
+
+
+Atualização de centralização do diagrama de Vergnaud:
+- a cena gerada agora é centralizada vertical e horizontalmente dentro da área central delimitadora;
+- as zonas semânticas acompanham esse deslocamento, mantendo a interpretação de cada categoria.
+
+
+Refinamento de subtipos/incógnitas:
+- cada categoria de Vergnaud agora pode destacar visualmente a incógnita principal;
+- o submenu de interpretação linguística mostra o subtipo inferido;
+- o mouse over do título da categoria inclui a descrição do subtipo atual.
+
+
+Correção pedagógica dos subtipos:
+- os elementos dos diagramas de Vergnaud permanecem vazios;
+- a interrogação não é mais posicionada automaticamente no diagrama;
+- a inferência de subtipo continua disponível apenas na interpretação linguística.
+
+
+Correção da categoria Composição de Relações:
+- o diagrama agora explicita os elementos A, B e C;
+- as relações R1, R2 e a relação composta R3 passaram a ser renderizadas de forma estruturalmente mais fiel ao esquema de Vergnaud.
+
+
+Banco de situações-problema:
+- foi adicionado o arquivo dados/situacoes_vergnaud.tsv;
+- as situações estão agrupadas por categoria do campo aditivo de Vergnaud;
+- a escolha da categoria sorteia uma situação-problema daquela categoria;
+- o botão Sortear permite trocar a situação mantendo a categoria atual.
+
+
+Atualização da contagem de questões:
+- o rótulo Questão N/N foi reposicionado na extrema direita da barra superior;
+- a contagem avança a cada sorteio;
+- ao trocar de categoria, a sequência reinicia em Questão 1/1.
+
+
+Atualização temporária:
+- removida a contagem de questões da interface e da lógica do botão Sortear.
+
+
+Atualização do tip:
+- textos longos no onmouseover agora são exibidos com quebra automática de linha;
+- o balão se ajusta ao conteúdo e respeita os limites da janela.
+
+
+Submenu de registro do Gerard:
+- foi adicionado ao menu Sobre um item com dados sucintos do certificado de registro do programa no INPI.
+
+
+Ajuste visual:
+- os elementos tracejados internos dos diagramas foram removidos.
+
+============================================================
+DOCUMENTAÇÃO DA COMPLEXIDADE E VERSÕES CONSISTENTES
+============================================================
+
+A documentação técnica evolutiva está em:
+
+documentacao/ANALISE_COMPLEXIDADE_GERARD.pdf
+
+Para gerar uma versão consistente com a documentação atualizada, execute:
+
+ant -Ddocumentacao.pdf="/caminho/analise_atualizada.pdf" \
+    -Dversao.nome="descricao-da-versao" versao-consistente
+
+O alvo registra o SHA-256 do PDF no histórico, compila o projeto e copia os documentos para dist/documentacao.
+Consulte documentacao/LEIA-ME_DOCUMENTACAO.txt para detalhes.
+
+Artigo de co-design humano-IA
+=============================
+A documentação inclui o artigo atualizado sobre os ciclos de decisão do Gérard em:
+  documentacao/ARTIGO_CODESIGN_HUMANO_IA_GERARD.pdf
+O projeto LaTeX e o CSV do corpus estão em:
+  documentacao/artigo_codesign/
+
+ATUALIZAÇÃO C47 - COMPARAÇÃO DE MEDIDAS
+Na representação por barras, a quantidade comum entre Referido e Referendo é destacada em vermelho suave. Os quadradinhos são pareados de baixo para cima até min(referido, referendo); unidades excedentes permanecem neutras. A regra acompanha dinamicamente as alterações realizadas pelo ponto de controle.
+O artigo de co-design e a análise de complexidade foram atualizados para o ciclo C47.

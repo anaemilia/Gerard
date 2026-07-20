@@ -1,0 +1,16 @@
+MOUSE OVER SEPARADO PARA PALAVRAS E VALORES
+
+Ajuste realizado
+- a mensagem simples "Oi você me mudar de posição" passa a aparecer somente no mouse over das palavras do enunciado.
+- números e interrogação mantêm o comportamento anterior: exibem a mensagem de papel inferido, por exemplo "Olá, eu sou o estado inicial".
+
+Regra de interface
+- palavra comum: mensagem simples de movimentação;
+- número ou interrogação: mensagem de papel semântico exclusivo da categoria;
+- item já arrastado para o diagrama: mantém a mensagem de papel associada ao item.
+
+Critério de arquitetura
+- a separação foi feita usando métodos já existentes de classificação visual do texto:
+  * ehNumeroOuInterrogacaoDoTexto
+  * criarMensagemPapelElementoTexto
+- a inferência semântica dos papéis continua preservada internamente e visível apenas nos elementos numéricos e na interrogação.

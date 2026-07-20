@@ -1,0 +1,11 @@
+COMPARAÇÃO DOS ARQUIVOS DE DADOS CURADOS — C159 x C160
+Data: 2026-07-17
+
+IDÊNTICO  dados/situacoes_pdf_nao_aditivas_referencia.tsv  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IDÊNTICO  dados/situacoes_vergnaud.tsv  a3c0235621d3eb893b544fd46366f5fc9d9819ca973432ac138882ed45069389
+IDÊNTICO  src/gerard/campoaditivo/dados/situacoes_pdf_nao_aditivas_referencia.tsv  2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c
+IDÊNTICO  src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv  62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a
+IDÊNTICO  src/gerard/interpretacao/classificacao/exemplos_treino_vergnaud.tsv  bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3
+IDÊNTICO  src/gerard/pesquisador/log/dados/quadros_analise_tarefa_seed.tsv  b9aafc2098a132083ad9bc8439560d9cf700960aa7d2d411ae22cb3192ace5b1
+
+RESULTADO: todos os arquivos TSV/CSV permaneceram idênticos.

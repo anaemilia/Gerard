@@ -1,0 +1,26 @@
+Filtro contextual de numerais na interpretação linguística
+
+Esta versão acrescenta um filtro linguístico para diferenciar numeral quantitativo de uso de "1/um/uma" como artigo indefinido em português.
+
+Motivação:
+- Em enunciados como "Em 1 caixa Lia guarda 5 maçãs", o token "1" não representa uma quantidade relevante para o campo aditivo; ele funciona como determinante/artigo de "caixa".
+- Esse token não deve receber marcador arrastável nem participar da inferência de papéis numéricos.
+
+Arquitetura:
+- gerard.interpretacao.servico.AnalisadorNumeralContextual
+  Aplica heurísticas de contexto para ignorar "1", "um" ou "uma" quando aparecem em construções locativas com recipientes/lugares, como "em 1 caixa".
+
+- gerard.interpretacao.servico.ExtratorNumeros
+  Passa a usar o filtro contextual antes de registrar um número.
+  Também reconhece numerais simples por extenso em português, como "duas", convertendo-os para valor canônico numérico.
+
+- gerard.interpretacao.modelo.NumeroEncontrado
+  Passa a guardar o texto original e o valor canônico. Exemplo: texto original "duas", valor canônico "2".
+
+- Main.java
+  A renderização dos marcadores no texto agora se baseia nos números validados pela interpretação linguística, e não mais em todo dígito encontrado por regex.
+
+Efeito esperado:
+- "Em 1 caixa Lia guarda 5 maçãs. Foram postas nela outras duas maçãs. Quantas maçãs existem agora na caixa?"
+  Numerais válidos para a modelagem: 5 e 2.
+  Token ignorado: 1 de "1 caixa".

@@ -1,0 +1,15 @@
+C165 x C166 — HASHES SHA-256 DOS DADOS
+
+situacoes_vergnaud.tsv
+62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a  C165
+62bf7fd04c204a995c3db64dd8c416875554acf867b3f2e5da337e0708612d3a  C166
+
+situacoes_pdf_nao_aditivas_referencia.tsv
+2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c  C165
+2cc9b21dc4c7c552809a85feca9de9ab1b4973170d2ae349a8ffb7a8f64cd22c  C166
+
+exemplos_treino_vergnaud.tsv
+bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3  C165
+bddc5e02a89b8de099db0fec0e5f662f5127d74f76c826431a006dd3ce63e0b3  C166
+
+Conclusão: nenhum arquivo de dados foi alterado.
