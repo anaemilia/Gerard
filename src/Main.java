@@ -16,6 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import gerard.agente.monitor.AgenteMonitor;
 import gerard.agente.monitor.IndicadorAgenteMonitor;
+import gerard.agente.modelador.AgenteModelador;
+import gerard.agente.modelador.ConectorVereditoModelador;
+import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -386,6 +389,11 @@ public class Main extends JFrame {
         // instrucao-indicador-agente-monitor.pdf). Não substitui
         // scaffoldingQuestionamento, delega para ele.
         final AgenteMonitor agenteMonitor = new AgenteMonitor(scaffoldingQuestionamento);
+        // Modelo do Usuário (ver gerard-modelo-usuario/SKILL.md) e Agente
+        // Modelador (agente-modelador.md): ainda sem Agente ZDP, então só a
+        // ação 1 (armazenar caso) está conectada — ver ConectorVereditoModelador.
+        final AgenteModelador agenteModelador = new AgenteModelador(new RepositorioModeloUsuario());
+        final ConectorVereditoModelador conectorVereditoModelador = new ConectorVereditoModelador(agenteModelador);
         ScaffoldingFeedbackMultissensorialErro scaffoldingFeedbackMultissensorialErro = new ScaffoldingFeedbackMultissensorialErro();
         ControladorAnotacaoTemporaria controladorAnotacaoTemporaria = new ControladorAnotacaoTemporaria();
         CatalogoPapeisSemanticosAditivos catalogoPapeisSemanticos = new CatalogoPapeisSemanticosAditivos();
@@ -9432,12 +9440,17 @@ public class Main extends JFrame {
             );
             String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
 
-            return agenteMonitor.avaliarPosicionamento(
+            ResultadoQuestionamento resultado = agenteMonitor.avaliarPosicionamento(
                     chavePapelNumeral,
                     chavePapelAlvo,
                     papelDoElementoNoDiagrama,
                     localizacao.descricaoTipo(tipoSituacaoSelecionada)
             );
+            if (resultado != null && resultado.isAplicavel()) {
+                conectorVereditoModelador.registrarVeredito(
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo);
+            }
+            return resultado;
         }
 
         private boolean processarQuestionamentoPosicionamento(ItemTextoArrastavel item) {
