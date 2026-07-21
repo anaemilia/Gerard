@@ -1,5 +1,6 @@
 package gerard.agente.monitor;
 
+import gerard.ui.UITemaGerard;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -21,12 +22,19 @@ import javax.swing.Timer;
  * Componente isolado, sem lógica de negócio: só pinta um círculo e reage à
  * notificação do AgenteMonitor. Pode ser removido inteiramente sem afetar
  * o resto do sistema.
+ *
+ * As cores do pulso vêm da paleta neutra de UITemaGerard, não de uma cor
+ * com significado (COR_SUCESSO/COR_ERRO são azul/vermelho — reservadas ao
+ * feedback principal). Um pulso neutro fraco na família azul (usada por
+ * COR_SUCESSO) lia como parcialmente "de sucesso" mesmo sem essa intenção;
+ * por isso o aceso usa um neutro escuro da própria paleta em vez de uma
+ * segunda cor.
  */
 public final class IndicadorAgenteMonitor extends JPanel implements OuvinteVeredictoAgenteMonitor {
     private static final int DIAMETRO = 14;
     private static final int DURACAO_PULSO_MS = 400;
-    private static final Color COR_APAGADO = new Color(0xBF, 0xBA, 0xAC);
-    private static final Color COR_PULSO = new Color(0xB0, 0xC4, 0xDE);
+    private static final Color COR_APAGADO = UITemaGerard.COR_ICONE_DESABILITADO;
+    private static final Color COR_PULSO = UITemaGerard.COR_PRIMARIA;
 
     private boolean aceso;
     private String ultimoVeredito = "";

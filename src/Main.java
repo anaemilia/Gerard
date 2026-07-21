@@ -10503,14 +10503,23 @@ public class Main extends JFrame {
                 entrada = entrada.trim();
 
                 if (entrada.matches("[0-9]+")) {
+                    String ceIncognita = "-";
+                    String regrasIncognita = "A ação não foi avaliada como acerto ou erro matemático.";
+                    ResultadoQuestionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item);
+                    if (resultadoIncognita.isAplicavel()) {
+                        ceIncognita = resultadoIncognita.isCorreto() ? "C" : "E";
+                        regrasIncognita = resultadoIncognita.isCorreto()
+                                ? "O valor foi associado ao elemento do modelo que representa sua função no problema."
+                                : "O valor deve ser associado ao elemento do modelo que representa sua função no problema.";
+                    }
                     registrarLogUsuario(
                             "Substituir incógnita por número",
-                            "-",
+                            ceIncognita,
                             "Caixa de texto editável",
                             "Item arrastável no diagrama",
                             "Informar valor numérico para elemento previamente marcado como incógnita",
                             "OBJ8",
-                            "A entrada textual deve acionar as mesmas reações de consistência do arraste.",
+                            regrasIncognita,
                             "EDICAO_ITEM",
                             "valor=" + entrada
                     );
