@@ -36,7 +36,7 @@ public final class TesteMontagemSituacao {
                 "COP", TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
                 "Paulo tem 6 bolas. José tem 8 bolas a mais que Paulo. Quantas bolas tem José?",
                 "", "", "", "", "", "", "",
-                "6", "14", "8", "positivo", "referendo");
+                "6", "14", "8", "positivo", "");
         verificarAtividade(s, new String[] {"6", "+8", "14"});
     }
 
@@ -45,7 +45,7 @@ public final class TesteMontagemSituacao {
                 "TM", TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                 "Paulo tinha 6 bolas. Ele ganhou 8 bolas. Com quantas bolas ficou?",
                 "6", "8", "positivo", "14", "", "", "",
-                "", "", "", "", "estado_final");
+                "", "", "", "", "");
         verificarAtividade(s, new String[] {"6", "+8", "14"});
     }
 
@@ -54,7 +54,7 @@ public final class TesteMontagemSituacao {
                 "CM", TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                 "Paulo tem 6 bolas azuis e José tem 8 bolas vermelhas. Quantas bolas eles têm ao todo?",
                 "", "", "", "", "6", "8", "14",
-                "", "", "", "", "resultado");
+                "", "", "", "", "");
         verificarAtividade(s, new String[] {"6", "8", "14"});
     }
 
@@ -73,7 +73,7 @@ public final class TesteMontagemSituacao {
                 "COP_NEG", TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
                 "Paulo tem 14 bolas. José tem 8 bolas a menos que Paulo. Quantas bolas tem José?",
                 "", "", "", "", "", "", "",
-                "14", "6", "8", "negativo", "referendo");
+                "14", "6", "8", "negativo", "");
         GeradorBlocosMontagem g = new GeradorBlocosMontagem(new Random(2));
         ConjuntoBlocosMontagem c = g.gerar(s);
         boolean encontrouRelacaoNegativa = false;
@@ -147,7 +147,7 @@ public final class TesteMontagemSituacao {
                 "PASSO", TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                 "Paulo tinha 6 bolas. Ele ganhou 8 bolas. Com quantas bolas ficou?",
                 "6", "8", "positivo", "14", "", "", "",
-                "", "", "", "", "estado_final");
+                "", "", "", "", "");
         GeradorBlocosMontagem gerador = new GeradorBlocosMontagem(new Random(11));
         ConjuntoBlocosMontagem atividade = gerador.gerar(s);
 

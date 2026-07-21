@@ -711,6 +711,12 @@ public class TelaCuradoriaSituacoes extends JPanel {
             avisoTermoDesconhecido.definirSemanticaHerdada(semanticaHerdada);
             configurarCampoHerdado(campoRepresentacao, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoObservacoes, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto1, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto2, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto3, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto4, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto5, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoFragmentoTexto6, dicaHerdado, semanticaHerdada);
 
             formulario.revalidate();
             formulario.repaint();
