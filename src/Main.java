@@ -1868,7 +1868,7 @@ public class Main extends JFrame {
             }
 
             menuTipo = criarPainelMenu(150, 39, 245, 4 * 33 + 10);
-            submenuTipoMedidas = criarPainelMenu(395, 39, 340, 4 * 33 + 10);
+            submenuTipoMedidas = criarPainelMenu(395, 39, 340, 3 * 33 + 10);
             submenuTipoTransformacoes = criarPainelMenu(395, 72, 370, 3 * 33 + 10);
             submenuTipoRelacoes = criarPainelMenu(395, 105, 320, 2 * 33 + 10);
 
@@ -1890,16 +1890,6 @@ public class Main extends JFrame {
             adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS);
             adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
             adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.COMPARACAO_MEDIDAS);
-
-            JButton opcaoComposicaoMedidasNovaTela = criarBotaoOpcaoCategoria(
-                    "Composição de medidas (nova tela)", false);
-            opcaoComposicaoMedidasNovaTela.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ocultarMenus();
-                    new JanelaComposicaoMedidasDesktop().setVisible(true);
-                }
-            });
-            submenuTipoMedidas.add(opcaoComposicaoMedidasNovaTela);
 
             adicionarOpcaoCategoria(submenuTipoTransformacoes, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS);
             adicionarOpcaoCategoria(submenuTipoTransformacoes, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
