@@ -24,9 +24,12 @@ public final class TipConclusaoModelagem extends JPanel {
         void aoEscolherNao();
     }
 
-    private static final Color FUNDO = gerard.ui.UITemaGerard.COR_SUCESSO_FUNDO;
-    private static final Color BORDA = gerard.ui.UITemaGerard.COR_SUCESSO;
-    private static final Color TEXTO = gerard.ui.UITemaGerard.COR_SUCESSO_TEXTO;
+    // Neutro de propósito: o azul de sucesso é reservado aos números do
+    // diagrama (ver ElementoVergnaud.desenhar) — este tip pergunta sobre a
+    // próxima tarefa, não representa um valor correto.
+    private static final Color FUNDO = gerard.ui.UITemaGerard.COR_SUPERFICIE;
+    private static final Color BORDA = gerard.ui.UITemaGerard.COR_BORDA;
+    private static final Color TEXTO = gerard.ui.UITemaGerard.COR_TEXTO;
 
     private final JLabel mensagem = new JLabel();
     private final JRadioButton opcaoSim = new JRadioButton();

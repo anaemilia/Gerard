@@ -347,6 +347,7 @@ public class Main extends JFrame {
         JButton botaoTipo;
         JButton botaoSobre;
         JButton botaoReportarBug;
+        JButton botaoUsuario;
         JButton botaoSortear;
         IndicadorAgenteMonitor indicadorAgenteMonitor;
         JButton botaoTeste;
@@ -373,9 +374,11 @@ public class Main extends JFrame {
         JPanel submenuGerardVergnaud;
         JPanel submenuGerardRecife;
         javax.swing.Timer timerOcultarMenus;
+        javax.swing.Timer timerOcultarTipConclusao;
 
         final String URL_GERARD_VERGNAUD = "https://pt.wikipedia.org/wiki/G%C3%A9rard_Vergnaud";
         final String URL_VIDEO_GERARD_VERGNAUD = "https://www.youtube.com/watch?v=pU7um4GX5XQ";
+        final String URL_VERGNAUD_BRASIL = "https://vergnaudbrasil.com/";
 
         ConstrutorResultadoCurado construtorResultadoCurado = new ConstrutorResultadoCurado();
         ResultadoInterpretacao resultadoInterpretacao;
@@ -389,10 +392,19 @@ public class Main extends JFrame {
         // instrucao-indicador-agente-monitor.pdf). Não substitui
         // scaffoldingQuestionamento, delega para ele.
         final AgenteMonitor agenteMonitor = new AgenteMonitor(scaffoldingQuestionamento);
+        // Agente ZDP (agente-zdp.md): decide a camada de estratégia (N0-N2 +
+        // retirada progressiva) a partir do veredito do Monitor, antes do
+        // Modelador armazenar o caso — ver AgenteZDP.decidirEstrategia.
+        final gerard.agente.zdp.AgenteZDP agenteZDP = new gerard.agente.zdp.AgenteZDP();
         // Modelo do Usuário (ver gerard-modelo-usuario/SKILL.md) e Agente
-        // Modelador (agente-modelador.md): ainda sem Agente ZDP, então só a
-        // ação 1 (armazenar caso) está conectada — ver ConectorVereditoModelador.
-        final AgenteModelador agenteModelador = new AgenteModelador(new RepositorioModeloUsuario());
+        // Modelador (agente-modelador.md): ação 1 (armazenar caso) conectada
+        // e já recebe a estratégia do Agente ZDP — ver ConectorVereditoModelador.
+        // repositorioModeloUsuario extraído como variável própria (em vez de
+        // inline) para ser compartilhado também com o DialogoUsuario — ver
+        // criarBotaoUsuario.
+        final gerard.agente.modelousuario.RepositorioModeloUsuario repositorioModeloUsuario =
+                new gerard.agente.modelousuario.RepositorioModeloUsuario();
+        final AgenteModelador agenteModelador = new AgenteModelador(repositorioModeloUsuario);
         final ConectorVereditoModelador conectorVereditoModelador = new ConectorVereditoModelador(agenteModelador);
         ScaffoldingFeedbackMultissensorialErro scaffoldingFeedbackMultissensorialErro = new ScaffoldingFeedbackMultissensorialErro();
         ControladorAnotacaoTemporaria controladorAnotacaoTemporaria = new ControladorAnotacaoTemporaria();
@@ -624,6 +636,7 @@ public class Main extends JFrame {
             criarBotaoSobre();
             criarBotaoSortear();
             criarBotaoReportarBug();
+            criarBotaoUsuario();
             criarIndicadorAgenteMonitor();
             criarBotaoTeste();
             criarBotaoVisaoPesquisador();
@@ -731,6 +744,20 @@ public class Main extends JFrame {
                     mostrarTipConclusaoModelagem();
                 }
             });
+            // Ao retirar o mouse do tip (sem escolher Sim/Não), ele some e
+            // volta a mostrar só o link "Próxima tarefa" (seloConclusaoModelagem
+            // nunca é ocultado, então reaparece sozinho ao ocultar o tip por
+            // cima dele). Pequeno atraso, igual ao padrão já usado em
+            // agendarOcultacaoMenus, evita fechar o tip ao passar o mouse
+            // entre a mensagem e os radiobuttons Sim/Não internos.
+            tipConclusaoModelagem.addMouseListener(new MouseAdapter() {
+                public void mouseExited(MouseEvent e) {
+                    agendarOcultacaoTipConclusao();
+                }
+                public void mouseEntered(MouseEvent e) {
+                    cancelarOcultacaoTipConclusao();
+                }
+            });
             atualizarTextosTipConclusaoModelagem();
             add(seloConclusaoModelagem);
             add(tipConclusaoModelagem);
@@ -773,7 +800,7 @@ public class Main extends JFrame {
 
         private void criarBotaoIdioma() {
             botaoIdioma = new JButton(idiomaSelecionado.getRotuloBotao());
-            botaoIdioma.setBounds(18, 9, 120, 28);
+            botaoIdioma.setBounds(180, 9, 120, 28);
             botaoIdioma.setFocusable(false);
             botaoIdioma.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoIdioma);
@@ -796,7 +823,7 @@ public class Main extends JFrame {
 
         private void criarBotaoTipo() {
             botaoTipo = new JButton(localizacao.texto("ui.button.category"));
-            botaoTipo.setBounds(150, 9, 150, 28);
+            botaoTipo.setBounds(312, 9, 150, 28);
             botaoTipo.setFocusable(false);
             botaoTipo.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoTipo);
@@ -819,7 +846,7 @@ public class Main extends JFrame {
 
         private void criarBotaoSobre() {
             botaoSobre = new JButton(localizacao.texto("ui.button.about"));
-            botaoSobre.setBounds(312, 9, 120, 28);
+            botaoSobre.setBounds(474, 9, 120, 28);
             botaoSobre.setFocusable(false);
             botaoSobre.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoSobre);
@@ -842,7 +869,7 @@ public class Main extends JFrame {
 
         private void criarBotaoSortear() {
             botaoSortear = new JButton(localizacao.texto("ui.button.random"));
-            botaoSortear.setBounds(444, 9, 120, 28);
+            botaoSortear.setBounds(606, 9, 120, 28);
             botaoSortear.setFocusable(false);
             botaoSortear.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoSortear);
@@ -864,14 +891,14 @@ public class Main extends JFrame {
          */
         private void criarIndicadorAgenteMonitor() {
             indicadorAgenteMonitor = new IndicadorAgenteMonitor();
-            indicadorAgenteMonitor.setBounds(1127, 16, 14, 14);
+            indicadorAgenteMonitor.setBounds(1289, 16, 14, 14);
             agenteMonitor.adicionarOuvinte(indicadorAgenteMonitor);
             add(indicadorAgenteMonitor);
         }
 
         private void criarBotaoReportarBug() {
             botaoReportarBug = new JButton(localizacao.texto("ui.button.reportBug"));
-            botaoReportarBug.setBounds(995, 9, 122, 28);
+            botaoReportarBug.setBounds(1157, 9, 122, 28);
             botaoReportarBug.setFocusable(false);
             botaoReportarBug.setFont(gerard.ui.UITemaGerard.FONTE_ITEM_MENU.deriveFont(Font.PLAIN, 11.0f));
             botaoReportarBug.setForeground(COR_TEXTO_SECUNDARIO);
@@ -899,6 +926,47 @@ public class Main extends JFrame {
                 }
             });
             add(botaoReportarBug);
+        }
+
+        /**
+         * Abre gerard.ui.usuario.DialogoUsuario (dimensões 3 e 4 do Modelo
+         * do Usuário — ver gerard-modelo-usuario/SKILL.md). Suporta várias
+         * pessoas usando o mesmo app: ao selecionar/cadastrar, troca
+         * loggerInteracaoGerard.getUsuarioAtual(), que já é a fonte de
+         * idUsuario em todos os pontos que chamam AgenteZDP/
+         * ConectorVereditoModelador — nenhuma outra mudança é necessária
+         * pra essas ações passarem a ser atribuídas ao usuário escolhido.
+         */
+        private void criarBotaoUsuario() {
+            botaoUsuario = new JButton(textoBotaoUsuario());
+            botaoUsuario.setBounds(18, 9, 150, 28);
+            botaoUsuario.setFocusable(false);
+            botaoUsuario.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
+            estilizarBotaoPrincipal(botaoUsuario);
+            botaoUsuario.setToolTipText(localizacao.texto("ui.tooltip.user"));
+            botaoUsuario.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    java.awt.Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
+                    gerard.ui.usuario.DialogoUsuario dialogo = new gerard.ui.usuario.DialogoUsuario(
+                            janela instanceof Frame ? (Frame) janela : null, repositorioModeloUsuario);
+                    String idEscolhido = dialogo.mostrarESelecionar();
+                    if (idEscolhido != null) {
+                        loggerInteracaoGerard.definirUsuario(idEscolhido);
+                        botaoUsuario.setText(textoBotaoUsuario());
+                    }
+                }
+            });
+            add(botaoUsuario);
+        }
+
+        /** Nome do usuário cadastrado atual, se houver, senão o rótulo padrão do botão. */
+        private String textoBotaoUsuario() {
+            gerard.agente.modelousuario.ModeloUsuario modelo =
+                    repositorioModeloUsuario.obter(loggerInteracaoGerard.getUsuarioAtual());
+            if (modelo != null && modelo.getPerfilAluno().getNome() != null) {
+                return modelo.getPerfilAluno().getNome();
+            }
+            return localizacao.texto("ui.button.user");
         }
 
         private void mostrarDialogoRelatoBug() {
@@ -1064,7 +1132,7 @@ public class Main extends JFrame {
 
         private void criarBotaoTeste() {
             botaoTeste = new JButton();
-            botaoTeste.setBounds(576, 9, 205, 28);
+            botaoTeste.setBounds(738, 9, 205, 28);
             botaoTeste.setFocusable(false);
             botaoTeste.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoTeste);
@@ -1085,17 +1153,44 @@ public class Main extends JFrame {
             add(botaoTeste);
         }
 
+        // Senha fixa em código (decisão do usuário em 2026-07-23): é um portão
+        // leve pra impedir abertura casual da Visão de Pesquisador, não uma
+        // medida de segurança de verdade — qualquer um com acesso ao .class
+        // consegue ler o valor. Trocar a senha exige recompilar o app.
+        private static final String SENHA_VISAO_PESQUISADOR = "gerard";
+
+        private boolean autenticarPesquisador() {
+            JPasswordField campoSenha = new JPasswordField(18);
+            int opcao = JOptionPane.showConfirmDialog(
+                    this, campoSenha, localizacao.texto("pesq.password.title"),
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (opcao != JOptionPane.OK_OPTION) {
+                return false;
+            }
+            String senhaDigitada = new String(campoSenha.getPassword());
+            if (!SENHA_VISAO_PESQUISADOR.equals(senhaDigitada)) {
+                JOptionPane.showMessageDialog(this, localizacao.texto("pesq.password.wrong"),
+                        localizacao.texto("pesq.password.title"), JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            return true;
+        }
+
         private void criarBotaoVisaoPesquisador() {
             botaoVisaoPesquisador = new JButton(localizacao.texto("pesq.button.open"));
-            botaoVisaoPesquisador.setBounds(793, 9, 190, 28);
+            botaoVisaoPesquisador.setBounds(955, 9, 190, 28);
             botaoVisaoPesquisador.setFocusable(false);
             botaoVisaoPesquisador.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             estilizarBotaoPrincipal(botaoVisaoPesquisador);
             botaoVisaoPesquisador.setToolTipText(localizacao.texto("pesq.tooltip.open"));
             botaoVisaoPesquisador.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
+                    if (!autenticarPesquisador()) {
+                        requestFocusInWindow();
+                        return;
+                    }
                     Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
-                    TelaVisaoPesquisador.mostrar(janela);
+                    TelaVisaoPesquisador.mostrar(janela, agenteModelador, repositorioModeloUsuario);
                     requestFocusInWindow();
                 }
             });
@@ -1400,7 +1495,7 @@ public class Main extends JFrame {
                             modoFeedbackTeste == null ? "" : modoFeedbackTeste.name(),
                             "Diagrama de Vergnaud",
                             fotografarImagemModelagem());
-            boolean salvo = TelaArtefatoExplicativo.mostrar(this, itens, contexto);
+            boolean salvo = TelaArtefatoExplicativo.mostrar(this, itens, contexto, agenteModelador);
             if (salvo) {
                 registrarAcaoGranular("TEXTO", "Explicitar decisões da modelagem",
                         "Análise qualitativa da tentativa", "ARTEFATO_EXPLICATIVO",
@@ -1971,7 +2066,7 @@ public class Main extends JFrame {
 
             submenuInterpretacaoLinguistica = criarMenuInterpretacaoLinguistica(557, 39, 620, 170);
             submenuRegistroGerard = criarMenuRegistroGerard(557, 70, 430, 145);
-            submenuGerardVergnaud = criarMenuGerardVergnaud(557, 132, 250, 330);
+            submenuGerardVergnaud = criarMenuGerardVergnaud(557, 132, 250, 350);
             submenuGerardRecife = criarMenuGerardRecife(807, 132, 420, 300);
 
             add(menuIdioma);
@@ -2235,6 +2330,12 @@ public class Main extends JFrame {
             linkVideo.setAlignmentX(Component.LEFT_ALIGNMENT);
             linkVideo.setMaximumSize(new Dimension(larguraConteudo, linkVideo.getPreferredSize().height));
             painel.add(linkVideo);
+            painel.add(Box.createVerticalStrut(3));
+
+            JLabel linkVergnaudBrasil = criarLinkMenu(localizacao.texto("ui.about.vergnaudBrasilLink"), URL_VERGNAUD_BRASIL);
+            linkVergnaudBrasil.setAlignmentX(Component.LEFT_ALIGNMENT);
+            linkVergnaudBrasil.setMaximumSize(new Dimension(larguraConteudo, linkVergnaudBrasil.getPreferredSize().height));
+            painel.add(linkVergnaudBrasil);
             painel.add(Box.createVerticalStrut(8));
 
             JButton opcaoEmRecife = criarBotaoOpcaoSubmenu(localizacao.texto("ui.menu.emRecife"));
@@ -2900,6 +3001,25 @@ public class Main extends JFrame {
             });
             timerOcultarMenus.setRepeats(false);
             timerOcultarMenus.start();
+        }
+
+        private void cancelarOcultacaoTipConclusao() {
+            if (timerOcultarTipConclusao != null && timerOcultarTipConclusao.isRunning()) {
+                timerOcultarTipConclusao.stop();
+            }
+        }
+
+        private void agendarOcultacaoTipConclusao() {
+            cancelarOcultacaoTipConclusao();
+            timerOcultarTipConclusao = new javax.swing.Timer(180, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (!cursorSobre(tipConclusaoModelagem)) {
+                        tipConclusaoModelagem.ocultar();
+                    }
+                }
+            });
+            timerOcultarTipConclusao.setRepeats(false);
+            timerOcultarTipConclusao.start();
         }
 
         private boolean cursorSobre(Component componente) {
@@ -3636,6 +3756,10 @@ public class Main extends JFrame {
                 botaoReportarBug.getAccessibleContext().setAccessibleName(localizacao.texto("ui.button.reportBug"));
                 botaoReportarBug.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.tooltip.reportBug"));
             }
+            if (botaoUsuario != null) {
+                botaoUsuario.setText(textoBotaoUsuario());
+                botaoUsuario.setToolTipText(localizacao.texto("ui.tooltip.user"));
+            }
             if (botaoVisaoPesquisador != null) {
                 botaoVisaoPesquisador.setText(localizacao.texto("pesq.button.open"));
                 botaoVisaoPesquisador.setToolTipText(localizacao.texto("pesq.tooltip.open"));
@@ -4081,7 +4205,10 @@ public class Main extends JFrame {
                             item.valor,
                             item.estaNoDiagrama(),
                             item.representaIncognitaOriginal(),
-                            item.isPreenchidoPeloProtocoloMouseTexto()));
+                            item.isPreenchidoPeloProtocoloMouseTexto(),
+                            item.representaIncognitaOriginal()
+                                    ? valorDigitadoCorrespondeAoCurado(papelAlvo, item.valor)
+                                    : null));
                 } else {
                     String valorDigitado = alvo.textoEditavel == null
                             ? "" : alvo.textoEditavel.trim();
@@ -4093,6 +4220,103 @@ public class Main extends JFrame {
                 }
             }
             return estados;
+        }
+
+        /**
+         * Valor curado (não exibido) do papel indicado, para conferência do
+         * preenchimento da incógnita — nunca para exibir na interface (ver
+         * gerard-consistencia-estado, "nunca usar o valor curado de um papel
+         * que é a incógnita antes de o aluno resolvê-lo": aqui o uso é só
+         * comparação interna, o valor em si não chega a nenhum componente
+         * visual).
+         */
+        private Integer obterValorCuradoParaPapel(String papel) {
+            if (situacaoProblemaAtual == null || papel == null) {
+                return null;
+            }
+            SemanticaCuradaSituacao.PapelCurado curado =
+                    SemanticaCuradaSituacao.buscar(situacaoProblemaAtual, localizacao, papel);
+            if (curado == null) {
+                return null;
+            }
+            return converterTextoParaInteiro(curado.getValor());
+        }
+
+        /**
+         * @return null quando não há valor curado disponível para conferir
+         *         (ex.: problema digitado livremente, sem situação curada
+         *         carregada, ou valor digitado ainda não numérico) — nesse
+         *         caso quem chama não deve bloquear a conclusão por esse
+         *         motivo; caso contrário, se o valor digitado bate com o
+         *         valor curado do papel.
+         */
+        private Boolean valorDigitadoCorrespondeAoCurado(String papel, String valorDigitado) {
+            Integer curado = obterValorCuradoParaPapel(papel);
+            if (curado == null) {
+                return null;
+            }
+            Integer digitado = converterTextoParaInteiro(valorDigitado);
+            if (digitado == null) {
+                return null;
+            }
+            return Boolean.valueOf(digitado.intValue() == curado.intValue());
+        }
+
+        /**
+         * Verdadeiro só quando o item é a incógnita original, já foi
+         * preenchida pelo protocolo mouse/texto, e o valor diverge do valor
+         * curado da situação (quando há um valor curado disponível para
+         * conferir). Usado para (1) mostrar a pergunta de confirmação ao
+         * usuário e (2) adiar a propagação para as outras representações até
+         * a incógnita ser confirmada correta — ver
+         * atualizarRepresentacoesReativasAposAlteracaoDoItem.
+         */
+        private boolean incognitaAguardandoConfirmacaoDeValor(ItemTextoArrastavel item) {
+            if (item == null || !item.representaIncognitaOriginal()
+                    || !item.isPreenchidoPeloProtocoloMouseTexto()) {
+                return false;
+            }
+            return Boolean.FALSE.equals(
+                    valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor));
+        }
+
+        /**
+         * Pergunta de confirmação quando o valor diverge do curado. Decisão
+         * do usuário em 2026-07-22: a modelagem só volta a propagar/concluir
+         * depois que o valor correto for inserido — "Sim" (o usuário insiste
+         * que está certo) mostra uma dica curta da operação a fazer e ainda
+         * assim não libera a propagação; "Não" só permite tentar de novo,
+         * sem dica adicional.
+         *
+         * @return true quando não há divergência a conferir (sem valor
+         *         curado disponível, ou o valor já bate); false sempre que
+         *         houver divergência, independente da resposta do usuário.
+         */
+        private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item) {
+            if (!incognitaAguardandoConfirmacaoDeValor(item)) {
+                return true;
+            }
+            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
+            String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
+            int opcao = JOptionPane.showConfirmDialog(
+                    this, pergunta, localizacao.texto("ui.dialog.confirm"),
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (opcao == JOptionPane.YES_OPTION) {
+                mostrarDicaOperacaoIncognita();
+            }
+            return false;
+        }
+
+        /**
+         * Dica genérica (a mesma frase para as oito categorias, por decisão
+         * do usuário em 2026-07-22): não nomeia a operação nem os operandos,
+         * só orienta a escolher soma ou subtração e tentar de novo.
+         */
+        private void mostrarDicaOperacaoIncognita() {
+            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
+            String mensagem = localizacao.formatar("ui.hint.chooseOperation", nomePapel);
+            JOptionPane.showMessageDialog(this, mensagem,
+                    localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
         }
 
         private void verificarConclusaoModelagem() {
@@ -8107,11 +8331,16 @@ public class Main extends JFrame {
             }
 
             if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                definirValorNoElementoNumeroRelativo(
-                        elementosVergnaud.get(1), valorControle, true);
-                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                        elementosVergnaud.get(1),
-                        EstadoSemanticoCompartilhado.Origem.EIXO_VERTICAL);
+                ElementoVergnaud diferenca = elementosVergnaud.get(1);
+                definirValorNoElementoNumeroRelativo(diferenca, valorControle, true);
+                // Durante o arrasto (chamado a cada movimento do mouse), só
+                // checa em silêncio se a incógnita ainda diverge do curado —
+                // sem diálogo, que só deve aparecer ao soltar (ver
+                // gerard-scaffolding-interacao, "erro só ao soltar a peça").
+                if (!incognitaAguardandoConfirmacaoDeValor(encontrarItemSobreElemento(diferenca))) {
+                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                            diferenca, EstadoSemanticoCompartilhado.Origem.EIXO_VERTICAL);
+                }
             }
         }
 
@@ -8751,7 +8980,7 @@ public class Main extends JFrame {
                     itemGraficoInteiros = null;
                     numeroRelativoGraficoInteiros = null;
                 } else {
-                    sincronizarNumeroRelativoComGraficoSeNecessario();
+                    sincronizarNumeroRelativoComGraficoSeNecessario(false);
                 }
                 itemFocado = null;
                 quadradinhoVennFocado = null;
@@ -8789,6 +9018,14 @@ public class Main extends JFrame {
                         "SELECAO_TEXTO",
                         "valor=" + marcador.valor + "; papel=" + (marcador.chavePapel != null ? marcador.chavePapel : "")
                 );
+                // Selecionar não tem certo/errado (não há papel-alvo ainda),
+                // mas ainda é uma ação instrumental que o Monitor deve
+                // perceber — ver AgenteMonitor.perceberAcao. Também chega
+                // ao Modelador (ação neutra, sem camada do ZDP) para
+                // regraDeAcao ter alguma variação além de POSICIONAR.
+                agenteMonitor.perceberAcao();
+                conectorVereditoModelador.registrarAcaoNeutra(
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, "SELECIONAR");
                 itemSelecionado = novo;
                 itemFocado = novo;
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento semântico do enunciado",
@@ -8947,7 +9184,7 @@ public class Main extends JFrame {
         private void processarMovimentoArraste(int x, int y) {
             if (scaffoldingGraficoInteiros.estaArrastando()) {
                 scaffoldingGraficoInteiros.arrastarPara(x, y, getWidth(), getHeight());
-                sincronizarNumeroRelativoComGraficoSeNecessario();
+                sincronizarNumeroRelativoComGraficoSeNecessario(false);
                 repaint();
                 return;
             }
@@ -9060,7 +9297,7 @@ public class Main extends JFrame {
             }
             finalizarRastreamentoGranular(e.getX(), e.getY());
             if (scaffoldingGraficoInteiros.estaArrastando()) {
-                sincronizarNumeroRelativoComGraficoSeNecessario();
+                sincronizarNumeroRelativoComGraficoSeNecessario(true);
                 scaffoldingGraficoInteiros.finalizarArraste();
                 marcadorOrigemArraste.limpar();
                 atualizarCursorDepoisDoPickup(e.getX(), e.getY());
@@ -9071,6 +9308,23 @@ public class Main extends JFrame {
             if (arrastandoControleComparacao) {
                 arrastandoControleComparacao = false;
                 marcadorOrigemArraste.limpar();
+                // Ao soltar o controle do gráfico de barras (comparação de
+                // medidas): mesma checagem/pergunta de confirmação do valor
+                // da incógnita usada nos outros protocolos de preenchimento —
+                // esse caminho escreve direto no diagrama e, sem isso,
+                // contornava a checagem inteira (ver
+                // incognitaAguardandoConfirmacaoDeValor em
+                // atualizarBarrasComparacaoAPartirDoControle, que só bloqueia
+                // em silêncio durante o arrasto).
+                if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
+                    ElementoVergnaud diferenca = elementosVergnaud.get(1);
+                    ItemTextoArrastavel itemDiferenca = encontrarItemSobreElemento(diferenca);
+                    if (confirmarValorIncognitaAceito(itemDiferenca)) {
+                        sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                                diferenca, EstadoSemanticoCompartilhado.Origem.EIXO_VERTICAL);
+                    }
+                    verificarConclusaoModelagem();
+                }
                 atualizarCursorDepoisDoPickup(e.getX(), e.getY());
                 repaint();
                 return;
@@ -9437,8 +9691,12 @@ public class Main extends JFrame {
                     localizacao.descricaoTipo(tipoSituacaoSelecionada)
             );
             if (resultado != null && resultado.isAplicavel()) {
+                gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
+                        resultado.isCorreto());
                 conectorVereditoModelador.registrarVeredito(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo);
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
+                        estrategia, "POSICIONAR");
             }
             return resultado;
         }
@@ -9549,7 +9807,16 @@ public class Main extends JFrame {
             scaffoldingGraficoInteiros.registrarEscolha(valorBase, sinal);
         }
 
-        private void sincronizarNumeroRelativoComGraficoSeNecessario() {
+        /**
+         * @param confirmarAoFinalizar false durante o arrasto (chamadas
+         *        contínuas a cada movimento do mouse): só bloqueia a
+         *        propagação em silêncio, sem diálogo — erro só deve aparecer
+         *        ao soltar, nunca durante o arrasto (mesmo princípio já
+         *        aplicado ao gráfico de barras da comparação). true ao
+         *        soltar/finalizar a interação: mostra a mesma pergunta de
+         *        confirmação e dica usadas nos outros protocolos.
+         */
+        private void sincronizarNumeroRelativoComGraficoSeNecessario(boolean confirmarAoFinalizar) {
             if (!scaffoldingGraficoInteiros.houveAlteracaoValorPorInteracao()) {
                 return;
             }
@@ -9592,13 +9859,23 @@ public class Main extends JFrame {
                     valor,
                     true
             );
-            reagirConsistenciaAPartirDoElemento(
-                    numeroRelativoGraficoInteiros,
-                    ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
-            );
-            sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                    numeroRelativoGraficoInteiros,
-                    EstadoSemanticoCompartilhado.Origem.EIXO_X);
+            ItemTextoArrastavel itemIncognita = itemGraficoInteiros != null
+                    ? itemGraficoInteiros : encontrarItemSobreElemento(numeroRelativoGraficoInteiros);
+            boolean liberadoParaPropagar = confirmarAoFinalizar
+                    ? confirmarValorIncognitaAceito(itemIncognita)
+                    : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
+            if (liberadoParaPropagar) {
+                reagirConsistenciaAPartirDoElemento(
+                        numeroRelativoGraficoInteiros,
+                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
+                );
+                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                        numeroRelativoGraficoInteiros,
+                        EstadoSemanticoCompartilhado.Origem.EIXO_X);
+            }
+            if (confirmarAoFinalizar) {
+                verificarConclusaoModelagem();
+            }
             scaffoldingGraficoInteiros.atualizarCirculo(retanguloDoElemento(numeroRelativoGraficoInteiros));
             scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
         }
@@ -9686,12 +9963,18 @@ public class Main extends JFrame {
                 return;
             }
 
-            ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem = ehElementoNumeroRelativo(elemento)
-                    ? ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                    : ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ARRASTE;
-            reagirConsistenciaAPartirDoElemento(elemento, origem);
-            sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                    elemento, EstadoSemanticoCompartilhado.Origem.ARRASTE);
+            // Enquanto o valor da incógnita divergir do valor curado, a
+            // mudança fica só no próprio item: as outras representações
+            // (texto, Venn, eixo) não devem refletir uma resposta ainda não
+            // confirmada como correta — ver incognitaAguardandoConfirmacaoDeValor.
+            if (!incognitaAguardandoConfirmacaoDeValor(item)) {
+                ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem = ehElementoNumeroRelativo(elemento)
+                        ? ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
+                        : ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ARRASTE;
+                reagirConsistenciaAPartirDoElemento(elemento, origem);
+                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                        elemento, EstadoSemanticoCompartilhado.Origem.ARRASTE);
+            }
             verificarConclusaoModelagem();
         }
 
@@ -10269,13 +10552,20 @@ public class Main extends JFrame {
                             ajustarTamanhoDoItem(item);
                             centralizarItemNoNumeroRelativoSeNecessario(item);
                             registrarEscolhaGraficoInteiros(item, numeroRelativoFinal, base, sinal);
-                            reagirConsistenciaAPartirDoElemento(
-                                    numeroRelativoFinal,
-                                    ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                            );
-                            sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                                    numeroRelativoFinal,
-                                    EstadoSemanticoCompartilhado.Origem.ARRASTE);
+                            // Pergunta de confirmação (nudge) se o valor divergir do
+                            // curado; "Não" só adia a propagação às outras
+                            // representações — o item mantém o valor digitado e o
+                            // usuário pode reabrir o menu de sinal para tentar de
+                            // novo (ver confirmarValorIncognitaAceito).
+                            if (confirmarValorIncognitaAceito(item)) {
+                                reagirConsistenciaAPartirDoElemento(
+                                        numeroRelativoFinal,
+                                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
+                                );
+                                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                                        numeroRelativoFinal,
+                                        EstadoSemanticoCompartilhado.Origem.ARRASTE);
+                            }
                             verificarConclusaoModelagem();
                             repaint();
                         }
@@ -10545,6 +10835,13 @@ public class Main extends JFrame {
                         }
                         item.valor = scaffoldingNumeroRelativo.removerSinalPositivo(entrada);
                         ajustarTamanhoDoItem(item);
+                        if (preenchimentoDeInterrogacao && !confirmarValorIncognitaAceito(item)) {
+                            // Usuário respondeu "Não" à pergunta de confirmação:
+                            // volta a pedir o valor em vez de propagar um valor
+                            // que o próprio usuário disse não ter certeza.
+                            repaint();
+                            continue;
+                        }
                         atualizarRepresentacoesReativasAposAlteracaoDoItem(item);
                     }
                     repaint();
@@ -11398,6 +11695,10 @@ public class Main extends JFrame {
         }
 
         private final class PainelComparacaoCategorias extends JPanel {
+            // Terceiro tom de cinza (mais claro que COR_TEXTO/COR_TEXTO_SECUNDARIO,
+            // ainda legível) usado só para distinguir o "total" de parcela1/parcela2
+            // no rastreio de valores entre colunas — ver comentário acima de total.setForeground.
+            final Color COR_CINZA_TOTAL_COMPARACAO = new Color(150, 142, 128);
             final ModeloNumericoComparacao modelo = new ModeloNumericoComparacao();
             final JSpinner spinnerA = new JSpinner(new SpinnerNumberModel(4, 0, 999, 1));
             final JSpinner spinnerB = new JSpinner(new SpinnerNumberModel(7, 0, 999, 1));
@@ -11420,7 +11721,7 @@ public class Main extends JFrame {
 
                 JLabel tituloDestaque = new JLabel(localizacao.texto("ui.compare.title"), SwingConstants.CENTER);
                 tituloDestaque.setFont(new Font("Arial", Font.BOLD, 18));
-                tituloDestaque.setForeground(new Color(26, 71, 126));
+                tituloDestaque.setForeground(COR_PRIMARIA);
                 tituloDestaque.setAlignmentX(Component.CENTER_ALIGNMENT);
                 destaque.add(tituloDestaque);
 
@@ -11432,7 +11733,7 @@ public class Main extends JFrame {
                 destaque.add(Box.createVerticalStrut(4));
                 JLabel explicacao = new JLabel("<html><div style='text-align:center; width:720px;'>" + localizacao.texto("ui.compare.explanation") + "</div></html>", SwingConstants.CENTER);
                 explicacao.setFont(new Font("Arial", Font.BOLD, 18));
-                explicacao.setForeground(new Color(122, 32, 32));
+                explicacao.setForeground(COR_TEXTO);
                 explicacao.setBorder(BorderFactory.createEmptyBorder(6, 6, 2, 6));
                 explicacao.setAlignmentX(Component.CENTER_ALIGNMENT);
                 destaque.add(explicacao);
@@ -11445,15 +11746,19 @@ public class Main extends JFrame {
                 valores.add(rotuloValoresComuns);
                 spinnerA.setFont(new Font("Arial", Font.BOLD, 14));
                 spinnerB.setFont(new Font("Arial", Font.BOLD, 14));
-                ((JSpinner.DefaultEditor) spinnerA.getEditor()).getTextField().setForeground(new Color(32, 137, 126));
-                ((JSpinner.DefaultEditor) spinnerB.getEditor()).getTextField().setForeground(new Color(216, 119, 6));
+                ((JSpinner.DefaultEditor) spinnerA.getEditor()).getTextField().setForeground(COR_TEXTO);
+                ((JSpinner.DefaultEditor) spinnerB.getEditor()).getTextField().setForeground(COR_TEXTO_SECUNDARIO);
                 valores.add(spinnerA);
                 valores.add(new JLabel("+"));
                 valores.add(spinnerB);
                 valores.add(new JLabel("="));
                 final JLabel total = new JLabel(String.valueOf(modelo.total()));
                 total.setFont(new Font("Arial", Font.BOLD, 14));
-                total.setForeground(new Color(11, 87, 208));
+                // Tons de cinza, não cores: o rastreio de valores entre colunas
+                // não deve competir com o azul de COR_SUCESSO nem introduzir
+                // outras cores de significado — só a variação de tom distingue
+                // parcela1/parcela2/total.
+                total.setForeground(COR_CINZA_TOTAL_COMPARACAO);
                 valores.add(total);
                 topo.add(valores, BorderLayout.EAST);
                 add(topo, BorderLayout.NORTH);
@@ -11546,12 +11851,24 @@ public class Main extends JFrame {
             }
 
             JLabel criarRotuloSituacao(TipoSituacaoAditiva categoria, int linha) {
-                JLabel l = new JLabel(textoSituacao(categoria, linha));
+                final JLabel l = new JLabel(textoSituacao(categoria, linha));
                 l.setVerticalAlignment(SwingConstants.TOP);
-                l.setFont(new Font("Arial", Font.PLAIN, 14));
+                l.setFont(new Font("Arial", Font.PLAIN, 17));
                 l.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 0, Color.DARK_GRAY));
                 l.setOpaque(true); l.setBackground(Color.WHITE);
                 l.setPreferredSize(new Dimension(350, 170));
+                // Reajusta a fonte ao tamanho real da célula (a linha cresce com
+                // GridBagLayout ao redimensionar o diálogo — ver
+                // DimensionadorJanelaComparacaoCategorias).
+                l.addComponentListener(new ComponentAdapter() {
+                    public void componentResized(ComponentEvent e) {
+                        int tamanho = Math.max(14, Math.min(24, l.getHeight() / 9));
+                        Font atual = l.getFont();
+                        if (atual.getSize() != tamanho) {
+                            l.setFont(atual.deriveFont((float) tamanho));
+                        }
+                    }
+                });
                 return l;
             }
 
@@ -11569,9 +11886,9 @@ public class Main extends JFrame {
                         : categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
                         ? "ui.compare.problem.transformation"
                         : "ui.compare.problem.comparison";
-                String valorA = "<span style='color:#20897E;font-weight:bold'>" + modelo.parcela1 + "</span>";
-                String valorB = "<span style='color:#D87706;font-weight:bold'>" + modelo.parcela2 + "</span>";
-                String valorTotal = "<span style='color:#0B57D0;font-weight:bold'>" + modelo.total() + "</span>";
+                String valorA = "<span style='color:#332E28;font-weight:bold'>" + modelo.parcela1 + "</span>";
+                String valorB = "<span style='color:#746E62;font-weight:bold'>" + modelo.parcela2 + "</span>";
+                String valorTotal = "<span style='color:#968E80;font-weight:bold'>" + modelo.total() + "</span>";
                 return "<html><div style='padding:5px 7px'><b>" + romano + ". " + titulo + "</b><br><br>"
                         + localizacao.formatar(chave, valorA, valorB, valorTotal)
                         + "</div></html>";
@@ -11604,7 +11921,8 @@ public class Main extends JFrame {
                     super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                    g2.setFont(new Font("Arial", Font.BOLD, 17));
+                    int tamanhoFonte = Math.max(14, Math.min(28, getHeight() / 8));
+                    g2.setFont(new Font("Arial", Font.BOLD, tamanhoFonte));
                     String a = String.valueOf(modelo.parcela1);
                     String op1 = " + ";
                     String b = String.valueOf(modelo.parcela2);
@@ -11614,11 +11932,11 @@ public class Main extends JFrame {
                     int largura = fm.stringWidth(a + op1 + b + op2 + t);
                     int x = Math.max(6, (getWidth() - largura) / 2);
                     int y = Math.max(30, getHeight() / 2);
-                    g2.setColor(new Color(32, 137, 126)); g2.drawString(a, x, y); x += fm.stringWidth(a);
+                    g2.setColor(COR_TEXTO); g2.drawString(a, x, y); x += fm.stringWidth(a);
                     g2.setColor(Color.DARK_GRAY); g2.drawString(op1, x, y); x += fm.stringWidth(op1);
-                    g2.setColor(new Color(216, 119, 6)); g2.drawString(b, x, y); x += fm.stringWidth(b);
+                    g2.setColor(COR_TEXTO_SECUNDARIO); g2.drawString(b, x, y); x += fm.stringWidth(b);
                     g2.setColor(Color.DARK_GRAY); g2.drawString(op2, x, y); x += fm.stringWidth(op2);
-                    g2.setColor(new Color(11, 87, 208)); g2.drawString(t, x, y);
+                    g2.setColor(COR_CINZA_TOTAL_COMPARACAO); g2.drawString(t, x, y);
                     g2.dispose();
                 }
             }
@@ -11643,12 +11961,17 @@ public class Main extends JFrame {
                     repaint();
                 }
 
+                /** Tamanho das caixas/círculos proporcional ao espaço real do painel. */
+                int tamanhoCaixa() {
+                    return Math.max(30, Math.min(70, Math.min(getWidth(), getHeight()) / 4));
+                }
+
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setStroke(new BasicStroke(1.4f));
-                    g2.setFont(new Font("Arial", Font.BOLD, 15));
+                    g2.setFont(new Font("Arial", Font.BOLD, Math.max(13, Math.min(26, tamanhoCaixa() / 3))));
                     alvos.clear();
                     // A representação da situação-problema é uma instância preenchida e interativa.
                     // A representação da categoria é uma referência estrutural: vazia, estática
@@ -11666,7 +11989,8 @@ public class Main extends JFrame {
                 }
 
                 void desenharValor(Graphics2D g2, int x, int y, int valor, boolean circulo) {
-                    Rectangle r = new Rectangle(x-22, y-22, 44, 44); alvos.add(r);
+                    int tamanho = tamanhoCaixa();
+                    Rectangle r = new Rectangle(x - tamanho / 2, y - tamanho / 2, tamanho, tamanho); alvos.add(r);
                     g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
                     if (circulo) g2.fillOval(r.x,r.y,r.width,r.height); else g2.fillRect(r.x,r.y,r.width,r.height);
                     g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
@@ -11678,7 +12002,7 @@ public class Main extends JFrame {
 
 
                 void desenharFormaVazia(Graphics2D g2, int x, int y, boolean circulo) {
-                    int tamanho = 44;
+                    int tamanho = tamanhoCaixa();
                     g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
                     if (circulo) g2.fillOval(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
                     else g2.fillRect(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
@@ -11687,12 +12011,21 @@ public class Main extends JFrame {
                     else g2.drawRect(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
                 }
 
+                /** Fator de escala dos pequenos deslocamentos (folgas, pontas de seta)
+                 *  ao redor das caixas — mantém a mesma proporção visual de quando
+                 *  a caixa tinha 44px fixos, agora que tamanhoCaixa() varia. */
+                double escalaTraco() {
+                    return tamanhoCaixa() / 44.0;
+                }
+
                 void desenharComposicaoVazia(Graphics2D g2) {
                     int w=getWidth(), h=getHeight(); int x1=w/4, x2=w/4, xt=3*w/4;
                     desenharFormaVazia(g2,x1,h/3,false);
                     desenharFormaVazia(g2,x2,2*h/3,false);
                     desenharFormaVazia(g2,xt,h/2,false);
-                    int bx=w/2-12; g2.drawArc(bx,h/3-18,30,h/3+36,270,180);
+                    double r = escalaTraco();
+                    int bx=w/2-(int)Math.round(12*r);
+                    g2.drawArc(bx,h/3-(int)Math.round(18*r),(int)Math.round(30*r),h/3+(int)Math.round(36*r),270,180);
                 }
 
                 void desenharTransformacaoVazia(Graphics2D g2) {
@@ -11700,8 +12033,10 @@ public class Main extends JFrame {
                     desenharFormaVazia(g2,w/5,y,false);
                     desenharFormaVazia(g2,w/2,h/3,true);
                     desenharFormaVazia(g2,4*w/5,y,false);
-                    g2.drawLine(w/5+25,y,4*w/5-25,y);
-                    g2.drawLine(4*w/5-25,y,4*w/5-35,y-6); g2.drawLine(4*w/5-25,y,4*w/5-35,y+6);
+                    double r = escalaTraco();
+                    int gap=(int)Math.round(25*r), ponta=(int)Math.round(35*r), asa=(int)Math.round(6*r);
+                    g2.drawLine(w/5+gap,y,4*w/5-gap,y);
+                    g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y-asa); g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y+asa);
                 }
 
                 void desenharComparacaoVazia(Graphics2D g2) {
@@ -11709,8 +12044,10 @@ public class Main extends JFrame {
                     desenharFormaVazia(g2,x,h/5,false);
                     desenharFormaVazia(g2,x,h*4/5,false);
                     desenharFormaVazia(g2,x+w/4,h/2,true);
-                    g2.drawLine(x,h/5+24,x,h*4/5-24);
-                    g2.drawLine(x,h*4/5-24,x-6,h*4/5-34); g2.drawLine(x,h*4/5-24,x+6,h*4/5-34);
+                    double r = escalaTraco();
+                    int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
+                    g2.drawLine(x,h/5+gap,x,h*4/5-gap);
+                    g2.drawLine(x,h*4/5-gap,x-asa,h*4/5-ponta); g2.drawLine(x,h*4/5-gap,x+asa,h*4/5-ponta);
                 }
 
                 void desenharComposicao(Graphics2D g2) {
@@ -11718,7 +12055,9 @@ public class Main extends JFrame {
                     desenharValor(g2,x1,h/3,modelo.parcela1,false);
                     desenharValor(g2,x2,2*h/3,modelo.parcela2,false);
                     desenharValor(g2,xt,h/2,modelo.total(),false);
-                    int bx=w/2-12; g2.drawArc(bx,h/3-18,30,h/3+36,270,180);
+                    double r = escalaTraco();
+                    int bx=w/2-(int)Math.round(12*r);
+                    g2.drawArc(bx,h/3-(int)Math.round(18*r),(int)Math.round(30*r),h/3+(int)Math.round(36*r),270,180);
                 }
 
                 void desenharTransformacao(Graphics2D g2) {
@@ -11726,8 +12065,10 @@ public class Main extends JFrame {
                     desenharValor(g2,w/5,y,modelo.parcela1,false);
                     desenharValor(g2,w/2,h/3,modelo.parcela2,true);
                     desenharValor(g2,4*w/5,y,modelo.total(),false);
-                    g2.drawLine(w/5+25,y,4*w/5-25,y);
-                    g2.drawLine(4*w/5-25,y,4*w/5-35,y-6); g2.drawLine(4*w/5-25,y,4*w/5-35,y+6);
+                    double r = escalaTraco();
+                    int gap=(int)Math.round(25*r), ponta=(int)Math.round(35*r), asa=(int)Math.round(6*r);
+                    g2.drawLine(w/5+gap,y,4*w/5-gap,y);
+                    g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y-asa); g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y+asa);
                 }
 
                 void desenharComparacao(Graphics2D g2) {
@@ -11735,8 +12076,10 @@ public class Main extends JFrame {
                     desenharValor(g2,x,h/5,modelo.total(),false);
                     desenharValor(g2,x,h*4/5,modelo.parcela1,false);
                     desenharValor(g2,x+w/4,h/2,modelo.parcela2,true);
-                    g2.drawLine(x,h/5+24,x,h*4/5-24);
-                    g2.drawLine(x,h*4/5-24,x-6,h*4/5-34); g2.drawLine(x,h*4/5-24,x+6,h*4/5-34);
+                    double r = escalaTraco();
+                    int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
+                    g2.drawLine(x,h/5+gap,x,h*4/5-gap);
+                    g2.drawLine(x,h*4/5-gap,x-asa,h*4/5-ponta); g2.drawLine(x,h*4/5-gap,x+asa,h*4/5-ponta);
                 }
 
                 private String solicitarValorInteiro(int valorAtual) {

@@ -14,14 +14,14 @@ public class RenderizadorTransformacaoRelacao extends RenderizadorDiagramaAditiv
         List<ConectorDiagrama> cons = conectores();
         String descricao = ServicoLocalizacao.getInstancia().texto("diag.desc.transformacao_relacao");
 
-        FiguraDiagrama rInicial = relacaoGrande(area.x + 42, area.y + 152, definicao.getRotulo1(), valor(valores, 0));
-        FiguraDiagrama transf = transformacao(area.x + 222, area.y + 72, definicao.getRotulo2(), valor(valores, 1));
-        FiguraDiagrama rFinal = relacaoGrande(area.x + 410, area.y + 152, definicao.getRotulo3(), valor(valores, 2));
+        FiguraDiagrama rInicial = relacaoGrande(area.x + 63, area.y + 228, definicao.getRotulo1(), valor(valores, 0));
+        FiguraDiagrama transf = transformacao(area.x + 333, area.y + 108, definicao.getRotulo2(), valor(valores, 1));
+        FiguraDiagrama rFinal = relacaoGrande(area.x + 615, area.y + 228, definicao.getRotulo3(), valor(valores, 2));
 
         figs.add(rInicial);
         figs.add(transf);
         figs.add(rFinal);
-        cons.add(seta(right(rInicial) + 20, cy(rInicial), left(rFinal) - 20, cy(rFinal), ""));
+        cons.add(seta(right(rInicial) + 30, cy(rInicial), left(rFinal) - 30, cy(rFinal), ""));
 
         return new CenaDiagramaAditivo(definicao.getTitulo(), descricao, figs, cons);
     }

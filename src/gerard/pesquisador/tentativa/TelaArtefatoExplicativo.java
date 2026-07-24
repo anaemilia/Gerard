@@ -1,5 +1,7 @@
 package gerard.pesquisador.tentativa;
 
+import gerard.agente.modelador.AgenteModelador;
+import gerard.agente.modelador.SugestorInvarianteOperatorio;
 import gerard.i18n.ServicoLocalizacao;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import gerard.ui.UITemaGerard;
@@ -73,11 +75,14 @@ public final class TelaArtefatoExplicativo extends JDialog {
     private final JTextField formaConstruida = new JTextField();
     private final JTextArea observacaoInvariante = new JTextArea(2, 60);
     private final List<String> blocosForma = new ArrayList<String>();
+    private final AgenteModelador agenteModelador;
+    private final SugestorInvarianteOperatorio sugestorInvarianteOperatorio = new SugestorInvarianteOperatorio();
     private boolean salvo;
 
     private TelaArtefatoExplicativo(Window owner, List<ItemExplicacaoModelagem> itens,
-            final ArtefatoContexto contexto) {
+            final ArtefatoContexto contexto, AgenteModelador agenteModelador) {
         super(owner, loc().texto("analise.title"), ModalityType.APPLICATION_MODAL);
+        this.agenteModelador = agenteModelador;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         getContentPane().setBackground(COR_FUNDO);
@@ -219,6 +224,7 @@ public final class TelaArtefatoExplicativo extends JDialog {
         pesquisador.add(rotuloInvariante, p);
 
         carregarInvariantes(contexto.categoria);
+        preSelecionarInvarianteSugerido(itens, contexto.categoria);
         p.gridy++;
         pesquisador.add(invarianteCatalogo, p);
 
@@ -310,6 +316,21 @@ public final class TelaArtefatoExplicativo extends JDialog {
         rodape.add(salvar);
         add(rodape, BorderLayout.SOUTH);
         pack();
+        // pack() soma a altura natural de todo o conteúdo dentro do scroll
+        // (tarefa matemática + tarefa de interação + fotografia + seção do
+        // pesquisador), que facilmente passa da altura da tela — sem este
+        // limite, a janela fica mais alta que o monitor e o rodapé com
+        // Cancelar/Salvar (BorderLayout.SOUTH) é empurrado pra fora da área
+        // visível, por baixo da barra de tarefas. Limitando ao espaço útil
+        // da tela (sem a barra de tarefas), o scroll interno passa a
+        // absorver o excesso em vez da janela inteira crescer.
+        java.awt.Rectangle limiteTela =
+                java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int alturaMaxima = Math.max(400, limiteTela.height - 40);
+        int larguraMaxima = Math.max(600, limiteTela.width - 40);
+        if (getHeight() > alturaMaxima || getWidth() > larguraMaxima) {
+            setSize(Math.min(getWidth(), larguraMaxima), Math.min(getHeight(), alturaMaxima));
+        }
         setLocationRelativeTo(owner);
     }
 
@@ -355,6 +376,16 @@ public final class TelaArtefatoExplicativo extends JDialog {
             logger.registrarExplicacaoMatematica(r.getElemento(), r.getPapelSemantico(),
                     r.getExplicacao(), r.getDificuldade(), geral, origemInvariante, codigoInvariante, simbolicoInvariante, observacao,
                     contexto.fotografiaModelagem);
+            if (agenteModelador != null) {
+                // Mesmo formato de chave usado por ConectorVereditoModelador
+                // (categoria.name() + ":" + chavePapelAlvo) para achar o
+                // caso já armazenado no momento da ação e complementá-lo com
+                // o autorrelato — não cria um caso novo.
+                String tarefa = contexto.categoria + ":" + r.getPapelSemantico();
+                agenteModelador.registrarExplicacaoNoUltimoDiagnostico(
+                        contexto.usuarioId, tarefa, r.getDificuldade(), r.getExplicacao(), geral,
+                        origemInvariante, codigoInvariante, simbolicoInvariante, observacao);
+            }
         }
     }
 
@@ -402,7 +433,58 @@ public final class TelaArtefatoExplicativo extends JDialog {
                 "M₁ ∈ ℤ"));
         invarianteCatalogo.addItem(new InvarianteItem("COMPAR_RELACAO",
                 "R = M₂ − M₁"));
+
+        // Propriedades de relação de ordem, seção 5 ("What kinds of homomorphisms
+        // are necessary for a computable representation to work?", p. 179) de
+        // Vergnaud (1998) — fonte diferente das entradas COMPAR_ARTIGO_01/
+        // TRANS_ARTIGO_01/02 acima (essas vêm do artigo de Mauricio Braga),
+        // por isso o prefixo VERGNAUD98 próprio, pra manter a proveniência
+        // rastreável. Relevantes para Comparação de Medidas: a relação M₁/M₂
+        // do Gérard é um caso aditivo de relação de ordem, e essas são
+        // propriedades gerais que um usuário pode mobilizar ao raciocinar
+        // sobre ela (ex.: "se M₁ < M₂ e M₂ < M₃, então M₁ < M₃").
+        invarianteCatalogo.addItem(new InvarianteItem("COMPAR_VERGNAUD98_TRANSITIVIDADE",
+                "A < B e B < C ⟹ A < C"));
+        invarianteCatalogo.addItem(new InvarianteItem("COMPAR_VERGNAUD98_ANTISSIMETRIA",
+                "A < B ⟹ ¬(A > B)"));
+        invarianteCatalogo.addItem(new InvarianteItem("COMPAR_VERGNAUD98_SIMETRIA",
+                "A ≡ B ⟹ B ≡ A"));
+        invarianteCatalogo.addItem(new InvarianteItem("COMPAR_VERGNAUD98_COMBINACAO_MISTA",
+                "A ⊂ B e B = C ⟹ A ⊂ C"));
+
         invarianteCatalogo.addItem(new InvarianteItem("NAO_IDENTIFICADO", "—"));
+    }
+
+    /**
+     * Pré-seleciona, no combo já carregado, o item cujo código bate com a
+     * sugestão de SugestorInvarianteOperatorio para a categoria e o papel
+     * semântico da incógnita da tentativa — nunca seleciona sozinho quando
+     * não há sugestão (deixa o combo na primeira posição, como sempre foi).
+     * Só uma pré-seleção: o pesquisador ainda escolhe livremente antes de
+     * salvar. Decisão do usuário em 2026-07-23.
+     */
+    private void preSelecionarInvarianteSugerido(List<ItemExplicacaoModelagem> itens, String categoria) {
+        if (itens == null) {
+            return;
+        }
+        String chavePapelIncognita = null;
+        for (ItemExplicacaoModelagem item : itens) {
+            if (item != null && !item.isConhecido()) {
+                chavePapelIncognita = item.getChavePapel();
+                break;
+            }
+        }
+        String codigoSugerido = sugestorInvarianteOperatorio.sugerirCodigo(categoria, chavePapelIncognita);
+        if (codigoSugerido == null) {
+            return;
+        }
+        for (int i = 0; i < invarianteCatalogo.getItemCount(); i++) {
+            InvarianteItem item = invarianteCatalogo.getItemAt(i);
+            if (item != null && codigoSugerido.equals(item.codigo)) {
+                invarianteCatalogo.setSelectedIndex(i);
+                return;
+            }
+        }
     }
 
     private void atualizarConstrutorSimbolico() {
@@ -438,9 +520,10 @@ public final class TelaArtefatoExplicativo extends JDialog {
         public String toString() { return expressao; }
     }
 
-    public static boolean mostrar(Component pai, List<ItemExplicacaoModelagem> itens, ArtefatoContexto contexto) {
+    public static boolean mostrar(Component pai, List<ItemExplicacaoModelagem> itens, ArtefatoContexto contexto,
+            AgenteModelador agenteModelador) {
         Window owner = SwingUtilities.getWindowAncestor(pai);
-        TelaArtefatoExplicativo dialogo = new TelaArtefatoExplicativo(owner, itens, contexto);
+        TelaArtefatoExplicativo dialogo = new TelaArtefatoExplicativo(owner, itens, contexto, agenteModelador);
         dialogo.setVisible(true);
         return dialogo.salvo;
     }

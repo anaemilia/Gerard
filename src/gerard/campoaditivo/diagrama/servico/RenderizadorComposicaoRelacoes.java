@@ -14,14 +14,14 @@ public class RenderizadorComposicaoRelacoes extends RenderizadorDiagramaAditivoB
         List<ConectorDiagrama> cons = conectores();
         String descricao = ServicoLocalizacao.getInstancia().texto("diag.desc.composicao_relacoes");
 
-        FiguraDiagrama r1 = relacaoGrande(area.x + 70, area.y + 68, definicao.getRotulo1(), valor(valores, 0));
-        FiguraDiagrama r2 = relacaoGrande(area.x + 70, area.y + 198, definicao.getRotulo2(), valor(valores, 1));
-        FiguraDiagrama rf = relacaoGrande(area.x + 260, area.y + 133, definicao.getRotulo3(), valor(valores, 2));
+        FiguraDiagrama r1 = relacaoGrande(area.x + 105, area.y + 102, definicao.getRotulo1(), valor(valores, 0));
+        FiguraDiagrama r2 = relacaoGrande(area.x + 105, area.y + 297, definicao.getRotulo2(), valor(valores, 1));
+        FiguraDiagrama rf = relacaoGrande(area.x + 390, area.y + 200, definicao.getRotulo3(), valor(valores, 2));
 
         figs.add(r1);
         figs.add(r2);
         figs.add(rf);
-        cons.add(chaveVertical(area.x + 155, top(r1) - 8, bottom(r2) + 8, "",
+        cons.add(chaveVertical(area.x + 233, top(r1) - 12, bottom(r2) + 12, "",
                 left(rf), cy(rf)));
 
         return new CenaDiagramaAditivo(definicao.getTitulo(), descricao, figs, cons);

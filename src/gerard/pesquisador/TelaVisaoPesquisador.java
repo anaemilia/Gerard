@@ -1,24 +1,34 @@
 package gerard.pesquisador;
 
+import gerard.agente.modelador.AgenteModelador;
+import gerard.agente.modelador.InferenciaRegrasModelador;
+import gerard.agente.modelousuario.DiagnosticoTarefa;
+import gerard.agente.modelousuario.ModeloUsuario;
+import gerard.agente.modelousuario.NivelConceitualExplicacao;
+import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.i18n.ServicoLocalizacao;
 import gerard.pesquisador.log.EstatisticasLogGerard;
 import gerard.pesquisador.log.EventoLogGerard;
 import gerard.pesquisador.log.ExportadorLogGerard;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import gerard.pesquisador.visualizacao.PainelD3WebView;
+import gerard.ui.UITemaGerard;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -28,8 +38,10 @@ import javax.swing.table.TableColumnModel;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -57,24 +69,35 @@ import java.util.Set;
  */
 public class TelaVisaoPesquisador extends JDialog {
 
-    private static final Color COR_FUNDO = new Color(246, 247, 248);
-    private static final Color COR_SUPERFICIE = Color.WHITE;
-    private static final Color COR_TEXTO = new Color(31, 41, 51);
-    private static final Color COR_TEXTO_SECUNDARIO = new Color(82, 97, 107);
-    private static final Color COR_BORDA = new Color(213, 218, 224);
-    private static final Color COR_PRIMARIA = new Color(37, 99, 235);
-    private static final Color COR_DESTAQUE = new Color(234, 244, 255);
-    private static final Color COR_ERRO = new Color(224, 87, 87);
+    // Paleta neutra compartilhada com o resto do app (ver UITemaGerard e a
+    // skill gerard-identidade-visual): cor só para feedbacks/significados
+    // (COR_ERRO = vermelho, convenção cultural de erro). O que não carrega
+    // informação — fundo, texto, bordas, destaque estrutural, série "primária"
+    // de gráficos sem significado próprio — fica no tom neutro quente do
+    // tema, em vez do azul/vermelho decorativos que esta tela usava antes.
+    private static final Color COR_FUNDO = UITemaGerard.COR_FUNDO_CONTEUDO;
+    private static final Color COR_SUPERFICIE = UITemaGerard.COR_SUPERFICIE;
+    private static final Color COR_TEXTO = UITemaGerard.COR_TEXTO;
+    private static final Color COR_TEXTO_SECUNDARIO = UITemaGerard.COR_TEXTO_SECUNDARIO;
+    private static final Color COR_BORDA = UITemaGerard.COR_BORDA;
+    private static final Color COR_PRIMARIA = UITemaGerard.COR_PRIMARIA;
+    private static final Color COR_DESTAQUE = UITemaGerard.COR_DESTAQUE;
+    private static final Color COR_ERRO = UITemaGerard.COR_ERRO;
 
     private final List<EventoLogGerard> eventos;
     private final EstatisticasLogGerard estatisticas;
     private final ServicoLocalizacao i18n;
+    private final AgenteModelador agenteModelador;
+    private final RepositorioModeloUsuario repositorioModeloUsuario;
 
-    public TelaVisaoPesquisador(Window parent) {
+    public TelaVisaoPesquisador(Window parent, AgenteModelador agenteModelador,
+                                 RepositorioModeloUsuario repositorioModeloUsuario) {
         super(parent, ServicoLocalizacao.getInstancia().texto("pesq.title"), ModalityType.MODELESS);
         this.i18n = ServicoLocalizacao.getInstancia();
         this.eventos = LoggerInteracaoGerard.getInstancia().carregarEventos();
         this.estatisticas = new EstatisticasLogGerard(eventos);
+        this.agenteModelador = agenteModelador;
+        this.repositorioModeloUsuario = repositorioModeloUsuario;
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setSize(1100, 700);
         setMinimumSize(new Dimension(880, 560));
@@ -82,8 +105,9 @@ public class TelaVisaoPesquisador extends JDialog {
         setContentPane(criarConteudo());
     }
 
-    public static void mostrar(Window parent) {
-        TelaVisaoPesquisador tela = new TelaVisaoPesquisador(parent);
+    public static void mostrar(Window parent, AgenteModelador agenteModelador,
+                                RepositorioModeloUsuario repositorioModeloUsuario) {
+        TelaVisaoPesquisador tela = new TelaVisaoPesquisador(parent, agenteModelador, repositorioModeloUsuario);
         tela.setVisible(true);
     }
 
@@ -126,6 +150,8 @@ public class TelaVisaoPesquisador extends JDialog {
         abas.addTab(t("pesq.tab.table14"), criarAbaTabela14AcoesPorProblemaEstudo());
         abas.addTab(t("pesq.tab.table15"), criarAbaTabela15GruposQualitativosEstudo());
         abas.addTab(t("pesq.tab.visualizations"), criarAbaVisualizacoesTabela14());
+        abas.addTab(t("pesq.tab.userModel"), criarAbaModeloUsuario());
+        abas.addTab(t("pesq.tab.curationLevel"), criarAbaCuradoriaNivelConceitual());
 
         raiz.add(abas, BorderLayout.CENTER);
         return raiz;
@@ -143,13 +169,13 @@ public class TelaVisaoPesquisador extends JDialog {
         cards.add(Box.createHorizontalStrut(10));
         cards.add(criarCard(t("pesq.card.interfaceActions"), String.valueOf(estatisticas.totalPorAgente("C")), t("pesq.card.agentC")));
         cards.add(Box.createHorizontalStrut(10));
-        cards.add(criarCard(t("pesq.card.errors"), String.valueOf(estatisticas.totalErros()), t("pesq.card.ceE")));
+        cards.add(criarCard(t("pesq.card.errors"), String.valueOf(estatisticas.totalErros()), t("pesq.card.ceE"), COR_ERRO));
         cards.add(Box.createHorizontalStrut(10));
         cards.add(criarCard(t("pesq.card.problems"), String.valueOf(estatisticas.totalProblemas()), t("pesq.card.sessionProblem")));
 
         JPanel centro = new JPanel(new BorderLayout(12, 12));
         centro.setOpaque(false);
-        centro.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle"), estatisticas.contarErrosPorCategoria(), COR_ERRO), BorderLayout.CENTER);
+        centro.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle"), estatisticas.contarErrosPorCategoria(), COR_PRIMARIA), BorderLayout.CENTER);
 
         JTextArea texto = new JTextArea();
         texto.setEditable(false);
@@ -174,7 +200,7 @@ public class TelaVisaoPesquisador extends JDialog {
     private JPanel criarAbaAcertosErros() {
         JPanel painel = painelBase(new BorderLayout(12, 12));
         painel.add(criarTabelaComTitulo(t("pesq.table.correctErrorsByCategory"), dadosAcertosErrosPorCategoria(), new int[]{260, 110, 110, 110}), BorderLayout.NORTH);
-        painel.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle2"), estatisticas.contarErrosPorCategoria(), COR_ERRO), BorderLayout.CENTER);
+        painel.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle2"), estatisticas.contarErrosPorCategoria(), COR_PRIMARIA), BorderLayout.CENTER);
         return painel;
     }
 
@@ -249,7 +275,7 @@ public class TelaVisaoPesquisador extends JDialog {
         JTabbedPane graficos = new JTabbedPane();
         JPanel aba1 = painelBase(new BorderLayout(12, 12));
         aba1.add(criarTabelaComTitulo(t("pesq.table.correctErrorsByCategory"), dadosAcertosErrosPorCategoria(), new int[]{260, 110, 110, 110}), BorderLayout.NORTH);
-        aba1.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle2"), estatisticas.contarErrosPorCategoria(), COR_ERRO), BorderLayout.CENTER);
+        aba1.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle2"), estatisticas.contarErrosPorCategoria(), COR_PRIMARIA), BorderLayout.CENTER);
         graficos.addTab(t("pesq.tab.correctErrors"), aba1);
         painel.add(graficos, BorderLayout.CENTER);
         return painel;
@@ -544,6 +570,242 @@ public class TelaVisaoPesquisador extends JDialog {
         PainelD3WebView webView = new PainelD3WebView(gerarHtmlD3Tabela14(), i18n);
         painel.add(webView, BorderLayout.CENTER);
         return painel;
+    }
+
+    /**
+     * Ação 2 do Agente Modelador (agente-modelador.md): roda PART + Apriori
+     * sob demanda, por usuário cadastrado. Ferramenta de pesquisador, não de
+     * uso corrente do Gerard — os limiares mínimos ficam editáveis porque
+     * ainda não existe corpus real acumulado (ver InferenciaRegrasModelador).
+     */
+    private JPanel criarAbaModeloUsuario() {
+        JPanel painel = painelBase(new BorderLayout(12, 12));
+        painel.add(criarTextoModeloTabela(t("pesq.model.title"), t("pesq.model.desc")), BorderLayout.NORTH);
+
+        final List<ModeloUsuario> perfis = repositorioModeloUsuario.listarPerfisCadastrados();
+        final Map<String, String> idPorRotulo = new LinkedHashMap<String, String>();
+        final JComboBox<String> comboUsuarios = new JComboBox<String>();
+        for (ModeloUsuario modelo : perfis) {
+            String rotulo = modelo.getPerfilAluno().getNome() + " (" + modelo.getPerfilAluno().getId() + ")";
+            idPorRotulo.put(rotulo, modelo.getPerfilAluno().getId());
+            comboUsuarios.addItem(rotulo);
+        }
+
+        final JSpinner spinnerMinPart = new JSpinner(new SpinnerNumberModel(10, 1, 10000, 1));
+        final JSpinner spinnerMinApriori = new JSpinner(new SpinnerNumberModel(10, 1, 10000, 1));
+        final JButton botaoRodar = criarBotao(t("pesq.model.run"));
+        final JLabel status = new JLabel(perfis.isEmpty() ? t("pesq.model.noUsers") : t("pesq.model.selectUser"));
+        status.setFont(new Font("Arial", Font.PLAIN, 12));
+        status.setForeground(COR_TEXTO_SECUNDARIO);
+
+        JPanel controles = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        controles.setOpaque(false);
+        controles.add(rotuloControle(t("pesq.model.user")));
+        controles.add(comboUsuarios);
+        controles.add(rotuloControle(t("pesq.model.minPart")));
+        controles.add(spinnerMinPart);
+        controles.add(rotuloControle(t("pesq.model.minApriori")));
+        controles.add(spinnerMinApriori);
+        controles.add(botaoRodar);
+
+        final JTextArea areaPart = criarAreaResultadoModelo();
+        final JTextArea areaApriori = criarAreaResultadoModelo();
+        JPanel resultados = new JPanel(new java.awt.GridLayout(1, 2, 12, 0));
+        resultados.setOpaque(false);
+        resultados.add(criarPainelResultadoModelo(t("pesq.model.partTitle"), areaPart));
+        resultados.add(criarPainelResultadoModelo(t("pesq.model.aprioriTitle"), areaApriori));
+
+        boolean temPerfis = !perfis.isEmpty();
+        botaoRodar.setEnabled(temPerfis);
+        comboUsuarios.setEnabled(temPerfis);
+
+        botaoRodar.addActionListener(e -> {
+            String idUsuario = idPorRotulo.get(comboUsuarios.getSelectedItem());
+            if (idUsuario == null) {
+                return;
+            }
+            int minPart = ((Number) spinnerMinPart.getValue()).intValue();
+            int minApriori = ((Number) spinnerMinApriori.getValue()).intValue();
+            botaoRodar.setEnabled(false);
+            status.setText(t("pesq.model.running"));
+            try {
+                InferenciaRegrasModelador.Resultado resultado =
+                        agenteModelador.inferirRegras(idUsuario, minPart, minApriori);
+                areaPart.setText(resultado.regrasPart);
+                areaApriori.setText(resultado.regrasApriori);
+                status.setText(f("pesq.model.status",
+                        Integer.valueOf(resultado.quantidadeInstancias),
+                        Long.valueOf(resultado.duracaoTotalMs())));
+            } catch (Exception ex) {
+                areaPart.setText("");
+                areaApriori.setText("");
+                status.setText(f("pesq.model.error", ex.getMessage()));
+            } finally {
+                botaoRodar.setEnabled(true);
+            }
+        });
+
+        JPanel topo = new JPanel(new BorderLayout(0, 6));
+        topo.setOpaque(false);
+        topo.add(controles, BorderLayout.NORTH);
+        topo.add(status, BorderLayout.SOUTH);
+
+        JPanel centro = new JPanel(new BorderLayout(0, 10));
+        centro.setOpaque(false);
+        centro.add(topo, BorderLayout.NORTH);
+        centro.add(resultados, BorderLayout.CENTER);
+
+        painel.add(centro, BorderLayout.CENTER);
+        return painel;
+    }
+
+    private JLabel rotuloControle(String texto) {
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Arial", Font.BOLD, 12));
+        label.setForeground(COR_TEXTO);
+        return label;
+    }
+
+    private JTextArea criarAreaResultadoModelo() {
+        JTextArea area = new JTextArea();
+        area.setEditable(false);
+        area.setLineWrap(false);
+        area.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        area.setForeground(COR_TEXTO);
+        area.setBackground(COR_SUPERFICIE);
+        area.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        return area;
+    }
+
+    private JPanel criarPainelResultadoModelo(String titulo, JTextArea area) {
+        JPanel painel = new JPanel(new BorderLayout(0, 4));
+        painel.setBackground(COR_SUPERFICIE);
+        painel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_BORDA),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        JLabel label = new JLabel(titulo);
+        label.setFont(new Font("Arial", Font.BOLD, 13));
+        label.setForeground(COR_TEXTO);
+        painel.add(label, BorderLayout.NORTH);
+        painel.add(new JScrollPane(area), BorderLayout.CENTER);
+        return painel;
+    }
+
+    /**
+     * Curadoria humana do palpite de AnalisadorNivelConceitual (ver
+     * DiagnosticoTarefa.nivelConceitualEstimado) — decisão do usuário em
+     * 2026-07-23: o palpite automático é casamento de padrão, sinal fraco,
+     * e só nivelConceitualCurado (preenchido aqui) deve alimentar
+     * InferenciaRegrasModelador. Lista um card por diagnóstico com
+     * explicacaoElemento não vazia, de TODOS os modelos rastreados —
+     * listarTodosOsModelos(), não listarPerfisCadastrados(): diagnósticos
+     * são gravados sob o usuário ativo do logger, que pode ser
+     * "usuario_local" (nunca passou pela tela de cadastro) e por isso não
+     * apareceria numa lista filtrada só por quem tem nome (bug encontrado
+     * pelo usuário em 2026-07-23 — a combo grava, mas a aba ficava vazia).
+     * A combo grava direto no objeto DiagnosticoTarefa em memória (sem
+     * necessidade de um identificador próprio — a referência já é única).
+     */
+    private JPanel criarAbaCuradoriaNivelConceitual() {
+        JPanel painel = painelBase(new BorderLayout(12, 12));
+        painel.add(criarTextoModeloTabela(t("curation.level.title"), t("curation.level.desc")), BorderLayout.NORTH);
+
+        JPanel linhas = new JPanel();
+        linhas.setOpaque(false);
+        linhas.setLayout(new BoxLayout(linhas, BoxLayout.Y_AXIS));
+
+        int total = 0;
+        for (ModeloUsuario modelo : repositorioModeloUsuario.listarTodosOsModelos()) {
+            for (DiagnosticoTarefa diagnostico : modelo.getDiagnosticos()) {
+                String explicacao = diagnostico.getExplicacaoElemento();
+                if (explicacao == null || explicacao.trim().length() == 0) {
+                    continue;
+                }
+                if (total > 0) {
+                    linhas.add(Box.createVerticalStrut(8));
+                }
+                linhas.add(criarCardCuradoriaNivelConceitual(modelo, diagnostico));
+                total++;
+            }
+        }
+
+        if (total == 0) {
+            JLabel vazio = new JLabel(t("curation.level.empty"));
+            vazio.setForeground(COR_TEXTO_SECUNDARIO);
+            linhas.add(vazio);
+        }
+
+        JScrollPane scroll = new JScrollPane(linhas);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(COR_FUNDO);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        painel.add(scroll, BorderLayout.CENTER);
+        return painel;
+    }
+
+    private JPanel criarCardCuradoriaNivelConceitual(ModeloUsuario modelo, final DiagnosticoTarefa diagnostico) {
+        JPanel card = new JPanel(new BorderLayout(0, 6));
+        card.setBackground(COR_SUPERFICIE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_BORDA),
+                BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+
+        String nomeOuId = modelo.getPerfilAluno().getNome() != null
+                ? modelo.getPerfilAluno().getNome() : modelo.getPerfilAluno().getId();
+        JLabel cabecalho = new JLabel("<html><b>" + escaparHtml(nomeOuId)
+                + "</b> &nbsp;—&nbsp; " + escaparHtml(diagnostico.getTarefa()) + "</html>");
+        cabecalho.setFont(new Font("Arial", Font.BOLD, 13));
+        cabecalho.setForeground(COR_TEXTO);
+        card.add(cabecalho, BorderLayout.NORTH);
+
+        JTextArea texto = new JTextArea(diagnostico.getExplicacaoElemento());
+        texto.setEditable(false);
+        texto.setLineWrap(true);
+        texto.setWrapStyleWord(true);
+        texto.setFont(new Font("Arial", Font.PLAIN, 12));
+        texto.setForeground(COR_TEXTO);
+        texto.setBackground(COR_SUPERFICIE);
+        texto.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
+        card.add(texto, BorderLayout.CENTER);
+
+        JPanel rodape = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        rodape.setOpaque(false);
+        String estimadoTexto = diagnostico.getNivelConceitualEstimado() == null
+                ? "—" : diagnostico.getNivelConceitualEstimado().name();
+        JLabel estimado = new JLabel(f("curation.level.estimated", estimadoTexto));
+        estimado.setForeground(COR_TEXTO_SECUNDARIO);
+        rodape.add(estimado);
+
+        JLabel rotuloCurado = new JLabel(t("curation.level.curated"));
+        rotuloCurado.setForeground(COR_TEXTO);
+        rodape.add(rotuloCurado);
+
+        final String opcaoNaoCurado = t("curation.level.notCurated");
+        final JComboBox<String> comboNivel = new JComboBox<String>();
+        comboNivel.addItem(opcaoNaoCurado);
+        for (NivelConceitualExplicacao nivel : NivelConceitualExplicacao.values()) {
+            comboNivel.addItem(nivel.name());
+        }
+        if (diagnostico.getNivelConceitualCurado() != null) {
+            comboNivel.setSelectedItem(diagnostico.getNivelConceitualCurado().name());
+        }
+        comboNivel.addActionListener(e -> {
+            Object selecionado = comboNivel.getSelectedItem();
+            if (selecionado == null || opcaoNaoCurado.equals(selecionado)) {
+                diagnostico.setNivelConceitualCurado(null);
+            } else {
+                diagnostico.setNivelConceitualCurado(NivelConceitualExplicacao.valueOf((String) selecionado));
+            }
+            repositorioModeloUsuario.salvarDiagnosticos();
+        });
+        rodape.add(comboNivel);
+        card.add(rodape, BorderLayout.SOUTH);
+
+        return card;
     }
 
     private String gerarHtmlD3Tabela14() {
@@ -1578,6 +1840,16 @@ public class TelaVisaoPesquisador extends JDialog {
     }
 
     private JPanel criarCard(String titulo, String valor, String subtitulo) {
+        return criarCard(titulo, valor, subtitulo, COR_TEXTO);
+    }
+
+    /**
+     * @param corValor cor do número do cartão — neutra (COR_TEXTO) para
+     *        contagens sem significado próprio; COR_ERRO só para o cartão
+     *        de Erros, o único aqui que carrega um sinal (ver
+     *        gerard-identidade-visual: cor reservada a feedbacks/significados).
+     */
+    private JPanel criarCard(String titulo, String valor, String subtitulo, Color corValor) {
         JPanel card = new JPanel(new BorderLayout(2, 2));
         card.setBackground(COR_SUPERFICIE);
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -1591,7 +1863,7 @@ public class TelaVisaoPesquisador extends JDialog {
         labelTitulo.setForeground(COR_TEXTO_SECUNDARIO);
         JLabel labelValor = new JLabel(valor);
         labelValor.setFont(new Font("Arial", Font.BOLD, 28));
-        labelValor.setForeground(COR_PRIMARIA);
+        labelValor.setForeground(corValor);
         JLabel labelSubtitulo = new JLabel(subtitulo);
         labelSubtitulo.setFont(new Font("Arial", Font.PLAIN, 11));
         labelSubtitulo.setForeground(COR_TEXTO_SECUNDARIO);
@@ -1606,10 +1878,10 @@ public class TelaVisaoPesquisador extends JDialog {
         JButton botao = new JButton(texto);
         botao.setFont(new Font("Arial", Font.BOLD, 12));
         botao.setFocusPainted(false);
-        botao.setBackground(new Color(243, 244, 246));
+        botao.setBackground(UITemaGerard.COR_SUPERFICIE_SUAVE);
         botao.setForeground(COR_TEXTO);
         botao.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225)),
+                BorderFactory.createLineBorder(COR_BORDA),
                 BorderFactory.createEmptyBorder(6, 18, 6, 18)
         ));
         return botao;
@@ -1826,7 +2098,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 if (b > max) { max = b; }
             }
 
-            g2.setColor(new Color(229, 233, 238));
+            g2.setColor(COR_BORDA);
             g2.setStroke(new BasicStroke(1f));
             for (int i = 0; i <= 4; i++) {
                 int y = margemTopo + areaH - (areaH * i / 4);
@@ -1834,7 +2106,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 int valorGrade = (int) Math.round(max * (i / 4.0));
                 g2.setColor(COR_TEXTO_SECUNDARIO);
                 g2.drawString(String.valueOf(valorGrade), 22, y + 4);
-                g2.setColor(new Color(229, 233, 238));
+                g2.setColor(COR_BORDA);
             }
 
             int itens = Math.max(1, chaves.size());
@@ -1948,7 +2220,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 itens++;
             }
 
-            g2.setColor(new Color(229, 233, 238));
+            g2.setColor(COR_BORDA);
             g2.setStroke(new BasicStroke(1f));
             for (int i = 0; i <= 4; i++) {
                 int y = margemTopo + areaH - (areaH * i / 4);
@@ -1956,7 +2228,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 int valor = (int) Math.round(max * (i / 4.0));
                 g2.setColor(COR_TEXTO_SECUNDARIO);
                 g2.drawString(String.valueOf(valor), 22, y + 4);
-                g2.setColor(new Color(229, 233, 238));
+                g2.setColor(COR_BORDA);
             }
 
             int espacamento = Math.max(1, areaW / Math.max(1, itens));

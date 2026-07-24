@@ -113,14 +113,19 @@ public final class TelaMontagemSituacao extends JPanel {
         setBackground(FUNDO);
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
+        // Cabeçalho aumentado para acompanhar a escala do diagrama nesta aba
+        // (caixas e números do "Diagrama preenchido" foram ampliados — ver
+        // RenderizadorDiagramaAditivoBase e PainelDiagramaPreenchido): sem
+        // este ajuste, o texto de instrução ficava pequeno demais perto do
+        // diagrama grande logo abaixo.
         rotuloTitulo = new JLabel();
-        rotuloTitulo.setFont(new Font("Arial", Font.BOLD, 20));
+        rotuloTitulo.setFont(new Font("Arial", Font.BOLD, 26));
         rotuloTitulo.setForeground(TEXTO);
         rotuloInstrucao = new JLabel();
-        rotuloInstrucao.setFont(new Font("Arial", Font.PLAIN, 13));
+        rotuloInstrucao.setFont(new Font("Arial", Font.PLAIN, 16));
         rotuloInstrucao.setForeground(TEXTO_SECUNDARIO);
         rotuloSituacao = new JLabel(" ");
-        rotuloSituacao.setFont(new Font("Arial", Font.BOLD, 12));
+        rotuloSituacao.setFont(new Font("Arial", Font.BOLD, 15));
         rotuloSituacao.setForeground(TEXTO_SECUNDARIO);
 
         comboIdioma = new JComboBox<IdiomaInterface>(new DefaultComboBoxModel<IdiomaInterface>(new IdiomaInterface[] {
@@ -163,7 +168,10 @@ public final class TelaMontagemSituacao extends JPanel {
         painelDiagrama = new PainelDiagramaPreenchido();
         JPanel cardDiagrama = criarCard(new BorderLayout(8, 8));
         tituloDiagrama = new JLabel();
-        tituloDiagrama.setFont(new Font("Arial", Font.BOLD, 15));
+        // Mesmo tamanho de criarTituloLista() — os três cartões (Diagrama
+        // preenchido, Blocos disponíveis, Situação-problema em construção)
+        // são títulos do mesmo nível hierárquico.
+        tituloDiagrama.setFont(new Font("Arial", Font.BOLD, 17));
         tituloDiagrama.setForeground(TEXTO);
         cardDiagrama.add(tituloDiagrama, BorderLayout.NORTH);
         cardDiagrama.add(painelDiagrama, BorderLayout.CENTER);
@@ -173,7 +181,7 @@ public final class TelaMontagemSituacao extends JPanel {
         // diagrama de Vergnaud: colada ao contorno real desenhado, não ao
         // fim da área alocada pelo layout.
         rotuloFeedback = new JLabel(" ");
-        rotuloFeedback.setFont(new Font("Arial", Font.BOLD, 13));
+        rotuloFeedback.setFont(new Font("Arial", Font.BOLD, 15));
         rotuloFeedback.setForeground(TEXTO_SECUNDARIO);
         painelDiagrama.anexarRotuloFeedback(rotuloFeedback);
 
@@ -226,11 +234,36 @@ public final class TelaMontagemSituacao extends JPanel {
         gbc.gridy = 2; controlesListas.add(botaoSubir, gbc);
         gbc.gridy = 3; controlesListas.add(botaoDescer, gbc);
 
-        JPanel painelListas = new JPanel(new BorderLayout(8, 8));
+        // GridBagLayout em vez de BorderLayout: com WEST/CENTER/EAST, o
+        // BorderLayout dava todo o espaço sobrando ao CENTER (os botões),
+        // deixando as duas listas com largura fixa e uma lacuna enorme entre
+        // elas. Aqui as duas listas dividem proporcionalmente (weightx=1.0)
+        // o espaço disponível, e a coluna de botões fica só com a largura
+        // que o conteúdo pede (weightx=0.0).
+        JPanel painelListas = new JPanel(new GridBagLayout());
         painelListas.setOpaque(false);
-        painelListas.add(cardDisponiveis, BorderLayout.WEST);
-        painelListas.add(controlesListas, BorderLayout.CENTER);
-        painelListas.add(cardMontagem, BorderLayout.EAST);
+        GridBagConstraints gbcListas = new GridBagConstraints();
+        gbcListas.gridy = 0;
+        gbcListas.fill = GridBagConstraints.BOTH;
+        gbcListas.weighty = 1.0;
+
+        gbcListas.gridx = 0;
+        gbcListas.weightx = 1.0;
+        gbcListas.insets = new Insets(0, 0, 0, 8);
+        painelListas.add(cardDisponiveis, gbcListas);
+
+        gbcListas.gridx = 1;
+        gbcListas.weightx = 0.0;
+        gbcListas.fill = GridBagConstraints.VERTICAL;
+        gbcListas.insets = new Insets(0, 0, 0, 0);
+        painelListas.add(controlesListas, gbcListas);
+
+        gbcListas.gridx = 2;
+        gbcListas.weightx = 1.0;
+        gbcListas.fill = GridBagConstraints.BOTH;
+        gbcListas.insets = new Insets(0, 8, 0, 0);
+        painelListas.add(cardMontagem, gbcListas);
+
         cardDisponiveis.setPreferredSize(new Dimension(300, 420));
         cardMontagem.setPreferredSize(new Dimension(300, 420));
 
@@ -667,7 +700,7 @@ public final class TelaMontagemSituacao extends JPanel {
 
     private JLabel criarTituloLista() {
         JLabel label = new JLabel();
-        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setFont(new Font("Arial", Font.BOLD, 17));
         label.setForeground(TEXTO);
         return label;
     }
@@ -701,7 +734,7 @@ public final class TelaMontagemSituacao extends JPanel {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             String texto = value instanceof BlocoTextoMontagem ? ((BlocoTextoMontagem) value).getTexto() : String.valueOf(value);
             label.setText("<html><div style='width:245px;padding:6px 4px;'>" + escaparHtml(texto) + "</div></html>");
-            label.setFont(new Font("Arial", Font.PLAIN, 13));
+            label.setFont(new Font("Arial", Font.PLAIN, 15));
             label.setVerticalAlignment(SwingConstants.TOP);
             label.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDA));
             if (list == listaMontagem) {

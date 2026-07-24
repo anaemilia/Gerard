@@ -43,3 +43,5 @@ desktop.ini
 # Artefatos de distribuição (regeneráveis a partir do código-fonte)
 distribuicao_windows/app/
 distribuicao_windows/Instalar_Gerard.bat
+distribuicao_windows/saida/
+distribuicao_windows/saida_exe/

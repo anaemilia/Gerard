@@ -32,8 +32,14 @@ import javax.swing.ToolTipManager;
 
 /** Painel somente de leitura para apresentar a instância preenchida do diagrama. */
 public final class PainelDiagramaPreenchido extends JPanel {
-    private static final int LARGURA_BASE = 590;
-    private static final int ALTURA_BASE = 390;
+    // Escalados em 1.5x junto com as figuras e seus deslocamentos (ver
+    // RenderizadorDiagramaAditivoBase e os Renderizador*.java individuais) —
+    // sem isso, composições largas (ex.: Transformação de medidas, três
+    // caixas lado a lado) posicionam a última caixa além do que a tela
+    // lógica antiga (590x390) previa, e ela é cortada pelo Swing bem na
+    // borda deste painel, ficando invisível/"atrás" do cartão vizinho.
+    private static final int LARGURA_BASE = 885;
+    private static final int ALTURA_BASE = 585;
 
     private final GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
     private final RenderizadorSwingDiagramaAditivo renderizador = new RenderizadorSwingDiagramaAditivo();
@@ -200,7 +206,7 @@ public final class PainelDiagramaPreenchido extends JPanel {
             g2.translate(dx, dy);
             g2.scale(escala, escala);
 
-            Rectangle area = new Rectangle(18, 18, 550, 350);
+            Rectangle area = new Rectangle(27, 27, 825, 525);
             DefinicaoDiagramaAditivo definicao = catalogo.obter(situacao.getTipo());
             CenaDiagramaAditivo cena = gerador.gerar(situacao.getTipo(), area, definicao, new int[] {0, 0, 0});
             // Nesta atividade, a definição não fica permanentemente exposta:
@@ -209,6 +215,7 @@ public final class PainelDiagramaPreenchido extends JPanel {
             atualizarAreaInterativaTitulo(cena, area, escala, dx, dy);
             atualizarLimiteDireitoConteudo(cena, escala, dx);
             desenharValores(g2, cena);
+            desenharPersonagens(g2, cena);
             reposicionarRotuloFeedback();
             reposicionarTipParabens();
         } finally {
@@ -234,7 +241,10 @@ public final class PainelDiagramaPreenchido extends JPanel {
             descricaoCategoriaAtual = "";
             return;
         }
-        Font fonteTitulo = new Font("Arial", Font.BOLD, 16);
+        // Precisa bater com o tamanho usado por RenderizadorSwingDiagramaAditivo
+        // para o título — senão a área clicável do tooltip (calculada aqui)
+        // não corresponde ao texto realmente desenhado.
+        Font fonteTitulo = new Font("Arial", Font.BOLD, 24);
         FontMetrics fm = getFontMetrics(fonteTitulo);
         int xBase = area.x + 18;
         int linhaBase = area.y + 28;
@@ -295,7 +305,10 @@ public final class PainelDiagramaPreenchido extends JPanel {
             if (valor == null || valor.trim().length() == 0) {
                 valor = "?";
             }
-            g2.setFont(new Font("Arial", Font.BOLD, 22));
+            // Mesmo tamanho do número dentro da caixa em ElementoVergnaud
+            // (aba principal) para estas mesmas caixas — ver
+            // RenderizadorDiagramaAditivoBase.medida/relacao/transformacao.
+            g2.setFont(new Font("Arial", Font.BOLD, 24));
             Color corValor = SimboloDesconhecido.eh(valor)
                     ? new Color(21, 128, 61)
                     : (sucesso ? gerard.ui.UITemaGerard.COR_SUCESSO : gerard.ui.UITemaGerard.COR_TEXTO);
@@ -304,6 +317,38 @@ public final class PainelDiagramaPreenchido extends JPanel {
             int x = figura.getX() + (figura.getLargura() - fm.stringWidth(valor)) / 2;
             int y = figura.getY() + (figura.getAltura() - fm.getHeight()) / 2 + fm.getAscent();
             g2.drawString(valor, x, y);
+        }
+    }
+
+    /**
+     * Desenha o personagem/participante de cada parte, abaixo da caixa — igual
+     * à aba principal do Gérard (ver Main.aplicarSubtitulosPersonagensNoDiagramaVergnaud).
+     * A ordem dos papéis retornados por SemanticaCuradaSituacao.mapear casa
+     * 1:1 com a ordem das figuras nos três renderizadores simples (Composição,
+     * Transformação e Comparação de medidas) — cada um monta as figuras na
+     * mesma ordem rotulo1/rotulo2/rotulo3 que aplicarRotulos usa.
+     */
+    private void desenharPersonagens(Graphics2D g2, CenaDiagramaAditivo cena) {
+        if (cena == null || situacao == null) {
+            return;
+        }
+        java.util.List<gerard.campoaditivo.curadoria.SemanticaCuradaSituacao.PapelCurado> papeis =
+                gerard.campoaditivo.curadoria.SemanticaCuradaSituacao.mapear(
+                        situacao, ServicoLocalizacao.getInstancia());
+        // Mesmo tamanho do subtítulo/personagem em ElementoVergnaud (aba
+        // principal) para estas mesmas caixas.
+        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        FontMetrics fm = g2.getFontMetrics();
+        g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+        for (int i = 0; i < cena.getFiguras().size() && i < 3 && i < papeis.size(); i++) {
+            String personagem = papeis.get(i).getParticipante();
+            if (personagem == null || personagem.trim().length() == 0) {
+                continue;
+            }
+            FiguraDiagrama figura = cena.getFiguras().get(i);
+            int x = figura.getX() + (figura.getLargura() - fm.stringWidth(personagem)) / 2;
+            int y = figura.getY() + figura.getAltura() + fm.getAscent() + 6;
+            g2.drawString(personagem, x, y);
         }
     }
 

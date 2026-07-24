@@ -19,7 +19,9 @@ import javax.swing.Timer;
 
 /** Link de texto discreto exibido após a conclusão do diagrama ("Próxima tarefa"). */
 public final class SeloConclusaoModelagem extends JPanel {
-    private static final Color TEXTO = new Color(0x2E, 0x5E, 0xAA);
+    // Neutro de propósito: o azul de sucesso fica restrito aos números do
+    // diagrama — este link ("Próxima tarefa") não representa um valor.
+    private static final Color TEXTO = gerard.ui.UITemaGerard.COR_TEXTO;
 
     private final JLabel mensagem = new JLabel();
     private final Timer timerEntrada;

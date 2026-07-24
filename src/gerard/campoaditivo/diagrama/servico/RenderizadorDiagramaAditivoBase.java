@@ -8,20 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 abstract class RenderizadorDiagramaAditivoBase implements RenderizadorDiagramaAditivo {
+    // Tamanhos das figuras escalados em 1.5x (ver commit "Aumenta diagramas
+    // de Vergnaud") — os originais (42/52/58) deixavam o diagrama pequeno
+    // dentro da area disponivel em telas maiores, sem usar o espaco real
+    // calculado por Main.obterAreasDiagramasProporcionais().
     protected FiguraDiagrama medida(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, x, y, 42, 42, rotulo, valor, true);
+        return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, x, y, 63, 63, rotulo, valor, true);
     }
 
     protected FiguraDiagrama relacao(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 52, 52, rotulo, valor, true);
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78, rotulo, valor, true);
     }
 
     protected FiguraDiagrama transformacao(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 52, 52, rotulo, valor, true);
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78, rotulo, valor, true);
     }
 
     protected FiguraDiagrama relacaoGrande(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 58, 58, rotulo, valor, true);
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 87, 87, rotulo, valor, true);
     }
 
     protected ConectorDiagrama seta(int x1, int y1, int x2, int y2, String legenda) {

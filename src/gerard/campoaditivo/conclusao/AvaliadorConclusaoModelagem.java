@@ -55,11 +55,15 @@ public final class AvaliadorConclusaoModelagem {
                     incognitaAguardandoTexto = true;
                 } else if (politicaValorNumerico.ehNumero(
                         estado.getValorMatematico())
-                        && estado.isPreenchidoPeloProtocoloMouseTexto()) {
+                        && estado.isPreenchidoPeloProtocoloMouseTexto()
+                        && !Boolean.FALSE.equals(estado.getValorCorrespondeAoCurado())) {
                     incognitaPreenchidaCorretamente = true;
                 } else {
-                    // Um número colocado automaticamente sobre a incógnita não
-                    // satisfaz o protocolo pedagógico de conclusão.
+                    // Um número colocado automaticamente sobre a incógnita, ou
+                    // informado pelo protocolo mas divergente do valor curado
+                    // da situação, não satisfaz o protocolo pedagógico de
+                    // conclusão. getValorCorrespondeAoCurado() null (sem valor
+                    // curado disponível para conferir) não cai aqui.
                     return FaseConclusaoModelagem.INCOMPLETA;
                 }
             } else if (!politicaValorNumerico.ehNumero(

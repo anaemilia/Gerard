@@ -43,10 +43,14 @@ public class RenderizadorSwingDiagramaAditivo {
         }
         Color cor = destaqueSucesso ? COR_ELEMENTO_SUCESSO : COR_ELEMENTO;
         g2.setColor(cor);
-        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        // Fontes escaladas em 1.5x junto com as figuras (ver comentário em
+        // RenderizadorDiagramaAditivoBase.medida/relacao/transformacao) —
+        // mesma proporção usada em ElementoVergnaud.desenhar para as mesmas
+        // caixas, para não deixar o título pequeno perto do diagrama.
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
         g2.drawString(cena.getTitulo(), area.x + 18, area.y + 28);
         if (mostrarDescricao) {
-            g2.setFont(new Font("Arial", Font.PLAIN, 12));
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
             g2.drawString(cena.getDescricao(), area.x + 18, area.y + 48);
         }
 
@@ -173,7 +177,7 @@ public class RenderizadorSwingDiagramaAditivo {
 
     private void desenharLegendaConector(Graphics2D g2, ConectorDiagrama c) {
         if (c.getLegenda() != null && c.getLegenda().trim().length() > 0) {
-            g2.setFont(new Font("Arial", Font.PLAIN, 11));
+            g2.setFont(new Font("Arial", Font.PLAIN, 17));
             FontMetrics fm = g2.getFontMetrics();
             int mx = (c.getX1() + c.getX2()) / 2;
             int my = (c.getY1() + c.getY2()) / 2 - 4;

@@ -44,6 +44,19 @@ public final class AgenteMonitor {
         return resultado;
     }
 
+    /**
+     * Percebe uma ação instrumental que não é avaliável como certo/errado
+     * (ex.: Selecionar um valor do enunciado, antes de qualquer
+     * posicionamento — não há papel-alvo ainda para comparar). Usa o mesmo
+     * canal de notificação de avaliarPosicionamento (o LED não distingue
+     * certo/errado de qualquer forma), mas sem produzir veredito: o
+     * argumento de aoAvaliar aqui não representa um julgamento, só mantém a
+     * mesma assinatura de notificação.
+     */
+    public void perceberAcao() {
+        notificar(true);
+    }
+
     private void notificar(boolean correto) {
         for (OuvinteVeredictoAgenteMonitor ouvinte : ouvintes) {
             ouvinte.aoAvaliar(correto);

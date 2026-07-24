@@ -1,6 +1,7 @@
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
@@ -92,6 +93,12 @@ public class TesteMonkeySemiGuiado {
             iteracao++;
             try {
                 executarIteracao(robot, tela, random, log, iteracao);
+                // Digitar um valor aleatorio na incognita agora pode abrir a
+                // pergunta de confirmacao "Tem certeza que esse e o valor
+                // do X?" (e, se ENTER aceitar, a dica "Escolha soma ou
+                // subtracao..." em seguida) — sem isto, o robot ficava preso
+                // atras de um dialogo modal que o script nao sabia fechar.
+                varrerDialogosAbertos(robot, log);
             } catch (Exception ex) {
                 erros++;
                 log.println("[" + new Date() + "] Falha na iteracao " + iteracao + ":");
@@ -184,6 +191,42 @@ public class TesteMonkeySemiGuiado {
         log.println("Selecionando categoria inicial: " + escolhida.getName());
         clicarComponente(robot, escolhida);
         Thread.sleep(800);
+    }
+
+    /**
+     * Fecha, com ENTER, qualquer java.awt.Dialog visivel deixado por uma
+     * iteracao (ex.: a pergunta de confirmacao do valor da incognita e a
+     * dica que pode aparecer em seguida). ENTER aceita a opcao padrao —
+     * "Sim" na pergunta de confirmacao, "OK" na dica — o suficiente para o
+     * teste seguir em frente em vez de travar atras do modal. Limite de
+     * tentativas evita loop infinito se algum dialogo nao fechar com ENTER.
+     */
+    private static void varrerDialogosAbertos(Robot robot, PrintWriter log) throws Exception {
+        for (int tentativa = 0; tentativa < 3; tentativa++) {
+            Thread.sleep(200);
+            if (!existeDialogoVisivel()) {
+                return;
+            }
+            log.println("  dialogo modal detectado apos a iteracao — enviando ENTER (tentativa "
+                    + (tentativa + 1) + ")");
+            robot.keyPress(KeyEvent.VK_ENTER);
+            robot.keyRelease(KeyEvent.VK_ENTER);
+        }
+    }
+
+    private static boolean existeDialogoVisivel() throws Exception {
+        final boolean[] resultado = new boolean[1];
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                for (Window w : Window.getWindows()) {
+                    if (w.isVisible() && w instanceof java.awt.Dialog) {
+                        resultado[0] = true;
+                        return;
+                    }
+                }
+            }
+        });
+        return resultado[0];
     }
 
     private static Point centroNaTela(final Component c) throws Exception {
