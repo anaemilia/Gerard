@@ -350,6 +350,7 @@ public class Main extends JFrame {
         JButton botaoUsuario;
         JButton botaoSortear;
         IndicadorAgenteMonitor indicadorAgenteMonitor;
+        gerard.pesquisador.FaixaLateralAtividadeAgentes faixaAtividadeAgentes;
         JButton botaoTeste;
         JButton botaoRestaurar;
         JButton botaoCorrigirCuradoria;
@@ -627,6 +628,9 @@ public class Main extends JFrame {
                 @Override
                 public void componentResized(java.awt.event.ComponentEvent evento) {
                     reposicionarDiagramaVergnaudParaAreaAtual();
+                    if (faixaAtividadeAgentes != null) {
+                        faixaAtividadeAgentes.reposicionar(getWidth(), getHeight());
+                    }
                     repaint();
                 }
             });
@@ -638,6 +642,7 @@ public class Main extends JFrame {
             criarBotaoReportarBug();
             criarBotaoUsuario();
             criarIndicadorAgenteMonitor();
+            criarFaixaAtividadeAgentes();
             criarBotaoTeste();
             criarBotaoVisaoPesquisador();
             criarBotaoRestaurar();
@@ -894,6 +899,23 @@ public class Main extends JFrame {
             indicadorAgenteMonitor.setBounds(1289, 16, 14, 14);
             agenteMonitor.adicionarOuvinte(indicadorAgenteMonitor);
             add(indicadorAgenteMonitor);
+        }
+
+        /**
+         * Faixa lateral recolhida por padrão para a pesquisadora acompanhar
+         * Monitor/ZDP/Modelador ao vivo, sentada ao lado do estudante (ver
+         * gerard-ajuda-adaptativa/references). Reaproveita o mesmo portão de
+         * senha do botão "Visão Pesquisador" (autenticarPesquisador).
+         */
+        private void criarFaixaAtividadeAgentes() {
+            faixaAtividadeAgentes = new gerard.pesquisador.FaixaLateralAtividadeAgentes(
+                    agenteMonitor, agenteZDP, agenteModelador, this::autenticarPesquisador);
+            faixaAtividadeAgentes.reposicionar(getWidth(), getHeight());
+            add(faixaAtividadeAgentes);
+            // Índice 0 = topo da pilha de pintura (ver Container#setComponentZOrder):
+            // garante que a faixa fique acima de qualquer botão adicionado depois
+            // dela quando expandida, mesmo sobrepondo a área de trabalho.
+            setComponentZOrder(faixaAtividadeAgentes, 0);
         }
 
         private void criarBotaoReportarBug() {

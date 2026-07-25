@@ -4,6 +4,7 @@ import gerard.agente.modelousuario.DiagnosticoTarefa;
 import gerard.agente.modelousuario.ModeloUsuario;
 import gerard.agente.modelousuario.NivelConceitualExplicacao;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,15 +26,29 @@ public class AgenteModelador {
     private final RepositorioModeloUsuario repositorio;
     private final InferenciaRegrasModelador inferenciaRegras = new InferenciaRegrasModelador();
     private final AnalisadorNivelConceitual analisadorNivelConceitual = new AnalisadorNivelConceitual();
+    private final List<OuvinteCasoAgenteModelador> ouvintes = new ArrayList<OuvinteCasoAgenteModelador>();
 
     public AgenteModelador(RepositorioModeloUsuario repositorio) {
         this.repositorio = repositorio;
+    }
+
+    public void adicionarOuvinte(OuvinteCasoAgenteModelador ouvinte) {
+        if (ouvinte != null) {
+            ouvintes.add(ouvinte);
+        }
+    }
+
+    public void removerOuvinte(OuvinteCasoAgenteModelador ouvinte) {
+        ouvintes.remove(ouvinte);
     }
 
     public ModeloUsuario armazenarCaso(String idUsuario, DiagnosticoTarefa diagnostico) {
         ModeloUsuario modelo = repositorio.obterOuCriar(idUsuario);
         modelo.adicionarDiagnostico(diagnostico);
         repositorio.salvarDiagnosticos();
+        for (OuvinteCasoAgenteModelador ouvinte : ouvintes) {
+            ouvinte.aoArmazenar(idUsuario, diagnostico);
+        }
         return modelo;
     }
 

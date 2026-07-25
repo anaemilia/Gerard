@@ -31,6 +31,10 @@ public final class AgenteMonitor {
         }
     }
 
+    public void removerOuvinte(OuvinteVeredictoAgenteMonitor ouvinte) {
+        ouvintes.remove(ouvinte);
+    }
+
     public ResultadoQuestionamento avaliarPosicionamento(
             String chavePapelNumeral,
             String chavePapelAlvo,

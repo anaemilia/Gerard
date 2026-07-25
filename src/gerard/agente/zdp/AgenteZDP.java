@@ -1,7 +1,9 @@
 package gerard.agente.zdp;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +34,17 @@ import java.util.Map;
  */
 public final class AgenteZDP {
     private final Map<String, Integer> errosConsecutivosPorTarefa = new HashMap<String, Integer>();
+    private final List<OuvinteEstrategiaAgenteZDP> ouvintes = new ArrayList<OuvinteEstrategiaAgenteZDP>();
+
+    public void adicionarOuvinte(OuvinteEstrategiaAgenteZDP ouvinte) {
+        if (ouvinte != null) {
+            ouvintes.add(ouvinte);
+        }
+    }
+
+    public void removerOuvinte(OuvinteEstrategiaAgenteZDP ouvinte) {
+        ouvintes.remove(ouvinte);
+    }
 
     /**
      * Decide a estratégia pedagógica para a ação já avaliada pelo Agente
@@ -43,15 +56,20 @@ public final class AgenteZDP {
         Integer errosAnteriores = errosConsecutivosPorTarefa.get(chave);
         int errosAtuais = errosAnteriores == null ? 0 : errosAnteriores.intValue();
 
+        CamadaEstrategiaZDP estrategia;
         if (!correto) {
             errosConsecutivosPorTarefa.put(chave, Integer.valueOf(errosAtuais + 1));
-            return errosAtuais == 0 ? CamadaEstrategiaZDP.QUESTIONAMENTO_LEVE
+            estrategia = errosAtuais == 0 ? CamadaEstrategiaZDP.QUESTIONAMENTO_LEVE
                     : CamadaEstrategiaZDP.AJUDA_ESPECIFICA;
+        } else {
+            errosConsecutivosPorTarefa.remove(chave);
+            estrategia = errosAtuais > 0 ? CamadaEstrategiaZDP.RETIRADA_PROGRESSIVA
+                    : CamadaEstrategiaZDP.CONDUCAO_MINIMA;
         }
-
-        errosConsecutivosPorTarefa.remove(chave);
-        return errosAtuais > 0 ? CamadaEstrategiaZDP.RETIRADA_PROGRESSIVA
-                : CamadaEstrategiaZDP.CONDUCAO_MINIMA;
+        for (OuvinteEstrategiaAgenteZDP ouvinte : ouvintes) {
+            ouvinte.aoDecidir(idUsuario, categoria, chavePapelAlvo, correto, estrategia);
+        }
+        return estrategia;
     }
 
     private String chaveTarefa(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo) {
