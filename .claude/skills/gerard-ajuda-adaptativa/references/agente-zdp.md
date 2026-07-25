@@ -142,6 +142,74 @@ justificativa verbal — então deve tratar acertos isolados com a mesma cautela
 que o relatório recomenda, sem superestimar reorganização a partir de um
 único acerto.
 
+## Mecanismo proposto: força de regra ajustável pelos indícios de reorganização (decisão do usuário, 2026-07-25)
+
+⚠️ Proposta de design discutida em conversa — **ainda não implementada**,
+sem estrutura de dados nem código associado. Registrada aqui porque endereça
+diretamente a lacuna nº4 (ver "Nota de honestidade" abaixo e a nota
+correspondente em `../SKILL.md`).
+
+**Problema que motivou a proposta**: a ação 2 do Agente Modelador
+(`InferenciaRegrasModelador`, ver `agente-modelador.md`) mineraria regras
+`regraDeAcao × invariante → suporte` via Apriori. Se o Agente ZDP passasse a
+consultar essas regras para decidir estratégia (ideia discutida antes desta),
+tratá-las como fixas a partir do momento em que são mineradas contrariaria a
+Figura 2 de Vergnaud (situações/schemes/objetos/significante — setas 2 e
+2bis): a relação entre invariante operatório e qualquer instância
+semiótica/significante **não é um-para-um**, então uma regra minerada de um
+corpus é, na melhor das hipóteses, uma hipótese — não uma lei.
+
+**A proposta**: em vez de uma regra com força fixa, cada regra cadastrada no
+Modelo do Usuário carrega uma força que **aumenta ou diminui** a cada nova
+evidência de mudança na corretude das ações do usuário na mesma
+tarefa/invariante, usando a escala de "Indícios de reorganização após ajuda"
+(tabela acima) como sinal:
+
+- **Enfraquece a regra**: manutenção do erro, repetição do erro, oscilação
+  entre acerto e erro.
+- **Fortalece a regra**: correção local (incremento pequeno — ver cautela
+  abaixo), estabilização após retirada de apoio (incremento maior).
+
+Dois refinamentos que vieram da própria cautela já documentada no relatório
+(seção anterior) e do que já existe implementado no Gérard, não do relatório
+em si:
+
+1. **Incrementos pequenos, não saltos** — como um acerto isolado é evidência
+   fraca (cautela do relatório), o ajuste de força por evento deveria ser
+   pequeno o suficiente para que só a **recorrência** de evidência no mesmo
+   sentido produza uma força alta ou baixa — nunca um único evento virando o
+   status da regra sozinho.
+2. **A limitação "sem justificativa verbal" do relatório não se aplica 100%
+   ao Gérard** — existe `TelaArtefatoExplicativo`, onde a pesquisadora já
+   registra `dificuldadeAutorrelatada`/`explicacaoElemento`/`explicacaoGeral`
+   por ação (ver `DiagnosticoTarefa`). Quando esses campos estão
+   preenchidos, o evento pode contar como o nível mais forte da escala
+   ("revisão com justificativa"); quando não estão, cai para o nível mais
+   fraco baseado só em certo/errado + recorrência.
+
+**Por que isso resolve a tensão com o diagrama de Vergnaud**: a regra deixa
+de ser um fato fixado no momento da mineração e passa a ser uma hipótese sob
+revisão contínua — cada nova ação do usuário é uma chance de confirmar ou
+enfraquecer a associação, em vez de presumir que ela vale para sempre.
+
+**Questões técnicas em aberto, não resolvidas nesta conversa**:
+
+- Onde essa "força" fica armazenada — campo novo em `ModeloUsuario`, ou
+  associado a cada `AssociationRule` do Apriori (que já tem suporte/
+  confiança/lift nativos — a força proposta seria um ajuste *sobre* essas
+  métricas, ou substituiria elas)?
+- **PART não tem o mesmo encaixe natural que o Apriori.** As regras do
+  Apriori já vêm com métricas quantitativas por regra (suporte, confiança,
+  lift) — a força proposta se soma a isso com naturalidade. O PART gera uma
+  árvore/lista de regras sem uma "confiança por regra" exposta da mesma
+  forma pela API do Weka; não está decidido se esse mecanismo se aplica ao
+  PART, só ao Apriori, ou se precisa de tratamento diferente para cada um.
+- Possível sobreposição com `probabilidadeSaberConteudo`/`internalizado`
+  (ver "Entrada empírica para a ação 2" em `agente-modelador.md`, que já
+  aponta a mesma tabela 51/52 como candidata a alimentar `internalizado`) —
+  pode ser o mesmo mecanismo, pode ser dois mecanismos irmãos que
+  precisariam ser desenhados juntos. Não decidido.
+
 ## Nota de honestidade do próprio material
 
 A operacionalização da ZDP e o uso de dados quantitativos que confirmem que

@@ -64,6 +64,29 @@ confirmação explícita sobre a dependência de ML (Weka) — só documenta que
 quando essa confirmação vier, há agora material empírico mais rico para
 calibrar as regras J48.PART/APRIORI do que havia antes.
 
+## Regras com força ajustável (proposta de design, decisão do usuário em 2026-07-25)
+
+⚠️ Ainda não implementada — ver o desenho completo em "Mecanismo proposto:
+força de regra ajustável pelos indícios de reorganização" em `agente-zdp.md`.
+Resumo do lado do Modelador: as regras que a ação 2 produz (via Apriori,
+`regraDeAcao × invariante → suporte`) não ficariam fixas a partir da
+mineração — cada regra carregaria uma força que o ZDP fortalece ou enfraquece
+conforme observa mudança (ou não) na corretude das ações do usuário na mesma
+tarefa/invariante, usando a escala de indícios de reorganização pós-ajuda
+(Tabelas 51/52 do relatório 2026) como sinal. Motivação: tratar uma regra
+minerada como fato fixo contrariaria a relação não-um-para-um entre
+invariante operatório e instância semiótica (Vergnaud) — ver detalhe em
+`agente-zdp.md`.
+
+Ainda não decidido: se esse mecanismo é o mesmo que calcularia
+`probabilidadeSaberConteudo`/`internalizado` (ver "Entrada empírica para a
+ação 2" acima, que já aponta a mesma Tabela 51/52 como candidata a
+`internalizado`), ou um mecanismo separado que precisaria ser desenhado em
+conjunto. Também não decidido onde a força ficaria armazenada, nem se o
+mecanismo se aplica às regras do PART além das do Apriori (o Apriori já tem
+suporte/confiança/lift nativos por regra; o PART não expõe o mesmo tipo de
+métrica por regra na API do Weka).
+
 ## Correção: o que o Apriori deve associar (fonte: trecho original da tese, 2026-07-22)
 
 O usuário colou um trecho do texto original (citando Rosatteli e Tedesco,
