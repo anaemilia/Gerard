@@ -351,6 +351,10 @@ public class Main extends JFrame {
         JButton botaoSortear;
         IndicadorAgenteMonitor indicadorAgenteMonitor;
         gerard.pesquisador.FaixaLateralAtividadeAgentes faixaAtividadeAgentes;
+        JButton botaoAtalhoComposicao;
+        JButton botaoAtalhoTransformacao;
+        JButton botaoAtalhoComparacao;
+        JButton botaoAtalhoProximoPasso;
         JButton botaoTeste;
         JButton botaoRestaurar;
         JButton botaoCorrigirCuradoria;
@@ -631,6 +635,7 @@ public class Main extends JFrame {
                     if (faixaAtividadeAgentes != null) {
                         faixaAtividadeAgentes.reposicionar(getWidth(), getHeight());
                     }
+                    reposicionarPainelAtalhoCategoria();
                     repaint();
                 }
             });
@@ -641,6 +646,7 @@ public class Main extends JFrame {
             criarBotaoSortear();
             criarBotaoReportarBug();
             criarBotaoUsuario();
+            criarPainelAtalhoCategoria();
             criarIndicadorAgenteMonitor();
             criarFaixaAtividadeAgentes();
             criarBotaoTeste();
@@ -885,6 +891,234 @@ public class Main extends JFrame {
                 }
             });
             add(botaoSortear);
+        }
+
+        private static final int LARGURA_ICONE_CATEGORIA = 92;
+        private static final int ALTURA_ICONE_CATEGORIA = 84;
+        private static final int LARGURA_BOTAO_PROXIMO_PASSO = 250;
+        private static final int ALTURA_BOTAO_PROXIMO_PASSO = 54;
+
+        /**
+         * Faixa de atalhos de categoria, entre o cabeçalho e a área do
+         * enunciado — painel adicional, não substitui o menu "Categoria" já
+         * existente. "Qual o próximo passo?" fica desabilitado de propósito
+         * (decisão da usuária em 2026-07-25): é o scaffolding de
+         * automatização de passos, ainda não desenhado (ver skill
+         * gerard-scaffolding-interacao). Sem setas de voltar/avançar
+         * (decisão da usuária em 2026-07-25: removidas para dar mais espaço
+         * aos ícones — não existe histórico de situações no Gérard hoje de
+         * qualquer forma, só "Sortear"). Os 3 ícones de categoria chamam
+         * exatamente selecionarCategoria(tipo) — o mesmo método usado pelo
+         * menu "Categoria" — para garantir comportamento idêntico, não uma
+         * segunda implementação.
+         *
+         * O grupo inteiro é centralizado horizontalmente na tela (não fixo
+         * à esquerda) — ver reposicionarPainelAtalhoCategoria, chamado aqui
+         * uma vez e depois a cada resize da janela, igual ao padrão já
+         * usado por faixaAtividadeAgentes/botaoAjudaTexto.
+         */
+        private void criarPainelAtalhoCategoria() {
+            botaoAtalhoComposicao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, criarIconeCategoriaComposicao());
+            add(botaoAtalhoComposicao);
+            botaoAtalhoTransformacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, criarIconeCategoriaTransformacao());
+            add(botaoAtalhoTransformacao);
+            botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao());
+            add(botaoAtalhoComparacao);
+
+            botaoAtalhoProximoPasso = new JButton(localizacao.texto("ui.hint.nextStep"));
+            botaoAtalhoProximoPasso.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
+            botaoAtalhoProximoPasso.setFocusable(false);
+            botaoAtalhoProximoPasso.setEnabled(false);
+            botaoAtalhoProximoPasso.setToolTipText(localizacao.texto("ui.hint.nextStep.tooltip"));
+            botaoAtalhoProximoPasso.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(COR_BORDA_BOTAO),
+                    BorderFactory.createEmptyBorder(6, 14, 6, 14)
+            ));
+            add(botaoAtalhoProximoPasso);
+
+            reposicionarPainelAtalhoCategoria();
+        }
+
+        /**
+         * Centraliza horizontalmente o grupo (3 ícones + "próximo passo")
+         * dentro da largura atual da tela. Chamado na criação (onde
+         * getWidth() ainda pode ser 0, corrigido no primeiro resize real) e
+         * a cada componentResized, junto com faixaAtividadeAgentes.reposicionar.
+         */
+        private void reposicionarPainelAtalhoCategoria() {
+            if (botaoAtalhoComposicao == null) {
+                return;
+            }
+            int gapEntreIcones = 24;
+            int gapAntesBotao = 46;
+            int larguraTotal = LARGURA_ICONE_CATEGORIA * 3 + gapEntreIcones * 2
+                    + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
+            int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
+            int x = Math.max(18, (larguraTela - larguraTotal) / 2);
+            int centroFaixa = 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA / 2;
+
+            botaoAtalhoComposicao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            botaoAtalhoTransformacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
+
+            botaoAtalhoProximoPasso.setBounds(x, centroFaixa - ALTURA_BOTAO_PROXIMO_PASSO / 2, LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+        }
+
+        private JButton criarBotaoAtalhoCategoria(final TipoSituacaoAditiva tipo, Icon icone) {
+            final JButton botao = new JButton(icone);
+            botao.setFocusable(false);
+            botao.setOpaque(true);
+            botao.setBackground(COR_SUPERFICIE);
+            botao.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            botao.setToolTipText(tipo.getDescricao());
+            botao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    selecionarCategoria(tipo);
+                }
+            });
+            botao.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    botao.setBackground(COR_DESTAQUE);
+                }
+                public void mouseExited(MouseEvent e) {
+                    botao.setBackground(COR_SUPERFICIE);
+                }
+            });
+            return botao;
+        }
+
+        private static final int CAIXA_ICONE_CATEGORIA = 16;
+
+        /**
+         * Réplica em escala de ícone de botão do mesmo vocabulário visual já
+         * usado em PainelComparacaoCategorias.MiniRepresentacao.desenharComposicaoVazia
+         * (duas caixas à esquerda, colchete, uma caixa à direita) — mesmas
+         * cores (COR_SUPERFICIE/COR_BORDA) e proporções relativas daquele
+         * método, mas redesenhado do zero: aquele pertence a uma classe
+         * aninhada duas vezes dentro de TelaGerard e depende de estado de
+         * instância dela (alvos, tamanhoCaixa()), então não dá para chamá-lo
+         * diretamente daqui.
+         */
+        private Icon criarIconeCategoriaComposicao() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 26, y + 22, false);
+                        desenharFormaIconeCategoria(g2, x + 26, y + 58, false);
+                        desenharFormaIconeCategoria(g2, x + 70, y + 40, false);
+
+                        int cy = y + 40;
+                        java.awt.geom.Path2D.Float chave = new java.awt.geom.Path2D.Float();
+                        chave.moveTo(x + 44, y + 14);
+                        chave.quadTo(x + 56, y + 22, x + 56, cy - 6);
+                        chave.quadTo(x + 56, cy, x + 62, cy);
+                        chave.quadTo(x + 56, cy, x + 56, cy + 6);
+                        chave.quadTo(x + 56, y + 58, x + 44, y + 66);
+                        g2.draw(chave);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /** Réplica em escala de ícone de botão de desenharTransformacaoVazia (caixa-seta-caixa, círculo acima) — ver criarIconeCategoriaComposicao. */
+        private Icon criarIconeCategoriaTransformacao() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 46, y + 16, true);
+                        desenharFormaIconeCategoria(g2, x + 18, y + 52, false);
+                        desenharFormaIconeCategoria(g2, x + 74, y + 52, false);
+
+                        int cy = y + 52;
+                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
+                        seta.moveTo(x + 26, cy);
+                        seta.lineTo(x + 63, cy);
+                        seta.moveTo(x + 66, cy);
+                        seta.lineTo(x + 57, cy - 7);
+                        seta.moveTo(x + 66, cy);
+                        seta.lineTo(x + 57, cy + 7);
+                        g2.draw(seta);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /** Réplica em escala de ícone de botão de desenharComparacaoVazia (caixa acima, seta para baixo, caixa abaixo, círculo ao lado) — ver criarIconeCategoriaComposicao. */
+        private Icon criarIconeCategoriaComparacao() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 40, y + 14, false);
+                        desenharFormaIconeCategoria(g2, x + 40, y + 66, false);
+                        desenharFormaIconeCategoria(g2, x + 72, y + 40, true);
+
+                        int cx = x + 40;
+                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
+                        seta.moveTo(cx, y + 23);
+                        seta.lineTo(cx, y + 58);
+                        seta.moveTo(cx, y + 61);
+                        seta.lineTo(cx - 7, y + 52);
+                        seta.moveTo(cx, y + 61);
+                        seta.lineTo(cx + 7, y + 52);
+                        g2.draw(seta);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Uma forma (quadrado ou círculo) do glifo de categoria, centrada em
+         * (cx,cy) — mesmas cores de desenharFormaVazia (preenchimento
+         * COR_SUPERFICIE, contorno COR_BORDA): elemento estrutural sem
+         * significado próprio, não um sinal de feedback (ver
+         * gerard-identidade-visual).
+         */
+        private void desenharFormaIconeCategoria(Graphics2D g2, int cx, int cy, boolean circulo) {
+            int metade = CAIXA_ICONE_CATEGORIA / 2;
+            g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
+            if (circulo) {
+                g2.fillOval(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
+            } else {
+                g2.fillRect(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
+            }
+            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
+            if (circulo) {
+                g2.drawOval(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
+            } else {
+                g2.drawRect(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
+            }
+        }
+
+        /** Estilo de traço compartilhado pelos 3 glifos de categoria: fino, com pontas e junções arredondadas (suave, não "grosseiro"). */
+        private Graphics2D prepararTracoIconeCategoria(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
+            g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            return g2;
         }
 
         /**
@@ -1221,7 +1455,7 @@ public class Main extends JFrame {
 
         private void criarBotaoRestaurar() {
             botaoRestaurar = new JButton(criarIconeRestaurar());
-            botaoRestaurar.setBounds(27, 70, 26, 26);
+            botaoRestaurar.setBounds(27, 70 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             configurarBotaoAcaoContextual(botaoRestaurar, localizacao.texto("ui.tooltip.restore.elements"));
             botaoRestaurar.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1347,7 +1581,7 @@ public class Main extends JFrame {
 
         private void criarBotaoCorrigirCuradoria() {
             botaoCorrigirCuradoria = new JButton(criarIconeEditar());
-            botaoCorrigirCuradoria.setBounds(27, 101, 26, 26);
+            botaoCorrigirCuradoria.setBounds(27, 101 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             configurarBotaoAcaoContextual(botaoCorrigirCuradoria, localizacao.texto("ui.tooltip.correctCuration"));
             botaoCorrigirCuradoria.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1359,7 +1593,7 @@ public class Main extends JFrame {
 
         private void criarBotaoIdiomaSituacao() {
             botaoIdiomaSituacao = new JButton(criarIconeIdiomaSituacao());
-            botaoIdiomaSituacao.setBounds(27, 132, 26, 26);
+            botaoIdiomaSituacao.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             configurarBotaoAcaoContextual(botaoIdiomaSituacao, descricaoBotaoIdiomaSituacao());
             botaoIdiomaSituacao.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1475,7 +1709,7 @@ public class Main extends JFrame {
 
         private void criarBotaoArtefatoExplicativo() {
             botaoArtefatoExplicativo = new JButton("A");
-            botaoArtefatoExplicativo.setBounds(27, 163, 26, 26);
+            botaoArtefatoExplicativo.setBounds(27, 163 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             botaoArtefatoExplicativo.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
             configurarBotaoAcaoContextual(botaoArtefatoExplicativo, localizacao.texto("analise.button.tooltip"));
             botaoArtefatoExplicativo.addActionListener(new ActionListener() {
@@ -1773,7 +2007,7 @@ public class Main extends JFrame {
             botaoAjudaTexto.setVisible(exibir);
             botaoAjudaTexto.setEnabled(exibir);
             if (exibir) {
-                botaoAjudaTexto.setBounds(Math.max(18, getWidth() - 53), 63, 26, 26);
+                botaoAjudaTexto.setBounds(Math.max(18, getWidth() - 53), 63 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             }
         }
 
@@ -1969,7 +2203,7 @@ public class Main extends JFrame {
                 remove(submenuGerardRecife);
             }
 
-            menuIdioma = criarPainelMenu(18, 39, 150, IdiomaInterface.values().length * 29 + 8);
+            menuIdioma = criarPainelMenu(180, 39, 150, IdiomaInterface.values().length * 29 + 8);
 
             for (final IdiomaInterface idioma : IdiomaInterface.values()) {
                 JButton opcao = criarBotaoOpcao(localizacao.nomeIdioma(idioma));
@@ -1984,10 +2218,10 @@ public class Main extends JFrame {
                 menuIdioma.add(opcao);
             }
 
-            menuTipo = criarPainelMenu(150, 39, 245, 4 * 33 + 10);
-            submenuTipoMedidas = criarPainelMenu(395, 39, 340, 3 * 33 + 10);
-            submenuTipoTransformacoes = criarPainelMenu(395, 72, 370, 3 * 33 + 10);
-            submenuTipoRelacoes = criarPainelMenu(395, 105, 320, 2 * 33 + 10);
+            menuTipo = criarPainelMenu(312, 39, 245, 4 * 33 + 10);
+            submenuTipoMedidas = criarPainelMenu(557, 39, 340, 3 * 33 + 10);
+            submenuTipoTransformacoes = criarPainelMenu(557, 72, 370, 3 * 33 + 10);
+            submenuTipoRelacoes = criarPainelMenu(557, 105, 320, 2 * 33 + 10);
 
             adicionarGrupoCategoria(menuTipo, localizacao.texto("ui.menu.category.measures"), submenuTipoMedidas);
             adicionarOpcaoCategoriaEmConstrucao(menuTipo, localizacao.texto("ui.menu.category.transformations"));
@@ -2015,7 +2249,7 @@ public class Main extends JFrame {
             adicionarOpcaoCategoria(submenuTipoRelacoes, TipoSituacaoAditiva.TRANSFORMACAO_RELACAO);
             adicionarOpcaoCategoria(submenuTipoRelacoes, TipoSituacaoAditiva.COMPOSICAO_RELACOES);
 
-            menuTeste = criarPainelMenu(576, 39, 330, EstiloInteracao.values().length * 29 + 8);
+            menuTeste = criarPainelMenu(738, 39, 330, EstiloInteracao.values().length * 29 + 8);
             for (final EstiloInteracao modo : EstiloInteracao.values()) {
                 JButton opcao = criarBotaoOpcao(localizacao.texto(modo.getChave()));
                 if (modo == modoFeedbackTeste) {
@@ -2037,7 +2271,7 @@ public class Main extends JFrame {
                 menuTeste.add(opcao);
             }
 
-            menuSobre = criarPainelMenu(312, 39, 245, 127);
+            menuSobre = criarPainelMenu(474, 39, 245, 127);
             JButton opcaoInterpretacao = criarBotaoOpcao(localizacao.texto("ui.menu.linguisticInterpretation"));
             opcaoInterpretacao.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -2086,10 +2320,10 @@ public class Main extends JFrame {
             });
             menuSobre.add(opcaoGerardVergnaud);
 
-            submenuInterpretacaoLinguistica = criarMenuInterpretacaoLinguistica(557, 39, 620, 170);
-            submenuRegistroGerard = criarMenuRegistroGerard(557, 70, 430, 145);
-            submenuGerardVergnaud = criarMenuGerardVergnaud(557, 132, 250, 350);
-            submenuGerardRecife = criarMenuGerardRecife(807, 132, 420, 300);
+            submenuInterpretacaoLinguistica = criarMenuInterpretacaoLinguistica(719, 39, 620, 170);
+            submenuRegistroGerard = criarMenuRegistroGerard(719, 70, 430, 145);
+            submenuGerardVergnaud = criarMenuGerardVergnaud(719, 132, 250, 350);
+            submenuGerardRecife = criarMenuGerardRecife(969, 132, 420, 300);
 
             add(menuIdioma);
             add(menuTipo);
@@ -2170,27 +2404,37 @@ public class Main extends JFrame {
             JButton opcao = criarBotaoOpcaoCategoria(tipo.getRotuloBotao(), false);
             opcao.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    registrarLogUsuario(
-                            "Selecionar a legenda correspondente à operação",
-                            "-",
-                            "Menu/barra de legendas",
-                            "Botão " + tipo.getRotuloBotao(),
-                            "Representar a estrutura escolhida para o problema",
-                            "OBJ8",
-                            "O sujeito deve selecionar a legenda adequada ao tipo de problema.",
-                            "MENU_CATEGORIA",
-                            "categoriaSelecionada=" + tipo.name()
-                    );
-                    tipoSituacaoSelecionada = tipo;
-                    categoriaSelecionadaParaAtividade = true;
-                    if (botaoSortear != null) {
-                        botaoSortear.setEnabled(true);
-                    }
-                    ocultarMenus();
-                    iniciarNovaAtividade(AcaoAtividade.SELECIONAR_CATEGORIA);
+                    selecionarCategoria(tipo);
                 }
             });
             submenu.add(opcao);
+        }
+
+        /**
+         * Corpo original do listener de adicionarOpcaoCategoria, extraído
+         * para ser reaproveitado pelos ícones de atalho de categoria
+         * (criarPainelAtalhoCategoria) — mesmo comportamento, um único
+         * ponto de entrada para "selecionar esta categoria".
+         */
+        private void selecionarCategoria(TipoSituacaoAditiva tipo) {
+            registrarLogUsuario(
+                    "Selecionar a legenda correspondente à operação",
+                    "-",
+                    "Menu/barra de legendas",
+                    "Botão " + tipo.getRotuloBotao(),
+                    "Representar a estrutura escolhida para o problema",
+                    "OBJ8",
+                    "O sujeito deve selecionar a legenda adequada ao tipo de problema.",
+                    "MENU_CATEGORIA",
+                    "categoriaSelecionada=" + tipo.name()
+            );
+            tipoSituacaoSelecionada = tipo;
+            categoriaSelecionadaParaAtividade = true;
+            if (botaoSortear != null) {
+                botaoSortear.setEnabled(true);
+            }
+            ocultarMenus();
+            iniciarNovaAtividade(AcaoAtividade.SELECIONAR_CATEGORIA);
         }
 
         private void mostrarSubmenuCategoria(JPanel submenuAlvo) {
@@ -3882,6 +4126,7 @@ public class Main extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             desenharCabecalho(g2);
+            desenharFaixaAtalhoCategoria(g2);
             desenharTextoProblema(g2);
             desenharAreaDiagrama(g2);
             desenharElementos(g2);
@@ -3917,6 +4162,14 @@ public class Main extends JFrame {
             g2.drawString(status, xStatus, 28);
         }
 
+        /** Fundo da faixa de atalhos de categoria (ver criarPainelAtalhoCategoria). */
+        private void desenharFaixaAtalhoCategoria(Graphics2D g2) {
+            g2.setColor(COR_FUNDO);
+            g2.fillRect(0, 45, getWidth(), ALTURA_PAINEL_ATALHOS_CATEGORIA);
+            g2.setColor(COR_BORDA);
+            g2.drawLine(0, 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA - 1, getWidth(), 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA - 1);
+        }
+
         private void desenharTextoProblema(Graphics2D g2) {
             marcadoresFixosTexto.clear();
 
@@ -3924,7 +4177,7 @@ public class Main extends JFrame {
                 // Mantém a divisão visual da interface desde a inicialização.
                 // Somente o conteúdo educativo permanece ausente até que o
                 // usuário escolha uma categoria.
-                desenharCard(g2, 15, 55, getWidth() - 30, 135, 18);
+                desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
                 ocultarControlesDaAtividadeSemCategoria();
                 return;
             }
@@ -3935,9 +4188,10 @@ public class Main extends JFrame {
             // Diagramas compostos reservam uma segunda linha para o resumo dos passos.
             int yInicial = (usaDiagramasEncadeadosTransformacaoComposta()
                     || usaDiagramasComposicaoTransformacaoMedidas()) ? 113 : 101;
+            yInicial += ALTURA_PAINEL_ATALHOS_CATEGORIA;
             int larguraMaxima = getWidth() - margemX - 30;
 
-            desenharCard(g2, 15, 55, getWidth() - 30, 135, 18);
+            desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
             if (botaoIdiomaSituacao != null) botaoIdiomaSituacao.setVisible(situacaoProblemaAtual != null);
             atualizarDisponibilidadeArtefatoExplicativo();
             reposicionarBotaoAjudaTexto();
@@ -3971,7 +4225,7 @@ public class Main extends JFrame {
             botaoCorrigirCuradoria.setVisible(exibir);
             botaoCorrigirCuradoria.setEnabled(exibir);
             if (exibir) {
-                botaoCorrigirCuradoria.setBounds(27, 101, 26, 26);
+                botaoCorrigirCuradoria.setBounds(27, 101 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             }
         }
 
@@ -3983,7 +4237,7 @@ public class Main extends JFrame {
             botaoRestaurar.setVisible(exibir);
             botaoRestaurar.setEnabled(exibir);
             if (exibir) {
-                botaoRestaurar.setBounds(27, 70, 26, 26);
+                botaoRestaurar.setBounds(27, 70 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             }
         }
 
@@ -4454,8 +4708,8 @@ public class Main extends JFrame {
                 linhaResumoAbaixoDoTitulo = localizacao.texto("ui.compositionTransformation.steps");
             }
 
-            areaTituloCategoria.desenhar(g2, margemX, textoCategoria, descricaoCategoria,
-                    descricaoSubtipo, COR_TEXTO_SECUNDARIO, linhaResumoAbaixoDoTitulo);
+            areaTituloCategoria.desenhar(g2, margemX, 76 + ALTURA_PAINEL_ATALHOS_CATEGORIA, textoCategoria,
+                    descricaoCategoria, descricaoSubtipo, COR_TEXTO_SECUNDARIO, linhaResumoAbaixoDoTitulo);
         }
 
         private boolean pontoNoTituloCategoriaEnunciado(int x, int y) {
@@ -4848,11 +5102,12 @@ public class Main extends JFrame {
         }
 
         private void desenharAreaDiagrama(Graphics2D g2) {
+            int yTopoArea = 210 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
             g2.setColor(COR_FUNDO);
-            g2.fillRect(0, 210, getWidth(), getHeight() - 210);
+            g2.fillRect(0, yTopoArea, getWidth(), getHeight() - yTopoArea);
 
             g2.setColor(COR_BORDA);
-            g2.drawLine(0, 210, getWidth(), 210);
+            g2.drawLine(0, yTopoArea, getWidth(), yTopoArea);
 
             if (!categoriaSelecionadaParaAtividade) {
                 // Exibe os painéis vazios do diagrama de Vergnaud e da
@@ -4866,7 +5121,7 @@ public class Main extends JFrame {
                 int xDivisor = areaVergnaudVazia.x + areaVergnaudVazia.width
                         + (ESPACO_BASE_ENTRE_DIAGRAMAS / 2);
                 g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                g2.drawLine(xDivisor, 222, xDivisor, getHeight() - 14);
+                g2.drawLine(xDivisor, 222 + ALTURA_PAINEL_ATALHOS_CATEGORIA, xDivisor, getHeight() - 14);
 
                 desenharCard(g2,
                         areaVergnaudVazia.x,
@@ -4887,7 +5142,7 @@ public class Main extends JFrame {
             if (deveExibirDiagramaComplementar()) {
                 g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
                 int xDivisorDiagramas = obterXDivisorDiagramas();
-                g2.drawLine(xDivisorDiagramas, 222, xDivisorDiagramas, getHeight() - 14);
+                g2.drawLine(xDivisorDiagramas, 222 + ALTURA_PAINEL_ATALHOS_CATEGORIA, xDivisorDiagramas, getHeight() - 14);
             }
 
             Rectangle limiteVergnaud = obterAreaVisivelDiagramasVergnaud();
@@ -6124,8 +6379,17 @@ public class Main extends JFrame {
 
         private static final int LARGURA_BASE_TELA = 1240;
         private static final int ALTURA_BASE_TELA = 760;
+        // Altura da faixa de atalhos de categoria (voltar/avançar, 3 ícones de
+        // categoria, "Qual o próximo passo?") inserida entre o cabeçalho
+        // (0-45) e a área do enunciado. Toda coordenada Y hardcoded que hoje
+        // assume que o enunciado começa logo abaixo do cabeçalho soma esta
+        // constante em vez de um novo número mágico — ver os pontos citados
+        // em desenharTextoProblema, reposicionarBotaoAjudaTexto,
+        // desenharAreaDiagrama e Y_BASE_VERGNAUD/VENN abaixo, além de
+        // AreaTituloCategoriaEnunciado.desenhar (parâmetro yTitulo).
+        private static final int ALTURA_PAINEL_ATALHOS_CATEGORIA = 110;
         private static final int X_BASE_VERGNAUD = 25;
-        private static final int Y_BASE_VERGNAUD = 215;
+        private static final int Y_BASE_VERGNAUD = 215 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int LARGURA_BASE_VERGNAUD = 655;
         private static final int ALTURA_BASE_VERGNAUD = 530;
         private static final int X_BASE_VENN = 715;
@@ -8536,7 +8800,9 @@ public class Main extends JFrame {
         }
 
         private boolean estaNaAreaDoTexto(int x, int y) {
-            return x >= 15 && x <= getWidth() - 15 && y >= 55 && y <= 190;
+            return x >= 15 && x <= getWidth() - 15
+                    && y >= 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA
+                    && y <= 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         }
 
         private boolean ehNumeroDoTexto(ElementoTextoMovel elemento) {

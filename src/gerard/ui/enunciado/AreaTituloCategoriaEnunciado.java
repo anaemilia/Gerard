@@ -38,6 +38,9 @@ public final class AreaTituloCategoriaEnunciado {
      * @param g2 contexto gráfico (cor e fonte serão alterados por este método,
      *           igual ao comportamento original)
      * @param margemX margem esquerda onde o texto começa
+     * @param yTitulo posição vertical (baseline) do título — chamador decide
+     *        o valor absoluto; o padrão histórico era o literal 76, agora
+     *        calculado por TelaGerard somando ALTURA_PAINEL_ATALHOS_CATEGORIA
      * @param textoCategoria título da categoria (definicaoDiagramaAtual.getTitulo())
      * @param descricaoCategoria descrição da cena atual (cenaDiagramaAtual.getDescricao()), pode ser nula
      * @param descricaoSubtipo descrição do subtipo Vergnaud atual (obterDescricaoSubtipoAtual()), pode ser nula
@@ -46,14 +49,12 @@ public final class AreaTituloCategoriaEnunciado {
      *        transformação composta, ou texto de composição de medidas), ou null
      *        se nenhuma das duas condições originais se aplica
      */
-    public void desenhar(Graphics2D g2, int margemX,
+    public void desenhar(Graphics2D g2, int margemX, int yTitulo,
                           String textoCategoria,
                           String descricaoCategoria,
                           String descricaoSubtipo,
                           Color corPrimariaEscura,
                           String linhaResumoAbaixoDoTitulo) {
-
-        int yTitulo = 76;
 
         g2.setColor(corPrimariaEscura);
         g2.setFont(new Font("Arial", Font.BOLD, 12));
