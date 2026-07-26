@@ -354,6 +354,9 @@ public class Main extends JFrame {
         JButton botaoAtalhoComposicao;
         JButton botaoAtalhoTransformacao;
         JButton botaoAtalhoComparacao;
+        JButton botaoAtalhoComposicaoTransformacoes;
+        JButton botaoAtalhoTransformacaoRelacao;
+        JButton botaoAtalhoComposicaoRelacoes;
         JButton botaoAtalhoProximoPasso;
         JButton botaoTeste;
         JButton botaoRestaurar;
@@ -924,6 +927,30 @@ public class Main extends JFrame {
             add(botaoAtalhoTransformacao);
             botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao());
             add(botaoAtalhoComparacao);
+            // Categoria tecnicamente completa (20 situações curadas,
+            // RenderizadorComposicaoTransformacoes) mas escondida atrás de
+            // "Em construção" no menu "Categoria" (grupo "Transformações",
+            // ver adicionarOpcaoCategoriaEmConstrucao) — decisão explícita
+            // da usuária em 2026-07-26: o atalho abre mesmo assim, sem
+            // esperar o bloqueio do menu ser removido.
+            botaoAtalhoComposicaoTransformacoes = criarBotaoAtalhoCategoria(
+                    TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, criarIconeCategoriaComposicaoTransformacoes());
+            add(botaoAtalhoComposicaoTransformacoes);
+            // Mesma situação da anterior: categoria completa (8 situações
+            // curadas, renderizador próprio — RenderizadorTransformacaoRelacao)
+            // mas escondida atrás de "Em construção" no grupo "Relações" do
+            // menu "Categoria". Mesma decisão da usuária em 2026-07-26: abre
+            // mesmo assim.
+            botaoAtalhoTransformacaoRelacao = criarBotaoAtalhoCategoria(
+                    TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, criarIconeCategoriaTransformacaoRelacao());
+            add(botaoAtalhoTransformacaoRelacao);
+            // Irmã de TRANSFORMACAO_RELACAO no mesmo grupo "Relações" do
+            // menu (também "Em construção", também completa em código —
+            // RenderizadorComposicaoRelacoes, 8 situações curadas). Mesma
+            // decisão da usuária em 2026-07-26: abre mesmo assim.
+            botaoAtalhoComposicaoRelacoes = criarBotaoAtalhoCategoria(
+                    TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes());
+            add(botaoAtalhoComposicaoRelacoes);
 
             botaoAtalhoProximoPasso = new JButton(localizacao.texto("ui.hint.nextStep"));
             botaoAtalhoProximoPasso.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
@@ -940,7 +967,7 @@ public class Main extends JFrame {
         }
 
         /**
-         * Centraliza horizontalmente o grupo (3 ícones + "próximo passo")
+         * Centraliza horizontalmente o grupo (6 ícones + "próximo passo")
          * dentro da largura atual da tela. Chamado na criação (onde
          * getWidth() ainda pode ser 0, corrigido no primeiro resize real) e
          * a cada componentResized, junto com faixaAtividadeAgentes.reposicionar.
@@ -951,7 +978,7 @@ public class Main extends JFrame {
             }
             int gapEntreIcones = 24;
             int gapAntesBotao = 46;
-            int larguraTotal = LARGURA_ICONE_CATEGORIA * 3 + gapEntreIcones * 2
+            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 5
                     + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
             int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
             int x = Math.max(18, (larguraTela - larguraTotal) / 2);
@@ -962,6 +989,12 @@ public class Main extends JFrame {
             botaoAtalhoTransformacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            botaoAtalhoComposicaoTransformacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            botaoAtalhoTransformacaoRelacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            botaoAtalhoComposicaoRelacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
 
             botaoAtalhoProximoPasso.setBounds(x, centroFaixa - ALTURA_BOTAO_PROXIMO_PASSO / 2, LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
@@ -1081,6 +1114,159 @@ public class Main extends JFrame {
                         seta.moveTo(cx, y + 61);
                         seta.lineTo(cx + 7, y + 52);
                         g2.draw(seta);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Glifo de composição de transformações (estado → transf.1 → estado
+         * → transf.2 → estado, mais o arco por baixo ligando o primeiro e o
+         * último estado, com a transformação resultante/composta perto do
+         * arco) — mesma estrutura da figura de referência da usuária
+         * (2026-07-26), sem os valores numéricos (que ali eram só exemplo:
+         * +10/-6/+4), e confirmada linha a linha contra
+         * `RenderizadorComposicaoTransformacoes.criarCena`: t1/t2 acima das
+         * duas setas, "tr" (a transformação composta) perto do arco,
+         * exatamente como desenhado aqui.
+         *
+         * ⚠️ Correção de categorização (2026-07-26): esta figura foi
+         * originalmente associada por engano a
+         * `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` — cuja renderização real
+         * (`criarCenaTransformacaoComposta`) empilha os passos
+         * verticalmente, sem nenhum arco. A usuária confirmou que a figura
+         * era para `COMPOSICAO_TRANSFORMACOES`, que já tem exatamente esta
+         * estrutura de arco. `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` continua
+         * sem atalho — nenhuma imagem foi enviada para ela.
+         *
+         * Categoria já existe (`TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES`,
+         * com 20 situações curadas e renderizador próprio), mas o grupo
+         * "Transformações" do menu "Categoria" a esconde atrás de "Em
+         * construção" — decisão explícita da usuária em 2026-07-26: este
+         * atalho abre a categoria mesmo assim.
+         */
+        private Icon criarIconeCategoriaComposicaoTransformacoes() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 16, y + 30, false);
+                        desenharFormaIconeCategoria(g2, x + 46, y + 30, false);
+                        desenharFormaIconeCategoria(g2, x + 76, y + 30, false);
+                        desenharFormaIconeCategoria(g2, x + 31, y + 12, true);
+                        desenharFormaIconeCategoria(g2, x + 61, y + 12, true);
+                        desenharFormaIconeCategoria(g2, x + 46, y + 70, true);
+
+                        java.awt.geom.Path2D.Float setas = new java.awt.geom.Path2D.Float();
+                        setas.moveTo(x + 24, y + 30);
+                        setas.lineTo(x + 38, y + 30);
+                        setas.moveTo(x + 38, y + 30);
+                        setas.lineTo(x + 33, y + 26);
+                        setas.moveTo(x + 38, y + 30);
+                        setas.lineTo(x + 33, y + 34);
+
+                        setas.moveTo(x + 54, y + 30);
+                        setas.lineTo(x + 68, y + 30);
+                        setas.moveTo(x + 68, y + 30);
+                        setas.lineTo(x + 63, y + 26);
+                        setas.moveTo(x + 68, y + 30);
+                        setas.lineTo(x + 63, y + 34);
+                        g2.draw(setas);
+
+                        java.awt.geom.Path2D.Float arco = new java.awt.geom.Path2D.Float();
+                        arco.moveTo(x + 16, y + 38);
+                        arco.curveTo(x + 22, y + 66, x + 70, y + 66, x + 74, y + 38);
+                        arco.moveTo(x + 74, y + 38);
+                        arco.lineTo(x + 67, y + 35);
+                        arco.moveTo(x + 74, y + 38);
+                        arco.lineTo(x + 72, y + 45);
+                        g2.draw(arco);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Glifo de transformação de uma relação (estado inicial → transf. →
+         * estado final, todos os três desenhados como círculo — mesma
+         * convenção de RenderizadorTransformacaoRelacao, onde relacaoGrande
+         * e transformacao usam TipoFiguraDiagrama.ELIPSE, diferente da
+         * Transformação de medidas comum, onde só a transformação é
+         * círculo). Categoria já existe
+         * (`TipoSituacaoAditiva.TRANSFORMACAO_RELACAO`, com dados curados e
+         * renderizador próprios), mas o grupo "Relações" do menu "Categoria"
+         * a esconde atrás de "Em construção" — mesma decisão da usuária em
+         * 2026-07-26 já aplicada à transformação composta acima: o atalho
+         * abre a categoria mesmo assim.
+         */
+        private Icon criarIconeCategoriaTransformacaoRelacao() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 46, y + 16, true);
+                        desenharFormaIconeCategoria(g2, x + 18, y + 52, true);
+                        desenharFormaIconeCategoria(g2, x + 74, y + 52, true);
+
+                        int cy = y + 52;
+                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
+                        seta.moveTo(x + 26, cy);
+                        seta.lineTo(x + 63, cy);
+                        seta.moveTo(x + 66, cy);
+                        seta.lineTo(x + 57, cy - 7);
+                        seta.moveTo(x + 66, cy);
+                        seta.lineTo(x + 57, cy + 7);
+                        g2.draw(seta);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Glifo de composição de relações (duas relações à esquerda,
+         * colchete, uma relação total à direita — todas círculo, mesma
+         * convenção de RenderizadorComposicaoRelacoes, que usa relacaoGrande
+         * = ELIPSE para os três elementos e chaveVertical como conector).
+         * Mesma estrutura de criarIconeCategoriaComposicao (colchete), só
+         * trocando quadrado por círculo nas três formas. Categoria já
+         * existe (`TipoSituacaoAditiva.COMPOSICAO_RELACOES`, com dados
+         * curados e renderizador próprios), mas o grupo "Relações" do menu
+         * "Categoria" a esconde atrás de "Em construção" — mesma decisão da
+         * usuária em 2026-07-26 já aplicada às duas categorias anteriores: o
+         * atalho abre mesmo assim.
+         */
+        private Icon criarIconeCategoriaComposicaoRelacoes() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
+                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharFormaIconeCategoria(g2, x + 26, y + 22, true);
+                        desenharFormaIconeCategoria(g2, x + 26, y + 58, true);
+                        desenharFormaIconeCategoria(g2, x + 70, y + 40, true);
+
+                        int cy = y + 40;
+                        java.awt.geom.Path2D.Float chave = new java.awt.geom.Path2D.Float();
+                        chave.moveTo(x + 44, y + 14);
+                        chave.quadTo(x + 56, y + 22, x + 56, cy - 6);
+                        chave.quadTo(x + 56, cy, x + 62, cy);
+                        chave.quadTo(x + 56, cy, x + 56, cy + 6);
+                        chave.quadTo(x + 56, y + 58, x + 44, y + 66);
+                        g2.draw(chave);
                     } finally {
                         g2.dispose();
                     }
