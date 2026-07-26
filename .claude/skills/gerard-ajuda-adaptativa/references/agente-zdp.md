@@ -115,6 +115,122 @@ de sinal quando o problema real é posição faz o usuário "corrigir" o sinal e
 persistir no erro (ver protocolo do usuário 01, Tabela 21/22 do relatório) —
 por isso a regra acima prioriza checar posição antes de sinal.
 
+## Catálogo de mensagens de ajuda por tipo de erro (fonte: TCC 2011, Ana Emília + Alisson)
+
+**Fonte diferente das demais seções deste arquivo**: não vem do relatório
+2026 nem do material original da tese — é uma tabela de um documento de
+2011 (`ajudas-modificadoAnaEmilai.doc`, autor original "Alisson", última
+edição por "Ana Emilia de Melo Queiroz" em 2011-07-12), do período de TCC,
+15 anos anterior à arquitetura de três agentes documentada no resto desta
+skill. Trazida para cá em 2026-07-26 a pedido do usuário. Tratar como
+material histórico de referência para o catálogo de **Conteúdo Pedagógico**
+(o repositório citado em `../SKILL.md` como consultado pelo Agente ZDP na
+ação 3, "Consulta os conteúdos pedagógicos disponíveis") — não como
+especificação já validada nem como texto pronto para produção (ver cautela
+abaixo).
+
+A tabela cruza tipo de erro/etapa × estratégia pedagógica × duas variantes de
+mensagem — uma "padrão" (igual para todos) e uma "personalizada" que seguiria
+a estratégia escolhida:
+
+| Etapa da tarefa | Estratégia utilizada | Ajuda Padrão | Ajuda Personalizada [Segundo a estratégia] |
+|---|---|---|---|
+| Erro de sinal na transformação | Feedback instrucional | Tem certeza que o sinal está correto? | Tem certeza que o sinal está correto? O sinal não reflete a transformação entre a quantidade inicial e a quantidade final. |
+| Erro de sinal na comparação | Feedback instrucional | Tem certeza que o sinal está correto? | Tem certeza que o sinal está correto? O sinal não reflete a relação entre o referido e o referente. |
+| Erro de posicionamento | Automatização de passos com dica completa | Você tem certeza que o elemento foi posicionado corretamente? | Aqui tem um detalhe. Dê uma olhada na minha dissertação |
+| Erros consecutivos de posicionamento | Automatização de passos com dica completa | Você tem certeza que o elemento foi posicionado corretamente? | Aqui tem um detalhe. Dê uma olhada na minha dissertação, na parte que fala sobre ajuda usando rótulos. |
+| Erros de categorização | Feedback de questionamento | Na situação-problema existem partes que formam um todo? [Exemplo, composição] | Já estão segundo a estratégia. |
+| Erro consecutivo de categorização | Feedback de questionamento | Na situação-problema existem partes que formam um todo? [Exemplo, composição] | Já estão segundo a estratégia. |
+| Erro de cálculo numérico | Feedback de questionamento | Valor incorreto! | Você tem certeza que o valor está correto? |
+
+**Como as 3 estratégias citadas se relacionam com o que já existe/está
+documentado**:
+
+- **"Feedback de questionamento"** — mesmo nome do tipo "Questionamento" já
+  documentado em `gerard-scaffolding-interacao` (seção 2) e implementado em
+  `ScaffoldingQuestionamento`/`AgenteMonitor`. As mensagens de exemplo aqui
+  ("Na situação-problema existem partes que formam um todo?", "Valor
+  incorreto!") são compatíveis com esse mecanismo já existente.
+- **"Automatização de passos com dica completa"** — mesmo nome do tipo 4 de
+  `gerard-scaffolding-interacao`, explicitamente marcado lá como **ainda não
+  implementado**. A qualificação "com dica completa" sugere que pode haver
+  variantes (ex.: dica parcial) não documentadas em lugar nenhum — não
+  presumir que existam sem confirmar com o usuário.
+- **"Feedback instrucional"** — não bate exatamente com nenhum dos 4 tipos
+  de `gerard-scaffolding-interacao`; as mensagens de exemplo são perguntas
+  ("Tem certeza que o sinal está correto?"), então na prática se parece mais
+  com "Questionamento" do que com "Mensagem informativa" apesar do nome.
+  Divergência a reportar ao usuário, não resolver silenciosamente.
+
+**Cautela sobre o conteúdo em si**: as mensagens de "Ajuda Personalizada"
+para erro de posicionamento ("Dê uma olhada na minha dissertação...") são
+claramente texto de rascunho/placeholder em primeira pessoa referindo-se à
+dissertação da própria autora do documento — não é cópia pronta para
+produção. Nas linhas de categorização, "Ajuda Personalizada" repete a mesma
+frase curta ("Já estão segundo a estratégia.") nas duas linhas, o que também
+tem cheiro de placeholder ainda não desenvolvido, não de conteúdo final.
+
+**Como isto se relaciona com a distinção erro-de-sinal-vs-erro-de-posição da
+Tabela 50 (seção acima)**: esta tabela de 2011 já tratava sinal e
+posicionamento como categorias de erro separadas, cada uma com sua própria
+estratégia — o relatório 2026 (15 anos depois) chega à mesma distinção
+independentemente e a eleva a regra explícita de priorização (checar posição
+antes de sinal). Não é o mesmo material, mas os dois convergem no mesmo
+diagnóstico.
+
+### Complemento: mensagens de categorização por subtipo (fonte: imagem colada pela usuária, 2026-07-26; conteúdo confirmado pela usuária como sendo de 2011, mesmo período da tabela acima)
+
+Tabela colada diretamente pela usuária (sem arquivo/metadados de origem no
+momento do envio, mas confirmada pela usuária em 2026-07-26 como sendo do
+mesmo período de 2011 da tabela anterior — não se sabe qual das duas é
+cronologicamente mais recente entre si, só que ambas são da mesma época).
+Formato mais simples — só "Tipo de erro" × "Mensagem exibida para o
+usuário", sem as colunas de estratégia/padrão vs. personalizada da tabela
+anterior:
+
+| Tipo de erro | Subtipo | Mensagem exibida para o usuário |
+|---|---|---|
+| Erro categorização | Composição | Na situação-problema existem partes que formam um todo? |
+| Erro categorização | Transformação | Na situação-problema existe um conjunto inicial que se transforma num conjunto final? |
+| Erro categorização | Comparação | Na situação-problema existe um conjunto que está sendo comparado em relação a outro conjunto? |
+| Erro categorização | Multiplicação | Na situação-problema o valor total é desconhecido? |
+| Erro categorização | Divisão por partes | Na situação-problema o valor de cada parte é desconhecida? |
+| Erro categorização | Divisão por cotas | Na situação-problema o número de partes é desconhecida? |
+| Posicionamento | — | Você tem certeza que o elemento foi posicionado corretamente? Clique "Ok" para tentar novamente! |
+| Sinal | — | Tem certeza que o sinal está correto? Clique "Ok" para tentar novamente! |
+| calculo | — | Valor incorreto! Leia a questão novamente e... *(texto cortado na imagem enviada — não presumir o final)* |
+
+**Esta tabela completa o placeholder da tabela anterior**: a linha "Erros de
+categorização" da tabela de 2011 tinha só uma mensagem genérica com a nota
+"[Exemplo, composição]" — um placeholder indicando que deveria haver uma
+mensagem por categoria. Esta tabela nova é exatamente esse detalhamento: uma
+mensagem de questionamento específica para cada subtipo de categorização,
+com o mesmo padrão de pergunta ("Na situação-problema existe/existem...?").
+As mensagens de Composição/Transformação/Comparação aqui substituem/
+detalham diretamente a mensagem genérica da tabela anterior.
+
+⚠️ **Divergência a reportar, não resolver silenciosamente**: as 3 últimas
+subcategorias de "Erro categorização" — **Multiplicação, Divisão por
+partes, Divisão por cotas** — são estruturas do **campo multiplicativo** de
+Vergnaud, não do campo aditivo. O Gérard atual (`TipoSituacaoAditiva`, ver
+`gerard-modelo-usuario`/código) só implementa categorias aditivas
+(Composição/Transformação/Comparação de medidas e suas variantes
+compostas) — não existe nenhuma categoria multiplicativa em código. Esta
+tabela pode ser: (a) um objetivo de escopo mais amplo para o Gérard no
+futuro (campo multiplicativo além do aditivo), (b) material de um contexto
+diferente (outro sistema/protótipo) reaproveitado aqui por engano, ou (c)
+uma ambição antiga não levada adiante. Não presumir nenhuma dessas
+hipóteses — perguntar à usuária antes de tratar isso como escopo real do
+Gérard.
+
+As mensagens de "Posicionamento"/"Sinal" aqui são quase idênticas às
+"Ajuda Padrão" da tabela anterior ("Você tem certeza que o elemento foi
+posicionado corretamente?"/"Tem certeza que o sinal está correto?"), com um
+acréscimo de UX ("Clique 'Ok' para tentar novamente!") que a outra tabela
+não tinha — como as duas são do mesmo período (2011, confirmado pela
+usuária), sem saber qual é cronologicamente mais recente entre si, não dá
+para afirmar qual das duas versões da mensagem é a mais tardia/refinada.
+
 ## Indícios de reorganização após ajuda (relatório 2026, Tabelas 51/52)
 
 Usados para decidir se o nível de ajuda deve ser mantido, intensificado ou
