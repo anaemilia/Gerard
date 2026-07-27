@@ -231,6 +231,101 @@ não tinha — como as duas são do mesmo período (2011, confirmado pela
 usuária), sem saber qual é cronologicamente mais recente entre si, não dá
 para afirmar qual das duas versões da mensagem é a mais tardia/refinada.
 
+## Comunicabilidade (De Souza, 1999) como princípio de posicionamento das mensagens (2026-07-27)
+
+⚠️ Fonte: conceito trazido pela usuária em conversa (não em documento
+anexado) — o **Método de Avaliação de Comunicabilidade (MAC)**, de Clarisse
+Sieckenius de Souza, dentro da **Engenharia Semiótica** (De Souza, 1999;
+formalizado depois em *The Semiotic Engineering of Human-Computer
+Interaction*, 2005). Trata o sistema como uma mensagem de metacomunicação do
+designer para o usuário ("designer's deputy") e desloca o foco da
+usabilidade pura para os **momentos de ruptura de comunicação** — quando o
+usuário não entende essa mensagem e precisa "falar de volta" com a
+interface. O método usa um vocabulário canônico de expressões-tipo ("Cadê?",
+"E agora?", "Por que não?", "Ué, o que aconteceu?") para rotular esses
+momentos observados em teste.
+
+### Resultado de mestrado citado pela usuária (fonte a confirmar)
+
+A usuária compartilhou uma tabela de "resultado do mestrado" (autoria/ano
+exatos não confirmados nesta conversa — confirmar citação formal antes de
+usar em texto acadêmico) cruzando Comunicação (proposta de artefato/mensagem)
+× Discussão (achado do teste com usuários):
+
+| Comunicação | Discussão |
+|---|---|
+| Mensagens de sucesso a cada etapa de resolução do problema | Impacto não testado. Usuários que sugeriram esse tipo de comunicação disseram que ficaram perdidos, sem saber se estavam fazendo a tarefa corretamente. |
+| Botão com o rótulo "Qual o próximo passo?" | 3 de 5 usuários fizeram comentários espontâneos equivalentes durante a modelagem: "E agora?", "É para fazer o quê?", "Qual o próximo passo?" |
+| Presença de ajudas rápidas em cada elemento do menu | Maioria externou insatisfação com a legenda não conter explicações; erraram por tentativa e erro, sem saber o significado da legenda. |
+| Metáforas devem conter um botão com o rótulo "?" | Mesmo com as metáforas contendo explicações, os usuários externaram dúvida e pediram mais explicações. |
+| "Tem mais alguma dica?" | Alguns usuários perguntaram se tinha mais dica; outros ficaram olhando a interface por um tempo, parecendo em dúvida sobre o que fazer. |
+
+**Como isto se conecta ao já documentado nesta skill e no código**:
+
+- **"Qual o próximo passo?"** — o vocabulário observado (E agora?/É para
+  fazer o quê?/Qual o próximo passo?) é evidência empírica direta para o
+  botão já adicionado como placeholder desabilitado em `Main.java`
+  (`botaoAtalhoProximoPasso`, chave i18n `ui.hint.nextStep`) — reforça que
+  desabilitá-lo até a automatização de passos ser desenhada de verdade (ver
+  `gerard-scaffolding-interacao`, tipo 4) foi a decisão certa, não apenas
+  cautela teórica.
+- **"Tem mais alguma dica?"** — é o botão "Mais Dica" da imagem de
+  referência original que motivou o painel de atalhos, deixado de fora por
+  decisão da usuária em 2026-07-25/26. O achado mostra por que essa hesitação
+  fazia sentido: o comportamento observado é ambíguo (parte pede mais dica,
+  parte só fica olhando confusa) — não está claro que um botão "mais dica"
+  resolveria a causa raiz da dúvida.
+- **"Ajudas rápidas em cada elemento do menu" / "metáforas com botão '?'"**
+  — é exatamente o mecanismo já implementado dos 3 botões "?" contextuais
+  (`botaoAjudaTexto`/`botaoAjudaVergnaud`/`botaoAjudaComplementar`,
+  `ScaffoldingAjudaContextual`, ver `gerard-scaffolding-interacao`). O
+  achado é um **dado negativo relevante**: mesmo com o mecanismo presente e
+  situado, os usuários continuaram com dúvida — a correlação espacial
+  sozinha não bastou nesse teste. Não documentado antes nesta skill.
+
+### Princípio de design articulado pela usuária: correlato situado, não central de ajuda
+
+A partir da tabela acima, a usuária formulou o princípio orientador: os
+rótulos/artefatos de comunicabilidade devem aparecer nos **locais
+específicos da tela** correlatos ao pensamento que motivaria aquela
+expressão no usuário — não centralizados num único menu de ajuda genérico.
+Quando a dúvida nasce na cabeça do usuário, ele deve encontrar o artefato
+que a traduz exatamente onde a dúvida nasceu, não precisar ir buscá-la em
+outro lugar.
+
+Isso já é, em parte, o princípio por trás dos 3 botões "?" contextuais
+existentes (cada um posicionado junto à área que ele explica — texto,
+diagrama de Vergnaud, representação complementar) — mas o achado da tabela
+acima mostra que a correlação espacial sozinha não foi suficiente para essa
+amostra de usuários. Levanta uma questão em aberto, não resolvida nesta
+conversa: **onde** exatamente, na tela atual, ficaria o correlato de
+"Qual o próximo passo?" — hoje esse botão está na faixa de atalhos de
+categoria, no topo da tela (posição genérica), não perto de onde o usuário
+provavelmente estaria quando esse pensamento surge (mais perto da área de
+interação com o diagrama). Reposicioná-lo fica pendente de decisão futura da
+usuária — o botão continua desabilitado, então não há urgência funcional.
+
+### Como evitar botões com texto ao aplicar este princípio
+
+A usuária levantou o problema prático: aplicar "um artefato por local
+correlato" não pode significar "poluir a tela com vários botões de texto".
+A solução já estabelecida no Gérard para exatamente esse problema é reusar o
+padrão dos botões "?" contextuais: **ícone puro, sem rótulo de texto visível
+(`criarBotaoAjudaContextual`/`criarIconeInterrogacaoContextual`,
+`Main.java`), com o texto da expressão aparecendo só sob demanda** — no
+hover ou clique, via popup (`mostrarMenuAjudaContextual`) — em vez de rótulo
+permanente ocupando espaço na tela.
+
+**Trade-off em aberto, não resolvido**: um ícone genérico "?" não diferencia
+*qual* pergunta está naquele local — funciona quando só existe um tipo de
+dúvida por correlato (situação atual), mas se cada local tivesse uma
+expressão diferente da tabela acima ("E agora?" vs. "Cadê?" vs. "Por que
+não?"), um "?" único apagaria essa diferenciação. Duas saídas possíveis,
+nenhuma decidida: (a) glifos levemente distintos por tipo de dúvida — mesmo
+espírito dos ícones de categoria já desenhados nesta faixa (ver
+`criarIconeCategoriaComposicao` e vizinhos em `Main.java`) — ou (b) confiar
+só na posição (o local já comunica qual pergunta é) e manter o "?" genérico.
+
 ## Indícios de reorganização após ajuda (relatório 2026, Tabelas 51/52)
 
 Usados para decidir se o nível de ajuda deve ser mantido, intensificado ou
