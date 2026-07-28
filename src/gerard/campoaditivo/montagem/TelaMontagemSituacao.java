@@ -121,6 +121,8 @@ public final class TelaMontagemSituacao extends JPanel {
         rotuloTitulo = new JLabel();
         rotuloTitulo.setFont(new Font("Arial", Font.BOLD, 26));
         rotuloTitulo.setForeground(TEXTO);
+        rotuloTitulo.setIcon(criarIconeConstruirTitulo());
+        rotuloTitulo.setIconTextGap(8);
         rotuloInstrucao = new JLabel();
         rotuloInstrucao.setFont(new Font("Arial", Font.PLAIN, 16));
         rotuloInstrucao.setForeground(TEXTO_SECUNDARIO);
@@ -144,8 +146,11 @@ public final class TelaMontagemSituacao extends JPanel {
                 return label;
             }
         });
-        botaoSortear = criarBotaoPrimario();
-
+        // O combo de idioma foi retirado da tela (decisão da usuária,
+        // 2026-07-28); o campo comboIdioma continua existindo só para não
+        // quebrar carregarNovaAtividade/instalarAcoes, sempre com o idioma
+        // padrão (primeiro item do modelo, PORTUGUES) já que não há mais
+        // como o usuário trocar a seleção.
         JPanel cabecalho = new JPanel(new BorderLayout(12, 6));
         cabecalho.setOpaque(false);
         JPanel textos = new JPanel();
@@ -157,13 +162,10 @@ public final class TelaMontagemSituacao extends JPanel {
         textos.add(javax.swing.Box.createVerticalStrut(3));
         textos.add(rotuloSituacao);
         cabecalho.add(textos, BorderLayout.CENTER);
-
-        JPanel comandosCabecalho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        comandosCabecalho.setOpaque(false);
-        comandosCabecalho.add(comboIdioma);
-        comandosCabecalho.add(botaoSortear);
-        cabecalho.add(comandosCabecalho, BorderLayout.EAST);
         add(cabecalho, BorderLayout.NORTH);
+
+        botaoSortear = criarBotaoIconeClaro();
+        botaoSortear.setIcon(criarIconeNovoDiagrama());
 
         painelDiagrama = new PainelDiagramaPreenchido();
         JPanel cardDiagrama = criarCard(new BorderLayout(8, 8));
@@ -173,7 +175,17 @@ public final class TelaMontagemSituacao extends JPanel {
         // são títulos do mesmo nível hierárquico.
         tituloDiagrama.setFont(new Font("Arial", Font.BOLD, 17));
         tituloDiagrama.setForeground(TEXTO);
-        cardDiagrama.add(tituloDiagrama, BorderLayout.NORTH);
+        // Botão "Novo diagrama" ao lado do rótulo "Diagrama preenchido"
+        // (decisão da usuária, 2026-07-28) — antes ficava acima do título
+        // "Construa a situação-problema".
+        JPanel cabecalhoDiagrama = new JPanel(new BorderLayout(8, 0));
+        cabecalhoDiagrama.setOpaque(false);
+        cabecalhoDiagrama.add(tituloDiagrama, BorderLayout.CENTER);
+        JPanel botoesCabecalhoDiagrama = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        botoesCabecalhoDiagrama.setOpaque(false);
+        botoesCabecalhoDiagrama.add(botaoSortear);
+        cabecalhoDiagrama.add(botoesCabecalhoDiagrama, BorderLayout.EAST);
+        cardDiagrama.add(cabecalhoDiagrama, BorderLayout.NORTH);
         cardDiagrama.add(painelDiagrama, BorderLayout.CENTER);
 
         // Sobreposta ao próprio painel do diagrama (não empilhada por baixo
@@ -210,12 +222,44 @@ public final class TelaMontagemSituacao extends JPanel {
         configurarLista(listaDisponiveis);
         configurarLista(listaMontagem);
 
+        // Recomeçar (ícone) ao lado do rótulo "Blocos disponíveis" — antes
+        // ficava no cabeçalho de "Situação-problema em construção", com
+        // rótulo de texto (decisão da usuária, 2026-07-28).
+        botaoRecomecar = criarBotaoIconeClaro();
+        botaoRecomecar.setIcon(criarIconeRecomecar());
+        JPanel cabecalhoDisponiveis = new JPanel(new BorderLayout(8, 0));
+        cabecalhoDisponiveis.setOpaque(false);
+        cabecalhoDisponiveis.add(tituloDisponiveis, BorderLayout.CENTER);
+        JPanel botoesCabecalhoDisponiveis = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        botoesCabecalhoDisponiveis.setOpaque(false);
+        botoesCabecalhoDisponiveis.add(botaoRecomecar);
+        cabecalhoDisponiveis.add(botoesCabecalhoDisponiveis, BorderLayout.EAST);
+
         JPanel cardDisponiveis = criarCard(new BorderLayout(6, 6));
-        cardDisponiveis.add(tituloDisponiveis, BorderLayout.NORTH);
+        cardDisponiveis.add(cabecalhoDisponiveis, BorderLayout.NORTH);
         cardDisponiveis.add(new JScrollPane(listaDisponiveis), BorderLayout.CENTER);
 
+        // Validar (ícone) continua no cabeçalho deste card, agora sozinho
+        // (decisão da usuária, 2026-07-28) — antes ficava num rodapé abaixo
+        // de tudo, com rótulo de texto, ao lado de Recomeçar. Sem
+        // preenchimento por padrão (mesmo estilo claro com borda dos outros
+        // ícones); só fica azul (COR_SUCESSO) quando todos os blocos já
+        // montados estão corretos — ver atualizarEstadoValidar.
+        botaoValidar = new JButton();
+        botaoValidar.setFocusable(false);
+        botaoValidar.setOpaque(true);
+        botaoValidar.setBorder(BorderFactory.createLineBorder(BORDA, 1));
+        botaoValidar.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+        JPanel cabecalhoMontagem = new JPanel(new BorderLayout(8, 0));
+        cabecalhoMontagem.setOpaque(false);
+        cabecalhoMontagem.add(tituloMontagem, BorderLayout.CENTER);
+        JPanel botoesCabecalhoMontagem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        botoesCabecalhoMontagem.setOpaque(false);
+        botoesCabecalhoMontagem.add(botaoValidar);
+        cabecalhoMontagem.add(botoesCabecalhoMontagem, BorderLayout.EAST);
+
         JPanel cardMontagem = criarCard(new BorderLayout(6, 6));
-        cardMontagem.add(tituloMontagem, BorderLayout.NORTH);
+        cardMontagem.add(cabecalhoMontagem, BorderLayout.NORTH);
         cardMontagem.add(new JScrollPane(listaMontagem), BorderLayout.CENTER);
 
         botaoAdicionar = criarBotaoSecundario();
@@ -273,18 +317,6 @@ public final class TelaMontagemSituacao extends JPanel {
         divisor.setOpaque(false);
         divisor.setContinuousLayout(true);
         add(divisor, BorderLayout.CENTER);
-
-        botaoRecomecar = criarBotaoSecundario();
-        botaoValidar = criarBotaoPrimario();
-
-        JPanel rodape = new JPanel(new BorderLayout(8, 0));
-        rodape.setOpaque(false);
-        JPanel botoesRodape = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        botoesRodape.setOpaque(false);
-        botoesRodape.add(botaoRecomecar);
-        botoesRodape.add(botaoValidar);
-        rodape.add(botoesRodape, BorderLayout.EAST);
-        add(rodape, BorderLayout.SOUTH);
 
         instalarTransferencia();
         instalarAcoes();
@@ -561,7 +593,11 @@ public final class TelaMontagemSituacao extends JPanel {
         modeloMontagem.clear();
         for (BlocoTextoMontagem bloco : blocos) modeloDisponiveis.addElement(bloco);
         quantidadeMovimentos = 0;
-        rotuloFeedback.setText(localizacao.texto("montagem.feedback.restarted"));
+        // Mensagem "Os blocos foram embaralhados novamente." removida
+        // (decisão da usuária, 2026-07-28) — só limpa qualquer feedback
+        // anterior (ex.: resultado de uma validação), mesmo padrão de
+        // limparFeedbackAposEdicao.
+        rotuloFeedback.setText(" ");
         rotuloFeedback.setForeground(TEXTO_SECUNDARIO);
         painelDiagrama.definirSucesso(false);
         atualizarVerificacaoPassoAPasso();
@@ -634,6 +670,7 @@ public final class TelaMontagemSituacao extends JPanel {
         estadosMontagem.clear();
         if (atividadeAtual == null) {
             listaMontagem.repaint();
+            atualizarEstadoValidar();
             return;
         }
         List<BlocoTextoMontagem> montados = new ArrayList<BlocoTextoMontagem>();
@@ -642,6 +679,25 @@ public final class TelaMontagemSituacao extends JPanel {
         }
         estadosMontagem.addAll(avaliadorPassoAPasso.avaliar(montados, atividadeAtual.getIdsCorretosOrdenados()));
         listaMontagem.repaint();
+        atualizarEstadoValidar();
+    }
+
+    /**
+     * Botão Validar só fica habilitado — e só fica azul (COR_SUCESSO, mesma
+     * cor de "correto" nos blocos) — quando todos os blocos já colocados na
+     * montagem estão corretos e a quantidade bate com a resposta completa
+     * (decisão da usuária, 2026-07-28). Chamado a cada mudança na montagem
+     * (atualizarVerificacaoPassoAPasso) e a cada troca de atividade
+     * (atualizarEstadoBotoes).
+     */
+    private void atualizarEstadoValidar() {
+        boolean tudoCorreto = atividadeAtual != null
+                && !estadosMontagem.isEmpty()
+                && estadosMontagem.size() == atividadeAtual.getIdsCorretosOrdenados().size()
+                && !estadosMontagem.contains(StatusVerificacaoBlocoMontagem.INCORRETO);
+        botaoValidar.setEnabled(tudoCorreto);
+        botaoValidar.setBackground(tudoCorreto ? SUCESSO : SUPERFICIE);
+        botaoValidar.setIcon(criarIconeValidar(tudoCorreto ? Color.WHITE : BORDA));
     }
 
     private StatusVerificacaoBlocoMontagem statusMontagemNaPosicao(int indice) {
@@ -666,20 +722,29 @@ public final class TelaMontagemSituacao extends JPanel {
         botaoSubir.setEnabled(habilitado);
         botaoDescer.setEnabled(habilitado);
         botaoRecomecar.setEnabled(habilitado);
-        botaoValidar.setEnabled(habilitado);
+        // botaoValidar não segue o habilitado genérico dos outros — tem
+        // critério próprio (ver atualizarEstadoValidar).
+        atualizarEstadoValidar();
     }
 
     private void atualizarTextosInterface() {
         rotuloTitulo.setText(localizacao.texto("montagem.title"));
         rotuloInstrucao.setText(localizacao.texto("montagem.instruction"));
         tituloDiagrama.setText(localizacao.texto("montagem.diagram.title"));
-        botaoSortear.setText(localizacao.texto("montagem.button.new"));
+        // Ícone em vez de texto (decisão da usuária, 2026-07-28) — o texto
+        // original continua acessível como tooltip.
+        botaoSortear.setToolTipText(localizacao.texto("montagem.button.new"));
+        botaoSortear.getAccessibleContext().setAccessibleName(localizacao.texto("montagem.button.new"));
         botaoAdicionar.setText(localizacao.texto("montagem.button.add"));
         botaoRemover.setText(localizacao.texto("montagem.button.remove"));
         botaoSubir.setText(localizacao.texto("montagem.button.up"));
         botaoDescer.setText(localizacao.texto("montagem.button.down"));
-        botaoRecomecar.setText(localizacao.texto("montagem.button.restart"));
-        botaoValidar.setText(localizacao.texto("montagem.button.validate"));
+        // Ícones em vez de texto (decisão da usuária, 2026-07-28) — o texto
+        // original continua acessível como tooltip.
+        botaoRecomecar.setToolTipText(localizacao.texto("montagem.button.restart"));
+        botaoRecomecar.getAccessibleContext().setAccessibleName(localizacao.texto("montagem.button.restart"));
+        botaoValidar.setToolTipText(localizacao.texto("montagem.button.validate"));
+        botaoValidar.getAccessibleContext().setAccessibleName(localizacao.texto("montagem.button.validate"));
         tituloDisponiveis.setText(localizacao.texto("montagem.available"));
         tituloMontagem.setText(localizacao.texto("montagem.assembly"));
         tipParabens.atualizarTextos(
@@ -705,13 +770,173 @@ public final class TelaMontagemSituacao extends JPanel {
         return label;
     }
 
+    /** Mesmo motivo visual (dado, 3 pontos) já usado no botão Sortear da aba Diagramar — consistência entre as duas telas. */
+    /** Peça de quebra-cabeça (montagem/construção), ao lado do título "Construa a situação-problema" — decisão da usuária, 2026-07-28. */
+    private javax.swing.Icon criarIconeConstruirTitulo() {
+        final int tamanho = 24;
+        return new javax.swing.Icon() {
+            public int getIconWidth() { return tamanho; }
+            public int getIconHeight() { return tamanho; }
+
+            public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(TEXTO);
+                    g2.setStroke(new java.awt.BasicStroke(1.8f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+                    int lado = tamanho - 6;
+                    float ox = x + 3;
+                    float oy = y + 3;
+                    java.awt.geom.Area peca = new java.awt.geom.Area(
+                            new java.awt.geom.RoundRectangle2D.Float(ox, oy, lado, lado, 3, 3));
+                    float raioBolha = lado * 0.22f;
+                    peca.add(new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Float(
+                            ox + lado / 2f - raioBolha, oy - raioBolha * 0.8f, raioBolha * 2, raioBolha * 2)));
+                    peca.subtract(new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Float(
+                            ox + lado - raioBolha * 0.8f, oy + lado / 2f - raioBolha, raioBolha * 2, raioBolha * 2)));
+
+                    g2.draw(peca);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
+    }
+
+    /** Seta circular de "desfazer/recomeçar" — traço neutro, mesmo estilo dos outros ícones do cabeçalho (decisão da usuária, 2026-07-28). */
+    private javax.swing.Icon criarIconeRecomecar() {
+        final int tamanho = 20;
+        return new javax.swing.Icon() {
+            public int getIconWidth() { return tamanho; }
+            public int getIconHeight() { return tamanho; }
+
+            public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(BORDA);
+                    g2.setStroke(new java.awt.BasicStroke(1.8f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+                    int diametro = tamanho - 4;
+                    float ox = x + 2;
+                    float oy = y + 2;
+                    java.awt.geom.Arc2D.Float arco = new java.awt.geom.Arc2D.Float(
+                            ox, oy, diametro, diametro, 20, 300, java.awt.geom.Arc2D.OPEN);
+                    g2.draw(arco);
+
+                    // Ponta de seta na extremidade inicial do arco (ângulo 20°).
+                    java.awt.geom.Point2D pontaSeta = arco.getStartPoint();
+                    float px = (float) pontaSeta.getX();
+                    float py = (float) pontaSeta.getY();
+                    java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
+                    seta.moveTo(px - 5, py - 2);
+                    seta.lineTo(px, py);
+                    seta.lineTo(px - 2, py + 5);
+                    g2.draw(seta);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
+    }
+
+    /** Marca de visto em traço branco — mesma cor de texto já usada em botaoValidar (criarBotaoPrimario, fundo escuro). */
+    private javax.swing.Icon criarIconeValidar(final Color cor) {
+        final int tamanho = 20;
+        return new javax.swing.Icon() {
+            public int getIconWidth() { return tamanho; }
+            public int getIconHeight() { return tamanho; }
+
+            public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(cor);
+                    g2.setStroke(new java.awt.BasicStroke(2.2f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+                    java.awt.geom.Path2D.Float visto = new java.awt.geom.Path2D.Float();
+                    visto.moveTo(x + 3, y + tamanho / 2f);
+                    visto.lineTo(x + tamanho / 2f - 1, y + tamanho - 5);
+                    visto.lineTo(x + tamanho - 3, y + 4);
+                    g2.draw(visto);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
+    }
+
+    private javax.swing.Icon criarIconeNovoDiagrama() {
+        final int tamanho = 20;
+        return new javax.swing.Icon() {
+            public int getIconWidth() { return tamanho; }
+            public int getIconHeight() { return tamanho; }
+
+            public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                    // Traço neutro (não mais branco): o botão deixou de ser
+                    // preenchido com PRIMARIA e passou a ter fundo claro com
+                    // borda fina — ver criarBotaoIconeCabecalho, mesmo
+                    // padrão visual da aba Diagramar (decisão da usuária,
+                    // 2026-07-28, com captura de referência).
+                    g2.setColor(BORDA);
+                    g2.setStroke(new java.awt.BasicStroke(1.6f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                    g2.drawRoundRect(x + 1, y + 1, tamanho - 2, tamanho - 2, 5, 5);
+                    float raioPonto = 1.6f;
+                    desenharPontoIconeNovoDiagrama(g2, x + 6, y + 6, raioPonto);
+                    desenharPontoIconeNovoDiagrama(g2, x + tamanho / 2, y + tamanho / 2, raioPonto);
+                    desenharPontoIconeNovoDiagrama(g2, x + tamanho - 6, y + tamanho - 6, raioPonto);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        };
+    }
+
+    private void desenharPontoIconeNovoDiagrama(java.awt.Graphics2D g2, int cx, int cy, float raio) {
+        g2.fill(new java.awt.geom.Ellipse2D.Float(cx - raio, cy - raio, raio * 2, raio * 2));
+    }
+
+    /**
+     * Caixa quadrada com borda fina neutra ao redor do ícone (decisão da
+     * usuária, 2026-07-28, com captura de referência) — mesmo estilo dos
+     * botões de ícone embutidos no cabeçalho da aba Diagramar
+     * (Main.criarBotaoIconeCabecalho), incluindo o destaque de fundo ao
+     * passar o mouse.
+     */
+    private JButton criarBotaoIconeClaro() {
+        final JButton botao = new JButton();
+        botao.setFocusable(false);
+        botao.setOpaque(true);
+        botao.setBackground(SUPERFICIE);
+        botao.setBorder(BorderFactory.createLineBorder(BORDA, 1));
+        botao.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+        botao.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                botao.setBackground(UITemaGerard.COR_DESTAQUE);
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                botao.setBackground(SUPERFICIE);
+            }
+        });
+        return botao;
+    }
+
     private JButton criarBotaoPrimario() {
         JButton botao = new JButton();
         botao.setFont(UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
         botao.setForeground(Color.WHITE);
         botao.setBackground(PRIMARIA);
         botao.setFocusPainted(false);
-        botao.setBorder(BorderFactory.createEmptyBorder(8, 13, 8, 13));
+        // Padding simétrico (era 8,13,8,13, pensado pra texto) — único uso
+        // hoje é botaoValidar, ícone-only, então fica quadrado (decisão da
+        // usuária, 2026-07-28).
+        botao.setBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9));
         return botao;
     }
 

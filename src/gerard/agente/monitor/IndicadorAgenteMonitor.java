@@ -44,13 +44,13 @@ public final class IndicadorAgenteMonitor extends JPanel implements OuvinteVered
         setOpaque(false);
         setFocusable(false);
         setPreferredSize(new Dimension(DIAMETRO, DIAMETRO));
-        setToolTipText("Agente Monitor");
+        setToolTipText("Agente Monitor: pisca sempre que uma ação sua é avaliada pelo sistema.");
     }
 
     @Override
     public void aoAvaliar(boolean correto) {
         ultimoVeredito = new SimpleDateFormat("HH:mm:ss").format(new Date());
-        setToolTipText("Agente Monitor — último veredito: " + ultimoVeredito);
+        setToolTipText("Agente Monitor: pisca sempre que uma ação sua é avaliada pelo sistema. Último veredito: " + ultimoVeredito);
         aceso = true;
         repaint();
         if (timerPulso != null) {

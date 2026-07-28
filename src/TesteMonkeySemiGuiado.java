@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
@@ -32,14 +34,15 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
  * aleatorias da tela (que raramente exercitam o fluxo real do Gerard), sorteia
  * a cada iteracao uma acao entre as que fazem sentido no estado atual da
  * TelaGerard (arrastar um item para um alvo do diagrama, digitar um valor
- * numa incognita editavel, ou pedir uma nova situacao via botaoSortear) e
- * executa via java.awt.Robot, entao passa pelos mesmos MouseListener/
- * KeyListener reais que um usuario humano acionaria.
+ * numa incognita editavel, ou pedir uma nova situacao via itemNovaSituacao)
+ * e executa via java.awt.Robot/doClick(), entao passa pelos mesmos
+ * MouseListener/KeyListener/ActionListener reais que um usuario humano
+ * acionaria.
  *
  * Fica no pacote padrao (sem "package") de proposito, igual a Main.java:
  * TelaGerard e seus campos (itensArrastaveis, elementosVergnaud,
- * botaoSortear...) tem visibilidade de pacote, entao esta classe precisa
- * estar no mesmo pacote para le-los sem reflexao.
+ * itemNovaSituacao, menuCategoria...) tem visibilidade de pacote, entao
+ * esta classe precisa estar no mesmo pacote para le-los sem reflexao.
  *
  * Nao faz parte do app entregue ao usuario final - e so uma ferramenta de
  * teste local. Ao empacotar o instalador com jpackage, esta classe fica de
@@ -197,14 +200,20 @@ public class TesteMonkeySemiGuiado {
     }
 
     /**
-     * botaoSortear so randomiza a situacao *dentro* de uma categoria ja
+     * "Nova situacao-problema" (item de menu, Arquivo > Nova situacao-
+     * problema) so randomiza a situacao *dentro* de uma categoria ja
      * escolhida (ver Main.iniciarNovaAtividade: sem categoriaSelecionadaPara
      * Atividade, so mostra a tela de instrucao). Sem este passo, o teste
-     * fica preso clicando Sortear sem nenhum efeito (foi o que aconteceu na
-     * primeira rodada de fumaca). As tres categorias reais (Composicao,
-     * Transformacao, Comparacao de medidas) ficam dentro do submenu
-     * "Medidas" do botao Tipo — os outros dois grupos do menu (Transformacoes,
-     * Relacoes) sao placeholders desabilitados ("em construcao").
+     * fica preso sem nenhum efeito (foi o que aconteceu na primeira rodada
+     * de fumaca). Desde a migracao para JMenuBar (2026-07-28), a categoria
+     * e selecionada via tela.menuCategoria (JMenu real, Arquivo > Categoria)
+     * chamando doClick() diretamente nos itens — mais robusto que dirigir o
+     * Robot por cima de um menu nativo do SO, que e sensivel a timing/tema.
+     * Ainda restringe as opcoes ao grupo "Medidas" (indice 0 dentro de
+     * menuCategoria): os outros itens de Categoria podem estar habilitados
+     * ou "Em construcao" dependendo do estado do app, e a intencao aqui e
+     * so garantir QUALQUER categoria valida para destravar o teste, nao
+     * exercitar as demais.
      */
     private static void garantirCategoriaSelecionada(Robot robot, final Main.TelaGerard tela,
             Random random, PrintWriter log) throws Exception {
@@ -218,44 +227,42 @@ public class TesteMonkeySemiGuiado {
             return;
         }
 
-        log.println("Categoria ainda nao selecionada — abrindo menu Tipo.");
-        clicarComponente(robot, tela.botaoTipo);
-        Thread.sleep(300);
+        log.println("Categoria ainda nao selecionada — selecionando via menuCategoria (JMenu).");
 
-        final Component[] grupoMedidas = new Component[1];
+        final JMenuItem[] opcaoEscolhida = new JMenuItem[1];
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                if (tela.menuTipo != null && tela.menuTipo.getComponentCount() > 0) {
-                    grupoMedidas[0] = tela.menuTipo.getComponent(0);
+                if (tela.menuCategoria == null || tela.menuCategoria.getItemCount() == 0) {
+                    return;
                 }
-            }
-        });
-        if (grupoMedidas[0] == null) {
-            log.println("Grupo 'Medidas' nao encontrado dentro de menuTipo — abortando selecao de categoria.");
-            return;
-        }
-        clicarComponente(robot, grupoMedidas[0]);
-        Thread.sleep(300);
-
-        final List<Component> opcoes = new ArrayList<Component>();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                if (tela.submenuTipoMedidas != null) {
-                    for (Component c : tela.submenuTipoMedidas.getComponents()) {
-                        if (c.isEnabled()) {
-                            opcoes.add(c);
-                        }
+                JMenuItem grupoMedidas = tela.menuCategoria.getItem(0);
+                if (!(grupoMedidas instanceof JMenu)) {
+                    return;
+                }
+                JMenu menuMedidas = (JMenu) grupoMedidas;
+                List<JMenuItem> opcoes = new ArrayList<JMenuItem>();
+                for (int i = 0; i < menuMedidas.getItemCount(); i++) {
+                    JMenuItem item = menuMedidas.getItem(i);
+                    if (item != null && item.isEnabled()) {
+                        opcoes.add(item);
                     }
                 }
+                if (!opcoes.isEmpty()) {
+                    opcaoEscolhida[0] = opcoes.get(random.nextInt(opcoes.size()));
+                }
             }
         });
-        if (opcoes.isEmpty()) {
-            log.println("submenuTipoMedidas sem opcoes habilitadas — abortando selecao de categoria.");
+        if (opcaoEscolhida[0] == null) {
+            log.println("Nenhuma opcao habilitada em menuCategoria > Medidas — abortando selecao de categoria.");
             return;
         }
-        Component escolhida = opcoes.get(random.nextInt(opcoes.size()));
-        log.println("Selecionando categoria inicial: " + escolhida.getName());
-        clicarComponente(robot, escolhida);
+        final String textoEscolhido = opcaoEscolhida[0].getText();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                opcaoEscolhida[0].doClick();
+            }
+        });
+        log.println("Categoria inicial selecionada: " + textoEscolhido);
         Thread.sleep(800);
     }
 
@@ -293,30 +300,6 @@ public class TesteMonkeySemiGuiado {
             }
         });
         return resultado[0];
-    }
-
-    private static Point centroNaTela(final Component c) throws Exception {
-        final Point[] resultado = new Point[1];
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                if (c != null && c.isShowing()) {
-                    Point p = c.getLocationOnScreen();
-                    resultado[0] = new Point(p.x + c.getWidth() / 2, p.y + c.getHeight() / 2);
-                }
-            }
-        });
-        return resultado[0];
-    }
-
-    private static void clicarComponente(Robot robot, final Component c) throws Exception {
-        Point centro = centroNaTela(c);
-        if (centro == null) {
-            throw new IllegalStateException("Componente nao esta visivel para clique: " + c);
-        }
-        robot.mouseMove(centro.x, centro.y);
-        robot.delay(60);
-        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
     }
 
     private static void executarIteracao(Robot robot, final Main.TelaGerard tela, Random random,
@@ -395,28 +378,18 @@ public class TesteMonkeySemiGuiado {
             return;
         }
 
-        Point botaoSortearNaTela = localizarBotaoSortear(tela);
-        if (botaoSortearNaTela != null) {
-            log.println("[iter " + iteracao + "] clicar Sortear (novo problema)");
-            robot.mouseMove(botaoSortearNaTela.x, botaoSortearNaTela.y);
-            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-        }
-    }
-
-    private static Point localizarBotaoSortear(final Main.TelaGerard tela) throws Exception {
-        final Point[] resultado = new Point[1];
+        // "Nova situacao-problema" agora e um JMenuItem dentro da JMenuBar
+        // (Arquivo > Nova situacao-problema), nao mais um botao sempre
+        // visivel na tela — doClick() dispara a mesma acao sem precisar
+        // abrir o menu visualmente via Robot.
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                if (tela.botaoSortear != null && tela.botaoSortear.isShowing()) {
-                    Point p = tela.botaoSortear.getLocationOnScreen();
-                    resultado[0] = new Point(
-                            p.x + tela.botaoSortear.getWidth() / 2,
-                            p.y + tela.botaoSortear.getHeight() / 2);
+                if (tela.itemNovaSituacao != null && tela.itemNovaSituacao.isEnabled()) {
+                    log.println("[iter " + iteracao + "] clicar Nova situacao-problema (menu Arquivo)");
+                    tela.itemNovaSituacao.doClick();
                 }
             }
         });
-        return resultado[0];
     }
 
     private static void arrastar(Robot robot, Point origem, Point destino) {

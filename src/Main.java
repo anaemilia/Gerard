@@ -255,8 +255,11 @@ public class Main extends JFrame {
         telaGerard.definirTelaCuradoriaSituacoes(telaCuradoria);
         final JTabbedPane abas = new JTabbedPane();
         abas.addTab(ServicoLocalizacao.getInstancia().texto("ui.tab.gerard"), telaGerard);
+        abas.setToolTipTextAt(0, ServicoLocalizacao.getInstancia().texto("ui.tab.gerard.tooltip"));
         abas.addTab(ServicoLocalizacao.getInstancia().texto("ui.tab.assembly"), telaMontagem);
+        abas.setToolTipTextAt(1, ServicoLocalizacao.getInstancia().texto("ui.tab.assembly.tooltip"));
         abas.addTab(ServicoLocalizacao.getInstancia().texto("ui.tab.curation"), telaCuradoria);
+        abas.setToolTipTextAt(2, ServicoLocalizacao.getInstancia().texto("ui.tab.curation.tooltip"));
         abas.addChangeListener(new ChangeListener() {
             private boolean restaurandoSelecao;
             private Component componenteAnterior = telaGerard;
@@ -285,14 +288,22 @@ public class Main extends JFrame {
                     telaMontagem.ativarAba();
                 }
 
+                // Categoria/Nova situação-problema (na JMenuBar) só fazem
+                // sentido na aba Gerard — ver definirAbaGerardAtiva.
+                telaGerard.definirAbaGerardAtiva(selecionado == telaGerard);
+
                 ServicoLocalizacao loc = ServicoLocalizacao.getInstancia();
                 abas.setTitleAt(0, loc.texto("ui.tab.gerard"));
+                abas.setToolTipTextAt(0, loc.texto("ui.tab.gerard.tooltip"));
                 abas.setTitleAt(1, loc.texto("ui.tab.assembly"));
+                abas.setToolTipTextAt(1, loc.texto("ui.tab.assembly.tooltip"));
                 abas.setTitleAt(2, loc.texto("ui.tab.curation"));
+                abas.setToolTipTextAt(2, loc.texto("ui.tab.curation.tooltip"));
                 componenteAnterior = selecionado;
             }
         });
-        add(abas);
+        add(abas, BorderLayout.CENTER);
+        setJMenuBar(telaGerard.menuBarPrincipal);
         ConfiguradorJanelaPrincipal.aplicar(this);
     }
 
@@ -304,6 +315,12 @@ public class Main extends JFrame {
         IdiomaInterface idiomaSelecionado = IdiomaInterface.PORTUGUES;
         TipoSituacaoAditiva tipoSituacaoSelecionada = TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS;
         boolean categoriaSelecionadaParaAtividade = false;
+        // Estado do modo "adivinhar categoria" (Sortear): a categoria certa
+        // fica guardada aqui, escondida da UI, enquanto
+        // categoriaSelecionadaParaAtividade permanece false — ver
+        // iniciarQuizCategoria/clicarAtalhoCategoria.
+        TipoSituacaoAditiva categoriaSorteioOculta;
+        boolean aguardandoAdivinhacaoCategoria = false;
         RepositorioSituacoesAditivas repositorioSituacoesAditivas = new RepositorioSituacoesAditivas();
         CadastroIdiomasSituacao cadastroIdiomasSituacao = new CadastroIdiomasSituacao();
         CatalogoDefinicoesAditivas catalogoDefinicoesAditivas = new CatalogoDefinicoesAditivas();
@@ -343,13 +360,26 @@ public class Main extends JFrame {
         CenaDiagramaVenn cenaDiagramaVennAtual;
         Rectangle ultimaAreaDiagramaVenn = null;
         String assinaturaDiagramaVennSincronizado = "";
-        JButton botaoIdioma;
-        JButton botaoTipo;
-        JButton botaoSobre;
-        JButton botaoReportarBug;
-        JButton botaoUsuario;
-        JButton botaoSortear;
+        // Barra de menu clássica estilo Windows (Arquivo/Exibir/Ferramentas/
+        // Ajuda), ver criarMenuPrincipal(). menuBarPrincipal fica com Main
+        // (setJMenuBar), mas quem constrói/atualiza o conteúdo é TelaGerard,
+        // já que os itens chamam métodos e leem estado privados dela.
+        // itemNovaSituacao/menuCategoria continuam como campos porque
+        // precisam ser habilitados/desabilitados de fora (troca de aba, em
+        // Main) além de internamente (ver definirAbaGerardAtiva).
+        JMenuBar menuBarPrincipal;
+        JMenuItem itemNovaSituacao;
+        JMenu menuCategoria;
+        // Botões de ícone embutidos no cabeçalho desta aba (decisão da
+        // usuária, 2026-07-28) — Sortear traz o Sortear pra fora do menu
+        // Arquivo, que ela achou escondido demais; Comparar tem a mesma
+        // função do item de menu Comparar categorias. Ver
+        // criarBotoesCabecalhoEmbutidos.
+        JButton botaoCompararCategorias;
+        JButton botaoFerramentaSortear;
+        boolean abaGerardAtiva = true;
         IndicadorAgenteMonitor indicadorAgenteMonitor;
+        JPanel caixaIndicadorAgenteMonitor;
         gerard.pesquisador.FaixaLateralAtividadeAgentes faixaAtividadeAgentes;
         JButton botaoAtalhoComposicao;
         JButton botaoAtalhoTransformacao;
@@ -357,36 +387,36 @@ public class Main extends JFrame {
         JButton botaoAtalhoComposicaoTransformacoes;
         JButton botaoAtalhoTransformacaoRelacao;
         JButton botaoAtalhoComposicaoRelacoes;
+        JPanel separadorAtalhoCategoria;
         JButton botaoAtalhoProximoPasso;
-        JButton botaoTeste;
+        // Posição ao lado dos ícones de categoria — usada só depois que a
+        // categoria já foi confirmada (ver reposicionarBotaoAtalhoProximoPasso).
+        int xPadraoBotaoAtalhoProximoPasso;
+        int yPadraoBotaoAtalhoProximoPasso;
+        // Centro horizontal de cada grupo de 3 ícones, para desenhar os
+        // rótulos "Medidas"/"Relações" acima deles (ver desenharFaixaAtalhoCategoria).
+        int xCentroGrupoMedidas;
+        int xCentroGrupoRelacoes;
+        // Retângulo delimitador de cada grupo de 3 ícones (ver desenharFaixaAtalhoCategoria).
+        Rectangle areaGrupoMedidas;
+        Rectangle areaGrupoRelacoes;
         JButton botaoRestaurar;
         JButton botaoCorrigirCuradoria;
         JButton botaoIdiomaSituacao;
         JButton botaoRestaurarDiagrama;
-        JButton botaoVisaoPesquisador;
         JButton botaoArtefatoExplicativo;
         JButton botaoAjudaTexto;
         JButton botaoAjudaVergnaud;
         JButton botaoAjudaComplementar;
         JPopupMenu menuAjudaContextualAtivo;
         ScaffoldingAjudaContextual.Area areaAjudaContextualAtiva;
-        JPanel menuIdioma;
-        JPanel menuTipo;
-        JPanel submenuTipoMedidas;
-        JPanel submenuTipoTransformacoes;
-        JPanel submenuTipoRelacoes;
-        JPanel menuTeste;
-        JPanel menuSobre;
-        JPanel submenuInterpretacaoLinguistica;
-        JPanel submenuRegistroGerard;
-        JPanel submenuGerardVergnaud;
-        JPanel submenuGerardRecife;
-        javax.swing.Timer timerOcultarMenus;
         javax.swing.Timer timerOcultarTipConclusao;
 
         final String URL_GERARD_VERGNAUD = "https://pt.wikipedia.org/wiki/G%C3%A9rard_Vergnaud";
         final String URL_VIDEO_GERARD_VERGNAUD = "https://www.youtube.com/watch?v=pU7um4GX5XQ";
         final String URL_VERGNAUD_BRASIL = "https://vergnaudbrasil.com/";
+        final String URL_COMUNIDADE_GERARD = "https://github.com/anaemilia/Gerard/discussions";
+        final String URL_SITE_GERARD = "https://anaemilia.github.io/Gerard/";
 
         ConstrutorResultadoCurado construtorResultadoCurado = new ConstrutorResultadoCurado();
         ResultadoInterpretacao resultadoInterpretacao;
@@ -463,7 +493,10 @@ public class Main extends JFrame {
         FachadaCarregamentoAtividade fachadaCarregamentoAtividade =
                 new FachadaCarregamentoAtividade(repositorioSituacoesAditivas, catalogoDefinicoesAditivas, construtorResultadoCurado);
         TelaCuradoriaSituacoes telaCuradoriaSituacoes;
-        EstiloInteracao modoFeedbackTeste = EstiloInteracao.PROXIMIDADE;
+        // Fixado em atração magnética (decisão da usuária em 2026-07-28) —
+        // era o único ponto de reatribuição além deste default (o botão
+        // "Teste: ..." que permitia trocar o estilo foi removido junto).
+        EstiloInteracao modoFeedbackTeste = EstiloInteracao.SNAP_TO_TARGET;
         int quantidadePassosTransformacaoComposta = 1;
         java.util.List<Integer> transformacoesComSinalTransformacaoComposta = new ArrayList<Integer>();
         java.util.List<Integer> estadosIntermediariosTransformacaoComposta = new ArrayList<Integer>();
@@ -480,7 +513,6 @@ public class Main extends JFrame {
         final Color COR_BORDA = gerard.ui.UITemaGerard.COR_BORDA;
         final Color COR_DESTAQUE = gerard.ui.UITemaGerard.COR_DESTAQUE;
         final Color COR_AVISO = new Color(224, 160, 58);               // #E0A03A (sinal de revisão, mantido)
-        final Color COR_BOTAO_SECUNDARIO = gerard.ui.UITemaGerard.COR_FUNDO_CONTEUDO;
         final Color COR_BORDA_BOTAO = gerard.ui.UITemaGerard.COR_BORDA;
         final Color COR_MARCADOR_NUMERO = gerard.ui.UITemaGerard.COR_SUPERFICIE;
         final Color COR_BORDA_MARCADOR = gerard.ui.UITemaGerard.COR_BORDA;
@@ -495,9 +527,6 @@ public class Main extends JFrame {
         ArrayList<MarcadorTexto> marcadoresFixosTexto = new ArrayList<MarcadorTexto>();
         ArrayList<ElementoTextoMovel> elementosTexto = new ArrayList<ElementoTextoMovel>();
         ArrayList<ItemTextoArrastavel> itensArrastaveis = new ArrayList<ItemTextoArrastavel>();
-        // Extraído para gerard.ui.enunciado.AreaTituloCategoriaEnunciado (Fase 1 da refatoração).
-        final gerard.ui.enunciado.AreaTituloCategoriaEnunciado areaTituloCategoria =
-                new gerard.ui.enunciado.AreaTituloCategoriaEnunciado();
 
         ArrayList<CirculoVenn> circulosVenn = new ArrayList<CirculoVenn>();
         ArrayList<QuadradinhoVenn> quadradinhosVenn = new ArrayList<QuadradinhoVenn>();
@@ -615,6 +644,20 @@ public class Main extends JFrame {
         String textoAnotacaoMouseOver = "";
         int mouseOverX = 0;
         int mouseOverY = 0;
+        // Por padrão, desenharAnotacaoMouseOver tenta posicionar a caixa
+        // ACIMA da âncora (mouseOverX/Y), só caindo para abaixo se isso
+        // ficaria muito perto do topo da tela (y<50). Essa heurística
+        // pressupõe âncoras no meio/embaixo da tela (elementos do diagrama),
+        // não uma fileira de botões Swing logo abaixo do cabeçalho: ali,
+        // "acima da âncora" cai por cima dos próprios botões da faixa de
+        // atalhos, que são componentes Swing pintados por cima do canvas
+        // (a caixa é desenhada dentro de paintComponent, então fica atrás
+        // de qualquer JButton que ela geometricamente cruze). Esta flag
+        // força a colocação abaixo da âncora incondicionalmente — usada só
+        // pelo hover dos ícones de atalho de categoria (ver
+        // criarBotaoAtalhoCategoria), para garantir que a caixa apareça
+        // sempre abaixo da faixa inteira, nunca atrás de um botão vizinho.
+        boolean forcarAnotacaoMouseOverAbaixo = false;
         boolean mostrarQuestionamentoPersistente = false;
         String textoQuestionamentoPersistente = "";
         ItemTextoArrastavel itemQuestionadoPersistente = null;
@@ -643,24 +686,17 @@ public class Main extends JFrame {
                 }
             });
 
-            criarBotaoIdioma();
-            criarBotaoTipo();
-            criarBotaoSobre();
-            criarBotaoSortear();
-            criarBotaoReportarBug();
-            criarBotaoUsuario();
             criarPainelAtalhoCategoria();
             criarIndicadorAgenteMonitor();
             criarFaixaAtividadeAgentes();
-            criarBotaoTeste();
-            criarBotaoVisaoPesquisador();
             criarBotaoRestaurar();
             criarBotaoCorrigirCuradoria();
             criarBotaoIdiomaSituacao();
             criarBotaoArtefatoExplicativo();
             criarBotaoRestaurarDiagrama();
             criarBotoesAjudaContextual();
-            criarMenusInternos();
+            criarMenuPrincipal();
+            criarBotoesCabecalhoEmbutidos();
             configurarFeedbackConclusaoModelagem();
             inicializarTelaSemCategoria();
 
@@ -683,8 +719,8 @@ public class Main extends JFrame {
                             "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
                             "A modelagem concluída permite iniciar uma nova situação-problema.",
                             "CONCLUSAO_MODELAGEM", "escolha=sim");
-                    if (botaoSortear != null && botaoSortear.isEnabled()) {
-                        botaoSortear.doClick();
+                    if (itemNovaSituacao != null && itemNovaSituacao.isEnabled()) {
+                        itemNovaSituacao.doClick();
                     }
                 }
 
@@ -723,7 +759,7 @@ public class Main extends JFrame {
                             Rectangle areaDiagrama = obterAreaVisualDiagramaVergnaudAtual();
                             tipConclusaoModelagem.ocultar();
                             setComponentZOrder(seloConclusaoModelagem, 0);
-                            seloConclusaoModelagem.mostrarAbaixoDoDiagrama(
+                            seloConclusaoModelagem.mostrarAoLadoDireitoDoDiagrama(
                                     areaDiagrama, areaPermitida, getWidth(), getHeight());
                             repaint();
                         }
@@ -748,8 +784,8 @@ public class Main extends JFrame {
                             "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
                             "A modelagem concluída permite iniciar uma nova situação-problema.",
                             "CONCLUSAO_MODELAGEM", "escolha=proxima_tarefa");
-                    if (botaoSortear != null && botaoSortear.isEnabled()) {
-                        botaoSortear.doClick();
+                    if (itemNovaSituacao != null && itemNovaSituacao.isEnabled()) {
+                        itemNovaSituacao.doClick();
                     }
                 }
             });
@@ -761,9 +797,9 @@ public class Main extends JFrame {
             // Ao retirar o mouse do tip (sem escolher Sim/Não), ele some e
             // volta a mostrar só o link "Próxima tarefa" (seloConclusaoModelagem
             // nunca é ocultado, então reaparece sozinho ao ocultar o tip por
-            // cima dele). Pequeno atraso, igual ao padrão já usado em
-            // agendarOcultacaoMenus, evita fechar o tip ao passar o mouse
-            // entre a mensagem e os radiobuttons Sim/Não internos.
+            // cima dele). Pequeno atraso (ver agendarOcultacaoTipConclusao)
+            // evita fechar o tip ao passar o mouse entre a mensagem e os
+            // radiobuttons Sim/Não internos.
             tipConclusaoModelagem.addMouseListener(new MouseAdapter() {
                 public void mouseExited(MouseEvent e) {
                     agendarOcultacaoTipConclusao();
@@ -788,11 +824,9 @@ public class Main extends JFrame {
             if (!controladorConclusaoModelagem.isConcluida() || tipConclusaoModelagem.isVisible()) {
                 return;
             }
-            Rectangle areaPermitida = obterAreaVisivelDiagramasVergnaud();
-            Rectangle areaDiagrama = obterAreaVisualDiagramaVergnaudAtual();
             setComponentZOrder(tipConclusaoModelagem, 0);
-            tipConclusaoModelagem.mostrarAbaixoDoDiagrama(
-                    areaDiagrama, areaPermitida, getWidth(), getHeight());
+            tipConclusaoModelagem.mostrarAcimaDoElemento(
+                    seloConclusaoModelagem.getBounds(), getWidth(), getHeight());
             repaint();
         }
 
@@ -812,105 +846,31 @@ public class Main extends JFrame {
                     localizacao.texto("ui.completion.no"));
         }
 
-        private void criarBotaoIdioma() {
-            botaoIdioma = new JButton(idiomaSelecionado.getRotuloBotao());
-            botaoIdioma.setBounds(180, 9, 120, 28);
-            botaoIdioma.setFocusable(false);
-            botaoIdioma.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoIdioma);
-            botaoIdioma.setToolTipText(localizacao.texto("ui.tooltip.language"));
-            botaoIdioma.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarMenuIdioma();
-                }
-            });
-            botaoIdioma.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarMenuIdioma();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            add(botaoIdioma);
-        }
-
-        private void criarBotaoTipo() {
-            botaoTipo = new JButton(localizacao.texto("ui.button.category"));
-            botaoTipo.setBounds(312, 9, 150, 28);
-            botaoTipo.setFocusable(false);
-            botaoTipo.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoTipo);
-            botaoTipo.setToolTipText(localizacao.texto("ui.tooltip.type"));
-            botaoTipo.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarMenuTipo();
-                }
-            });
-            botaoTipo.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarMenuTipo();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            add(botaoTipo);
-        }
-
-        private void criarBotaoSobre() {
-            botaoSobre = new JButton(localizacao.texto("ui.button.about"));
-            botaoSobre.setBounds(474, 9, 120, 28);
-            botaoSobre.setFocusable(false);
-            botaoSobre.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoSobre);
-            botaoSobre.setToolTipText(localizacao.texto("ui.tooltip.about"));
-            botaoSobre.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarMenuSobre();
-                }
-            });
-            botaoSobre.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarMenuSobre();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            add(botaoSobre);
-        }
-
-        private void criarBotaoSortear() {
-            botaoSortear = new JButton(localizacao.texto("ui.button.random"));
-            botaoSortear.setBounds(606, 9, 120, 28);
-            botaoSortear.setFocusable(false);
-            botaoSortear.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoSortear);
-            botaoSortear.setToolTipText(localizacao.texto("ui.tooltip.random"));
-            botaoSortear.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    iniciarNovaAtividade(AcaoAtividade.SORTEAR);
-                }
-            });
-            add(botaoSortear);
-        }
 
         private static final int LARGURA_ICONE_CATEGORIA = 92;
         private static final int ALTURA_ICONE_CATEGORIA = 84;
-        private static final int LARGURA_BOTAO_PROXIMO_PASSO = 250;
+        private static final int LARGURA_SEPARADOR_ATALHO = 32;
+        private static final int LARGURA_BOTAO_PROXIMO_PASSO = 54;
         private static final int ALTURA_BOTAO_PROXIMO_PASSO = 54;
 
         /**
          * Faixa de atalhos de categoria, entre o cabeçalho e a área do
          * enunciado — painel adicional, não substitui o menu "Categoria" já
-         * existente. "Qual o próximo passo?" fica desabilitado de propósito
-         * (decisão da usuária em 2026-07-25): é o scaffolding de
-         * automatização de passos, ainda não desenhado (ver skill
+         * existente. Um separador vertical distingue as 3 primeiras
+         * categorias (medidas — Composição/Transformação/Comparação) das 3
+         * seguintes (Composição de transformações/Transformação de
+         * relação/Composição de relações), decisão da usuária em
+         * 2026-07-27. "Qual o próximo passo?" é um ícone "?" desabilitado
+         * (decisão da usuária em 2026-07-27: sem rótulo de texto, mesmo
+         * princípio de comunicabilidade situada já aplicado aos 3 botões
+         * "?" de ajuda contextual — ver "Comunicabilidade" em
+         * gerard-ajuda-adaptativa/references/agente-zdp.md; o tooltip
+         * carrega a própria expressão "Qual o próximo passo?", já que é o
+         * scaffolding de automatização de passos, ainda não desenhado — ver
          * gerard-scaffolding-interacao). Sem setas de voltar/avançar
          * (decisão da usuária em 2026-07-25: removidas para dar mais espaço
          * aos ícones — não existe histórico de situações no Gérard hoje de
-         * qualquer forma, só "Sortear"). Os 3 ícones de categoria chamam
+         * qualquer forma, só "Sortear"). Os ícones de categoria chamam
          * exatamente selecionarCategoria(tipo) — o mesmo método usado pelo
          * menu "Categoria" — para garantir comportamento idêntico, não uma
          * segunda implementação.
@@ -927,43 +887,112 @@ public class Main extends JFrame {
             add(botaoAtalhoTransformacao);
             botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao());
             add(botaoAtalhoComparacao);
+
+            separadorAtalhoCategoria = criarSeparadorAtalhoCategoria();
+            add(separadorAtalhoCategoria);
+
             // Categoria tecnicamente completa (20 situações curadas,
-            // RenderizadorComposicaoTransformacoes) mas escondida atrás de
-            // "Em construção" no menu "Categoria" (grupo "Transformações",
-            // ver adicionarOpcaoCategoriaEmConstrucao) — decisão explícita
-            // da usuária em 2026-07-26: o atalho abre mesmo assim, sem
-            // esperar o bloqueio do menu ser removido.
+            // RenderizadorComposicaoTransformacoes). Desde a migração para
+            // JMenuBar (2026-07-28, ver criarMenuCategoria), o item
+            // correspondente no menu "Categoria > Transformações compostas"
+            // também está habilitado, por consistência com este atalho —
+            // só as outras duas categorias desse grupo (sem ícone de
+            // atalho, sem confirmação visual) seguem "Em construção" ali.
             botaoAtalhoComposicaoTransformacoes = criarBotaoAtalhoCategoria(
                     TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, criarIconeCategoriaComposicaoTransformacoes());
             add(botaoAtalhoComposicaoTransformacoes);
             // Mesma situação da anterior: categoria completa (8 situações
-            // curadas, renderizador próprio — RenderizadorTransformacaoRelacao)
-            // mas escondida atrás de "Em construção" no grupo "Relações" do
-            // menu "Categoria". Mesma decisão da usuária em 2026-07-26: abre
-            // mesmo assim.
+            // curadas, renderizador próprio — RenderizadorTransformacaoRelacao).
+            // Desde a migração para JMenuBar, o grupo "Relações" do menu
+            // "Categoria" está inteiro habilitado (ver criarMenuCategoria).
             botaoAtalhoTransformacaoRelacao = criarBotaoAtalhoCategoria(
                     TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, criarIconeCategoriaTransformacaoRelacao());
             add(botaoAtalhoTransformacaoRelacao);
             // Irmã de TRANSFORMACAO_RELACAO no mesmo grupo "Relações" do
-            // menu (também "Em construção", também completa em código —
-            // RenderizadorComposicaoRelacoes, 8 situações curadas). Mesma
-            // decisão da usuária em 2026-07-26: abre mesmo assim.
+            // menu (completa em código — RenderizadorComposicaoRelacoes, 8
+            // situações curadas; grupo inteiro habilitado no menu).
             botaoAtalhoComposicaoRelacoes = criarBotaoAtalhoCategoria(
                     TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes());
             add(botaoAtalhoComposicaoRelacoes);
 
-            botaoAtalhoProximoPasso = new JButton(localizacao.texto("ui.hint.nextStep"));
-            botaoAtalhoProximoPasso.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
+            botaoAtalhoProximoPasso = new JButton(criarIconeInterrogacaoAtalho());
             botaoAtalhoProximoPasso.setFocusable(false);
             botaoAtalhoProximoPasso.setEnabled(false);
-            botaoAtalhoProximoPasso.setToolTipText(localizacao.texto("ui.hint.nextStep.tooltip"));
-            botaoAtalhoProximoPasso.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA_BOTAO),
-                    BorderFactory.createEmptyBorder(6, 14, 6, 14)
-            ));
+            botaoAtalhoProximoPasso.setOpaque(false);
+            botaoAtalhoProximoPasso.setContentAreaFilled(false);
+            botaoAtalhoProximoPasso.setBorderPainted(false);
+            // Sem o quadrado ao redor (decisão da usuária, 2026-07-28): só o
+            // círculo com "?" desenhado pelo ícone fica visível. O tip de
+            // anotação ao passar o mouse continua funcionando normalmente —
+            // eventos de mouse ainda chegam a um JButton desabilitado, só a
+            // ação/foco é que ficam bloqueados.
+            botaoAtalhoProximoPasso.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    mostrarAnotacaoMouseOver = true;
+                    forcarAnotacaoMouseOverAbaixo = true;
+                    textoAnotacaoMouseOver = localizacao.texto("ui.hint.nextStep.tooltip");
+                    mouseOverX = botaoAtalhoProximoPasso.getX();
+                    mouseOverY = botaoAtalhoProximoPasso.getY() + botaoAtalhoProximoPasso.getHeight();
+                    repaint();
+                }
+                public void mouseExited(MouseEvent e) {
+                    mostrarAnotacaoMouseOver = false;
+                    forcarAnotacaoMouseOverAbaixo = false;
+                    repaint();
+                }
+            });
             add(botaoAtalhoProximoPasso);
 
             reposicionarPainelAtalhoCategoria();
+        }
+
+        /** Divisor vertical fino entre os dois grupos de categoria — cor estrutural neutra, sem significado próprio. */
+        private JPanel criarSeparadorAtalhoCategoria() {
+            JPanel separador = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
+                    int x = getWidth() / 2;
+                    g2.drawLine(x, 6, x, getHeight() - 6);
+                    g2.dispose();
+                }
+            };
+            separador.setOpaque(false);
+            return separador;
+        }
+
+        /**
+         * Ícone "?" para o atalho de "próximo passo" — mesmo estilo fino e
+         * neutro dos glifos de categoria (prepararTracoIconeCategoria), não
+         * o ícone escuro/preenchido de criarIconeInterrogacaoContextual (que
+         * é para os botões de ajuda já habilitados e situados junto ao
+         * conteúdo que explicam — este aqui é um placeholder desabilitado).
+         */
+        private Icon criarIconeInterrogacaoAtalho() {
+            return new Icon() {
+                public int getIconWidth() { return LARGURA_BOTAO_PROXIMO_PASSO; }
+                public int getIconHeight() { return ALTURA_BOTAO_PROXIMO_PASSO; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        int diametro = 34;
+                        int cx = x + LARGURA_BOTAO_PROXIMO_PASSO / 2 - diametro / 2;
+                        int cy = y + ALTURA_BOTAO_PROXIMO_PASSO / 2 - diametro / 2;
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx, cy, diametro, diametro));
+                        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+                        FontMetrics fm = g2.getFontMetrics();
+                        String simbolo = "?";
+                        int tx = x + LARGURA_BOTAO_PROXIMO_PASSO / 2 - fm.stringWidth(simbolo) / 2;
+                        int ty = y + ALTURA_BOTAO_PROXIMO_PASSO / 2 + (fm.getAscent() - fm.getDescent()) / 2;
+                        g2.drawString(simbolo, tx, ty);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
         }
 
         /**
@@ -977,8 +1006,9 @@ public class Main extends JFrame {
                 return;
             }
             int gapEntreIcones = 24;
-            int gapAntesBotao = 46;
-            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 5
+            int gapAntesBotao = 32;
+            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 4
+                    + gapEntreIcones * 2 + LARGURA_SEPARADOR_ATALHO
                     + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
             int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
             int x = Math.max(18, (larguraTela - larguraTotal) / 2);
@@ -990,6 +1020,10 @@ public class Main extends JFrame {
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+
+            separadorAtalhoCategoria.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_SEPARADOR_ATALHO, ALTURA_ICONE_CATEGORIA);
+            x += LARGURA_SEPARADOR_ATALHO + gapEntreIcones;
+
             botaoAtalhoComposicaoTransformacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoTransformacaoRelacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
@@ -997,9 +1031,73 @@ public class Main extends JFrame {
             botaoAtalhoComposicaoRelacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
 
-            botaoAtalhoProximoPasso.setBounds(x, centroFaixa - ALTURA_BOTAO_PROXIMO_PASSO / 2, LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+            xCentroGrupoMedidas = (botaoAtalhoComposicao.getX() + botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) / 2;
+            xCentroGrupoRelacoes = (botaoAtalhoComposicaoTransformacoes.getX() + botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) / 2;
+
+            // Retângulo delimitador de cada grupo — padding menor em cima
+            // (4px) pra não encostar no rótulo semi-negrito logo acima
+            // (desenharRotulosGruposAtalhoCategoria), padding maior nos
+            // outros lados (10px).
+            int padLados = 10;
+            int padTopo = 4;
+            int padBaixo = 10;
+            areaGrupoMedidas = new Rectangle(
+                    botaoAtalhoComposicao.getX() - padLados,
+                    botaoAtalhoComposicao.getY() - padTopo,
+                    (botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) - botaoAtalhoComposicao.getX() + padLados * 2,
+                    ALTURA_ICONE_CATEGORIA + padTopo + padBaixo);
+            areaGrupoRelacoes = new Rectangle(
+                    botaoAtalhoComposicaoTransformacoes.getX() - padLados,
+                    botaoAtalhoComposicaoTransformacoes.getY() - padTopo,
+                    (botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) - botaoAtalhoComposicaoTransformacoes.getX() + padLados * 2,
+                    ALTURA_ICONE_CATEGORIA + padTopo + padBaixo);
+
+            // Posição padrão (ao lado dos ícones de categoria) só é aplicada
+            // de fato em reposicionarBotaoAtalhoProximoPasso — enquanto a
+            // categoria não foi confirmada, o botão fica ao lado do texto em
+            // vez de aqui (ver desenharTextoProblema/desenharTextoProblemaAdivinhacao).
+            xPadraoBotaoAtalhoProximoPasso = x;
+            yPadraoBotaoAtalhoProximoPasso = centroFaixa - ALTURA_BOTAO_PROXIMO_PASSO / 2;
         }
 
+        /**
+         * Posição do ícone "?" de próximo passo (decisão da usuária,
+         * 2026-07-28): enquanto a categoria ainda não foi confirmada, fica ao
+         * lado esquerdo do enunciado (mesma coluna dos botões contextuais do
+         * texto, x=27) — chamando atenção pra tarefa pendente logo ao lado do
+         * que o usuário está lendo. Assim que a categoria é confirmada, some
+         * dali e volta a aparecer só na posição padrão, ao lado dos 6 ícones
+         * de categoria (calculada em reposicionarPainelAtalhoCategoria).
+         * Chamado a cada repintura do enunciado (desenharTextoProblema),
+         * mesmo padrão já usado pelos outros reposicionarBotaoX.
+         */
+        private void reposicionarBotaoAtalhoProximoPasso() {
+            if (botaoAtalhoProximoPasso == null) {
+                return;
+            }
+            if (situacaoProblemaAtual == null) {
+                botaoAtalhoProximoPasso.setVisible(false);
+                return;
+            }
+            if (categoriaSelecionadaParaAtividade) {
+                botaoAtalhoProximoPasso.setBounds(
+                        xPadraoBotaoAtalhoProximoPasso, yPadraoBotaoAtalhoProximoPasso,
+                        LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+            } else {
+                int x = 27;
+                int y = 63 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+                botaoAtalhoProximoPasso.setBounds(x, y, LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+            }
+            botaoAtalhoProximoPasso.setVisible(true);
+        }
+
+        /**
+         * A chave de descrição rica ("diag.desc.<nome_enum_minúsculo>") é
+         * derivada de tipo.name() em vez de recebida por parâmetro — bate
+         * exatamente com as chaves já existentes em mensagens_pt.properties
+         * para as 6 categorias que hoje têm atalho (confirmado uma a uma:
+         * COMPOSICAO_MEDIDAS→diag.desc.composicao_medidas, etc.).
+         */
         private JButton criarBotaoAtalhoCategoria(final TipoSituacaoAditiva tipo, Icon icone) {
             final JButton botao = new JButton(icone);
             botao.setFocusable(false);
@@ -1007,18 +1105,26 @@ public class Main extends JFrame {
             botao.setBackground(COR_SUPERFICIE);
             botao.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
             botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botao.setToolTipText(tipo.getDescricao());
             botao.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    selecionarCategoria(tipo);
+                    clicarAtalhoCategoria(tipo);
                 }
             });
             botao.addMouseListener(new MouseAdapter() {
                 public void mouseEntered(MouseEvent e) {
                     botao.setBackground(COR_DESTAQUE);
+                    mostrarAnotacaoMouseOver = true;
+                    forcarAnotacaoMouseOverAbaixo = true;
+                    textoAnotacaoMouseOver = localizacao.texto("diag.desc." + tipo.name().toLowerCase());
+                    mouseOverX = botao.getX();
+                    mouseOverY = botao.getY() + botao.getHeight();
+                    repaint();
                 }
                 public void mouseExited(MouseEvent e) {
                     botao.setBackground(COR_SUPERFICIE);
+                    mostrarAnotacaoMouseOver = false;
+                    forcarAnotacaoMouseOverAbaixo = false;
+                    repaint();
                 }
             });
             return botao;
@@ -1316,9 +1422,23 @@ public class Main extends JFrame {
          */
         private void criarIndicadorAgenteMonitor() {
             indicadorAgenteMonitor = new IndicadorAgenteMonitor();
-            indicadorAgenteMonitor.setBounds(1289, 16, 14, 14);
             agenteMonitor.adicionarOuvinte(indicadorAgenteMonitor);
-            add(indicadorAgenteMonitor);
+
+            // Caixa com a mesma borda dos outros ícones do cabeçalho
+            // (Comparar/Sortear, ver criarBotaoIconeCabecalho) — sem isso o
+            // LED ficava solto, sem moldura, ao lado dos dois botões
+            // emoldurados (relatado pela usuária, 2026-07-28).
+            caixaIndicadorAgenteMonitor = new JPanel(null);
+            caixaIndicadorAgenteMonitor.setOpaque(true);
+            caixaIndicadorAgenteMonitor.setBackground(COR_SUPERFICIE);
+            caixaIndicadorAgenteMonitor.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            // Ao lado do botão Sortear (ver criarBotoesCabecalhoEmbutidos,
+            // bounds 58,8,34,34).
+            caixaIndicadorAgenteMonitor.setBounds(100, 8, 34, 34);
+            indicadorAgenteMonitor.setBounds(10, 10, 14, 14);
+            caixaIndicadorAgenteMonitor.add(indicadorAgenteMonitor);
+            add(caixaIndicadorAgenteMonitor);
+            setComponentZOrder(caixaIndicadorAgenteMonitor, 0);
         }
 
         /**
@@ -1336,69 +1456,6 @@ public class Main extends JFrame {
             // garante que a faixa fique acima de qualquer botão adicionado depois
             // dela quando expandida, mesmo sobrepondo a área de trabalho.
             setComponentZOrder(faixaAtividadeAgentes, 0);
-        }
-
-        private void criarBotaoReportarBug() {
-            botaoReportarBug = new JButton(localizacao.texto("ui.button.reportBug"));
-            botaoReportarBug.setBounds(1157, 9, 122, 28);
-            botaoReportarBug.setFocusable(false);
-            botaoReportarBug.setFont(gerard.ui.UITemaGerard.FONTE_ITEM_MENU.deriveFont(Font.PLAIN, 11.0f));
-            botaoReportarBug.setForeground(COR_TEXTO_SECUNDARIO);
-            botaoReportarBug.setBackground(COR_SUPERFICIE);
-            botaoReportarBug.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(4, 8, 4, 8)
-            ));
-            botaoReportarBug.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botaoReportarBug.setToolTipText(localizacao.texto("ui.tooltip.reportBug"));
-            botaoReportarBug.getAccessibleContext().setAccessibleName(localizacao.texto("ui.button.reportBug"));
-            botaoReportarBug.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.tooltip.reportBug"));
-            botaoReportarBug.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    botaoReportarBug.setBackground(COR_SUPERFICIE_SUAVE);
-                }
-                public void mouseExited(MouseEvent e) {
-                    botaoReportarBug.setBackground(COR_SUPERFICIE);
-                }
-            });
-            botaoReportarBug.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ocultarMenus();
-                    mostrarDialogoRelatoBug();
-                }
-            });
-            add(botaoReportarBug);
-        }
-
-        /**
-         * Abre gerard.ui.usuario.DialogoUsuario (dimensões 3 e 4 do Modelo
-         * do Usuário — ver gerard-modelo-usuario/SKILL.md). Suporta várias
-         * pessoas usando o mesmo app: ao selecionar/cadastrar, troca
-         * loggerInteracaoGerard.getUsuarioAtual(), que já é a fonte de
-         * idUsuario em todos os pontos que chamam AgenteZDP/
-         * ConectorVereditoModelador — nenhuma outra mudança é necessária
-         * pra essas ações passarem a ser atribuídas ao usuário escolhido.
-         */
-        private void criarBotaoUsuario() {
-            botaoUsuario = new JButton(textoBotaoUsuario());
-            botaoUsuario.setBounds(18, 9, 150, 28);
-            botaoUsuario.setFocusable(false);
-            botaoUsuario.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoUsuario);
-            botaoUsuario.setToolTipText(localizacao.texto("ui.tooltip.user"));
-            botaoUsuario.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    java.awt.Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
-                    gerard.ui.usuario.DialogoUsuario dialogo = new gerard.ui.usuario.DialogoUsuario(
-                            janela instanceof Frame ? (Frame) janela : null, repositorioModeloUsuario);
-                    String idEscolhido = dialogo.mostrarESelecionar();
-                    if (idEscolhido != null) {
-                        loggerInteracaoGerard.definirUsuario(idEscolhido);
-                        botaoUsuario.setText(textoBotaoUsuario());
-                    }
-                }
-            });
-            add(botaoUsuario);
         }
 
         /** Nome do usuário cadastrado atual, se houver, senão o rótulo padrão do botão. */
@@ -1572,29 +1629,6 @@ public class Main extends JFrame {
             return textoRepresentacoes.toString();
         }
 
-        private void criarBotaoTeste() {
-            botaoTeste = new JButton();
-            botaoTeste.setBounds(738, 9, 205, 28);
-            botaoTeste.setFocusable(false);
-            botaoTeste.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoTeste);
-            atualizarTextoBotaoTeste();
-            botaoTeste.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarMenuTeste();
-                }
-            });
-            botaoTeste.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarMenuTeste();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            add(botaoTeste);
-        }
-
         // Senha fixa em código (decisão do usuário em 2026-07-23): é um portão
         // leve pra impedir abertura casual da Visão de Pesquisador, não uma
         // medida de segurança de verdade — qualquer um com acesso ao .class
@@ -1616,27 +1650,6 @@ public class Main extends JFrame {
                 return false;
             }
             return true;
-        }
-
-        private void criarBotaoVisaoPesquisador() {
-            botaoVisaoPesquisador = new JButton(localizacao.texto("pesq.button.open"));
-            botaoVisaoPesquisador.setBounds(955, 9, 190, 28);
-            botaoVisaoPesquisador.setFocusable(false);
-            botaoVisaoPesquisador.setFont(gerard.ui.UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-            estilizarBotaoPrincipal(botaoVisaoPesquisador);
-            botaoVisaoPesquisador.setToolTipText(localizacao.texto("pesq.tooltip.open"));
-            botaoVisaoPesquisador.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (!autenticarPesquisador()) {
-                        requestFocusInWindow();
-                        return;
-                    }
-                    Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
-                    TelaVisaoPesquisador.mostrar(janela, agenteModelador, repositorioModeloUsuario);
-                    requestFocusInWindow();
-                }
-            });
-            add(botaoVisaoPesquisador);
         }
 
         private void criarBotaoRestaurar() {
@@ -2354,246 +2367,402 @@ public class Main extends JFrame {
         }
 
 
-        private void criarMenusInternos() {
-            if (menuIdioma != null) {
-                remove(menuIdioma);
+        /**
+         * Barra de menu clássica estilo Windows (Arquivo/Exibir/Ferramentas/
+         * Ajuda) — substitui a antiga criarMenusInternos() (JPanels de popup
+         * posicionados/mostrados/ocultados à mão). JMenuBar/JMenu/JMenuItem
+         * do Swing já resolvem nativamente abrir ao passar o mouse, fechar
+         * ao clicar fora, submenus aninhados e navegação por teclado — nada
+         * disso precisa ser reimplementado aqui.
+         *
+         * Reconstrói tudo do zero a cada chamada (removeAll + reconstrói),
+         * igual ao comportamento já existente de criarMenusInternos() —
+         * mesmo padrão, só que aplicado a um JMenuBar real. Chamado uma vez
+         * no construtor (primeira montagem) e depois via
+         * atualizarTextosFixosDaInterface() sempre que idioma/categoria/
+         * usuário/interpretação mudam.
+         */
+        private void criarMenuPrincipal() {
+            if (menuBarPrincipal == null) {
+                menuBarPrincipal = new JMenuBar();
             }
-            if (menuTipo != null) {
-                remove(menuTipo);
-            }
-            if (submenuTipoMedidas != null) {
-                remove(submenuTipoMedidas);
-            }
-            if (submenuTipoTransformacoes != null) {
-                remove(submenuTipoTransformacoes);
-            }
-            if (submenuTipoRelacoes != null) {
-                remove(submenuTipoRelacoes);
-            }
-            if (menuTeste != null) {
-                remove(menuTeste);
-            }
-            if (menuSobre != null) {
-                remove(menuSobre);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                remove(submenuInterpretacaoLinguistica);
-            }
-            if (submenuRegistroGerard != null) {
-                remove(submenuRegistroGerard);
-            }
-            if (submenuGerardVergnaud != null) {
-                remove(submenuGerardVergnaud);
-            }
-            if (submenuGerardRecife != null) {
-                remove(submenuGerardRecife);
-            }
+            menuBarPrincipal.removeAll();
+            // Paleta neutra própria (não UIManager.put global): o L&F
+            // nativo do Windows tende a ignorar overrides de UIManager para
+            // cor de seleção/hover de menu, mas pintar diretamente as
+            // propriedades do próprio componente funciona independente do
+            // L&F — mesmo raciocínio já usado em estilizarMenuPopup/
+            // estilizarItemMenuPopup, reaproveitados abaixo.
+            menuBarPrincipal.setBackground(COR_SUPERFICIE);
+            menuBarPrincipal.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COR_BORDA));
 
-            menuIdioma = criarPainelMenu(180, 39, 150, IdiomaInterface.values().length * 29 + 8);
-
-            for (final IdiomaInterface idioma : IdiomaInterface.values()) {
-                JButton opcao = criarBotaoOpcao(localizacao.nomeIdioma(idioma));
-                opcao.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        idiomaSelecionado = idioma;
-                        ocultarMenus();
-                        controladorEstadoAtividade.registrar(AcaoAtividade.TROCAR_IDIOMA);
-                        aplicarIdiomaSelecionadoMantendoEstadoTela();
-                    }
-                });
-                menuIdioma.add(opcao);
-            }
-
-            menuTipo = criarPainelMenu(312, 39, 245, 4 * 33 + 10);
-            submenuTipoMedidas = criarPainelMenu(557, 39, 340, 3 * 33 + 10);
-            submenuTipoTransformacoes = criarPainelMenu(557, 72, 370, 3 * 33 + 10);
-            submenuTipoRelacoes = criarPainelMenu(557, 105, 320, 2 * 33 + 10);
-
-            adicionarGrupoCategoria(menuTipo, localizacao.texto("ui.menu.category.measures"), submenuTipoMedidas);
-            adicionarOpcaoCategoriaEmConstrucao(menuTipo, localizacao.texto("ui.menu.category.transformations"));
-            adicionarOpcaoCategoriaEmConstrucao(menuTipo, localizacao.texto("ui.menu.category.relations"));
-            final JButton opcaoComparacaoCategorias = criarBotaoOpcaoCategoria(
-                    localizacao.texto("ui.menu.category.compare"), false);
-            ConfiguradorOpcaoComparacaoCategorias.configurar(
-                    opcaoComparacaoCategorias,
+            menuBarPrincipal.add(criarMenuArquivo());
+            menuBarPrincipal.add(criarMenuExibir());
+            menuBarPrincipal.add(criarMenuFerramentas());
+            menuBarPrincipal.add(criarMenuAjuda());
+            // Comunidade, Site e Reportar bug ficam como ícones no canto
+            // superior direito da barra, fora dos menus (decisão da usuária,
+            // 2026-07-28).
+            menuBarPrincipal.add(criarBotaoIconeMenuBar(
+                    criarIconeComunidade(), localizacao.texto("ui.tooltip.comunidade"),
                     new Runnable() {
                         public void run() {
-                            ocultarMenus();
+                            abrirLinkExterno(URL_COMUNIDADE_GERARD);
+                        }
+                    }));
+            menuBarPrincipal.add(criarBotaoIconeMenuBar(
+                    criarIconeSite(), localizacao.texto("ui.tooltip.site"),
+                    new Runnable() {
+                        public void run() {
+                            abrirLinkExterno(URL_SITE_GERARD);
+                        }
+                    }));
+            menuBarPrincipal.add(criarBotaoReportarBugMenuBar());
+
+            atualizarEstadoItensMenuPorAba();
+            menuBarPrincipal.revalidate();
+            menuBarPrincipal.repaint();
+        }
+
+        /** Botão de ícone genérico direto na barra de menu (fora de qualquer JMenu) — mesmo padrão de criarBotaoReportarBugMenuBar. */
+        private JButton criarBotaoIconeMenuBar(Icon icone, String tooltip, final Runnable acao) {
+            JButton botao = new JButton(icone);
+            botao.setFocusable(false);
+            botao.setOpaque(false);
+            botao.setContentAreaFilled(false);
+            botao.setBorderPainted(false);
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            botao.setToolTipText(tooltip);
+            botao.getAccessibleContext().setAccessibleDescription(tooltip);
+            botao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    acao.run();
+                }
+            });
+            return botao;
+        }
+
+        /** Duas silhuetas de pessoa (comunidade) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
+        private Icon criarIconeComunidade() {
+            final int tamanho = 22;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        desenharPessoaIconeComunidade(g2, x + 6, y + 4);
+                        desenharPessoaIconeComunidade(g2, x + 13, y + 6);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        private void desenharPessoaIconeComunidade(Graphics2D g2, int cx, int topoCabeca) {
+            int diametroCabeca = 6;
+            g2.draw(new java.awt.geom.Ellipse2D.Float(cx - diametroCabeca / 2f, topoCabeca, diametroCabeca, diametroCabeca));
+            java.awt.geom.Arc2D.Float corpo = new java.awt.geom.Arc2D.Float(
+                    cx - 6, topoCabeca + diametroCabeca - 1, 12, 11, 15, 150, java.awt.geom.Arc2D.OPEN);
+            g2.draw(corpo);
+        }
+
+        /** Globo (site) — círculo com meridiano e paralelo, mesmo traço fino neutro dos outros ícones. */
+        private Icon criarIconeSite() {
+            final int tamanho = 22;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        int diametro = tamanho - 4;
+                        float ox = x + 2;
+                        float oy = y + 2;
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(ox, oy, diametro, diametro));
+                        g2.draw(new java.awt.geom.Line2D.Float(ox, oy + diametro / 2f, ox + diametro, oy + diametro / 2f));
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(ox + diametro * 0.28f, oy, diametro * 0.44f, diametro));
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        private JButton criarBotaoReportarBugMenuBar() {
+            JButton botao = new JButton(criarIconeReportarBug());
+            botao.setFocusable(false);
+            botao.setOpaque(false);
+            botao.setContentAreaFilled(false);
+            botao.setBorderPainted(false);
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            botao.setToolTipText(localizacao.texto("ui.tooltip.reportBug"));
+            botao.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.tooltip.reportBug"));
+            botao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mostrarDialogoRelatoBug();
+                }
+            });
+            return botao;
+        }
+
+        /** Silhueta simples de inseto (corpo, cabeça, antenas, 3 pares de pernas) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
+        private Icon criarIconeReportarBug() {
+            final int tamanho = 22;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        int corpoLargura = 10;
+                        int corpoAltura = 12;
+                        int cx = x + tamanho / 2;
+                        int topoCorpo = y + 7;
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx - corpoLargura / 2f, topoCorpo, corpoLargura, corpoAltura));
+
+                        int cabecaDiametro = 5;
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx - cabecaDiametro / 2f, topoCorpo - cabecaDiametro + 1, cabecaDiametro, cabecaDiametro));
+
+                        g2.drawLine(cx - 1, topoCorpo - cabecaDiametro + 1, cx - 3, y + 1);
+                        g2.drawLine(cx + 1, topoCorpo - cabecaDiametro + 1, cx + 3, y + 1);
+
+                        int[] deslocamentosY = {topoCorpo + 2, topoCorpo + 6, topoCorpo + 10};
+                        for (int dy : deslocamentosY) {
+                            g2.drawLine(cx - corpoLargura / 2, dy, cx - corpoLargura / 2 - 4, dy - 2);
+                            g2.drawLine(cx - corpoLargura / 2, dy, cx - corpoLargura / 2 - 4, dy + 2);
+                            g2.drawLine(cx + corpoLargura / 2, dy, cx + corpoLargura / 2 + 4, dy - 2);
+                            g2.drawLine(cx + corpoLargura / 2, dy, cx + corpoLargura / 2 + 4, dy + 2);
+                        }
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Botões de ícone embutidos no cabeçalho da aba Diagramar (decisão da
+         * usuária, 2026-07-28): "Comparar categorias" (mesma função do item
+         * de menu Arquivo > Comparar categorias — reaproveita
+         * ConfiguradorOpcaoComparacaoCategorias/abrirTelaComparacaoCategorias)
+         * e, à direita dele, "Sortear" — antes o Sortear ficava numa JToolBar
+         * separada, acima da JMenuBar/abas, visível em todas as abas; agora
+         * os dois ficam só na aba Diagramar, seguidos do LED do Agente
+         * Monitor (indicadorAgenteMonitor.setBounds, ver
+         * criarIndicadorAgenteMonitor).
+         */
+        private void criarBotoesCabecalhoEmbutidos() {
+            if (botaoCompararCategorias == null) {
+                botaoCompararCategorias = criarBotaoIconeCabecalho(criarIconeCompararCategorias());
+                ConfiguradorOpcaoComparacaoCategorias.configurar(
+                        botaoCompararCategorias,
+                        new Runnable() {
+                            public void run() {
+                                abrirTelaComparacaoCategorias();
+                            }
+                        });
+                botaoCompararCategorias.setBounds(16, 8, 34, 34);
+                add(botaoCompararCategorias);
+                setComponentZOrder(botaoCompararCategorias, 0);
+            }
+            // ConfiguradorOpcaoComparacaoCategorias.configurar zera o tooltip
+            // (opcao.setToolTipText(null)) — precisa ser setado depois dele.
+            botaoCompararCategorias.setToolTipText(localizacao.texto("ui.menu.category.compare.tooltip"));
+
+            if (botaoFerramentaSortear == null) {
+                botaoFerramentaSortear = criarBotaoIconeCabecalho(criarIconeFerramentaSortear());
+                botaoFerramentaSortear.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        sortearNovaSituacao();
+                    }
+                });
+                botaoFerramentaSortear.setBounds(58, 8, 34, 34);
+                add(botaoFerramentaSortear);
+                setComponentZOrder(botaoFerramentaSortear, 0);
+            }
+            botaoFerramentaSortear.setToolTipText(localizacao.texto("ui.tooltip.random"));
+            botaoFerramentaSortear.setEnabled(abaGerardAtiva);
+        }
+
+        /**
+         * Caixa quadrada com borda fina neutra ao redor do ícone (decisão da
+         * usuária, 2026-07-28, com captura de referência) — mesmo estilo já
+         * usado nos 6 ícones de atalho de categoria (criarBotaoAtalhoCategoria),
+         * inclusive o destaque de fundo ao passar o mouse.
+         */
+        private JButton criarBotaoIconeCabecalho(Icon icone) {
+            final JButton botao = new JButton(icone);
+            botao.setFocusable(false);
+            botao.setOpaque(true);
+            botao.setBackground(COR_SUPERFICIE);
+            botao.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            botao.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    botao.setBackground(COR_DESTAQUE);
+                }
+                public void mouseExited(MouseEvent e) {
+                    botao.setBackground(COR_SUPERFICIE);
+                }
+            });
+            return botao;
+        }
+
+        /** Duas caixas com seta dupla entre elas — mesmo traço fino neutro dos ícones de categoria, ver prepararTracoIconeCategoria. */
+        private Icon criarIconeCompararCategorias() {
+            final int tamanho = 30;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        int ladoCaixa = 9;
+                        int yCaixa = y + 10;
+                        g2.drawRoundRect(x + 3, yCaixa, ladoCaixa, ladoCaixa, 2, 2);
+                        g2.drawRoundRect(x + tamanho - 3 - ladoCaixa, yCaixa, ladoCaixa, ladoCaixa, 2, 2);
+
+                        int yFlecha = y + tamanho / 2;
+                        int xEsq = x + 3 + ladoCaixa + 2;
+                        int xDir = x + tamanho - 3 - ladoCaixa - 2;
+                        g2.drawLine(xEsq, yFlecha, xDir, yFlecha);
+                        g2.drawLine(xEsq, yFlecha, xEsq + 4, yFlecha - 3);
+                        g2.drawLine(xEsq, yFlecha, xEsq + 4, yFlecha + 3);
+                        g2.drawLine(xDir, yFlecha, xDir - 4, yFlecha - 3);
+                        g2.drawLine(xDir, yFlecha, xDir - 4, yFlecha + 3);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        /** Dado simples (face "3"), mesmo traço fino neutro dos ícones de categoria — ver prepararTracoIconeCategoria. */
+        private Icon criarIconeFerramentaSortear() {
+            final int tamanho = 26;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    try {
+                        g2.drawRoundRect(x + 2, y + 2, tamanho - 4, tamanho - 4, 6, 6);
+                        int raioPonto = 2;
+                        desenharPontoIconeFerramentaSortear(g2, x + 8, y + 8, raioPonto);
+                        desenharPontoIconeFerramentaSortear(g2, x + tamanho / 2, y + tamanho / 2, raioPonto);
+                        desenharPontoIconeFerramentaSortear(g2, x + tamanho - 8, y + tamanho - 8, raioPonto);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
+        }
+
+        private void desenharPontoIconeFerramentaSortear(Graphics2D g2, int cx, int cy, int raio) {
+            g2.fill(new java.awt.geom.Ellipse2D.Float(cx - raio, cy - raio, raio * 2, raio * 2));
+        }
+
+        private JMenu criarMenuArquivo() {
+            JMenu menu = new JMenu(localizacao.texto("ui.menu.top.file"));
+            menu.setMnemonic(KeyEvent.VK_A);
+            estilizarItemMenuPopup(menu);
+            estilizarMenuPopup(menu.getPopupMenu());
+
+            itemNovaSituacao = new JMenuItem(localizacao.texto("ui.button.random"));
+            estilizarItemMenuPopup(itemNovaSituacao);
+            itemNovaSituacao.setToolTipText(localizacao.texto("ui.tooltip.random"));
+            itemNovaSituacao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    sortearNovaSituacao();
+                }
+            });
+            menu.add(itemNovaSituacao);
+
+            menuCategoria = criarMenuCategoria();
+            menu.add(menuCategoria);
+
+            menu.addSeparator();
+
+            JMenuItem itemComparar = new JMenuItem(localizacao.texto("ui.menu.category.compare"));
+            estilizarItemMenuPopup(itemComparar);
+            itemComparar.setToolTipText(localizacao.texto("ui.menu.category.compare.tooltip"));
+            ConfiguradorOpcaoComparacaoCategorias.configurar(
+                    itemComparar,
+                    new Runnable() {
+                        public void run() {
                             abrirTelaComparacaoCategorias();
                         }
                     });
-            menuTipo.add(opcaoComparacaoCategorias);
+            menu.add(itemComparar);
 
-            adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS);
-            adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
-            adicionarOpcaoCategoria(submenuTipoMedidas, TipoSituacaoAditiva.COMPARACAO_MEDIDAS);
-
-            adicionarOpcaoCategoria(submenuTipoTransformacoes, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS);
-            adicionarOpcaoCategoria(submenuTipoTransformacoes, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
-            adicionarOpcaoCategoria(submenuTipoTransformacoes, TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS);
-
-            adicionarOpcaoCategoria(submenuTipoRelacoes, TipoSituacaoAditiva.TRANSFORMACAO_RELACAO);
-            adicionarOpcaoCategoria(submenuTipoRelacoes, TipoSituacaoAditiva.COMPOSICAO_RELACOES);
-
-            menuTeste = criarPainelMenu(738, 39, 330, EstiloInteracao.values().length * 29 + 8);
-            for (final EstiloInteracao modo : EstiloInteracao.values()) {
-                JButton opcao = criarBotaoOpcao(localizacao.texto(modo.getChave()));
-                if (modo == modoFeedbackTeste) {
-                    opcao.setText("✓ " + localizacao.texto(modo.getChave()));
-                    opcao.setFont(new Font("Arial", Font.BOLD, 11));
-                }
-                opcao.setToolTipText(localizacao.texto("ui.test.description." + modo.name()));
-                opcao.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        controladorEstadoAtividade.registrar(AcaoAtividade.TROCAR_ESTILO_INTERACAO);
-                        modoFeedbackTeste = modo;
-                        limparRealceAlvoProximidade();
-                        ocultarMenus();
-                        atualizarTextoBotaoTeste();
-                        criarMenusInternos();
-                        repaint();
-                    }
-                });
-                menuTeste.add(opcao);
-            }
-
-            menuSobre = criarPainelMenu(474, 39, 245, 127);
-            JButton opcaoInterpretacao = criarBotaoOpcao(localizacao.texto("ui.menu.linguisticInterpretation"));
-            opcaoInterpretacao.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarSubmenuInterpretacaoLinguistica();
-                }
-            });
-            opcaoInterpretacao.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuInterpretacaoLinguistica();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            menuSobre.add(opcaoInterpretacao);
-
-            JButton opcaoRegistro = criarBotaoOpcao(localizacao.texto("ui.menu.gerardRegistration"));
-            opcaoRegistro.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarSubmenuRegistroGerard();
-                }
-            });
-            opcaoRegistro.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuRegistroGerard();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            menuSobre.add(opcaoRegistro);
-
-            JButton opcaoGerardVergnaud = criarBotaoOpcao(localizacao.texto("ui.menu.gerardVergnaud"));
-            opcaoGerardVergnaud.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarSubmenuGerardVergnaud();
-                }
-            });
-            opcaoGerardVergnaud.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuGerardVergnaud();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            menuSobre.add(opcaoGerardVergnaud);
-
-            submenuInterpretacaoLinguistica = criarMenuInterpretacaoLinguistica(719, 39, 620, 170);
-            submenuRegistroGerard = criarMenuRegistroGerard(719, 70, 430, 145);
-            submenuGerardVergnaud = criarMenuGerardVergnaud(719, 132, 250, 350);
-            submenuGerardRecife = criarMenuGerardRecife(969, 132, 420, 300);
-
-            add(menuIdioma);
-            add(menuTipo);
-            add(submenuTipoMedidas);
-            add(submenuTipoTransformacoes);
-            add(submenuTipoRelacoes);
-            add(menuTeste);
-            add(menuSobre);
-            add(submenuInterpretacaoLinguistica);
-            add(submenuRegistroGerard);
-            add(submenuGerardVergnaud);
-            add(submenuGerardRecife);
-            setComponentZOrder(menuIdioma, 0);
-            setComponentZOrder(menuTipo, 0);
-            setComponentZOrder(submenuTipoMedidas, 0);
-            setComponentZOrder(submenuTipoTransformacoes, 0);
-            setComponentZOrder(submenuTipoRelacoes, 0);
-            setComponentZOrder(menuTeste, 0);
-            setComponentZOrder(menuSobre, 0);
-            setComponentZOrder(submenuInterpretacaoLinguistica, 0);
-            setComponentZOrder(submenuRegistroGerard, 0);
-            setComponentZOrder(submenuGerardVergnaud, 0);
-            setComponentZOrder(submenuGerardRecife, 0);
-            menuIdioma.setVisible(false);
-            menuTipo.setVisible(false);
-            submenuTipoMedidas.setVisible(false);
-            submenuTipoTransformacoes.setVisible(false);
-            submenuTipoRelacoes.setVisible(false);
-            menuTeste.setVisible(false);
-            menuSobre.setVisible(false);
-            submenuInterpretacaoLinguistica.setVisible(false);
-            submenuRegistroGerard.setVisible(false);
-            submenuGerardVergnaud.setVisible(false);
-            submenuGerardRecife.setVisible(false);
-            revalidate();
-            repaint();
+            return menu;
         }
 
+        private JMenu criarMenuCategoria() {
+            JMenu menu = new JMenu(localizacao.texto("ui.button.category"));
+            estilizarItemMenuPopup(menu);
+            estilizarMenuPopup(menu.getPopupMenu());
+            menu.setToolTipText(localizacao.texto("ui.tooltip.type"));
 
-        private void adicionarGrupoCategoria(JPanel menuPai, String texto, final JPanel submenuAlvo) {
-            final JButton opcao = criarBotaoOpcaoCategoria(texto, false);
-            opcao.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarSubmenuCategoria(submenuAlvo);
-                }
-            });
-            opcao.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuCategoria(submenuAlvo);
-                }
-            });
-            menuPai.add(opcao);
+            JMenu menuMedidas = new JMenu(localizacao.texto("ui.menu.category.measures"));
+            estilizarItemMenuPopup(menuMedidas);
+            estilizarMenuPopup(menuMedidas.getPopupMenu());
+            menuMedidas.add(criarItemCategoria(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS));
+            menuMedidas.add(criarItemCategoria(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS));
+            menuMedidas.add(criarItemCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS));
+            menu.add(menuMedidas);
+
+            // Grupo "Transformações compostas": misto de propósito.
+            // COMPOSICAO_TRANSFORMACOES já é aberto pelos ícones de atalho
+            // (criarPainelAtalhoCategoria, confirmado com renderizador
+            // real), então também abre aqui — consistência entre os dois
+            // caminhos de acesso, decisão da usuária em 2026-07-28. As
+            // outras duas seguem "Em construção": nenhum ícone de atalho
+            // as abre, sem confirmação visual contra o renderizador real.
+            JMenu menuTransformacoes = new JMenu(localizacao.texto("ui.menu.category.transformations"));
+            estilizarItemMenuPopup(menuTransformacoes);
+            estilizarMenuPopup(menuTransformacoes.getPopupMenu());
+            menuTransformacoes.add(criarItemCategoriaEmConstrucao(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS));
+            menuTransformacoes.add(criarItemCategoria(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES));
+            menuTransformacoes.add(criarItemCategoriaEmConstrucao(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS));
+            menu.add(menuTransformacoes);
+
+            // Grupo "Relações": os dois itens já são abertos pelos ícones de
+            // atalho — grupo inteiro habilitado (não é mais "Em construção").
+            JMenu menuRelacoes = new JMenu(localizacao.texto("ui.menu.category.relations"));
+            estilizarItemMenuPopup(menuRelacoes);
+            estilizarMenuPopup(menuRelacoes.getPopupMenu());
+            menuRelacoes.add(criarItemCategoria(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO));
+            menuRelacoes.add(criarItemCategoria(TipoSituacaoAditiva.COMPOSICAO_RELACOES));
+            menu.add(menuRelacoes);
+
+            return menu;
         }
 
-        private void adicionarOpcaoCategoriaEmConstrucao(JPanel menuPai, String texto) {
-            final String dica = localizacao.texto("ui.menu.underConstruction");
-            final JPanel envoltorio = new JPanel(new BorderLayout());
-            envoltorio.setOpaque(false);
-            envoltorio.setToolTipText(dica);
-
-            final JButton opcao = criarBotaoOpcaoCategoria(texto, false);
-            opcao.setEnabled(false);
-            opcao.setToolTipText(dica);
-            opcao.setCursor(Cursor.getDefaultCursor());
-            envoltorio.add(opcao, BorderLayout.CENTER);
-
-            // O envoltório mantém o tooltip disponível mesmo com o botão
-            // semanticamente desabilitado e também recolhe submenus abertos.
-            envoltorio.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuCategoria(null);
-                }
-            });
-            menuPai.add(envoltorio);
-        }
-
-        private void adicionarOpcaoCategoria(JPanel submenu, final TipoSituacaoAditiva tipo) {
-            JButton opcao = criarBotaoOpcaoCategoria(tipo.getRotuloBotao(), false);
-            opcao.addActionListener(new ActionListener() {
+        private JMenuItem criarItemCategoria(final TipoSituacaoAditiva tipo) {
+            JMenuItem item = new JMenuItem(tipo.getRotuloBotao());
+            estilizarItemMenuPopup(item);
+            item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     selecionarCategoria(tipo);
                 }
             });
-            submenu.add(opcao);
+            return item;
+        }
+
+        private JMenuItem criarItemCategoriaEmConstrucao(TipoSituacaoAditiva tipo) {
+            JMenuItem item = new JMenuItem(tipo.getRotuloBotao());
+            estilizarItemMenuPopup(item);
+            item.setEnabled(false);
+            item.setToolTipText(localizacao.texto("ui.menu.underConstruction"));
+            return item;
         }
 
         /**
@@ -2616,42 +2785,406 @@ public class Main extends JFrame {
             );
             tipoSituacaoSelecionada = tipo;
             categoriaSelecionadaParaAtividade = true;
-            if (botaoSortear != null) {
-                botaoSortear.setEnabled(true);
+            // Navegação direta pelo menu Categoria cancela qualquer
+            // adivinhação pendente do Sortear (usuária confirmou em
+            // 2026-07-28: só o ícone de atalho valida a adivinhação).
+            aguardandoAdivinhacaoCategoria = false;
+            categoriaSorteioOculta = null;
+            if (itemNovaSituacao != null) {
+                itemNovaSituacao.setEnabled(true);
             }
-            ocultarMenus();
             iniciarNovaAtividade(AcaoAtividade.SELECIONAR_CATEGORIA);
         }
 
-        private void mostrarSubmenuCategoria(JPanel submenuAlvo) {
-            cancelarOcultacaoMenus();
-            if (submenuTipoMedidas != null) submenuTipoMedidas.setVisible(submenuAlvo == submenuTipoMedidas);
-            if (submenuTipoTransformacoes != null) submenuTipoTransformacoes.setVisible(submenuAlvo == submenuTipoTransformacoes);
-            if (submenuTipoRelacoes != null) submenuTipoRelacoes.setVisible(submenuAlvo == submenuTipoRelacoes);
-            if (submenuAlvo != null) {
-                setComponentZOrder(submenuAlvo, 0);
-            }
+        /**
+         * Categorias que entram no sorteio de "Nova situação-problema"
+         * quando nenhuma categoria específica foi fixada pelo menu Categoria
+         * — as 6 já habilitadas em todo o resto do app (ver
+         * criarMenuCategoria e criarPainelAtalhoCategoria). Exclui de
+         * propósito COMPOSICAO_TRANSFORMACAO_MEDIDAS e
+         * TRANSFORMACAO_COMPOSTA_DOIS_PASSOS: continuam "Em construção" em
+         * todo lugar (sem ícone de atalho, sem confirmação visual contra o
+         * renderizador real) — decisão da usuária em 2026-07-28, mesmo
+         * critério já usado para as outras 6.
+         */
+        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE = {
+                TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
+                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES
+        };
+
+        private final java.util.Random sorteioCategoriaLivre = new java.util.Random();
+
+        /**
+         * Ação de "Nova situação-problema" (Arquivo) — decisão da usuária em
+         * 2026-07-28: fica habilitada desde o início, sem exigir que uma
+         * categoria já tenha sido escolhida antes pelo menu Categoria. Cada
+         * clique sorteia também a categoria (dentro de
+         * CATEGORIAS_SORTEIO_LIVRE), não só a situação dentro da categoria
+         * já fixada — diferente de selecionarCategoria(tipo), que fixa uma
+         * categoria específica escolhida manualmente.
+         */
+        private void sortearNovaSituacao() {
+            TipoSituacaoAditiva tipoSorteado = CATEGORIAS_SORTEIO_LIVRE[
+                    sorteioCategoriaLivre.nextInt(CATEGORIAS_SORTEIO_LIVRE.length)];
+            registrarLogUsuario(
+                    "Sortear uma nova situação-problema, incluindo a categoria",
+                    "-",
+                    "Menu/barra de legendas",
+                    "Item de menu Nova situação-problema",
+                    "Representar a estrutura escolhida para o problema",
+                    "OBJ8",
+                    "O sistema sorteia a categoria entre as disponíveis quando o sujeito pede uma nova situação sem fixar uma categoria específica.",
+                    "SORTEAR_CATEGORIA",
+                    "categoriaSorteada=" + tipoSorteado.name()
+            );
+            iniciarQuizCategoria(tipoSorteado);
+        }
+
+        /**
+         * Carrega o enunciado de uma situação da categoria sorteada
+         * (tipoSecreto) SEM revelar a categoria: categoriaSelecionadaParaAtividade
+         * fica false, então todos os pontos que já ocultam diagramas/botões/
+         * a sigla da categoria no cabeçalho nesse campo (o mesmo estado "sem
+         * categoria" usado desde a inicialização do app) continuam ocultando
+         * tudo que pertence à categoria — só o enunciado é exibido por cima
+         * disso (ver desenharTextoProblemaAdivinhacao). A categoria real só
+         * é revelada em confirmarCategoriaAdivinhada, quando o usuário acerta
+         * o ícone de atalho correspondente.
+         */
+        private void iniciarQuizCategoria(TipoSituacaoAditiva tipoSecreto) {
+            inicializarTelaSemCategoria();
+            controladorEstadoAtividade.registrar(AcaoAtividade.SORTEAR);
+            categoriaSorteioOculta = tipoSecreto;
+            aguardandoAdivinhacaoCategoria = true;
+
+            ContextoCarregamentoAtividade contexto = fachadaCarregamentoAtividade.carregarNova(
+                    idiomaSelecionado, tipoSecreto);
+            SituacaoProblemaAditiva situacao = contexto.getSituacao();
+            boolean situacaoCuradaDisponivel = contexto.possuiSituacaoExibivel();
+            situacaoProblemaAtual = situacaoCuradaDisponivel ? situacao : null;
+            textoProblemaEhMensagemSistema = !situacaoCuradaDisponivel;
+            textoProblema = normalizarTextoProblemaParaRenderizacao(
+                    situacaoCuradaDisponivel ? situacao.getEnunciado() : textoAusenciaSituacaoCurada());
+
+            atualizarHabilitacaoIconesAtalhoCategoria();
             repaint();
         }
 
-        private JPanel criarPainelMenu(int x, int y, int largura, int altura) {
-            JPanel painel = new JPanel();
-            painel.setLayout(new GridLayout(0, 1, 0, 0));
-            painel.setBounds(x, y, largura, altura);
-            painel.setBackground(COR_SUPERFICIE);
-            painel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(4, 4, 4, 4)
-            ));
-            painel.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    cancelarOcultacaoMenus();
+        /**
+         * Os 6 ícones de atalho de categoria só têm função enquanto há uma
+         * situação-problema curada renderizada E a categoria ainda não foi
+         * adivinhada (decisão da usuária, 2026-07-28) — diferente do menu
+         * Categoria, que continua livre a qualquer momento. Depois da escolha
+         * correta, os ícones perdem a função (mesmo com a situação ainda em
+         * tela) e só voltam a habilitar num novo ciclo iniciado pelo Sortear
+         * (iniciarQuizCategoria). Chamado nos pontos de transição de estado
+         * (iniciarQuizCategoria, finalizarCarregamentoSituacao,
+         * inicializarTelaSemCategoria) em vez de a cada repintura, pelo
+         * mesmo motivo que os outros botões contextuais (reposicionarBotaoX)
+         * já são atualizados nesses pontos.
+         */
+        private void atualizarHabilitacaoIconesAtalhoCategoria() {
+            boolean habilitar = situacaoProblemaAtual != null && aguardandoAdivinhacaoCategoria;
+            if (botaoAtalhoComposicao != null) botaoAtalhoComposicao.setEnabled(habilitar);
+            if (botaoAtalhoTransformacao != null) botaoAtalhoTransformacao.setEnabled(habilitar);
+            if (botaoAtalhoComparacao != null) botaoAtalhoComparacao.setEnabled(habilitar);
+            if (botaoAtalhoComposicaoTransformacoes != null) botaoAtalhoComposicaoTransformacoes.setEnabled(habilitar);
+            if (botaoAtalhoTransformacaoRelacao != null) botaoAtalhoTransformacaoRelacao.setEnabled(habilitar);
+            if (botaoAtalhoComposicaoRelacoes != null) botaoAtalhoComposicaoRelacoes.setEnabled(habilitar);
+        }
+
+        /**
+         * Ponto de entrada único dos 6 ícones de atalho de categoria
+         * (criarBotaoAtalhoCategoria). Fora do modo de adivinhação, se
+         * comporta como sempre (seleção direta, selecionarCategoria). Durante
+         * uma adivinhação pendente (Sortear), valida o clique contra a
+         * categoria secreta em vez de carregar uma situação nova — usuária
+         * confirmou em 2026-07-28 que só o ícone participa dessa validação
+         * (o menu Categoria continua sendo navegação livre).
+         */
+        private void clicarAtalhoCategoria(TipoSituacaoAditiva tipo) {
+            if (aguardandoAdivinhacaoCategoria) {
+                if (tipo == categoriaSorteioOculta) {
+                    confirmarCategoriaAdivinhada(tipo);
+                } else {
+                    mostrarQuestionamentoCategoriaErrada(tipo);
                 }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
+                return;
+            }
+            selecionarCategoria(tipo);
+        }
+
+        /**
+         * O usuário acertou o ícone da categoria sorteada. situacaoProblemaAtual/
+         * textoProblema já foram carregados por iniciarQuizCategoria — só falta
+         * montar a definição do diagrama e a interpretação curada (o mesmo par
+         * de atribuições que aplicarIdiomaSelecionado faz para o fluxo normal)
+         * e rodar a cauda comum de inicialização de diagrama/texto.
+         */
+        private void confirmarCategoriaAdivinhada(TipoSituacaoAditiva tipo) {
+            registrarLogUsuario(
+                    "Adivinhar a categoria da situação-problema sorteada",
+                    "-",
+                    "Faixa de ícones de categoria",
+                    "Ícone " + tipo.getRotuloBotao(),
+                    "Representar a estrutura escolhida para o problema",
+                    "OBJ8",
+                    "O sujeito identifica corretamente a categoria oculta da situação sorteada.",
+                    "ADIVINHACAO_CATEGORIA_CORRETA",
+                    "categoria=" + tipo.name()
+            );
+            tipoSituacaoSelecionada = tipo;
+            categoriaSelecionadaParaAtividade = true;
+            aguardandoAdivinhacaoCategoria = false;
+            categoriaSorteioOculta = null;
+            controladorContextoSituacao.registrarNovaSituacao(
+                    situacaoProblemaAtual, tipo.name(), textoProblema);
+            definicaoDiagramaAtual = SemanticaCuradaSituacao.aplicarRotulos(
+                    catalogoDefinicoesAditivas.obter(tipo), situacaoProblemaAtual, localizacao);
+            resultadoInterpretacao = construtorResultadoCurado.construir(situacaoProblemaAtual, textoProblema);
+            if (itemNovaSituacao != null) {
+                itemNovaSituacao.setEnabled(true);
+            }
+            finalizarCarregamentoSituacao();
+        }
+
+        /**
+         * O usuário clicou um ícone diferente da categoria sorteada. Mostra a
+         * pergunta que define a categoria clicada (catálogo de questionamento
+         * de gerard-ajuda-adaptativa/references/agente-zdp.md) com Sim/Não —
+         * a resposta não é avaliada (decisão da usuária, 2026-07-28): o
+         * diálogo só fecha e o usuário pode tentar outro ícone, mesmo padrão
+         * já usado em confirmarValorIncognitaAceito para o mismatch de valor.
+         */
+        private void mostrarQuestionamentoCategoriaErrada(TipoSituacaoAditiva tipo) {
+            registrarLogUsuario(
+                    "Adivinhar a categoria da situação-problema sorteada",
+                    "-",
+                    "Faixa de ícones de categoria",
+                    "Ícone " + tipo.getRotuloBotao(),
+                    "Representar a estrutura escolhida para o problema",
+                    "OBJ8",
+                    "O sujeito escolhe uma categoria diferente da categoria oculta da situação sorteada.",
+                    "ADIVINHACAO_CATEGORIA_INCORRETA",
+                    "categoriaClicada=" + tipo.name()
+            );
+            String pergunta = localizacao.texto("ui.question.category." + tipo.name().toLowerCase());
+            mostrarDialogoConfirmacaoSimNao(pergunta);
+        }
+
+        /**
+         * Diálogo Sim/Não no padrão visual do Gérard (JDialog + JPanel/
+         * JButton, mesma estrutura de solicitarNumeroInteiroParaInterrogacao),
+         * em vez de JOptionPane.showConfirmDialog: este último usa o ícone e
+         * os rótulos "Yes"/"No" nativos do Swing/SO, que não seguem o idioma
+         * selecionado nem a paleta neutra do app (relatado pela usuária,
+         * 2026-07-28, com captura de tela mostrando o diálogo nativo em
+         * inglês). Não avalia a resposta — só fecha ao clicar Sim, Não ou Esc.
+         */
+        private void mostrarDialogoConfirmacaoSimNao(String pergunta) {
+            final JDialog dialogo = new JDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    localizacao.texto("ui.dialog.confirm"),
+                    Dialog.ModalityType.APPLICATION_MODAL
+            );
+            dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            dialogo.setResizable(false);
+
+            JPanel conteudo = new JPanel(new BorderLayout(0, 16));
+            conteudo.setBorder(BorderFactory.createEmptyBorder(18, 20, 14, 20));
+            conteudo.setBackground(COR_SUPERFICIE);
+
+            JLabel mensagem = new JLabel("<html><body style='width: 280px'>" + pergunta + "</body></html>");
+            // Fonte maior pra melhor leitura (decisão da usuária, 2026-07-28:
+            // "mensagens muito importantes") — a largura do HTML continua
+            // fixa em 280px, então o texto ganha altura (mais linhas), não
+            // largura, mantendo o diálogo estreito.
+            mensagem.setFont(new Font("Arial", Font.PLAIN, 17));
+            mensagem.setForeground(COR_TEXTO);
+            conteudo.add(mensagem, BorderLayout.CENTER);
+
+            JButton nao = new JButton(localizacao.texto("ui.completion.no"));
+            JButton sim = new JButton(localizacao.texto("ui.completion.yes"));
+            // Estiliza direto no componente em vez de confiar no L&F nativo
+            // do Windows para o destaque azul do botão padrão — o mesmo
+            // motivo já documentado para os menus (estilizarItemMenuPopup):
+            // o L&F nativo ignora boa parte do UIManager.put, mas pintar
+            // direto no componente funciona (relatado pela usuária,
+            // 2026-07-28, com captura mostrando o azul nativo do Windows).
+            for (JButton botao : new JButton[] {nao, sim}) {
+                botao.setOpaque(true);
+                botao.setBackground(COR_SUPERFICIE_SUAVE);
+                botao.setForeground(COR_TEXTO);
+                botao.setFocusPainted(false);
+                botao.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            }
+            JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            botoes.setOpaque(false);
+            botoes.add(nao);
+            botoes.add(sim);
+            conteudo.add(botoes, BorderLayout.SOUTH);
+
+            ActionListener fechar = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dialogo.dispose();
+                }
+            };
+            sim.addActionListener(fechar);
+            nao.addActionListener(fechar);
+
+            dialogo.getRootPane().setDefaultButton(sim);
+            dialogo.getRootPane().registerKeyboardAction(
+                    fechar,
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                    JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
+
+            dialogo.setContentPane(conteudo);
+            dialogo.pack();
+            dialogo.setLocationRelativeTo(this);
+            dialogo.setVisible(true);
+        }
+
+        private JMenu criarMenuExibir() {
+            JMenu menu = new JMenu(localizacao.texto("ui.menu.top.view"));
+            menu.setMnemonic(KeyEvent.VK_X);
+            estilizarItemMenuPopup(menu);
+            estilizarMenuPopup(menu.getPopupMenu());
+
+            JMenu menuIdiomaItem = new JMenu(localizacao.texto("ui.button.language.generic"));
+            estilizarItemMenuPopup(menuIdiomaItem);
+            estilizarMenuPopup(menuIdiomaItem.getPopupMenu());
+            menuIdiomaItem.setToolTipText(localizacao.texto("ui.tooltip.language"));
+
+            for (final IdiomaInterface idioma : IdiomaInterface.values()) {
+                boolean atual = idioma == idiomaSelecionado;
+                JMenuItem item = new JMenuItem((atual ? "✓ " : "") + localizacao.nomeIdioma(idioma));
+                estilizarItemMenuPopup(item);
+                item.setEnabled(!atual);
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        idiomaSelecionado = idioma;
+                        controladorEstadoAtividade.registrar(AcaoAtividade.TROCAR_IDIOMA);
+                        aplicarIdiomaSelecionadoMantendoEstadoTela();
+                    }
+                });
+                menuIdiomaItem.add(item);
+            }
+            menu.add(menuIdiomaItem);
+            return menu;
+        }
+
+        private JMenu criarMenuFerramentas() {
+            JMenu menu = new JMenu(localizacao.texto("ui.menu.top.tools"));
+            menu.setMnemonic(KeyEvent.VK_F);
+            estilizarItemMenuPopup(menu);
+            estilizarMenuPopup(menu.getPopupMenu());
+
+            JMenuItem itemUsuario = new JMenuItem(textoBotaoUsuario());
+            estilizarItemMenuPopup(itemUsuario);
+            itemUsuario.setToolTipText(localizacao.texto("ui.tooltip.user"));
+            itemUsuario.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    java.awt.Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
+                    gerard.ui.usuario.DialogoUsuario dialogo = new gerard.ui.usuario.DialogoUsuario(
+                            janela instanceof Frame ? (Frame) janela : null, repositorioModeloUsuario);
+                    String idEscolhido = dialogo.mostrarESelecionar();
+                    if (idEscolhido != null) {
+                        loggerInteracaoGerard.definirUsuario(idEscolhido);
+                        criarMenuPrincipal();
+                    }
+                    requestFocusInWindow();
                 }
             });
-            return painel;
+            menu.add(itemUsuario);
+
+            JMenuItem itemVisaoPesquisador = new JMenuItem(localizacao.texto("pesq.button.open"));
+            estilizarItemMenuPopup(itemVisaoPesquisador);
+            itemVisaoPesquisador.setToolTipText(localizacao.texto("pesq.tooltip.open"));
+            itemVisaoPesquisador.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (!autenticarPesquisador()) {
+                        requestFocusInWindow();
+                        return;
+                    }
+                    Window janela = SwingUtilities.getWindowAncestor(TelaGerard.this);
+                    TelaVisaoPesquisador.mostrar(janela, agenteModelador, repositorioModeloUsuario);
+                    requestFocusInWindow();
+                }
+            });
+            menu.add(itemVisaoPesquisador);
+
+            return menu;
+        }
+
+        private JMenu criarMenuAjuda() {
+            JMenu menu = new JMenu(localizacao.texto("ui.menu.top.help"));
+            menu.setMnemonic(KeyEvent.VK_J);
+            estilizarItemMenuPopup(menu);
+            estilizarMenuPopup(menu.getPopupMenu());
+
+            JMenu menuSobreItem = new JMenu(localizacao.texto("ui.button.about"));
+            estilizarItemMenuPopup(menuSobreItem);
+            estilizarMenuPopup(menuSobreItem.getPopupMenu());
+            menuSobreItem.setToolTipText(localizacao.texto("ui.tooltip.about"));
+
+            JMenu itemInterpretacao = new JMenu(localizacao.texto("ui.menu.linguisticInterpretation"));
+            estilizarItemMenuPopup(itemInterpretacao);
+            estilizarMenuPopup(itemInterpretacao.getPopupMenu());
+            itemInterpretacao.add(criarMenuInterpretacaoLinguistica());
+            menuSobreItem.add(itemInterpretacao);
+
+            JMenu itemRegistro = new JMenu(localizacao.texto("ui.menu.gerardRegistration"));
+            estilizarItemMenuPopup(itemRegistro);
+            estilizarMenuPopup(itemRegistro.getPopupMenu());
+            itemRegistro.add(criarMenuRegistroGerard());
+            menuSobreItem.add(itemRegistro);
+
+            JMenu itemGerardVergnaud = new JMenu(localizacao.texto("ui.menu.gerardVergnaud"));
+            estilizarItemMenuPopup(itemGerardVergnaud);
+            estilizarMenuPopup(itemGerardVergnaud.getPopupMenu());
+            itemGerardVergnaud.add(criarMenuGerardVergnaud());
+            menuSobreItem.add(itemGerardVergnaud);
+
+            menu.add(menuSobreItem);
+
+            // Reportar bug saiu daqui — agora é um ícone ao lado do menu
+            // Ajuda, direto na barra de menu (ver criarBotaoReportarBugMenuBar,
+            // decisão da usuária, 2026-07-28).
+
+            return menu;
+        }
+
+        /**
+         * Habilita/desabilita os itens que só fazem sentido na aba "Gerard"
+         * (esta TelaGerard) — Categoria e Nova situação-problema manipulam
+         * tipoSituacaoSelecionada/iniciarNovaAtividade, que só têm efeito
+         * visível nesta aba. "Nova situação-problema" não depende mais de
+         * categoriaSelecionadaParaAtividade (decisão da usuária em
+         * 2026-07-28): ele mesmo sorteia a categoria a cada clique — ver
+         * sortearNovaSituacao() — então fica disponível desde o início,
+         * mesmo sem passar pelo menu Categoria antes.
+         */
+        private void atualizarEstadoItensMenuPorAba() {
+            if (menuCategoria != null) {
+                menuCategoria.setEnabled(abaGerardAtiva);
+            }
+            if (itemNovaSituacao != null) {
+                itemNovaSituacao.setEnabled(abaGerardAtiva);
+            }
+            if (botaoFerramentaSortear != null) {
+                botaoFerramentaSortear.setEnabled(abaGerardAtiva);
+            }
+        }
+
+        /** Chamado por Main ao trocar de aba — ver atualizarEstadoItensMenuPorAba. */
+        public void definirAbaGerardAtiva(boolean ativa) {
+            abaGerardAtiva = ativa;
+            atualizarEstadoItensMenuPorAba();
         }
 
         private void estilizarMenuPopup(JPopupMenu menu) {
@@ -2689,13 +3222,11 @@ public class Main extends JFrame {
             });
         }
 
-        private JPanel criarMenuInterpretacaoLinguistica(int x, int y, int largura, int altura) {
-            JPanel painel = criarPainelMenu(x, y, largura, altura);
+        private JPanel criarMenuInterpretacaoLinguistica() {
+            JPanel painel = new JPanel();
+            painel.setOpaque(false);
             painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-            painel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-            ));
+            painel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
             JLabel titulo = criarLabelMenu(localizacao.texto("ui.menu.linguisticInterpretation"), true);
             painel.add(titulo);
@@ -2723,17 +3254,14 @@ public class Main extends JFrame {
                 }
             }
 
-            ajustarMenuAoConteudo(painel, x, y);
             return painel;
         }
 
-        private JPanel criarMenuRegistroGerard(int x, int y, int largura, int altura) {
-            JPanel painel = criarPainelMenu(x, y, largura, altura);
+        private JPanel criarMenuRegistroGerard() {
+            JPanel painel = new JPanel();
+            painel.setOpaque(false);
             painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-            painel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-            ));
+            painel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
             painel.add(criarLabelMenu(localizacao.texto("ui.menu.gerardRegistration"), true));
             painel.add(Box.createVerticalStrut(5));
@@ -2744,19 +3272,16 @@ public class Main extends JFrame {
             painel.add(criarLabelMenu(localizacao.texto("ui.about.authors"), false));
             painel.add(criarLabelMenu(localizacao.texto("ui.about.language"), false));
 
-            ajustarMenuAoConteudo(painel, x, y);
             return painel;
         }
 
-        private JPanel criarMenuGerardVergnaud(int x, int y, int largura, int altura) {
-            JPanel painel = criarPainelMenu(x, y, largura, altura);
+        private JPanel criarMenuGerardVergnaud() {
+            JPanel painel = new JPanel();
+            painel.setOpaque(false);
             painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-            painel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-            ));
+            painel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-            int larguraConteudo = largura - 34;
+            int larguraConteudo = 216;
 
             JLabel titulo = criarLabelMenu(localizacao.texto("ui.menu.gerardVergnaud"), true);
             titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -2790,57 +3315,30 @@ public class Main extends JFrame {
             painel.add(linkVergnaudBrasil);
             painel.add(Box.createVerticalStrut(8));
 
-            JButton opcaoEmRecife = criarBotaoOpcaoSubmenu(localizacao.texto("ui.menu.emRecife"));
-            opcaoEmRecife.setAlignmentX(Component.LEFT_ALIGNMENT);
-            int alturaOpcaoEmRecife = opcaoEmRecife.getPreferredSize().height;
-            Dimension tamanhoOpcaoEmRecife = new Dimension(larguraConteudo, alturaOpcaoEmRecife);
-            opcaoEmRecife.setPreferredSize(tamanhoOpcaoEmRecife);
-            opcaoEmRecife.setMinimumSize(tamanhoOpcaoEmRecife);
-            opcaoEmRecife.setMaximumSize(tamanhoOpcaoEmRecife);
-            opcaoEmRecife.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarSubmenuGerardRecife();
-                }
-            });
-            opcaoEmRecife.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    mostrarSubmenuGerardRecife();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-            });
-            painel.add(opcaoEmRecife);
-
-            ajustarMenuAoConteudoLimitado(painel, x, y, largura);
-            return painel;
-        }
-
-        private JPanel criarMenuGerardRecife(int x, int y, int largura, int altura) {
-            JPanel painel = criarPainelMenu(x, y, largura, altura);
-            painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-            painel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA),
-                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
-            ));
-
-            int larguraConteudo = largura - 34;
-
-            JLabel titulo = criarLabelMenu(localizacao.texto("ui.menu.emRecife"), true);
-            titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
-            titulo.setMaximumSize(new Dimension(larguraConteudo, titulo.getPreferredSize().height));
-            painel.add(titulo);
+            // "Na UFPE em 2009" deixou de ser um submenu (JMenu aninhado
+            // dentro deste painel) e passou a ser conteúdo direto, mais
+            // abaixo (decisão da usuária, 2026-07-28): um JMenu aninhado
+            // dentro de um JPanel comum (não diretamente dentro de um
+            // JPopupMenu de outro JMenu) deixa o rastreamento de mouse do
+            // Swing inconsistente — ao mover o cursor dos links acima em
+            // direção a essa opção, o menu inteiro fechava antes do cursor
+            // chegar lá. Achatar em vez de tentar corrigir o rastreamento de
+            // mouse (frágil e não verificável sem testar interativamente).
+            painel.add(Box.createVerticalStrut(4));
+            JLabel tituloUfpe = criarLabelMenu(localizacao.texto("ui.menu.emRecife"), true);
+            tituloUfpe.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tituloUfpe.setMaximumSize(new Dimension(larguraConteudo, tituloUfpe.getPreferredSize().height));
+            painel.add(tituloUfpe);
             painel.add(Box.createVerticalStrut(8));
 
-            JPanel painelImagens = criarPainelDuasImagensMenu(
+            JPanel painelImagensUfpe = criarPainelDuasImagensMenu(
                     "/gerard/imagens/em_recife_rostos.png",
                     "/gerard/imagens/em_recife_adicional.png",
                     larguraConteudo,
-                    220
+                    140
             );
-            painel.add(painelImagens);
+            painel.add(painelImagensUfpe);
 
-            ajustarMenuAoConteudoLimitado(painel, x, y, largura);
             return painel;
         }
 
@@ -2934,13 +3432,6 @@ public class Main extends JFrame {
             link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             link.setToolTipText(url);
             link.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    cancelarOcultacaoMenus();
-                }
-                public void mouseExited(MouseEvent e) {
-                    agendarOcultacaoMenus();
-                }
-
                 public void mouseClicked(MouseEvent e) {
                     abrirLinkExterno(url);
                 }
@@ -2958,22 +3449,6 @@ public class Main extends JFrame {
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, url, localizacao.texto("ui.menu.gerardVergnaud"), JOptionPane.INFORMATION_MESSAGE);
             }
-        }
-
-        private void ajustarMenuAoConteudo(JPanel painel, int x, int y) {
-            Dimension preferido = painel.getPreferredSize();
-            int larguraAjustada = Math.max(120, preferido.width + 2);
-            int alturaAjustada = Math.max(28, preferido.height + 2);
-            painel.setPreferredSize(new Dimension(larguraAjustada, alturaAjustada));
-            painel.setBounds(x, y, larguraAjustada, alturaAjustada);
-        }
-
-        private void ajustarMenuAoConteudoLimitado(JPanel painel, int x, int y, int larguraMaxima) {
-            Dimension preferido = painel.getPreferredSize();
-            int larguraAjustada = Math.max(120, larguraMaxima);
-            int alturaAjustada = Math.max(28, preferido.height + 2);
-            painel.setPreferredSize(new Dimension(larguraAjustada, alturaAjustada));
-            painel.setBounds(x, y, larguraAjustada, alturaAjustada);
         }
 
         private JLabel criarLabelMenu(String texto, boolean titulo) {
@@ -3020,439 +3495,6 @@ public class Main extends JFrame {
                 return "";
             }
             return texto.length() > limite ? texto.substring(0, limite - 3) + "..." : texto;
-        }
-
-        private JButton criarBotaoOpcaoCategoria(String texto, boolean destaque) {
-            JButton botao = criarBotaoOpcao(texto);
-            botao.setFont(gerard.ui.UITemaGerard.FONTE_ITEM_MENU);
-            botao.setMargin(new Insets(2, 8, 2, 8));
-            botao.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-            return botao;
-        }
-
-        private JButton criarBotaoOpcaoSubmenu(String texto) {
-            JButton botao = criarBotaoOpcao(texto);
-            // O texto permanece alinhado à esquerda, como os demais itens do menu,
-            // enquanto a seta é desenhada na extremidade direita da linha.
-            // Assim, o indicador não fica colado ao rótulo nem desloca o texto.
-            botao.setIcon(null);
-            botao.setMargin(new Insets(2, 6, 2, 6));
-            botao.setBorder(new javax.swing.border.AbstractBorder() {
-                public Insets getBorderInsets(Component componente) {
-                    return new Insets(6, 10, 6, 24);
-                }
-
-                public Insets getBorderInsets(Component componente, Insets insets) {
-                    insets.top = 6;
-                    insets.left = 10;
-                    insets.bottom = 6;
-                    insets.right = 24;
-                    return insets;
-                }
-
-                public void paintBorder(Component componente, Graphics grafico,
-                        int x, int y, int largura, int altura) {
-                    Graphics2D g2 = (Graphics2D) grafico.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(componente != null && componente.isEnabled()
-                                ? COR_TEXTO_SECUNDARIO
-                                : UIManager.getColor("Label.disabledForeground"));
-                        g2.setStroke(new BasicStroke(1.35f,
-                                BasicStroke.CAP_ROUND,
-                                BasicStroke.JOIN_ROUND));
-
-                        int centroY = y + altura / 2;
-                        int pontaX = x + largura - 11;
-                        g2.drawLine(pontaX - 4, centroY - 4, pontaX, centroY);
-                        g2.drawLine(pontaX, centroY, pontaX - 4, centroY + 4);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            });
-            botao.setHorizontalAlignment(SwingConstants.LEFT);
-            botao.setHorizontalTextPosition(SwingConstants.LEFT);
-            return botao;
-        }
-
-        private Icon criarIconeSetaSubmenu() {
-            return new Icon() {
-                public int getIconWidth() {
-                    return 7;
-                }
-
-                public int getIconHeight() {
-                    return 10;
-                }
-
-                public void paintIcon(Component componente, Graphics grafico, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) grafico.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(componente != null && componente.isEnabled()
-                                ? COR_TEXTO_SECUNDARIO
-                                : UIManager.getColor("Label.disabledForeground"));
-                        g2.setStroke(new BasicStroke(1.35f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        int meioY = y + getIconHeight() / 2;
-                        g2.drawLine(x + 1, y + 2, x + 5, meioY);
-                        g2.drawLine(x + 5, meioY, x + 1, y + getIconHeight() - 2);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        private JButton criarBotaoOpcao(String texto) {
-            JButton botao = new JButton(texto);
-            botao.setHorizontalAlignment(SwingConstants.LEFT);
-            botao.setFocusable(false);
-            botao.setFont(gerard.ui.UITemaGerard.FONTE_ITEM_MENU);
-            botao.setMargin(new Insets(2, 6, 2, 6));
-            botao.setBackground(COR_SUPERFICIE);
-            botao.setForeground(COR_TEXTO);
-            botao.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botao.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    if (botao.isEnabled()) {
-                        botao.setBackground(COR_DESTAQUE);
-                    }
-                }
-                public void mouseExited(MouseEvent e) {
-                    botao.setBackground(COR_SUPERFICIE);
-                }
-            });
-            return botao;
-        }
-
-        private void mostrarMenuIdioma() {
-            cancelarOcultacaoMenus();
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (submenuTipoMedidas != null) {
-                submenuTipoMedidas.setVisible(false);
-            }
-            if (submenuTipoTransformacoes != null) {
-                submenuTipoTransformacoes.setVisible(false);
-            }
-            if (submenuTipoRelacoes != null) {
-                submenuTipoRelacoes.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(true);
-                setComponentZOrder(menuIdioma, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarMenuTipo() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (submenuTipoMedidas != null) submenuTipoMedidas.setVisible(false);
-            if (submenuTipoTransformacoes != null) submenuTipoTransformacoes.setVisible(false);
-            if (submenuTipoRelacoes != null) submenuTipoRelacoes.setVisible(false);
-            if (menuTipo != null) {
-                menuTipo.setVisible(true);
-                setComponentZOrder(menuTipo, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarMenuTeste() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            ocultarSubmenusCategoria();
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(true);
-                setComponentZOrder(menuTeste, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarMenuSobre() {
-            cancelarOcultacaoMenus();
-            ocultarSubmenusCategoria();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(true);
-                setComponentZOrder(menuSobre, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarSubmenuInterpretacaoLinguistica() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(true);
-                setComponentZOrder(menuSobre, 0);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(true);
-                setComponentZOrder(submenuInterpretacaoLinguistica, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarSubmenuRegistroGerard() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(true);
-                setComponentZOrder(menuSobre, 0);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(true);
-                setComponentZOrder(submenuRegistroGerard, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarSubmenuGerardVergnaud() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(true);
-                setComponentZOrder(menuSobre, 0);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(true);
-                setComponentZOrder(submenuGerardVergnaud, 0);
-                repaint();
-            }
-        }
-
-        private void mostrarSubmenuGerardRecife() {
-            cancelarOcultacaoMenus();
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(true);
-                setComponentZOrder(menuSobre, 0);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(true);
-                setComponentZOrder(submenuGerardVergnaud, 0);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(true);
-                setComponentZOrder(submenuGerardRecife, 0);
-                repaint();
-            }
-        }
-
-        private void ocultarSubmenusCategoria() {
-            if (submenuTipoMedidas != null) {
-                submenuTipoMedidas.setVisible(false);
-            }
-            if (submenuTipoTransformacoes != null) {
-                submenuTipoTransformacoes.setVisible(false);
-            }
-            if (submenuTipoRelacoes != null) {
-                submenuTipoRelacoes.setVisible(false);
-            }
-        }
-
-        private void ocultarMenus() {
-            if (menuIdioma != null) {
-                menuIdioma.setVisible(false);
-            }
-            if (menuTipo != null) {
-                menuTipo.setVisible(false);
-            }
-            ocultarSubmenusCategoria();
-            if (menuTeste != null) {
-                menuTeste.setVisible(false);
-            }
-            if (menuSobre != null) {
-                menuSobre.setVisible(false);
-            }
-            if (submenuInterpretacaoLinguistica != null) {
-                submenuInterpretacaoLinguistica.setVisible(false);
-            }
-            if (submenuRegistroGerard != null) {
-                submenuRegistroGerard.setVisible(false);
-            }
-            if (submenuGerardVergnaud != null) {
-                submenuGerardVergnaud.setVisible(false);
-            }
-            if (submenuGerardRecife != null) {
-                submenuGerardRecife.setVisible(false);
-            }
-            repaint();
-        }
-
-        private void cancelarOcultacaoMenus() {
-            if (timerOcultarMenus != null && timerOcultarMenus.isRunning()) {
-                timerOcultarMenus.stop();
-            }
-        }
-
-        private void agendarOcultacaoMenus() {
-            cancelarOcultacaoMenus();
-            timerOcultarMenus = new javax.swing.Timer(180, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (!cursorSobre(botaoIdioma) && !cursorSobre(botaoTipo) && !cursorSobre(botaoTeste) && !cursorSobre(botaoSobre) && !cursorSobre(botaoReportarBug) &&
-                        !cursorSobre(menuIdioma) && !cursorSobre(menuTipo) && !cursorSobre(submenuTipoMedidas) &&
-                        !cursorSobre(submenuTipoTransformacoes) && !cursorSobre(submenuTipoRelacoes) &&
-                        !cursorSobre(menuTeste) && !cursorSobre(menuSobre) &&
-                        !cursorSobre(submenuInterpretacaoLinguistica) && !cursorSobre(submenuRegistroGerard) &&
-                        !cursorSobre(submenuGerardVergnaud) && !cursorSobre(submenuGerardRecife)) {
-                        ocultarMenus();
-                    }
-                }
-            });
-            timerOcultarMenus.setRepeats(false);
-            timerOcultarMenus.start();
         }
 
         private void cancelarOcultacaoTipConclusao() {
@@ -3564,6 +3606,8 @@ public class Main extends JFrame {
             reiniciarConclusaoModelagem();
             controladorEstadoAtividade.registrar(AcaoAtividade.INICIALIZAR);
             categoriaSelecionadaParaAtividade = false;
+            aguardandoAdivinhacaoCategoria = false;
+            categoriaSorteioOculta = null;
             situacaoProblemaAtual = null;
             textoProblema = "";
             textoProblemaEhMensagemSistema = false;
@@ -3601,9 +3645,10 @@ public class Main extends JFrame {
             larguraUltimoLayoutTexto = -1;
 
             ocultarControlesDaAtividadeSemCategoria();
-            if (botaoSortear != null) {
-                botaoSortear.setEnabled(false);
-            }
+            // itemNovaSituacao NÃO é desabilitado aqui: desde 2026-07-28 ele
+            // sorteia a própria categoria a cada clique (sortearNovaSituacao),
+            // então continua disponível mesmo no estado "sem categoria".
+            atualizarHabilitacaoIconesAtalhoCategoria();
             atualizarTextosFixosDaInterface();
             repaint();
         }
@@ -3666,6 +3711,17 @@ public class Main extends JFrame {
             definicaoDiagramaAtual = SemanticaCuradaSituacao.aplicarRotulos(
                     contexto.getDefinicao(), situacaoProblemaAtual, localizacao);
             resultadoInterpretacao = situacaoCuradaDisponivel ? construtorResultadoCurado.construir(situacao, textoProblema) : null;
+            finalizarCarregamentoSituacao();
+        }
+
+        /**
+         * Cauda comum de carregamento, compartilhada por aplicarIdiomaSelecionado
+         * (fluxo normal) e confirmarCategoriaAdivinhada (fluxo de adivinhação de
+         * categoria pelo Sortear) — pressupõe que situacaoProblemaAtual,
+         * textoProblema, definicaoDiagramaAtual e resultadoInterpretacao já
+         * foram atribuídos pelo chamador.
+         */
+        private void finalizarCarregamentoSituacao() {
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
             estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
@@ -3692,7 +3748,7 @@ public class Main extends JFrame {
             inicializarElementosTexto();
             inicializarDiagramaVergnaud();
             inicializarDiagramaVenn();
-            criarMenusInternos();
+            atualizarHabilitacaoIconesAtalhoCategoria();
             atualizarTextosFixosDaInterface();
 
             Window janela = SwingUtilities.getWindowAncestor(this);
@@ -3708,7 +3764,6 @@ public class Main extends JFrame {
             cancelarEfeitosArraste();
             if (!categoriaSelecionadaParaAtividade) {
                 localizacao.definirIdioma(idiomaSelecionado);
-                criarMenusInternos();
                 atualizarTextosFixosDaInterface();
                 ocultarControlesDaAtividadeSemCategoria();
                 repaint();
@@ -3750,7 +3805,6 @@ public class Main extends JFrame {
                     contexto.getDefinicao(), situacaoProblemaAtual, localizacao);
             atualizarRotulosDiagramaVergnaudSemReposicionar();
             atualizarRotulosDiagramaVennSemLimparQuadradinhos();
-            criarMenusInternos();
             atualizarTextosFixosDaInterface();
 
             Window janela = SwingUtilities.getWindowAncestor(this);
@@ -4168,54 +4222,15 @@ public class Main extends JFrame {
             return sinalPadrao;
         }
 
-        private String montarResumoPassosTransformacaoComposta() {
-            if (!usaDiagramasEncadeadosTransformacaoComposta()) {
-                return "";
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 1; i <= quantidadePassosTransformacaoComposta; i++) {
-                if (i > 1) {
-                    sb.append(" • ");
-                }
-                sb.append(localizacao.formatar("ui.step.label", i));
-            }
-            return sb.toString();
-        }
-
         private void atualizarTextosFixosDaInterface() {
             atualizarTextosTipConclusaoModelagem();
-            if (botaoIdioma != null) {
-                botaoIdioma.setText(idiomaSelecionado.getRotuloBotao());
-                botaoIdioma.setToolTipText(localizacao.texto("ui.tooltip.language"));
-            }
-            if (botaoTipo != null) {
-                botaoTipo.setText(localizacao.texto("ui.button.category"));
-                botaoTipo.setToolTipText(localizacao.texto("ui.tooltip.type"));
-            }
-            if (botaoSobre != null) {
-                botaoSobre.setText(localizacao.texto("ui.button.about"));
-                botaoSobre.setToolTipText(localizacao.texto("ui.tooltip.about"));
-            }
-            if (botaoSortear != null) {
-                botaoSortear.setText(localizacao.texto("ui.button.random"));
-                botaoSortear.setToolTipText(localizacao.texto("ui.tooltip.random"));
-                botaoSortear.setEnabled(categoriaSelecionadaParaAtividade);
-            }
-            if (botaoReportarBug != null) {
-                botaoReportarBug.setText(localizacao.texto("ui.button.reportBug"));
-                botaoReportarBug.setToolTipText(localizacao.texto("ui.tooltip.reportBug"));
-                botaoReportarBug.getAccessibleContext().setAccessibleName(localizacao.texto("ui.button.reportBug"));
-                botaoReportarBug.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.tooltip.reportBug"));
-            }
-            if (botaoUsuario != null) {
-                botaoUsuario.setText(textoBotaoUsuario());
-                botaoUsuario.setToolTipText(localizacao.texto("ui.tooltip.user"));
-            }
-            if (botaoVisaoPesquisador != null) {
-                botaoVisaoPesquisador.setText(localizacao.texto("pesq.button.open"));
-                botaoVisaoPesquisador.setToolTipText(localizacao.texto("pesq.tooltip.open"));
-            }
+            // A JMenuBar inteira é reconstruída aqui — cobre idioma,
+            // categoria, sobre, usuário, visão de pesquisador e reportar bug
+            // de uma vez, no mesmo ponto em que os outros botões abaixo são
+            // atualizados (chamado sempre que idioma/categoria/usuário/
+            // interpretação mudam).
+            criarMenuPrincipal();
+            criarBotoesCabecalhoEmbutidos();
             if (botaoRestaurar != null) {
                 String descricao = localizacao.texto("ui.tooltip.restore.elements");
                 botaoRestaurar.setToolTipText(descricao);
@@ -4248,36 +4263,6 @@ public class Main extends JFrame {
             }
             atualizarTextosBotoesAjudaContextual();
             fecharMenuAjudaContextual();
-            atualizarTextoBotaoTeste();
-        }
-
-        private void atualizarTextoBotaoTeste() {
-            if (botaoTeste == null) {
-                return;
-            }
-            String modo = localizacao.texto(modoFeedbackTeste.getChave());
-            botaoTeste.setText(localizacao.formatar("ui.button.test", modo));
-            botaoTeste.setToolTipText(localizacao.texto("ui.tooltip.test") + ": " + modo);
-        }
-
-        private void estilizarBotaoPrincipal(final JButton botao) {
-            botao.setFocusPainted(false);
-            botao.setForeground(COR_TEXTO);
-            botao.setBackground(COR_BOTAO_SECUNDARIO);
-            botao.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BORDA_BOTAO),
-                    BorderFactory.createEmptyBorder(5, 12, 5, 12)
-            ));
-            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botao.setOpaque(true);
-            botao.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    botao.setBackground(COR_DESTAQUE);
-                }
-                public void mouseExited(MouseEvent e) {
-                    botao.setBackground(COR_BOTAO_SECUNDARIO);
-                }
-            });
         }
 
         private void desenharCard(Graphics2D g2, int x, int y, int largura, int altura, int raio) {
@@ -4354,12 +4339,68 @@ public class Main extends JFrame {
             g2.fillRect(0, 45, getWidth(), ALTURA_PAINEL_ATALHOS_CATEGORIA);
             g2.setColor(COR_BORDA);
             g2.drawLine(0, 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA - 1, getWidth(), 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA - 1);
+            desenharRotulosGruposAtalhoCategoria(g2);
+        }
+
+        /**
+         * Rótulos "Medidas"/"Relações" (em tom de cinza, COR_TEXTO_SECUNDARIO)
+         * acima de cada grupo de 3 ícones — decisão da usuária, 2026-07-28.
+         * Reaproveita as mesmas chaves i18n já usadas no menu Categoria
+         * (ui.menu.category.measures/relations), centralizados sobre
+         * xCentroGrupoMedidas/xCentroGrupoRelacoes (calculados em
+         * reposicionarPainelAtalhoCategoria).
+         */
+        private void desenharRotulosGruposAtalhoCategoria(Graphics2D g2) {
+            if (botaoAtalhoComposicao == null) {
+                return;
+            }
+            g2.setFont(new Font("Arial", Font.BOLD, 12));
+            g2.setColor(COR_TEXTO_SECUNDARIO);
+            FontMetrics fm = g2.getFontMetrics();
+            int y = 45 + 18;
+
+            String medidas = localizacao.texto("ui.menu.category.measures");
+            g2.drawString(medidas, xCentroGrupoMedidas - fm.stringWidth(medidas) / 2, y);
+
+            String relacoes = localizacao.texto("ui.menu.category.relations");
+            g2.drawString(relacoes, xCentroGrupoRelacoes - fm.stringWidth(relacoes) / 2, y);
+
+            // Retângulo delimitador agrupando os 3 ícones de cada grupo
+            // (decisão da usuária, 2026-07-28) — mesma cor neutra de borda
+            // já usada em desenharCard.
+            g2.setColor(COR_BORDA);
+            if (areaGrupoMedidas != null) {
+                g2.drawRoundRect(areaGrupoMedidas.x, areaGrupoMedidas.y,
+                        areaGrupoMedidas.width, areaGrupoMedidas.height, 10, 10);
+            }
+            if (areaGrupoRelacoes != null) {
+                g2.drawRoundRect(areaGrupoRelacoes.x, areaGrupoRelacoes.y,
+                        areaGrupoRelacoes.width, areaGrupoRelacoes.height, 10, 10);
+            }
         }
 
         private void desenharTextoProblema(Graphics2D g2) {
             marcadoresFixosTexto.clear();
+            reposicionarBotaoAtalhoProximoPasso();
 
             if (!categoriaSelecionadaParaAtividade) {
+                if (aguardandoAdivinhacaoCategoria && textoProblema != null && textoProblema.trim().length() > 0) {
+                    // Sorteio em andamento: mostra o texto puro, sem elementos
+                    // arrastáveis (só criados em inicializarElementosTexto,
+                    // chamado depois da confirmação em
+                    // confirmarCategoriaAdivinhada) e sem os botões
+                    // contextuais (ainda fazem referência a uma categoria que
+                    // o usuário não confirmou ter identificado). Também cobre
+                    // o caso em que a categoria sorteada não tem nenhuma
+                    // situação curada disponível: iniciarQuizCategoria já
+                    // preenche textoProblema com a mensagem de aviso
+                    // ("Nenhuma situação-problema curada..."), então essa
+                    // mensagem aparece aqui em vez da tela ficar muda —
+                    // decisão da usuária, 2026-07-28.
+                    desenharTextoProblemaAdivinhacao(g2);
+                    ocultarControlesDaAtividadeSemCategoria();
+                    return;
+                }
                 // Mantém a divisão visual da interface desde a inicialização.
                 // Somente o conteúdo educativo permanece ausente até que o
                 // usuário escolha uma categoria.
@@ -4399,8 +4440,32 @@ public class Main extends JFrame {
                 marcarElementoSemanticoDoTexto(fm, elemento);
             }
 
-            desenharTextoCategoriaNaAreaDoEnunciado(g2, fm, margemX);
             desenharMarcadoresFixosDoTexto(g2);
+        }
+
+        /**
+         * Enunciado como texto simples (sem elementos arrastáveis) durante a
+         * adivinhação de categoria pelo Sortear — ver desenharTextoProblema.
+         * Reaproveita o mesmo card de fundo e o utilitário de quebra de linha
+         * já usado pelas anotações (quebrarTextoAnotacao).
+         */
+        private void desenharTextoProblemaAdivinhacao(Graphics2D g2) {
+            desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
+
+            int margemX = 94;
+            int yInicial = 101 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+            int larguraMaxima = getWidth() - margemX - 30;
+
+            g2.setFont(new Font("Arial", Font.BOLD, 20));
+            FontMetrics fm = g2.getFontMetrics();
+            java.util.List<String> linhas = quebrarTextoAnotacao(textoProblema, fm, larguraMaxima);
+
+            g2.setColor(COR_TEXTO);
+            int y = yInicial;
+            for (String linha : linhas) {
+                g2.drawString(linha, margemX, y);
+                y += fm.getHeight();
+            }
         }
 
         private void reposicionarBotaoCorrigirCuradoria(FontMetrics fm, int margemX, int larguraMaxima) {
@@ -4874,39 +4939,6 @@ public class Main extends JFrame {
             if (!itensArrastaveis.contains(itemSolto) && !solturaSobreDiagrama) {
                 sessaoArrasteTextoParaDiagrama.limpar();
             }
-        }
-
-        private void desenharTextoCategoriaNaAreaDoEnunciado(Graphics2D g2, FontMetrics fm, int margemX) {
-            if (definicaoDiagramaAtual == null) {
-                areaTituloCategoria.limpar();
-                return;
-            }
-
-            String textoCategoria = definicaoDiagramaAtual.getTitulo();
-            String descricaoCategoria = cenaDiagramaAtual != null ? cenaDiagramaAtual.getDescricao() : "";
-            String descricaoSubtipo = obterDescricaoSubtipoAtual();
-
-            String linhaResumoAbaixoDoTitulo = null;
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                linhaResumoAbaixoDoTitulo =
-                        localizacao.formatar("ui.compound.steps", montarResumoPassosTransformacaoComposta());
-            } else if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                linhaResumoAbaixoDoTitulo = localizacao.texto("ui.compositionTransformation.steps");
-            }
-
-            areaTituloCategoria.desenhar(g2, margemX, 76 + ALTURA_PAINEL_ATALHOS_CATEGORIA, textoCategoria,
-                    descricaoCategoria, descricaoSubtipo, COR_TEXTO_SECUNDARIO, linhaResumoAbaixoDoTitulo);
-        }
-
-        private boolean pontoNoTituloCategoriaEnunciado(int x, int y) {
-            return areaTituloCategoria.contemPonto(x, y);
-        }
-
-        private String obterDescricaoSubtipoAtual() {
-            if (resultadoInterpretacao == null || resultadoInterpretacao.getSubtipoVergnaud() == null) {
-                return "";
-            }
-            return resultadoInterpretacao.getSubtipoFormatado();
         }
 
         private int obterIndiceFiguraIncognitaAtual() {
@@ -5794,7 +5826,7 @@ public class Main extends JFrame {
             }
 
             int x = baseX + 14;
-            int y = baseY - altura - 10;
+            int y = forcarAnotacaoMouseOverAbaixo ? (baseY + 18) : (baseY - altura - 10);
 
             if (x + largura > getWidth() - 8) {
                 x = getWidth() - largura - 8;
@@ -5804,7 +5836,7 @@ public class Main extends JFrame {
                 x = 8;
             }
 
-            if (y < 50) {
+            if (!forcarAnotacaoMouseOverAbaixo && y < 50) {
                 y = baseY + 18;
             }
 
@@ -6573,7 +6605,10 @@ public class Main extends JFrame {
         // em desenharTextoProblema, reposicionarBotaoAjudaTexto,
         // desenharAreaDiagrama e Y_BASE_VERGNAUD/VENN abaixo, além de
         // AreaTituloCategoriaEnunciado.desenhar (parâmetro yTitulo).
-        private static final int ALTURA_PAINEL_ATALHOS_CATEGORIA = 110;
+        // +20 em relação ao valor original (110) para abrir espaço aos
+        // rótulos "Medidas"/"Relações" acima dos ícones (ver
+        // desenharFaixaAtalhoCategoria) — decisão da usuária, 2026-07-28.
+        private static final int ALTURA_PAINEL_ATALHOS_CATEGORIA = 130;
         private static final int X_BASE_VERGNAUD = 25;
         private static final int Y_BASE_VERGNAUD = 215 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int LARGURA_BASE_VERGNAUD = 655;
@@ -11438,6 +11473,7 @@ public class Main extends JFrame {
         public void mouseMoved(MouseEvent e) {
             mouseOverX = e.getX();
             mouseOverY = e.getY();
+            forcarAnotacaoMouseOverAbaixo = false;
             boolean interacaoRepresentacoesLiberada =
                     interacaoRepresentacoesLiberadaPelaModelagem();
             if (interacaoRepresentacoesLiberada) {
@@ -11580,11 +11616,7 @@ public class Main extends JFrame {
             } else {
                 elementoTextoFocado = null;
 
-                if (pontoNoTituloCategoriaEnunciado(e.getX(), e.getY())) {
-                    mostrarAnotacaoMouseOver = true;
-                    textoAnotacaoMouseOver = areaTituloCategoria.getDescricao();
-                    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                } else {
+                {
                     QuadradinhoVenn quadradinho = encontrarQuadradinhoVenn(e.getX(), e.getY());
                     if (quadradinho != null) {
                         itemFocado = null;

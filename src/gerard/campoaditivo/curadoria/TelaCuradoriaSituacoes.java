@@ -239,7 +239,19 @@ public class TelaCuradoriaSituacoes extends JPanel {
             return;
         }
         final LinhaSituacao linha = modelo.getLinha(linhaModelo);
-        final boolean versaoTraducaoSomenteTexto = "traducao".equalsIgnoreCase(linha.tipoVersao);
+        // Além de tipo_versao=="traducao", qualquer versão que não esteja em
+        // português nunca é tratada como a original editável, mesmo que o
+        // próprio campo tipo_versao esteja (erradamente) marcado "original" —
+        // proteção contra dados mal rotulados que abririam a curadoria
+        // semântica numa tradução, gerando inconsistência entre versões
+        // (relatado pela usuária, 2026-07-28). Vale mesmo quando não existe
+        // nenhuma versão em português vinculada: a falta de original não
+        // libera a edição, só significa que copiarMetadadosConceituais abaixo
+        // não encontra o que copiar.
+        final boolean idiomaNaoEhPortugues =
+                IdiomaSituacao.paraIdiomaInterface(linha.codigoIdioma) != IdiomaInterface.PORTUGUES;
+        final boolean versaoTraducaoSomenteTexto =
+                "traducao".equalsIgnoreCase(linha.tipoVersao) || idiomaNaoEhPortugues;
         if (versaoTraducaoSomenteTexto) {
             LinhaSituacao originalVinculada = localizarOriginalDoGrupo(linha.situacaoGrupoId);
             if (originalVinculada == null && linha.versaoOrigemId != null) {

@@ -110,8 +110,8 @@ public final class PainelDiagramaPreenchido extends JPanel {
      * Sobrepõe o rótulo de feedback diretamente sobre este painel, colado ao
      * contorno realmente desenhado do diagrama — não ao fim da área alocada
      * pelo layout, que pode ser bem maior que o diagrama em si. O mesmo
-     * princípio de posicionamento usado pelo link "Próxima tarefa" abaixo do
-     * diagrama de Vergnaud (ver SeloConclusaoModelagem).
+     * princípio de posicionamento relativo ao diagrama real usado pelo selo
+     * de conclusão do diagrama de Vergnaud (ver SeloConclusaoModelagem).
      */
     public void anexarRotuloFeedback(JLabel rotulo) {
         this.rotuloFeedback = rotulo;

@@ -132,6 +132,35 @@ public final class TipConclusaoModelagem extends JPanel {
     }
 
     /**
+     * Posiciona o tip acima de uma área de referência (o selo azul de
+     * conclusão, ver SeloConclusaoModelagem), centralizado horizontalmente
+     * sobre ela — decisão da usuária, 2026-07-28: a pergunta "Podemos passar
+     * para a próxima tarefa?" deve aparecer logo acima do ícone de check, não
+     * mais abaixo do diagrama inteiro.
+     */
+    public void mostrarAcimaDoElemento(Rectangle areaReferencia, int larguraPai, int alturaPai) {
+        grupo.clearSelection();
+        Dimension preferido = getPreferredSize();
+        int largura = Math.max(360, preferido.width + 8);
+        int altura = Math.max(72, preferido.height + 4);
+
+        int centroX = areaReferencia == null
+                ? larguraPai / 2
+                : areaReferencia.x + areaReferencia.width / 2;
+        int minimoX = 12;
+        int maximoX = Math.max(minimoX, larguraPai - largura - 12);
+        int x = Math.max(minimoX, Math.min(maximoX, centroX - largura / 2));
+
+        int topoReferencia = areaReferencia == null ? alturaPai / 2 : areaReferencia.y;
+        int yDesejado = topoReferencia - altura - 10;
+        int y = Math.max(12, yDesejado);
+
+        setBounds(x, y, largura, altura);
+        setVisible(true);
+        repaint();
+    }
+
+    /**
      * Posiciona o tip num ponto livre (x, y) em vez de abaixo de uma área de
      * referência — usado quando o tip deve ficar ao lado do conteúdo, colado
      * a ele, em vez de sempre abaixo do diagrama inteiro.
