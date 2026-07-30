@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JPanel;
@@ -31,7 +30,10 @@ import javax.swing.Timer;
  * segunda cor.
  */
 public final class IndicadorAgenteMonitor extends JPanel implements OuvinteVeredictoAgenteMonitor {
-    private static final int DIAMETRO = 14;
+    // Era 14 (círculo simples); o ícone de robô precisa de mais espaço pros
+    // detalhes (antena, orelhas, olhos, boca) ficarem legíveis — decisão da
+    // usuária, 2026-07-28.
+    private static final int DIAMETRO = 22;
     private static final int DURACAO_PULSO_MS = 400;
     private static final Color COR_APAGADO = UITemaGerard.COR_ICONE_DESABILITADO;
     private static final Color COR_PULSO = UITemaGerard.COR_PRIMARIA;
@@ -68,9 +70,7 @@ public final class IndicadorAgenteMonitor extends JPanel implements OuvinteVered
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(aceso ? COR_PULSO : COR_APAGADO);
-        g2.fillOval(0, 0, DIAMETRO, DIAMETRO);
+        gerard.ui.IconeRoboAgente.desenhar(g2, 0, 0, DIAMETRO, aceso ? COR_PULSO : COR_APAGADO);
         g2.dispose();
     }
 }

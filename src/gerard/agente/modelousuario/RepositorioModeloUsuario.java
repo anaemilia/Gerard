@@ -89,6 +89,22 @@ public class RepositorioModeloUsuario {
         return modelosPorId.get(idUsuario);
     }
 
+    /**
+     * Atualiza a mídia preferida de um perfil já existente e persiste
+     * imediatamente — usado pelo checkbox de mídia da ajuda contextual
+     * ("E agora?"), que deixa o usuário trocar a preferência sem reabrir o
+     * cadastro. Não faz nada se o id não corresponder a um perfil
+     * cadastrado (ex.: usuário ainda não fez login).
+     */
+    public synchronized void atualizarMidiaPreferida(String idUsuario, MidiaPreferida midia) {
+        ModeloUsuario modelo = obter(idUsuario);
+        if (modelo == null || modelo.getPerfilAluno().getNome() == null) {
+            return;
+        }
+        modelo.getPerfilAprendizagem().setMidiaPreferida(midia);
+        salvarNoArquivo();
+    }
+
     /** Perfis cadastrados, na ordem em que foram carregados/criados — para a tela de seleção de usuário. */
     public List<ModeloUsuario> listarPerfisCadastrados() {
         List<ModeloUsuario> resultado = new ArrayList<ModeloUsuario>();
@@ -121,6 +137,26 @@ public class RepositorioModeloUsuario {
                                                 MidiaPreferida midiaPreferida, NivelEscolaridade nivelEscolaridade,
                                                 File fotoOrigem) {
         String id = gerarIdUnico(nome);
+        salvarCamposPerfil(id, nome, idade, sexo, midiaPreferida, nivelEscolaridade, fotoOrigem);
+        return id;
+    }
+
+    /**
+     * Atualiza os campos de um perfil já existente (mesmo id, sem gerar um
+     * novo) e persiste imediatamente — usado pela tela de edição aberta ao
+     * clicar no nome do usuário logado na barra superior. Ao contrário de
+     * cadastrarPerfil, não cria um perfil novo mesmo que o nome já exista em
+     * outro id.
+     */
+    public synchronized void atualizarPerfil(String idUsuario, String nome, Integer idade, Genero sexo,
+                                              MidiaPreferida midiaPreferida, NivelEscolaridade nivelEscolaridade,
+                                              File fotoOrigem) {
+        salvarCamposPerfil(idUsuario, nome, idade, sexo, midiaPreferida, nivelEscolaridade, fotoOrigem);
+    }
+
+    private void salvarCamposPerfil(String id, String nome, Integer idade, Genero sexo,
+                                     MidiaPreferida midiaPreferida, NivelEscolaridade nivelEscolaridade,
+                                     File fotoOrigem) {
         ModeloUsuario modelo = obterOuCriar(id);
         modelo.getPerfilAluno().setNome(sanitizar(nome));
         modelo.getPerfilAluno().setIdade(idade);
@@ -131,7 +167,6 @@ public class RepositorioModeloUsuario {
             modelo.getPerfilAluno().setFotoCaminho(copiarFoto(id, fotoOrigem));
         }
         salvarNoArquivo();
-        return id;
     }
 
     /** Copia a foto escolhida para ~/Gerard/fotos/&lt;id&gt;.&lt;extensão&gt; e devolve o caminho absoluto, ou null se a cópia falhar. */

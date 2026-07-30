@@ -45,3 +45,9 @@ distribuicao_windows/app/
 distribuicao_windows/Instalar_Gerard.bat
 distribuicao_windows/saida/
 distribuicao_windows/saida_exe/
+distribuicao_windows/saida_local_com_dados_pesquisador/
+
+# Semente de dados de pesquisa para builds locais do instalador (nunca
+# publicar — dados pessoais/de pesquisa, ver Main.semearDadosPesquisadorSeNecessario).
+# Redundante com distribuicao_windows/app/ acima, mas explícito de propósito.
+**/Gerard_seed/

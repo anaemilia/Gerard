@@ -5,6 +5,7 @@ import gerard.agente.modelousuario.MidiaPreferida;
 import gerard.agente.modelousuario.ModeloUsuario;
 import gerard.agente.modelousuario.NivelEscolaridade;
 import gerard.agente.modelousuario.PerfilAluno;
+import gerard.agente.modelousuario.PerfilAprendizagem;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.i18n.ServicoLocalizacao;
 import gerard.ui.UITemaGerard;
@@ -16,6 +17,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -31,6 +33,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -75,20 +79,54 @@ public final class DialogoUsuario extends JDialog {
     private final JTextField campoNome = new JTextField(18);
     private final JSpinner campoIdade = new JSpinner(new SpinnerNumberModel(30, 0, 120, 1));
     private final JComboBox<Genero> campoSexo = new JComboBox<Genero>(Genero.values());
-    private final JComboBox<MidiaPreferida> campoMidia = new JComboBox<MidiaPreferida>(MidiaPreferida.values());
+    // Checkboxes em vez de combo (decisão da usuária, 2026-07-28) — as 3
+    // opções continuam mutuamente exclusivas (só uma mídia preferida por
+    // usuário, ver PerfilAprendizagem.midiaPreferida), então marcar uma
+    // desmarca as outras, mas a aparência/interação pedida foi checkbox,
+    // não radio button.
+    private final JCheckBox campoMidiaSom = new JCheckBox();
+    private final JCheckBox campoMidiaGrafico = new JCheckBox();
+    private final JCheckBox campoMidiaLinguagemNatural = new JCheckBox();
     private final JComboBox<NivelEscolaridade> campoEscolaridade =
             new JComboBox<NivelEscolaridade>(NivelEscolaridade.values());
     private final JLabel rotuloPreviewFoto = new JLabel();
 
     private File fotoSelecionada;
     private String idSelecionado;
+    private final ModeloUsuario perfilEmEdicao;
+    // Diferente de perfilEmEdicao (modo de edição dedicado, sem lista — ver
+    // construtor de 3 argumentos): este campo é preenchido ao clicar num
+    // nome na lista "Usuários cadastrados" da tela inicial de dois painéis,
+    // só para pré-visualizar os dados no formulário à direita (pedido da
+    // usuária, 2026-07-29). Também usado por cadastrar() para decidir se o
+    // clique em botaoCadastrar deve atualizar esse perfil em vez de criar um
+    // duplicado — ver atualizarTextoBotaoCadastrar().
+    private ModeloUsuario perfilPreVisualizado;
+    private JButton botaoCadastrar;
 
     public DialogoUsuario(Frame proprietario, RepositorioModeloUsuario repositorio) {
+        this(proprietario, repositorio, null);
+    }
+
+    /**
+     * Modo de edição: quando perfilParaEditar não é null, o diálogo abre já
+     * preenchido com os dados desse perfil, oculta a lista de "usuários
+     * cadastrados" (trocar de usuário não é o objetivo aqui) e o botão salva
+     * no mesmo id em vez de cadastrar um perfil novo — aberto ao clicar no
+     * nome do usuário logado na barra superior (ver
+     * Main.criarBotaoUsuarioMenuBar).
+     */
+    public DialogoUsuario(Frame proprietario, RepositorioModeloUsuario repositorio, ModeloUsuario perfilParaEditar) {
         super(proprietario, ServicoLocalizacao.getInstancia().texto("ui.userDialog.title"), true);
         this.repositorio = repositorio;
+        this.perfilEmEdicao = perfilParaEditar;
         getContentPane().setBackground(UITemaGerard.COR_FUNDO_CONTEUDO);
         montarInterface();
-        carregarUsuarios();
+        if (perfilEmEdicao != null) {
+            preencherCampos(perfilEmEdicao);
+        } else {
+            carregarUsuarios();
+        }
         setMinimumSize(new Dimension(680, 480));
         setSize(680, 560);
         setLocationRelativeTo(proprietario);
@@ -103,17 +141,26 @@ public final class DialogoUsuario extends JDialog {
     private void montarInterface() {
         setLayout(new BorderLayout(0, 0));
 
-        JLabel titulo = new JLabel(localizacao.texto("ui.userDialog.subtitle"));
+        boolean editando = perfilEmEdicao != null;
+        JLabel titulo = new JLabel(localizacao.texto(editando ? "ui.userDialog.editSubtitle" : "ui.userDialog.subtitle"));
         titulo.setFont(new Font("Arial", Font.PLAIN, 13));
         titulo.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
         titulo.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
         add(titulo, BorderLayout.NORTH);
 
-        JSplitPane divisor = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, criarPainelExistentes(), criarPainelCadastro());
-        divisor.setResizeWeight(0.42);
-        divisor.setBorder(BorderFactory.createEmptyBorder(0, 16, 12, 16));
-        divisor.setOpaque(false);
-        add(divisor, BorderLayout.CENTER);
+        if (editando) {
+            JPanel envoltorio = new JPanel(new BorderLayout());
+            envoltorio.setOpaque(false);
+            envoltorio.setBorder(BorderFactory.createEmptyBorder(0, 16, 12, 16));
+            envoltorio.add(criarPainelCadastro(), BorderLayout.CENTER);
+            add(envoltorio, BorderLayout.CENTER);
+        } else {
+            JSplitPane divisor = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, criarPainelExistentes(), criarPainelCadastro());
+            divisor.setResizeWeight(0.42);
+            divisor.setBorder(BorderFactory.createEmptyBorder(0, 16, 12, 16));
+            divisor.setOpaque(false);
+            add(divisor, BorderLayout.CENTER);
+        }
 
         JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         rodape.setOpaque(false);
@@ -140,6 +187,19 @@ public final class DialogoUsuario extends JDialog {
         listaUsuarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listaUsuarios.setBackground(UITemaGerard.COR_SUPERFICIE);
         listaUsuarios.setCellRenderer(new RenderizadorUsuario());
+        listaUsuarios.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
+                ModeloUsuario selecionado = listaUsuarios.getSelectedValue();
+                perfilPreVisualizado = selecionado;
+                if (selecionado != null) {
+                    preencherCampos(selecionado);
+                }
+                atualizarTextoBotaoCadastrar();
+            }
+        });
         painel.add(new JScrollPane(listaUsuarios), BorderLayout.CENTER);
 
         JButton botaoEntrar = criarBotaoPrimario(localizacao.texto("ui.userDialog.enter"));
@@ -167,7 +227,8 @@ public final class DialogoUsuario extends JDialog {
         JPanel painel = criarCard();
         painel.setLayout(new BorderLayout(0, 10));
 
-        JLabel rotulo = new JLabel(localizacao.texto("ui.userDialog.newUser"));
+        JLabel rotulo = new JLabel(localizacao.texto(
+                perfilEmEdicao != null ? "ui.userDialog.editUser" : "ui.userDialog.newUser"));
         rotulo.setFont(new Font("Arial", Font.BOLD, 14));
         rotulo.setForeground(UITemaGerard.COR_TEXTO);
         painel.add(rotulo, BorderLayout.NORTH);
@@ -206,18 +267,54 @@ public final class DialogoUsuario extends JDialog {
         campos.add(criarLinhaCampo(localizacao.texto("ui.userDialog.gender"), campoSexo));
         campos.add(Box.createVerticalStrut(6));
 
-        campoMidia.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                            boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof MidiaPreferida) {
-                    label.setText(localizacao.texto(chaveMidia((MidiaPreferida) value)));
+        campoMidiaSom.setText(localizacao.texto(chaveMidia(MidiaPreferida.SOM)));
+        campoMidiaGrafico.setText(localizacao.texto(chaveMidia(MidiaPreferida.GRAFICO)));
+        campoMidiaLinguagemNatural.setText(localizacao.texto(chaveMidia(MidiaPreferida.LINGUAGEM_NATURAL)));
+        campoMidiaSom.setSelected(true);
+        for (JCheckBox caixa : new JCheckBox[] {campoMidiaSom, campoMidiaGrafico, campoMidiaLinguagemNatural}) {
+            caixa.setOpaque(false);
+            caixa.setFont(new Font("Arial", Font.PLAIN, 13));
+            caixa.setForeground(UITemaGerard.COR_TEXTO);
+            caixa.setFocusPainted(false);
+            caixa.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
+        campoMidiaSom.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (campoMidiaSom.isSelected()) {
+                    campoMidiaGrafico.setSelected(false);
+                    campoMidiaLinguagemNatural.setSelected(false);
+                } else {
+                    campoMidiaSom.setSelected(true);
                 }
-                return label;
             }
         });
-        campos.add(criarLinhaCampo(localizacao.texto("ui.userDialog.media"), campoMidia));
+        campoMidiaGrafico.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (campoMidiaGrafico.isSelected()) {
+                    campoMidiaSom.setSelected(false);
+                    campoMidiaLinguagemNatural.setSelected(false);
+                } else {
+                    campoMidiaGrafico.setSelected(true);
+                }
+            }
+        });
+        campoMidiaLinguagemNatural.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (campoMidiaLinguagemNatural.isSelected()) {
+                    campoMidiaSom.setSelected(false);
+                    campoMidiaGrafico.setSelected(false);
+                } else {
+                    campoMidiaLinguagemNatural.setSelected(true);
+                }
+            }
+        });
+        JPanel painelMidia = new JPanel();
+        painelMidia.setOpaque(false);
+        painelMidia.setLayout(new BoxLayout(painelMidia, BoxLayout.Y_AXIS));
+        painelMidia.add(campoMidiaSom);
+        painelMidia.add(campoMidiaGrafico);
+        painelMidia.add(campoMidiaLinguagemNatural);
+        campos.add(criarLinhaCampo(localizacao.texto("ui.userDialog.media"), painelMidia));
         campos.add(Box.createVerticalStrut(6));
 
         campoEscolaridade.setRenderer(new DefaultListCellRenderer() {
@@ -241,7 +338,8 @@ public final class DialogoUsuario extends JDialog {
         scrollCampos.getVerticalScrollBar().setUnitIncrement(14);
         painel.add(scrollCampos, BorderLayout.CENTER);
 
-        JButton botaoCadastrar = criarBotaoPrimario(localizacao.texto("ui.userDialog.register"));
+        botaoCadastrar = criarBotaoPrimario(localizacao.texto(
+                perfilEmEdicao != null ? "ui.userDialog.save" : "ui.userDialog.register"));
         JPanel rodapeCadastro = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         rodapeCadastro.setOpaque(false);
         rodapeCadastro.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -264,11 +362,35 @@ public final class DialogoUsuario extends JDialog {
         }
         Integer idade = (Integer) campoIdade.getValue();
         Genero sexo = (Genero) campoSexo.getSelectedItem();
-        MidiaPreferida midia = (MidiaPreferida) campoMidia.getSelectedItem();
+        MidiaPreferida midia = campoMidiaGrafico.isSelected() ? MidiaPreferida.GRAFICO
+                : campoMidiaLinguagemNatural.isSelected() ? MidiaPreferida.LINGUAGEM_NATURAL
+                : MidiaPreferida.SOM;
         NivelEscolaridade escolaridade = (NivelEscolaridade) campoEscolaridade.getSelectedItem();
 
-        idSelecionado = repositorio.cadastrarPerfil(nome, idade, sexo, midia, escolaridade, fotoSelecionada);
+        ModeloUsuario perfilAlvoAtualizacao = perfilEmEdicao != null ? perfilEmEdicao : perfilPreVisualizado;
+        if (perfilAlvoAtualizacao != null) {
+            idSelecionado = perfilAlvoAtualizacao.getPerfilAluno().getId();
+            repositorio.atualizarPerfil(idSelecionado, nome, idade, sexo, midia, escolaridade, fotoSelecionada);
+        } else {
+            idSelecionado = repositorio.cadastrarPerfil(nome, idade, sexo, midia, escolaridade, fotoSelecionada);
+        }
         dispose();
+    }
+
+    /**
+     * botaoCadastrar diz "Salvar" (e o clique atualiza, não duplica) sempre
+     * que os campos estão mostrando um perfil já existente — seja o modo de
+     * edição dedicado (perfilEmEdicao) ou uma pré-visualização por seleção
+     * na lista (perfilPreVisualizado). Sem isso, clicar o botão depois de só
+     * navegar pela lista criaria um cadastro duplicado (foi o que gerou
+     * "ana_emilia_2" em ~/Gerard/perfis_usuario.tsv).
+     */
+    private void atualizarTextoBotaoCadastrar() {
+        if (botaoCadastrar == null || perfilEmEdicao != null) {
+            return;
+        }
+        botaoCadastrar.setText(localizacao.texto(
+                perfilPreVisualizado != null ? "ui.userDialog.save" : "ui.userDialog.register"));
     }
 
     /** Espaço de upload de foto ao lado do nome — pedido do usuário em 2026-07-22 (não está no Quadro 5.60 original). */
@@ -343,6 +465,49 @@ public final class DialogoUsuario extends JDialog {
         modeloLista.clear();
         for (ModeloUsuario modelo : repositorio.listarPerfisCadastrados()) {
             modeloLista.addElement(modelo);
+        }
+    }
+
+    /**
+     * Preenche o formulário de cadastro com os dados de um perfil existente
+     * — usado tanto no modo de edição dedicado (perfilEmEdicao, construtor)
+     * quanto na pré-visualização por seleção na lista da tela inicial (ver
+     * listener em criarPainelExistentes). A foto existente só aparece como
+     * preview — fotoSelecionada continua null até o usuário escolher um
+     * arquivo novo, para não recopiar a mesma foto a cada Salvar (ver
+     * cadastrar(), que só passa fotoOrigem != null quando uma foto nova foi
+     * escolhida).
+     */
+    private void preencherCampos(ModeloUsuario modelo) {
+        PerfilAluno aluno = modelo.getPerfilAluno();
+        PerfilAprendizagem aprendizagem = modelo.getPerfilAprendizagem();
+
+        campoNome.setText(aluno.getNome() == null ? "" : aluno.getNome());
+        campoIdade.setValue(aluno.getIdade() == null ? 30 : aluno.getIdade());
+        if (aluno.getSexo() != null) {
+            campoSexo.setSelectedItem(aluno.getSexo());
+        }
+
+        MidiaPreferida midia = aprendizagem.getMidiaPreferida();
+        campoMidiaGrafico.setSelected(midia == MidiaPreferida.GRAFICO);
+        campoMidiaLinguagemNatural.setSelected(midia == MidiaPreferida.LINGUAGEM_NATURAL);
+        campoMidiaSom.setSelected(midia != MidiaPreferida.GRAFICO && midia != MidiaPreferida.LINGUAGEM_NATURAL);
+
+        if (aprendizagem.getNivelEscolaridade() != null) {
+            campoEscolaridade.setSelectedItem(aprendizagem.getNivelEscolaridade());
+        }
+
+        // Reseta fotoSelecionada e o preview a cada troca de perfil mostrado
+        // — sem isso, trocar de um usuário com foto para um sem foto (ou
+        // vice-versa) deixaria a miniatura de um "vazando" para o outro.
+        fotoSelecionada = null;
+        ImageIcon miniatura = aluno.getFotoCaminho() == null ? null : carregarMiniatura(new File(aluno.getFotoCaminho()));
+        if (miniatura != null) {
+            rotuloPreviewFoto.setText("");
+            rotuloPreviewFoto.setIcon(miniatura);
+        } else {
+            rotuloPreviewFoto.setIcon(null);
+            rotuloPreviewFoto.setText(localizacao.texto("ui.userDialog.photo.placeholder"));
         }
     }
 
