@@ -3,6 +3,7 @@ package gerard.dominio.campoaditivo;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.dominio.campoaditivo.evento.EventoPapelQuantitativo;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
+import gerard.dominio.campoaditivo.evento.ResultadoAcao;
 import gerard.dominio.campoaditivo.evento.TipoEventoPapel;
 import gerard.semantica.numero.DominioNumerico;
 import gerard.semantica.numero.ValorDesconhecido;
@@ -16,25 +17,26 @@ import java.util.Optional;
 /**
  * Objeto piloto da nova arquitetura do GERARD.
  *
- * Representa um papel quantitativo do campo aditivo (ex.: Parte, Todo,
- * Transformação) consolidando em um único objeto o que hoje está espalhado
- * entre várias camadas:
- * - matemática/validação: gerard.semantica.papel.PapelQuantitativo (versão anêmica);
- * - compatibilidade entre papéis: ScaffoldingQuestionamento (comparação de string);
- * - mensagem de erro: mensagens_*.properties + ServicoLocalizacao (switch externo);
- * - feedback pedagógico: ScaffoldingFeedbackMultissensorialErro (recebe elemento
- *   gráfico, não papel semântico);
- * - eventos: nenhum lugar hoje.
+ * Representa um papel quantitativo do campo aditivo — um lugar num esquema
+ * (esta classe já foi reutilizada, sem alteração, para Composição de
+ * Medidas — Parte1/Parte2/Todo — e Transformação de Medidas — EstadoInicial/
+ * Transformacao/EstadoFinal). Consolida num único objeto o que antes estava
+ * espalhado entre matemática/validação, compatibilidade, mensagem de erro,
+ * feedback pedagógico e eventos.
+ *
+ * <b>Hipótese arquitetural ainda não validada</b> (ver relatório técnico,
+ * seção "Generalidade de PapelQuantitativo"): a reutilização bem-sucedida em
+ * dois esquemas NÃO comprova que esta classe sirva para qualquer papel do
+ * campo aditivo. Comparação de Medidas (Referido/Referendo/Valor Relativo)
+ * e outros esquemas ainda não foram testados — a generalização só poderá
+ * ser afirmada depois de testes específicos com esses casos.
  *
  * Reaproveita deliberadamente DominioNumerico/ValorNumerico de
- * gerard.semantica.numero: as quatro auditorias anteriores já identificaram
- * esses dois como os únicos objetos do sistema já corretos por esta mesma
- * régua — duplicá-los aqui contradiria o princípio que este piloto
- * demonstra. Também reaproveita TipoFiguraDiagrama (já livre de AWT/Swing).
+ * gerard.semantica.numero — as auditorias anteriores já identificaram esses
+ * dois como objetos já corretos do sistema por esta mesma régua.
  *
  * Este piloto é isolado por design: não é referenciado por Main.java nem
- * por nenhum caminho de produção. Ver TestePilotoPapelQuantitativo.java
- * para a demonstração executável.
+ * por nenhum caminho de produção.
  */
 public final class PapelQuantitativo {
 
@@ -57,14 +59,12 @@ public final class PapelQuantitativo {
         this.dominio = dominio == null ? DominioNumerico.NATURAIS : dominio;
         this.representacaoGrafica = Objects.requireNonNull(representacaoGrafica,
                 "representação gráfica não pode ser nula — todo papel sabe como se apresenta");
-        this.publicador = publicador; // pode ser null (uso isolado, sem infraestrutura anexada)
+        // Null Object: nunca guardamos null aqui, para que publicar(...) não precise checar nulidade.
+        this.publicador = publicador == null ? PublicadorEventoDominio.NENHUM : publicador;
         this.valorAtual = new ValorDesconhecido(this.dominio);
     }
 
     // ---- fábricas: Parte1/Parte2/Todo são INSTÂNCIAS desta classe, não subclasses ----
-    // (a diferença entre "Parte" e "Todo" está nos dados — chave, domínio, rótulo —
-    // não no comportamento; é o mesmo conceito de papel quantitativo em dois lugares
-    // diferentes do esquema de composição de medidas)
 
     public static PapelQuantitativo parte1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte1", "Parte", DominioNumerico.NATURAIS,
@@ -90,31 +90,27 @@ public final class PapelQuantitativo {
     public String getNomeConceitual() { return nomeConceitual; }
     public DominioNumerico getDominio() { return dominio; }
 
-    // ---- representação gráfica (descrição, não desenho — ver RepresentacaoGraficaPapel) ----
+    // ---- representação gráfica (descrição, não desenho) ----
 
     public RepresentacaoGraficaPapel representacaoGrafica() { return representacaoGrafica; }
 
     // ---- conhecimento matemático / regras de validação ----
 
-    /**
-     * Regra matemática: um valor só é aceito se satisfizer o domínio numérico
-     * deste papel. Decide pelo VALOR em si (magnitude/sinal), não pelo tipo
-     * Java que o carrega — um NumeroInteiro negativo é rejeitado por um papel
-     * de domínio NATURAIS mesmo que ambos "existam" no universo dos inteiros;
-     * o que importa é se o número cabe na restrição deste papel específico.
-     */
     public boolean aceita(ValorNumerico valor) {
         return valor != null && (!valor.ehConhecido() || dominio.aceita(valor.valorOuNull()));
     }
 
     /**
-     * Regra semântica: dois papéis são compatíveis quando representam o
-     * mesmo conceito (mesma chave). Migrada de
-     * ScaffoldingQuestionamento.papeisCompativeis, que hoje decide isto por
-     * String.startsWith/equals em vez de perguntar ao próprio papel (ver
-     * auditoria Knowledge-Oriented, seção 3.7).
+     * Compara IDENTIDADE semântica (mesma chave) — não uma noção mais ampla
+     * de "compatibilidade". Dois papéis diferentes podem legitimamente
+     * participar da mesma relação estrutural sem serem a mesma identidade
+     * semântica; uma futura noção de compatibilidade real dependeria de
+     * esquema, situação-problema, tentativa, grandeza, domínio numérico e
+     * relação estrutural permitida — nenhuma dessas dimensões é avaliada
+     * aqui. Nome escolhido deliberadamente para não prometer mais do que o
+     * método faz (ver relatório técnico, seção "Revisão de compativelCom").
      */
-    public boolean compativelCom(PapelQuantitativo outro) {
+    public boolean mesmaIdentidadeSemantica(PapelQuantitativo outro) {
         return outro != null && this.chave.equals(outro.chave);
     }
 
@@ -130,22 +126,28 @@ public final class PapelQuantitativo {
 
     public ValorNumerico valorAtual() { return valorAtual; }
 
+    /** Posicionamento por ação do estudante, sem contexto de rastreabilidade explícito. */
+    public Optional<DiagnosticoErroPapel> posicionar(ValorNumerico valorProposto) {
+        return posicionar(valorProposto, OrigemAcao.ORIGEM_USUARIO, ContextoAcao.NAO_INFORMADO);
+    }
+
     /**
      * Tenta posicionar um valor neste papel. O próprio objeto decide o que
      * aconteceu — quem chama este método só recebe o resultado, nunca o
-     * reinterpreta:
-     * - se o valor pertence ao domínio, o papel aceita, atualiza seu estado
-     *   e publica VALOR_POSICIONADO;
-     * - caso contrário, permanece inalterado, produz um DiagnosticoErroPapel
-     *   (mensagem + feedback pedagógico + sugestão de correção) e publica
-     *   VALOR_REJEITADO.
+     * reinterpreta. {@code origem} nunca deve ser {@code ORIGEM_USUARIO}
+     * quando o valor vem de um cálculo automático (ver
+     * RelacaoEstruturalTransformacao.aplicar) — é assim que a integridade
+     * dos dados de pesquisa é preservada.
      */
-    public Optional<DiagnosticoErroPapel> posicionar(ValorNumerico valorProposto) {
+    public Optional<DiagnosticoErroPapel> posicionar(ValorNumerico valorProposto, OrigemAcao origem,
+                                                       ContextoAcao contexto) {
+        String estadoAnterior = descreverEstadoAtual();
         boolean aceito = aceita(valorProposto);
         if (aceito) {
             this.valorAtual = valorProposto;
-            publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_POSICIONADO, chave,
-                    formatarValorProposto(valorProposto), true, null));
+            publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_POSICIONADO, origem, contexto, chave,
+                    estadoAnterior, descreverEstadoAtual(), formatarValorProposto(valorProposto),
+                    ResultadoAcao.ACEITO, null));
             return Optional.empty();
         }
         DiagnosticoErroPapel diagnostico = new DiagnosticoErroPapel(
@@ -153,9 +155,14 @@ public final class PapelQuantitativo {
                 "erro.papel.valorForaDoDominio",
                 "feedback.papel.valorForaDoDominio",
                 "correcao.papel.valorForaDoDominio");
-        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, chave,
-                formatarValorProposto(valorProposto), false, diagnostico));
+        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, origem, contexto, chave,
+                estadoAnterior, descreverEstadoAtual(), formatarValorProposto(valorProposto),
+                ResultadoAcao.REJEITADO, diagnostico));
         return Optional.of(diagnostico);
+    }
+
+    private String descreverEstadoAtual() {
+        return valorAtual.ehConhecido() ? valorAtual.formatar(true) : "?";
     }
 
     private static String formatarValorProposto(ValorNumerico valor) {
@@ -163,19 +170,11 @@ public final class PapelQuantitativo {
     }
 
     private void publicar(EventoPapelQuantitativo evento) {
-        if (publicador != null) {
-            publicador.publicar(evento);
-        }
+        publicador.publicar(evento);
     }
 
     // ---- serialização (dados, não infraestrutura de gravação) ----
 
-    /**
-     * Representação serializável deste papel — o objeto sabe descrever a si
-     * mesmo; quem grava em disco/banco é responsabilidade da infraestrutura,
-     * nunca deste método (skill Semantic Event Logging: o domínio não grava
-     * logs diretamente).
-     */
     public Map<String, Object> paraMapa() {
         Map<String, Object> mapa = new LinkedHashMap<>();
         mapa.put("chave", chave);

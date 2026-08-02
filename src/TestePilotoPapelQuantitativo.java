@@ -1,6 +1,9 @@
+import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
-import gerard.dominio.campoaditivo.InvarianteOperatorio;
+import gerard.dominio.campoaditivo.EstadoConsistencia;
+import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.dominio.campoaditivo.RelacaoEstruturalComposicao;
 import gerard.dominio.campoaditivo.evento.EventoDominio;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.numero.NumeroInteiro;
@@ -11,20 +14,22 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Harness executável do objeto piloto da nova arquitetura
- * (gerard.dominio.campoaditivo.PapelQuantitativo) — mesmo espírito de
- * TesteBaseConhecimento: não é um framework de testes, só falha alto
- * (AssertionError) se o piloto quebrar. Não toca em Main.java nem em
- * nenhum caminho de produção — o piloto é demonstrado isoladamente, como
- * pede a etapa de implementação piloto.
+ * Harness executável do piloto Composição de Medidas — versão corrigida
+ * (baseline v2): distingue relação estrutural formal de invariante
+ * operatório, testa origem/contexto das ações, Null Object do publicador,
+ * e os estados explícitos de consistência (não mais boolean).
+ *
+ * Não toca em Main.java nem em nenhum caminho de produção.
  */
 public class TestePilotoPapelQuantitativo {
 
     public static void main(String[] args) {
         List<EventoDominio> eventosCapturados = new ArrayList<>();
         PublicadorEventoDominio publicador = eventosCapturados::add;
+        RelacaoEstruturalComposicao relacao = RelacaoEstruturalComposicao.composicaoDeMedidas();
 
         System.out.println("=== Piloto: PapelQuantitativo (Composição de Medidas) ===");
+        System.out.println("relação estrutural: " + relacao.descreverRelacao());
 
         PapelQuantitativo parte1 = PapelQuantitativo.parte1(publicador);
         PapelQuantitativo parte2 = PapelQuantitativo.parte2(publicador);
@@ -32,17 +37,34 @@ public class TestePilotoPapelQuantitativo {
 
         checar("parte1 começa como incógnita", String.valueOf(parte1.ehIncognita()), "true");
 
-        Optional<DiagnosticoErroPapel> r1 = parte1.posicionar(new NumeroNatural(8));
-        checar("posicionar 8 em Parte1 é aceito", String.valueOf(r1.isPresent()), "false");
+        System.out.println();
+        System.out.println("=== EstadoConsistencia.REPRESENTACAO_INCOMPLETA antes de preencher ===");
+        checar("consistência com papéis vazios é REPRESENTACAO_INCOMPLETA",
+                relacao.verificarConsistencia(parte1, parte2, todo).name(), "REPRESENTACAO_INCOMPLETA");
+
+        ContextoAcao contexto = new ContextoAcao("sessao-teste-1", "usuario-local-1", "tentativa-1",
+                "situacao-composicao-8-6-14", "diagrama-vergnaud-1");
+
+        Optional<DiagnosticoErroPapel> r1 = parte1.posicionar(new NumeroNatural(8), OrigemAcao.ORIGEM_USUARIO, contexto);
+        checar("posicionar 8 em Parte1 (ação do usuário, com contexto) é aceito", String.valueOf(r1.isPresent()), "false");
         checar("parte1 deixa de ser incógnita", String.valueOf(parte1.ehIncognita()), "false");
 
         parte2.posicionar(new NumeroNatural(6));
         todo.posicionar(new NumeroNatural(14));
 
-        InvarianteOperatorio invariante = InvarianteOperatorio.composicaoDeMedidas();
-        System.out.println("invariante: " + invariante.explicar());
-        checar("invariante Todo=Parte1+Parte2 satisfeito (8+6=14)",
-                String.valueOf(invariante.verificar(parte1, parte2, todo)), "true");
+        System.out.println();
+        System.out.println("=== Relação estrutural (não invariante operatório) ===");
+        checar("relação estrutural CONSISTENTE (8+6=14)",
+                relacao.verificarConsistencia(parte1, parte2, todo).name(), "CONSISTENTE");
+
+        PapelQuantitativo parte1x = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2x = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todox = PapelQuantitativo.todo(publicador);
+        parte1x.posicionar(new NumeroNatural(8));
+        parte2x.posicionar(new NumeroNatural(6));
+        todox.posicionar(new NumeroNatural(100));
+        checar("representação estruturalmente inconsistente (8+6 != 100)",
+                relacao.verificarConsistencia(parte1x, parte2x, todox).name(), "REPRESENTACAO_INCONSISTENTE");
 
         System.out.println();
         System.out.println("=== Rejeição de valor fora do domínio ===");
@@ -50,8 +72,7 @@ public class TestePilotoPapelQuantitativo {
         Optional<DiagnosticoErroPapel> r2 = outraParte.posicionar(new NumeroInteiro(-3));
         checar("Parte (NATURAIS) rejeita valor negativo", String.valueOf(r2.isPresent()), "true");
         checar("diagnóstico traz tipo de erro correto", r2.get().getTipo().name(), "VALOR_FORA_DO_DOMINIO");
-        checar("diagnóstico traz chave de mensagem", r2.get().getChaveMensagem(),
-                "erro.papel.valorForaDoDominio");
+        checar("diagnóstico traz chave de mensagem", r2.get().getChaveMensagem(), "erro.papel.valorForaDoDominio");
         checar("diagnóstico traz chave de feedback pedagógico", r2.get().getChaveFeedbackPedagogico(),
                 "feedback.papel.valorForaDoDominio");
         checar("diagnóstico traz chave de sugestão de correção", r2.get().getChaveSugestaoCorrecao(),
@@ -59,20 +80,31 @@ public class TestePilotoPapelQuantitativo {
         checar("outraParte permanece incógnita após rejeição", String.valueOf(outraParte.ehIncognita()), "true");
 
         System.out.println();
-        System.out.println("=== Compatibilidade entre papéis ===");
+        System.out.println("=== Identidade semântica (não mais chamada de 'compatibilidade') ===");
         PapelQuantitativo outraTodo = PapelQuantitativo.todo(publicador);
-        checar("todo é compatível consigo mesmo (outra instância, mesma chave)",
-                String.valueOf(todo.compativelCom(outraTodo)), "true");
-        checar("parte1 não é compatível com todo", String.valueOf(parte1.compativelCom(todo)), "false");
+        checar("todo tem a mesma identidade semântica que outra instância de todo",
+                String.valueOf(todo.mesmaIdentidadeSemantica(outraTodo)), "true");
+        checar("parte1 não tem a mesma identidade semântica que todo",
+                String.valueOf(parte1.mesmaIdentidadeSemantica(todo)), "false");
+
+        System.out.println();
+        System.out.println("=== Origem da ação, id_acao e estado anterior/posterior no evento ===");
+        EventoDominio eventoDoUsuario = eventosCapturados.get(0);
+        checarCampoEvento(eventoDoUsuario, "origem_da_acao", "ORIGEM_USUARIO");
+        checarCampoEvento(eventoDoUsuario, "papel_semantico", "papel.parte1");
+        checarCampoEvento(eventoDoUsuario, "estado_anterior", "?");
+        checarCampoEvento(eventoDoUsuario, "estado_posterior", "8");
+        checarCampoEvento(eventoDoUsuario, "id_sessao", "sessao-teste-1");
+        checarCampoEvento(eventoDoUsuario, "id_tentativa", "tentativa-1");
+        checar("id_acao presente e não vazio", String.valueOf(eventoDoUsuario.paraMapa().get("id_acao") != null
+                && !eventoDoUsuario.paraMapa().get("id_acao").toString().isEmpty()), "true");
+        checar("resultado ACEITO presente na chave 'resultado'", String.valueOf(eventoDoUsuario.paraMapa().get("resultado")), "ACEITO");
 
         System.out.println();
         System.out.println("=== Eventos semânticos publicados ===");
         System.out.println("total de eventos capturados: " + eventosCapturados.size());
         checar("cada posicionamento tentado gera exatamente um evento",
-                String.valueOf(eventosCapturados.size()), "4");
-        EventoDominio ultimo = eventosCapturados.get(eventosCapturados.size() - 1);
-        System.out.println("último evento: " + ultimo.getTipo() + " " + ultimo.paraMapa());
-        checar("último evento é uma rejeição", ultimo.getTipo(), "VALOR_REJEITADO");
+                String.valueOf(eventosCapturados.size()), "7");
 
         System.out.println();
         System.out.println("=== Serialização ===");
@@ -80,13 +112,24 @@ public class TestePilotoPapelQuantitativo {
         checar("mapa serializado traz o valor correto", String.valueOf(parte1.paraMapa().get("valor_atual")), "8");
 
         System.out.println();
-        System.out.println("=== Funciona sem publicador (uso isolado, sem infraestrutura) ===");
+        System.out.println("=== Null Object do publicador (nunca null internamente) ===");
         PapelQuantitativo semPublicador = PapelQuantitativo.parte1(null);
         semPublicador.posicionar(new NumeroNatural(5));
-        checar("papel sem publicador ainda funciona", String.valueOf(semPublicador.valorAtual().valorOuNull()), "5");
+        checar("papel construído com publicador nulo ainda funciona (Null Object)",
+                String.valueOf(semPublicador.valorAtual().valorOuNull()), "5");
+
+        PapelQuantitativo comNenhum = PapelQuantitativo.parte1(PublicadorEventoDominio.NENHUM);
+        comNenhum.posicionar(new NumeroNatural(9));
+        checar("papel construído explicitamente com PublicadorEventoDominio.NENHUM funciona",
+                String.valueOf(comNenhum.valorAtual().valorOuNull()), "9");
 
         System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO PASSARAM.");
+    }
+
+    private static void checarCampoEvento(EventoDominio evento, String chaveMapa, String esperado) {
+        Object obtido = evento.paraMapa().get(chaveMapa);
+        checar("evento[" + chaveMapa + "]", String.valueOf(obtido), esperado);
     }
 
     private static void checar(String rotulo, String obtido, String esperado) {
