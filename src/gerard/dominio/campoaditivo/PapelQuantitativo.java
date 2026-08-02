@@ -1,6 +1,5 @@
 package gerard.dominio.campoaditivo;
 
-import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.dominio.campoaditivo.evento.EventoPapelQuantitativo;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.dominio.campoaditivo.evento.ResultadoAcao;
@@ -43,13 +42,13 @@ public final class PapelQuantitativo {
     private final String chave;
     private final String nomeConceitual;
     private final DominioNumerico dominio;
-    private final RepresentacaoGraficaPapel representacaoGrafica;
+    private final DescritorRepresentacaoPapel descritorRepresentacao;
     private final PublicadorEventoDominio publicador;
 
     private ValorNumerico valorAtual;
 
     public PapelQuantitativo(String chave, String nomeConceitual, DominioNumerico dominio,
-                              RepresentacaoGraficaPapel representacaoGrafica,
+                              DescritorRepresentacaoPapel descritorRepresentacao,
                               PublicadorEventoDominio publicador) {
         this.chave = Objects.requireNonNull(chave, "chave não pode ser nula").trim();
         if (this.chave.isEmpty()) {
@@ -57,8 +56,8 @@ public final class PapelQuantitativo {
         }
         this.nomeConceitual = nomeConceitual == null ? "" : nomeConceitual.trim();
         this.dominio = dominio == null ? DominioNumerico.NATURAIS : dominio;
-        this.representacaoGrafica = Objects.requireNonNull(representacaoGrafica,
-                "representação gráfica não pode ser nula — todo papel sabe como se apresenta");
+        this.descritorRepresentacao = Objects.requireNonNull(descritorRepresentacao,
+                "descritor de representação não pode ser nulo — todo papel sabe o significado de sua representação");
         // Null Object: nunca guardamos null aqui, para que publicar(...) não precise checar nulidade.
         this.publicador = publicador == null ? PublicadorEventoDominio.NENHUM : publicador;
         this.valorAtual = new ValorDesconhecido(this.dominio);
@@ -68,19 +67,19 @@ public final class PapelQuantitativo {
 
     public static PapelQuantitativo parte1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte1", "Parte", DominioNumerico.NATURAIS,
-                new RepresentacaoGraficaPapel(TipoFiguraDiagrama.RETANGULO, "rotulo.papel.parte1"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte1"),
                 publicador);
     }
 
     public static PapelQuantitativo parte2(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte2", "Parte", DominioNumerico.NATURAIS,
-                new RepresentacaoGraficaPapel(TipoFiguraDiagrama.RETANGULO, "rotulo.papel.parte2"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte2"),
                 publicador);
     }
 
     public static PapelQuantitativo todo(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.todo", "Todo", DominioNumerico.NATURAIS,
-                new RepresentacaoGraficaPapel(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, "rotulo.papel.todo"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "rotulo.papel.todo"),
                 publicador);
     }
 
@@ -90,9 +89,9 @@ public final class PapelQuantitativo {
     public String getNomeConceitual() { return nomeConceitual; }
     public DominioNumerico getDominio() { return dominio; }
 
-    // ---- representação gráfica (descrição, não desenho) ----
+    // ---- representação (descritor abstrato, não desenho) ----
 
-    public RepresentacaoGraficaPapel representacaoGrafica() { return representacaoGrafica; }
+    public DescritorRepresentacaoPapel descritorRepresentacao() { return descritorRepresentacao; }
 
     // ---- conhecimento matemático / regras de validação ----
 
@@ -180,8 +179,9 @@ public final class PapelQuantitativo {
         mapa.put("chave", chave);
         mapa.put("nome_conceitual", nomeConceitual);
         mapa.put("dominio", dominio.name());
-        mapa.put("forma_grafica", representacaoGrafica.getForma().name());
-        mapa.put("chave_rotulo", representacaoGrafica.getChaveRotulo());
+        mapa.put("forma_representacao_abstrata", descritorRepresentacao.getForma().name());
+        mapa.put("simbolo_representacao", descritorRepresentacao.getSimbolo());
+        mapa.put("chave_rotulo", descritorRepresentacao.getChaveRotulo());
         mapa.put("valor_atual", valorAtual.ehConhecido() ? valorAtual.valorOuNull() : null);
         mapa.put("preenchido", estaPreenchido());
         return mapa;
