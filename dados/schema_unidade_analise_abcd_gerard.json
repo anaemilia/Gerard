@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gerard.local/schema/unidade-analise-abcd-1.0.0.json",
+  "title": "Unidade de analise A-B-C-D do Gerard (rodada 5, 2026-07-31)",
+  "description": "Cobre as quatro saidas da rodada 5 (PROMPT_CLAUDE_UNIDADE_ANALISE_ABCD_EXPLICACOES_OPCIONAIS.md): unidades_analise.jsonl (tipo_registro=unidade_analise, uma linha por unidade A-B(-C-D)), acoes_usuario_protocolos.jsonl (tipo_registro=acao_usuario_protocolo, uma linha por instancia de protocolo B), eventos_tecnicos.jsonl (tipo_registro=evento_tecnico) e explicacoes_usuario.jsonl (tipo_registro=interacao_tela_explicacoes). A e B sao obrigatorios em toda unidade; C e D comecam em not_opened e so mudam se o usuario abrir a tela de explicacoes para a mesma tarefa antes da unidade fechar.",
+  "x-decisao-arquitetura": "gerard.pesquisador.auditoria.SchemaValidator (rodada 4, sem lib externa) trata um campo 'required' com valor null como AUSENTE (mesma regra do draft JSON Schema para 'required' nao se aplicar a valores null seria diferente, mas este validador manual e mais estrito). Por isso nenhum campo cujo type inclua \"null\" aparece em 'required' abaixo, mesmo quando a chave sempre esta presente no mapa serializado — e uma limitacao conhecida do validador (documentada tambem na rodada 4), nao um dado que deixou de ser gravado.",
+  "oneOf": [
+    { "$ref": "#/$defs/unidadeAnalise" },
+    { "$ref": "#/$defs/acaoUsuarioProtocolo" },
+    { "$ref": "#/$defs/eventoTecnico" },
+    { "$ref": "#/$defs/interacaoTelaExplicacoes" }
+  ],
+  "$defs": {
+    "unidadeAnalise": {
+      "type": "object",
+      "required": ["tipo_registro", "analysis_unit_id", "sequence_order", "started_at",
+        "A_computer_action", "B_user_action", "C_explanation_questions", "D_user_explanations",
+        "analysis_unit_completeness", "research_use"],
+      "additionalProperties": false,
+      "properties": {
+        "tipo_registro": { "const": "unidade_analise" },
+        "analysis_unit_id": { "type": "string" },
+        "session_id": { "type": ["string", "null"] },
+        "episode_id": { "type": ["string", "null"] },
+        "user_id": { "type": ["string", "null"] },
+        "sequence_order": { "type": "integer" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" },
+        "status": { "type": "string" },
+        "A_computer_action": { "$ref": "#/$defs/acaoComputador" },
+        "B_user_action": { "$ref": "#/$defs/protocolo" },
+        "C_explanation_questions": { "$ref": "#/$defs/componenteC" },
+        "D_user_explanations": { "$ref": "#/$defs/componenteD" },
+        "analysis_unit_completeness": { "enum": ["A_B", "A_B_C", "A_B_C_D"] },
+        "research_use": { "$ref": "#/$defs/researchUse" }
+      }
+    },
+    "acaoComputador": {
+      "type": "object",
+      "required": ["feedback_presented", "technical_events"],
+      "additionalProperties": false,
+      "properties": {
+        "action_id": { "type": ["string", "null"] },
+        "action_type": { "type": ["string", "null"] },
+        "content": { "type": ["string", "null"] },
+        "message_template_id": { "type": ["string", "null"] },
+        "feedback_presented": { "type": "boolean" },
+        "technical_events": { "type": "array" }
+      }
+    },
+    "researchUse": {
+      "type": "object",
+      "required": ["eligible_for_behavioral_analysis", "eligible_for_explanatory_analysis", "missing_explanation_reason"],
+      "additionalProperties": false,
+      "properties": {
+        "eligible_for_behavioral_analysis": { "const": true },
+        "eligible_for_explanatory_analysis": { "type": "boolean" },
+        "missing_explanation_reason": {
+          "enum": ["user_did_not_open_explanation_screen", "user_opened_but_did_not_answer",
+            "user_answered_partially", "technical_failure", "not_applicable", "unknown"]
+        }
+      }
+    },
+    "protocolo": {
+      "type": "object",
+      "required": ["protocol_instance_id", "semantic_context", "evaluation", "agent_effects"],
+      "additionalProperties": false,
+      "properties": {
+        "protocol_instance_id": { "type": "string" },
+        "protocol_type": {
+          "type": ["string", "null"],
+          "enum": ["SELECIONAR", "POSICIONAR", "ORIENTAR", "QUANTIFICAR", "CAMINHO", "TEXTO", null]
+        },
+        "protocol_type_unavailable_reason": { "type": ["string", "null"] },
+        "action_description": { "type": ["string", "null"] },
+        "semantic_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "category": { "type": ["string", "null"] },
+            "element": { "type": ["string", "null"] },
+            "source_role": { "type": ["string", "null"] },
+            "target_role": { "type": ["string", "null"] }
+          }
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["result", "evaluation_type", "effective"],
+          "additionalProperties": false,
+          "properties": {
+            "result": { "enum": ["C", "E"] },
+            "evaluation_type": { "type": "string" },
+            "effective": { "const": true },
+            "error_type": { "type": ["string", "null"] },
+            "rationale": { "type": ["string", "null"] }
+          }
+        },
+        "agent_effects": {
+          "type": "object",
+          "required": ["monitor_final_evaluations", "zdp_effective_decisions", "modeler_effective_updates", "cases_inserted"],
+          "additionalProperties": false,
+          "properties": {
+            "monitor_final_evaluations": { "type": "integer" },
+            "zdp_effective_decisions": { "type": "integer" },
+            "modeler_effective_updates": { "type": "integer" },
+            "cases_inserted": { "type": "integer" }
+          }
+        },
+        "idempotency_key": { "type": ["string", "null"] }
+      }
+    },
+    "acaoUsuarioProtocolo": {
+      "type": "object",
+      "required": ["tipo_registro", "protocol_instance_id", "semantic_context", "evaluation",
+        "agent_effects", "analysis_unit_id"],
+      "additionalProperties": false,
+      "properties": {
+        "tipo_registro": { "const": "acao_usuario_protocolo" },
+        "protocol_instance_id": { "type": "string" },
+        "protocol_type": { "type": ["string", "null"] },
+        "protocol_type_unavailable_reason": { "type": ["string", "null"] },
+        "action_description": { "type": ["string", "null"] },
+        "semantic_context": { "type": "object" },
+        "evaluation": { "type": "object" },
+        "agent_effects": { "type": "object" },
+        "idempotency_key": { "type": ["string", "null"] },
+        "analysis_unit_id": { "type": "string" },
+        "episode_id": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "user_id": { "type": ["string", "null"] },
+        "gesture_id": { "type": ["string", "null"] },
+        "action_id": { "type": ["string", "null"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "eventoTecnico": {
+      "type": "object",
+      "required": ["tipo_registro", "technical_event_id", "counts_as_analysis_unit",
+        "counts_as_protocol_instance", "effective"],
+      "additionalProperties": false,
+      "properties": {
+        "tipo_registro": { "const": "evento_tecnico" },
+        "technical_event_id": { "type": "string" },
+        "analysis_unit_id": { "type": ["string", "null"] },
+        "protocol_instance_id": { "type": ["string", "null"] },
+        "episode_id": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "event_type": { "type": ["string", "null"] },
+        "timestamp": { "type": ["string", "null"], "format": "date-time" },
+        "counts_as_analysis_unit": { "const": false },
+        "counts_as_protocol_instance": { "const": false },
+        "effective": { "const": false },
+        "details": { "type": ["string", "null"] }
+      }
+    },
+    "interacaoTelaExplicacoes": {
+      "type": "object",
+      "required": ["tipo_registro", "analysis_unit_id", "event", "saved", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "tipo_registro": { "const": "interacao_tela_explicacoes" },
+        "analysis_unit_id": { "type": "string" },
+        "episode_id": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "user_id": { "type": ["string", "null"] },
+        "protocol_instance_id": { "type": ["string", "null"] },
+        "event": { "type": "string" },
+        "saved": { "type": "boolean" },
+        "edited_later": { "type": "boolean" },
+        "status": { "type": "string" },
+        "error_message": { "type": ["string", "null"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "pergunta": {
+      "type": "object",
+      "required": ["question_id", "presented_to_user"],
+      "additionalProperties": false,
+      "properties": {
+        "question_id": { "type": "string" },
+        "question_type": { "type": ["string", "null"] },
+        "content": { "type": ["string", "null"] },
+        "presented_to_user": { "type": "boolean" }
+      }
+    },
+    "resposta": {
+      "type": "object",
+      "required": ["question_id", "saved", "edited_later"],
+      "additionalProperties": false,
+      "properties": {
+        "question_id": { "type": "string" },
+        "content": { "type": ["string", "null"] },
+        "saved": { "type": "boolean" },
+        "edited_later": { "type": "boolean" },
+        "timestamp": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "componenteC": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["button_available", "button_activated", "screen_opened", "status", "questions"],
+          "additionalProperties": false,
+          "properties": {
+            "button_available": { "type": "boolean" },
+            "button_activated": { "const": false },
+            "screen_opened": { "const": false },
+            "status": { "const": "not_opened" },
+            "questions": { "type": "array", "items": { "$ref": "#/$defs/pergunta" } },
+            "opened_at": { "type": "null" },
+            "closed_at": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["button_available", "button_activated", "screen_opened", "status", "questions", "opened_at"],
+          "additionalProperties": false,
+          "properties": {
+            "button_available": { "const": true },
+            "button_activated": { "const": true },
+            "screen_opened": { "const": true },
+            "status": { "enum": ["opened_not_answered", "partially_answered", "answered"] },
+            "questions": { "type": "array", "items": { "$ref": "#/$defs/pergunta" } },
+            "opened_at": { "type": "string", "format": "date-time" },
+            "closed_at": { "type": ["string", "null"], "format": "date-time" }
+          }
+        }
+      ]
+    },
+    "componenteD": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["status", "responses"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "const": "not_opened" },
+            "responses": { "type": "array", "items": { "$ref": "#/$defs/resposta" } },
+            "completed_at": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["status", "responses"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "const": "opened_not_answered" },
+            "responses": { "type": "array", "items": { "$ref": "#/$defs/resposta" } },
+            "completed_at": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["status", "responses", "completed_at"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "enum": ["partially_answered", "answered"] },
+            "responses": { "type": "array", "items": { "$ref": "#/$defs/resposta" } },
+            "completed_at": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    }
+  }
+}

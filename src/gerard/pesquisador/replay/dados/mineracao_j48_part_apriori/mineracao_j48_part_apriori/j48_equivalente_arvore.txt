@@ -1,0 +1,61 @@
+|--- consecutivos_bin_zero <= 0.500
+|   |--- repete_familia_0 <= 0.500
+|   |   |--- categoria_Composição <= 0.500
+|   |   |   |--- task_family_categoria <= 0.500
+|   |   |   |   |--- categoria_Transformação <= 0.500
+|   |   |   |   |   |--- fase_protocolo_intermediaria1 <= 0.500
+|   |   |   |   |   |   |--- class: C
+|   |   |   |   |   |--- fase_protocolo_intermediaria1 >  0.500
+|   |   |   |   |   |   |--- class: E
+|   |   |   |   |--- categoria_Transformação >  0.500
+|   |   |   |   |   |--- task_family_posicionamento <= 0.500
+|   |   |   |   |   |   |--- class: E
+|   |   |   |   |   |--- task_family_posicionamento >  0.500
+|   |   |   |   |   |   |--- class: E
+|   |   |   |--- task_family_categoria >  0.500
+|   |   |   |   |--- categoria_Transformação <= 0.500
+|   |   |   |   |   |--- class: E
+|   |   |   |   |--- categoria_Transformação >  0.500
+|   |   |   |   |   |--- class: E
+|   |   |--- categoria_Composição >  0.500
+|   |   |   |--- class: C
+|   |--- repete_familia_0 >  0.500
+|   |   |--- ajuda_previa_1 <= 0.500
+|   |   |   |--- historico_erros_3a5 <= 0.500
+|   |   |   |   |--- class: E
+|   |   |   |--- historico_erros_3a5 >  0.500
+|   |   |   |   |--- class: E
+|   |   |--- ajuda_previa_1 >  0.500
+|   |   |   |--- class: E
+|--- consecutivos_bin_zero >  0.500
+|   |--- artifact_family_outro <= 0.500
+|   |   |--- repete_familia_0 <= 0.500
+|   |   |   |--- artifact_family_diagrama <= 0.500
+|   |   |   |   |--- class: E
+|   |   |   |--- artifact_family_diagrama >  0.500
+|   |   |   |   |--- categoria_Transformação <= 0.500
+|   |   |   |   |   |--- categoria_Comparação <= 0.500
+|   |   |   |   |   |   |--- class: C
+|   |   |   |   |   |--- categoria_Comparação >  0.500
+|   |   |   |   |   |   |--- class: C
+|   |   |   |   |--- categoria_Transformação >  0.500
+|   |   |   |   |   |--- class: C
+|   |   |--- repete_familia_0 >  0.500
+|   |   |   |--- artifact_family_campo_resultado <= 0.500
+|   |   |   |   |--- feedback_previo_0 <= 0.500
+|   |   |   |   |   |--- class: C
+|   |   |   |   |--- feedback_previo_0 >  0.500
+|   |   |   |   |   |--- artifact_family_diagrama <= 0.500
+|   |   |   |   |   |   |--- class: E
+|   |   |   |   |   |--- artifact_family_diagrama >  0.500
+|   |   |   |   |   |   |--- class: E
+|   |   |   |--- artifact_family_campo_resultado >  0.500
+|   |   |   |   |--- class: C
+|   |--- artifact_family_outro >  0.500
+|   |   |--- categoria_Transformação <= 0.500
+|   |   |   |--- categoria_Composição <= 0.500
+|   |   |   |   |--- class: C
+|   |   |   |--- categoria_Composição >  0.500
+|   |   |   |   |--- class: C
+|   |   |--- categoria_Transformação >  0.500
+|   |   |   |--- class: E

@@ -3,6 +3,7 @@ package gerard.pesquisador.tentativa;
 import gerard.agente.modelador.AgenteModelador;
 import gerard.agente.modelador.SugestorInvarianteOperatorio;
 import gerard.i18n.ServicoLocalizacao;
+import gerard.pesquisador.analiseunidade.AnalysisUnitAuditService;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import gerard.ui.UITemaGerard;
 import java.awt.BorderLayout;
@@ -20,7 +21,10 @@ import java.awt.image.BufferedImage;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -76,13 +80,29 @@ public final class TelaArtefatoExplicativo extends JDialog {
     private final JTextArea observacaoInvariante = new JTextArea(2, 60);
     private final List<String> blocosForma = new ArrayList<String>();
     private final AgenteModelador agenteModelador;
+    private final AnalysisUnitAuditService analysisUnitAuditService;
+    private final List<ItemExplicacaoModelagem> itensExplicacao;
+    private final ArtefatoContexto contextoExplicacao;
     private final SugestorInvarianteOperatorio sugestorInvarianteOperatorio = new SugestorInvarianteOperatorio();
     private boolean salvo;
+    private boolean fechamentoJaRegistrado;
 
     private TelaArtefatoExplicativo(Window owner, List<ItemExplicacaoModelagem> itens,
-            final ArtefatoContexto contexto, AgenteModelador agenteModelador) {
+            final ArtefatoContexto contexto, AgenteModelador agenteModelador,
+            AnalysisUnitAuditService analysisUnitAuditService) {
         super(owner, loc().texto("analise.title"), ModalityType.APPLICATION_MODAL);
         this.agenteModelador = agenteModelador;
+        this.analysisUnitAuditService = analysisUnitAuditService;
+        this.itensExplicacao = itens;
+        this.contextoExplicacao = contexto;
+        if (analysisUnitAuditService != null) {
+            analysisUnitAuditService.registrarTelaAberta(contexto.usuarioId, contexto.categoria, itens);
+        }
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                registrarFechamentoSeNecessario(false, null, null);
+            }
+        });
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         getContentPane().setBackground(COR_FUNDO);
@@ -294,7 +314,10 @@ public final class TelaArtefatoExplicativo extends JDialog {
         rodape.setBackground(COR_SUPERFICIE);
         rodape.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, COR_BORDA));
         JButton cancelar = new JButton(loc.texto("analise.cancel"));
-        cancelar.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { dispose(); }});
+        cancelar.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) {
+            registrarFechamentoSeNecessario(false, null, null);
+            dispose();
+        }});
         JButton salvar = new JButton(loc.texto("analise.save"));
         estilizarBotaoSecundario(cancelar);
         estilizarBotaoPrimario(salvar);
@@ -303,10 +326,15 @@ public final class TelaArtefatoExplicativo extends JDialog {
                 try {
                     salvarNoLog(contexto);
                     salvo = true;
+                    registrarFechamentoSeNecessario(true, coletarRespostasPorPapel(), explicacaoGeral.getText());
                     JOptionPane.showMessageDialog(TelaArtefatoExplicativo.this,
                             loc.texto("analise.saved"), loc.texto("analise.title"), JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 } catch (Exception ex) {
+                    if (analysisUnitAuditService != null) {
+                        analysisUnitAuditService.registrarFalhaTecnica(
+                                contextoExplicacao.usuarioId, contextoExplicacao.categoria, itensExplicacao, ex);
+                    }
                     JOptionPane.showMessageDialog(TelaArtefatoExplicativo.this,
                             loc.formatar("analise.error", ex.getMessage()), loc.texto("analise.title"), JOptionPane.ERROR_MESSAGE);
                 }
@@ -387,6 +415,28 @@ public final class TelaArtefatoExplicativo extends JDialog {
                         origemInvariante, codigoInvariante, simbolicoInvariante, observacao);
             }
         }
+    }
+
+    private void registrarFechamentoSeNecessario(boolean salvouAgora,
+            Map<String, AnalysisUnitAuditService.RespostaColetada> respostas, String explicacaoGeralTexto) {
+        if (fechamentoJaRegistrado || analysisUnitAuditService == null) {
+            fechamentoJaRegistrado = true;
+            return;
+        }
+        fechamentoJaRegistrado = true;
+        analysisUnitAuditService.registrarTelaFechada(contextoExplicacao.usuarioId, contextoExplicacao.categoria,
+                itensExplicacao, salvouAgora, respostas, explicacaoGeralTexto);
+    }
+
+    private Map<String, AnalysisUnitAuditService.RespostaColetada> coletarRespostasPorPapel() {
+        Map<String, AnalysisUnitAuditService.RespostaColetada> mapa =
+                new LinkedHashMap<String, AnalysisUnitAuditService.RespostaColetada>();
+        for (LinhaResposta linha : linhas) {
+            RespostaElementoModelagem r = linha.resposta();
+            mapa.put(r.getPapelSemantico(),
+                    new AnalysisUnitAuditService.RespostaColetada(r.getDificuldade(), r.getExplicacao()));
+        }
+        return mapa;
     }
 
     private void carregarInvariantes(String categoria) {
@@ -522,8 +572,14 @@ public final class TelaArtefatoExplicativo extends JDialog {
 
     public static boolean mostrar(Component pai, List<ItemExplicacaoModelagem> itens, ArtefatoContexto contexto,
             AgenteModelador agenteModelador) {
+        return mostrar(pai, itens, contexto, agenteModelador, null);
+    }
+
+    public static boolean mostrar(Component pai, List<ItemExplicacaoModelagem> itens, ArtefatoContexto contexto,
+            AgenteModelador agenteModelador, AnalysisUnitAuditService analysisUnitAuditService) {
         Window owner = SwingUtilities.getWindowAncestor(pai);
-        TelaArtefatoExplicativo dialogo = new TelaArtefatoExplicativo(owner, itens, contexto, agenteModelador);
+        TelaArtefatoExplicativo dialogo = new TelaArtefatoExplicativo(owner, itens, contexto, agenteModelador,
+                analysisUnitAuditService);
         dialogo.setVisible(true);
         return dialogo.salvo;
     }

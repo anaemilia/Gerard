@@ -1,0 +1,43 @@
+{
+  "nome": "Base de conhecimento integrada Gérard",
+  "versao": "1.0",
+  "formato_principal": "JSONL",
+  "arquivos": {
+    "base_integrada": "base_integrada_regras_gerard.jsonl",
+    "dominio": "regras_dominio.jsonl",
+    "modelos": "regras_j48_part.jsonl",
+    "apriori": "regras_apriori.jsonl",
+    "entrevistas": "regras_entrevistas.jsonl",
+    "pedagogicas": "regras_pedagogicas.jsonl",
+    "integradas": "regras_integradas.jsonl",
+    "ontologia": "ontologia_gerard.json",
+    "schema": "schema_regras_gerard.json",
+    "metricas": "metricas_e_proveniencia.json",
+    "exemplos": "exemplos_inferencia.jsonl"
+  },
+  "contagens": {
+    "regras_dominio": 17,
+    "regras_j48": 21,
+    "regras_part": 10,
+    "regras_apriori": 344,
+    "regras_entrevistas": 16,
+    "regras_pedagogicas": 14,
+    "regras_integradas": 10,
+    "total_base_integrada": 432
+  },
+  "ordem_de_prioridade": [
+    "dominio",
+    "consistencia",
+    "pedagogica",
+    "integrada",
+    "qualitativa",
+    "preditiva",
+    "associativa"
+  ],
+  "observacoes": [
+    "A base integrada inclui todas as regras dos arquivos separados.",
+    "Regras preditivas e associativas são experimentais.",
+    "Regras normativas de domínio e consistência têm precedência.",
+    "As regras qualitativas foram derivadas da análise das entrevistas e do relatório analise_padroes_erros.pdf."
+  ]
+}

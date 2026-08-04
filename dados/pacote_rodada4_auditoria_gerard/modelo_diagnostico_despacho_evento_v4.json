@@ -1,0 +1,157 @@
+{
+  "schema_version": "4.0.0",
+  "tipo_registro": "diagnostico_despacho_evento",
+  "identificacao": {
+    "trace_id": "TRACE-INTERROGACAO-0001",
+    "session_id": "SESSAO-20260731-004",
+    "episode_id": "EP-HIST_DOUTORADO_JAMILE_S9_090610-2",
+    "gesture_id": "GESTO-0009",
+    "action_id": "ACAO-0009",
+    "physical_event_id": "PHYS-RELEASE-0009",
+    "timestamp_inicio": "2026-07-31T18:20:31.220-03:00",
+    "timestamp_fim": "2026-07-31T18:20:31.904-03:00",
+    "user_id": "hist_doutorado_jamile_s9_090610",
+    "problem_id": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+    "element": "?",
+    "source_role": "estadoFinal",
+    "target_role": "estadoFinal",
+    "system_version": "Gerard-2026.07.31",
+    "audit_version": "4.0.0"
+  },
+  "evento_fisico": {
+    "event_type": "mouseReleased",
+    "source_component_id": "tela_principal",
+    "awt_event_id": 502,
+    "button": 1,
+    "click_count": 1,
+    "x": 793,
+    "y": 788,
+    "when": 1785522031220,
+    "thread_name": "AWT-EventQueue-0",
+    "thread_id": 42,
+    "event_object_identity": "java.awt.event.MouseEvent@exemplo",
+    "physical_release_sequence": 1
+  },
+  "cadeia_despacho": [
+    {
+      "dispatch_index": 1,
+      "listener_class": "gerard.Main$MouseHandler",
+      "listener_identity": "listener@exemplo",
+      "method": "mouseReleased",
+      "component_id": "tela_principal",
+      "stack_fingerprint": "sha256:exemplo1",
+      "timestamp": "2026-07-31T18:20:31.221-03:00",
+      "origin": "soltura_usuario",
+      "canonical_candidate": true,
+      "action_started": true,
+      "evaluation_dispatched": true
+    }
+  ],
+  "registro_listeners": {
+    "component_id": "tela_principal",
+    "mouse_listener_count": 1,
+    "mouse_motion_listener_count": 1,
+    "listeners": [
+      {
+        "listener_class": "gerard.Main$MouseHandler",
+        "listener_identity": "listener@exemplo",
+        "registered_at": "inicializacao_tela",
+        "registration_count": 1
+      }
+    ],
+    "duplicate_listener_registration_detected": false
+  },
+  "correlacao": {
+    "same_physical_event_id": true,
+    "same_gesture_id": true,
+    "same_action_id": true,
+    "time_window_ms": 481,
+    "dispatches_for_same_physical_release": 3
+  },
+  "causa_raiz": {
+    "status": "nao_confirmada",
+    "category": null,
+    "description": null,
+    "evidence": [],
+    "confidence": null
+  },
+  "tratamento": {
+    "strategy": "eliminar_causa_e_manter_idempotencia_defensiva",
+    "canonical_dispatch_index": 1,
+    "suppressed_state_mutations": [
+      2,
+      3
+    ],
+    "technical_events_preserved": true,
+    "debounce_applied": true,
+    "zdp_idempotency_applied": true,
+    "modeler_idempotency_applied": true
+  },
+  "agents_summary": {
+    "MONITOR": {
+      "technical_evaluations": 3,
+      "canonical_evaluations": 1
+    },
+    "ZDP": {
+      "technical_decisions": 3,
+      "real_state_mutations": 1
+    },
+    "MODELADOR": {
+      "technical_updates": 3,
+      "real_profile_updates": 1,
+      "cases_inserted": 1,
+      "duplicates_blocked": 2
+    }
+  },
+  "rule_engine_trace": {
+    "knowledge_base_version": "1.0.0",
+    "consulted_by_agent": {
+      "MONITOR": true,
+      "ZDP": true,
+      "MODELADOR": false
+    },
+    "rules_fired": [],
+    "unavailable_reason": {
+      "MODELADOR": "armazenarCaso ainda não consulta a base de regras durante a ação"
+    }
+  },
+  "validacao_schema": {
+    "validator": null,
+    "schema_file": "schema_agentes_execucao_gerard.json",
+    "schema_version": "4.0.0",
+    "full_validation_executed": false,
+    "valid": null,
+    "errors": [],
+    "unavailable_reason": "Preencher com resultado real."
+  },
+  "regressao": {
+    "compilacao": {
+      "executada": false,
+      "resultado": null
+    },
+    "verificar_regressao_gerard": {
+      "executada": false,
+      "resultado": null
+    },
+    "testar_scripts": {
+      "executada": false,
+      "quantidade": null,
+      "falhas": []
+    },
+    "monkey_casos_reais": {
+      "executada": false,
+      "episodios": null,
+      "passos": null,
+      "divergencias": null
+    }
+  },
+  "resultado": {
+    "triple_dispatch_root_cause_identified": null,
+    "triple_dispatch_eliminated": null,
+    "defensive_idempotency_preserved": true,
+    "single_canonical_action": true,
+    "single_zdp_state_mutation": true,
+    "single_modeler_case": true,
+    "remaining_limitations": []
+  }
+}

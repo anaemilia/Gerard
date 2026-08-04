@@ -1,0 +1,75 @@
+{
+  "arquivo_fonte": "protocolos_reais_replay_completo.tsv",
+  "registros_totais": 2781,
+  "acoes_avaliadas_ce": 743,
+  "acoes_corretas": 517,
+  "acoes_erradas": 226,
+  "j48_equivalente": {
+    "acuracia": 0.575,
+    "acuracia_balanceada": 0.597,
+    "f1_macro": 0.561,
+    "f1_erro": 0.484,
+    "matriz_confusao_C_E": [
+      [
+        279,
+        238
+      ],
+      [
+        78,
+        148
+      ]
+    ]
+  },
+  "part_equivalente": {
+    "acuracia": 0.661,
+    "acuracia_balanceada": 0.567,
+    "f1_macro": 0.569,
+    "f1_erro": 0.37,
+    "matriz_confusao_C_E": [
+      [
+        417,
+        100
+      ],
+      [
+        152,
+        74
+      ]
+    ],
+    "numero_regras": 10,
+    "classe_padrao": "C"
+  },
+  "apriori": {
+    "regras_por_acao": 194,
+    "regras_por_protocolo": 150,
+    "parametros_acao": {
+      "suporte_minimo": 0.05,
+      "confianca_minima": 0.7,
+      "lift_minimo": 1.05
+    },
+    "parametros_protocolo": {
+      "suporte_minimo": 0.08,
+      "confianca_minima": 0.7,
+      "lift_minimo": 1.05
+    }
+  },
+  "relatorio_qualitativo_claude": {
+    "arquivos_de_acao": 20,
+    "erros_anotados": 76,
+    "categoria_tipo_operacao_errada": 25,
+    "posicionamento_arraste": 22,
+    "elemento_grafico": 9,
+    "calculo_resultado": 8,
+    "outros_generico": 8,
+    "sinal_numero_relativo": 4,
+    "proporcao_categoria_posicionamento": 0.62,
+    "checkpoints_confirmacao": 132,
+    "arquivos_com_checkpoints": 17
+  },
+  "cuidados": [
+    "As classes C/E são desbalanceadas.",
+    "J48 e PART locais são implementações equivalentes, não execuções oficiais do WEKA.",
+    "Regras Apriori indicam coocorrência e não causalidade.",
+    "Resultados qualitativos triangulam, mas não confirmam estatisticamente as métricas dos modelos.",
+    "Regras matemáticas normativas prevalecem sobre regras preditivas ou associativas."
+  ]
+}

@@ -1,0 +1,744 @@
+ordem_global	id_protocolo	sujeito	problema_quadro	categoria	tarefa	avaliacao_ce	task_family	artifact_family	fase_protocolo	historico_erros	consecutivos_bin	ultima_avaliacao	feedback_previo	ajuda_previa	repete_familia	posicao_rotulada	erros_anteriores	acertos_anteriores	erros_consecutivos_antes	pred_j48_cv	pred_part_cv
+5	PR0001	S(17-07-10)	01	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+11	PR0001	S(17-07-10)	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+15	PR0001	S(17-07-10)	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+17	PR0001	S(17-07-10)	01	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	4	0	3	0	C	C
+23	PR0002	S(17-07-10)	02	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+28	PR0002	S(17-07-10)	02	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+30	PR0002	S(17-07-10)	02	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	1	1	1	3	1	1	1	C	C
+35	PR0002	S(17-07-10)	02	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+37	PR0002	S(17-07-10)	02	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+39	PR0002	S(17-07-10)	02	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+42	PR0002	S(17-07-10)	02	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	7	2	4	1	E	C
+44	PR0002	S(17-07-10)	02	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	1	0	1	8	2	5	0	C	C
+50	PR0003	S(17-07-10)	03	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+54	PR0003	S(17-07-10)	03	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+59	PR0003	S(17-07-10)	03	Composição	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	E
+63	PR0003	S(17-07-10)	03	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	4	2	1	1	E	C
+65	PR0003	S(17-07-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	2	2	0	C	C
+67	PR0003	S(17-07-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	6	2	3	0	C	C
+73	PR0004	S(17-07-10)	04	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+78	PR0004	S(17-07-10)	04	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+82	PR0004	S(17-07-10)	04	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	inicio	zero	zero	C	0	0	0	3	0	2	0	C	C
+84	PR0004	S(17-07-10)	04	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	0	4	0	3	0	C	C
+90	PR0005	S(17-07-10)	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+98	PR0005	S(17-07-10)	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+101	PR0005	S(17-07-10)	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+104	PR0005	S(17-07-10)	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	4	0	3	0	C	C
+110	PR0006	S(17-07-10)	06	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+115	PR0006	S(17-07-10)	06	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+121	PR0006	S(17-07-10)	06	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	C
+122	PR0006	S(17-07-10)	06	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+123	PR0006	S(17-07-10)	06	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+124	PR0006	S(17-07-10)	06	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+130	PR0007	S(17-07-10)	07	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+138	PR0007	S(17-07-10)	07	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+139	PR0007	S(17-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	1a2	um	E	0	0	0	3	1	1	1	E	C
+141	PR0007	S(17-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	1	4	2	1	2	E	C
+143	PR0007	S(17-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria1	3a5	tresmais	E	1	1	0	5	3	1	3	E	E
+145	PR0007	S(17-07-10)	07	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	3a5	tresmais	E	0	0	0	6	4	1	4	E	E
+146	PR0007	S(17-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	7	5	1	5	E	C
+153	PR0007	S(17-07-10)	07	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	0	0	1	8	6	1	6	E	E
+159	PR0008	S(17-07-10)	08	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+165	PR0008	S(17-07-10)	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+168	PR0008	S(17-07-10)	08	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	1	1	1	3	1	1	1	C	E
+171	PR0008	S(17-07-10)	08	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+173	PR0008	S(17-07-10)	08	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+175	PR0008	S(17-07-10)	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+178	PR0008	S(17-07-10)	08	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	7	2	4	1	C	E
+183	PR0009	S(19-07-10)	01	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+186	PR0009	S(19-07-10)	01	Comparação	Identificar o elemento representativo	E	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+192	PR0009	S(19-07-10)	01	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	0	3	1	1	1	E	C
+194	PR0009	S(19-07-10)	01	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	C	C
+197	PR0009	S(19-07-10)	01	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+202	PR0009	S(19-07-10)	01	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	6	2	3	1	C	C
+205	PR0009	S(19-07-10)	01	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	7	2	4	0	C	C
+209	PR0009	S(19-07-10)	01	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	0	0	1	8	3	4	1	E	C
+214	PR0009	S(19-07-10)	01	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	9	3	5	0	E	C
+216	PR0009	S(19-07-10)	01	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	0	10	3	6	0	C	C
+219	PR0009	S(19-07-10)	01	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	11	3	7	0	C	C
+225	PR0009	S(19-07-10)	01	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	0	0	1	12	4	7	1	E	C
+230	PR0010	S(19-07-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+232	PR0010	S(19-07-10)	02	Transformação	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+235	PR0010	S(19-07-10)	02	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	C	C
+237	PR0010	S(19-07-10)	02	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	E	C
+240	PR0010	S(19-07-10)	02	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+242	PR0010	S(19-07-10)	02	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	0	6	0	5	0	C	C
+247	PR0011	S(19-07-10)	03	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+249	PR0011	S(19-07-10)	03	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+252	PR0011	S(19-07-10)	03	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+258	PR0011	S(19-07-10)	03	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+260	PR0011	S(19-07-10)	03	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	E
+262	PR0011	S(19-07-10)	03	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	6	0	5	0	C	C
+267	PR0012	S(19-07-10)	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+269	PR0012	S(19-07-10)	04	Composição	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+273	PR0012	S(19-07-10)	04	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+276	PR0012	S(19-07-10)	04	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+281	PR0012	S(19-07-10)	04	Composição	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	5	0	4	0	C	C
+284	PR0012	S(19-07-10)	04	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	6	1	4	1	C	E
+292	PR0013	S(19-07-10)	05	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+297	PR0013	S(19-07-10)	05	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+302	PR0013	S(19-07-10)	05	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	E
+304	PR0013	S(19-07-10)	05	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria1	1a2	zero	C	0	0	0	4	2	1	0	C	C
+309	PR0013	S(19-07-10)	05	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	E	E
+312	PR0013	S(19-07-10)	05	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	6	2	3	0	C	C
+321	PR0013	S(19-07-10)	05	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	7	2	4	0	C	C
+323	PR0013	S(19-07-10)	05	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	1	1	8	2	5	0	C	C
+327	PR0013	S(19-07-10)	05	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	1a2	zero	C	0	0	0	9	2	6	0	C	C
+329	PR0013	S(19-07-10)	05	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	1	0	0	10	2	7	0	C	C
+335	PR0014	S(19-07-10)	06	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+340	PR0014	S(19-07-10)	06	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+342	PR0014	S(19-07-10)	06	Composição	Executar ação do sujeito	E	outra	interface	inicio	1a2	zero	C	0	0	0	3	1	1	0	C	C
+347	PR0014	S(19-07-10)	06	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	1a2	um	E	0	0	0	4	2	1	1	E	E
+349	PR0014	S(19-07-10)	06	Composição	Executar ação do sujeito	C	outra	interface	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	C	C
+354	PR0014	S(19-07-10)	06	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	E	E
+358	PR0014	S(19-07-10)	06	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	7	2	4	0	C	C
+362	PR0014	S(19-07-10)	06	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	0	1	8	2	5	0	C	C
+365	PR0014	S(19-07-10)	06	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	1	0	1	9	2	6	0	C	C
+370	PR0015	S(19-07-10)	07	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+372	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+373	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	C	outra	interface	inicio	1a2	um	E	0	0	1	3	1	1	1	E	E
+377	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	E	C
+378	PR0015	S(19-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	0	5	2	2	1	E	E
+383	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria1	3a5	dois	E	0	0	0	6	3	2	2	E	E
+384	PR0015	S(19-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	7	4	2	3	E	E
+389	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria2	3a5	tresmais	E	0	0	0	8	5	2	4	E	E
+390	PR0015	S(19-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	0	0	0	9	6	2	5	E	C
+395	PR0015	S(19-07-10)	07	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria2	6mais	tresmais	E	0	0	0	10	7	2	6	E	E
+396	PR0015	S(19-07-10)	07	Transformação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	0	0	0	11	8	2	7	E	C
+405	PR0015	S(19-07-10)	07	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	0	1	1	12	9	2	8	E	C
+408	PR0015	S(19-07-10)	07	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	0	0	1	13	9	3	0	C	C
+411	PR0015	S(19-07-10)	07	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	6mais	zero	C	0	0	0	14	9	4	0	E	E
+414	PR0015	S(19-07-10)	07	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	0	0	0	15	9	5	0	E	C
+418	PR0015	S(19-07-10)	07	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	tardia	6mais	zero	C	1	0	1	16	9	6	0	C	C
+427	PR0016	S8	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+432	PR0016	S8	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+442	PR0016	S8	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	C
+450	PR0016	S8	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	4	2	1	0	E	C
+451	PR0016	S8	01	Transformação	Informar o resultado	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	E	C
+456	PR0017	S8	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+465	PR0017	S8	02	Transformação	Identificar o elemento representativo	E	simbolo_categoria	outro	inicio	1a2	um	E	0	1	0	2	1	0	1	E	E
+467	PR0017	S8	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	dois	E	0	0	0	3	2	0	2	C	C
+470	PR0017	S8	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	1	1	4	3	0	3	C	C
+476	PR0017	S8	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	5	4	0	4	C	C
+478	PR0017	S8	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	zero	C	0	0	1	6	4	1	0	E	C
+480	PR0017	S8	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	3a5	um	E	0	0	1	7	5	1	1	C	C
+482	PR0017	S8	02	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria2	3a5	zero	C	0	0	0	8	5	2	0	E	C
+491	PR0017	S8	02	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	0	0	0	9	5	3	0	C	C
+494	PR0017	S8	02	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	10	5	4	0	E	C
+496	PR0017	S8	02	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	6mais	um	E	1	1	1	11	6	4	1	E	E
+506	PR0017	S8	02	Transformação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	dois	E	0	0	0	12	7	4	2	E	C
+509	PR0017	S8	02	Transformação	Informar o resultado	C	resultado	campo_resultado	intermediaria2	6mais	zero	C	1	0	0	13	7	5	0	E	C
+516	PR0018	S8	03	Transformação	Identificar o elemento representativo	E	simbolo_categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+523	PR0018	S8	03	Transformação	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	1	0	0	2	1	0	1	E	E
+524	PR0018	S8	03	Transformação	Executar ação do sujeito	C	outra	interface	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	C
+530	PR0019	S8	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+532	PR0019	S8	04	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+536	PR0019	S8	04	Composição	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+547	PR0020	S8	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+549	PR0020	S8	05	Comparação	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+553	PR0020	S8	05	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+557	PR0020	S8	05	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	4	1	2	1	E	C
+560	PR0020	S8	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	1	5	2	2	2	E	C
+563	PR0020	S8	05	Comparação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	E	C
+568	PR0020	S8	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	3a5	um	E	0	0	1	7	3	3	1	E	C
+571	PR0020	S8	05	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	0	0	0	8	3	4	0	E	C
+573	PR0020	S8	05	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	9	3	5	0	C	C
+575	PR0020	S8	05	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	10	3	6	0	C	C
+578	PR0020	S8	05	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	um	E	1	1	1	11	4	6	1	C	C
+580	PR0020	S8	05	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	dois	E	1	1	1	12	5	6	2	E	C
+586	PR0021	S8	06	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+591	PR0021	S8	06	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+595	PR0021	S8	06	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	C
+600	PR0021	S8	06	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	4	3	0	3	E	C
+602	PR0021	S8	06	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria1	3a5	zero	C	0	0	0	5	3	1	0	C	C
+606	PR0021	S8	06	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	zero	C	0	0	0	6	3	2	0	E	C
+610	PR0021	S8	06	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	um	E	0	0	1	7	4	2	1	E	C
+623	PR0022	S(15-06-10)	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+625	PR0022	S(15-06-10)	01	Transformação	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+634	PR0022	S(15-06-10)	01	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	3	0	2	0	C	E
+636	PR0022	S(15-06-10)	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	1	1	4	0	3	0	E	E
+638	PR0022	S(15-06-10)	01	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+640	PR0022	S(15-06-10)	01	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	0	6	0	5	0	C	C
+647	PR0023	S(15-06-10)	02	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+650	PR0023	S(15-06-10)	02	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+652	PR0023	S(15-06-10)	02	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	1a2	um	E	1	1	1	3	1	1	1	C	C
+655	PR0023	S(15-06-10)	02	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	0	0	1	4	2	1	2	C	E
+657	PR0023	S(15-06-10)	02	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	C	C
+659	PR0023	S(15-06-10)	02	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	E	E
+663	PR0023	S(15-06-10)	02	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	1	1	7	2	4	0	C	C
+668	PR0023	S(15-06-10)	02	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	0	0	1	8	3	4	1	E	C
+673	PR0024	S(15-06-10)	03	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+675	PR0024	S(15-06-10)	03	Composição	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	C	E
+678	PR0024	S(15-06-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+680	PR0024	S(15-06-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	1	1	4	0	3	0	C	C
+682	PR0024	S(15-06-10)	03	Composição	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	5	0	4	0	C	C
+687	PR0025	S(15-06-10)	04	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+690	PR0025	S(15-06-10)	04	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+693	PR0025	S(15-06-10)	04	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	E
+699	PR0025	S(15-06-10)	04	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	4	3	0	3	E	E
+705	PR0025	S(15-06-10)	04	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	5	4	0	4	E	E
+710	PR0025	S(15-06-10)	04	Categoria não determinada	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	6	5	0	5	E	C
+712	PR0025	S(15-06-10)	04	Categoria não determinada	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	6mais	tresmais	E	1	1	1	7	6	0	6	C	C
+714	PR0025	S(15-06-10)	04	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	0	0	1	8	6	1	0	C	C
+716	PR0025	S(15-06-10)	04	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	1	0	1	9	6	2	0	C	C
+721	PR0026	S(15-06-10)	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+723	PR0026	S(15-06-10)	05	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+726	PR0026	S(15-06-10)	05	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+728	PR0026	S(15-06-10)	05	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	1	2	1	C	E
+730	PR0026	S(15-06-10)	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	1	5	2	2	2	C	E
+732	PR0026	S(15-06-10)	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	E	C
+734	PR0026	S(15-06-10)	05	Comparação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	7	2	4	0	E	C
+736	PR0026	S(15-06-10)	05	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	1	1	1	8	3	4	1	E	E
+738	PR0026	S(15-06-10)	05	Comparação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	9	3	5	0	C	C
+743	PR0027	S(15-06-10)	06	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+745	PR0027	S(15-06-10)	06	Transformação	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+748	PR0027	S(15-06-10)	06	Transformação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+750	PR0027	S(15-06-10)	06	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+752	PR0027	S(15-06-10)	06	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	E
+754	PR0027	S(15-06-10)	06	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	6	0	5	0	C	C
+756	PR0027	S(15-06-10)	06	Transformação	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	7	1	5	1	C	C
+758	PR0027	S(15-06-10)	06	Transformação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	dois	E	1	1	1	8	2	5	2	E	C
+763	PR0028	S(15-06-10)	07	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+765	PR0028	S(15-06-10)	07	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+768	PR0028	S(15-06-10)	07	Comparação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+770	PR0028	S(15-06-10)	07	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	1	2	1	E	C
+772	PR0028	S(15-06-10)	07	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	1	5	2	2	2	E	C
+776	PR0028	S(15-06-10)	07	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	C	C
+778	PR0028	S(15-06-10)	07	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	0	7	2	4	0	E	E
+779	PR0028	S(15-06-10)	07	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	0	1	8	2	5	0	C	C
+785	PR0029	Augusto	P3	Transformação	Selecionar a legenda Composição	E	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+789	PR0029	Augusto	P3	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+792	PR0029	Augusto	P3	Transformação	Ler o enunciado do problema	C	leitura	diagrama	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	C
+793	PR0029	Augusto	P3	Transformação	Associar valor do enunciado a um elemento do modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	E	C
+796	PR0029	Augusto	P3	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	0	1	5	2	2	1	E	E
+800	PR0029	Augusto	P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	1	0	6	2	3	0	C	C
+807	PR0030	Augusto	P2	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+810	PR0030	Augusto	P2	Transformação	Informar resultado ou valor no modelo	C	resultado	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+811	PR0030	Augusto	P2	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+812	PR0030	Augusto	P2	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+814	PR0030	Augusto	P2	Transformação	Informar valor ou número relativo no modelo	E	resultado	campo_resultado	intermediaria1	zero	zero	C	0	1	0	5	0	4	0	C	C
+817	PR0030	Augusto	P2	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	um	E	1	0	1	6	1	4	1	E	C
+824	PR0031	Augusto	P4	Comparação	Selecionar a legenda Composição	E	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+828	PR0031	Augusto	P4	Comparação	Selecionar a legenda Composição	E	categoria	outro	inicio	1a2	um	E	0	0	1	2	1	0	1	C	C
+831	PR0031	Augusto	P4	Comparação	Ler o enunciado do problema	E	leitura	outro	inicio	1a2	dois	E	1	0	0	3	2	0	2	C	E
+833	PR0031	Augusto	P4	Comparação	Ler o enunciado do problema	E	leitura	confirmacao	intermediaria1	3a5	tresmais	E	1	1	1	4	3	0	3	C	C
+835	PR0031	Augusto	P4	Comparação	Selecionar a legenda Comparação	C	categoria	outro	intermediaria1	3a5	tresmais	E	1	0	0	5	4	0	4	C	C
+838	PR0031	Augusto	P4	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	3a5	zero	C	0	0	0	6	4	1	0	E	E
+839	PR0031	Augusto	P4	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	3a5	zero	C	0	0	1	7	4	2	0	C	C
+841	PR0031	Augusto	P4	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria2	3a5	zero	C	0	1	0	8	4	3	0	C	C
+848	PR0032	Augusto	P1	Composição	Selecionar a legenda Composição	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+851	PR0032	Augusto	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+852	PR0032	Augusto	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	1	3	0	2	0	E	C
+854	PR0032	Augusto	P1	Composição	Informar resultado ou valor no modelo	C	resultado	diagrama	intermediaria1	zero	zero	C	0	1	0	4	0	3	0	E	C
+860	PR0033	S08.06.10	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+866	PR0033	S08.06.10	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	C	0	0	1	2	0	1	0	E	C
+868	PR0033	S08.06.10	01	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+870	PR0033	S08.06.10	01	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+872	PR0033	S08.06.10	01	Transformação	Executar ação do sujeito	E	outra	interface	intermediaria1	1a2	um	E	1	1	0	5	1	3	1	E	E
+874	PR0033	S08.06.10	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	0	6	2	3	2	E	C
+876	PR0033	S08.06.10	01	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	7	2	4	0	C	C
+878	PR0033	S08.06.10	01	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	3a5	um	E	1	1	1	8	3	4	1	E	C
+882	PR0033	S08.06.10	01	Transformação	Associar incorretamente o estado inicial ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	0	9	3	5	0	C	C
+884	PR0033	S08.06.10	01	Transformação	Informar o resultado	C	resultado	campo_resultado	intermediaria2	3a5	um	E	1	1	0	10	4	5	1	E	E
+890	PR0034	S08.06.10	02	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+898	PR0034	S08.06.10	02	Categoria não determinada	Associar incorretamente o estado final ao modelo	E	posicionamento	diagrama	inicio	1a2	um	E	0	0	0	2	1	0	1	C	E
+905	PR0034	S08.06.10	02	Categoria não determinada	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	E
+907	PR0034	S08.06.10	02	Categoria não determinada	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	4	2	1	0	E	C
+916	PR0034	S08.06.10	02	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	E	C
+932	PR0034	S08.06.10	02	Categoria não determinada	Executar ação do sujeito	C	outra	interface	intermediaria1	3a5	um	E	0	0	0	6	3	2	1	C	E
+938	PR0035	S08.06.10	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+940	PR0035	S08.06.10	04	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+952	PR0036	S08.06.10	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+956	PR0036	S08.06.10	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+958	PR0036	S08.06.10	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	inicio	zero	zero	C	0	0	0	3	0	2	0	C	C
+960	PR0036	S08.06.10	05	Comparação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	E	E
+962	PR0036	S08.06.10	05	Comparação	Informar o resultado	C	resultado	campo_resultado	intermediaria1	zero	zero	C	1	0	0	5	0	4	0	C	C
+969	PR0036	S08.06.10	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	zero	zero	C	0	0	0	6	0	5	0	C	C
+973	PR0036	S08.06.10	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	7	0	6	0	E	E
+975	PR0036	S08.06.10	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	zero	zero	C	0	0	0	8	0	7	0	C	C
+977	PR0036	S08.06.10	05	Comparação	Associar incorretamente o estado final ao modelo	E	posicionamento	diagrama	intermediaria2	zero	zero	C	0	0	0	9	0	8	0	E	E
+981	PR0036	S08.06.10	05	Comparação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	um	E	0	0	1	10	1	8	1	C	C
+983	PR0036	S08.06.10	05	Comparação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	1	0	1	11	1	9	0	C	C
+990	PR0037	S01	01	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+995	PR0037	S01	01	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+1000	PR0037	S01	01	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	E
+1002	PR0037	S01	01	Categoria não determinada	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	4	3	0	3	E	E
+1008	PR0037	S01	01	Categoria não determinada	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	5	4	0	4	E	C
+1010	PR0037	S01	01	Categoria não determinada	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	1	0	1	6	5	0	5	C	C
+1020	PR0038	S01	02	Divisão por cotas	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1026	PR0038	S01	02	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	0	0	2	0	1	0	E	C
+1027	PR0038	S01	02	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+1028	PR0038	S01	02	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1029	PR0038	S01	02	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	5	0	4	0	C	C
+1035	PR0039	S01	03	Multiplicação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1039	PR0039	S01	03	Multiplicação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+1040	PR0039	S01	03	Multiplicação	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+1041	PR0039	S01	03	Multiplicação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1042	PR0039	S01	03	Multiplicação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	5	0	4	0	C	C
+1048	PR0040	S01	04	Divisão por cotas	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1050	PR0040	S01	04	Divisão por cotas	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1055	PR0040	S01	04	Divisão por cotas	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	C
+1057	PR0040	S01	04	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	0	1	4	2	1	1	C	C
+1058	PR0040	S01	04	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	2	2	0	C	C
+1059	PR0040	S01	04	Divisão por cotas	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	6	2	3	0	C	C
+1064	PR0041	S01	05	Divisão por partes	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1071	PR0041	S01	05	Divisão por partes	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	0	0	2	0	1	0	C	C
+1072	PR0041	S01	05	Divisão por partes	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+1073	PR0041	S01	05	Divisão por partes	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1074	PR0041	S01	05	Divisão por partes	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	5	0	4	0	C	C
+1082	PR0042	S01	06	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1083	PR0042	S01	06	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	2	0	1	0	C	C
+1084	PR0042	S01	06	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+1085	PR0042	S01	06	Categoria não determinada	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1090	PR0043	S01	07	Divisão por cotas	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1101	PR0044	S04	01	Multiplicação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1105	PR0044	S04	01	Multiplicação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1109	PR0044	S04	01	Multiplicação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	C
+1120	PR0044	S04	01	Multiplicação	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	1	0	4	2	1	0	E	C
+1122	PR0044	S04	01	Multiplicação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	5	2	2	0	C	C
+1127	PR0045	S04	02	Divisão por partes	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1138	PR0045	S04	02	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	1	0	2	0	1	0	C	C
+1140	PR0045	S04	02	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	0	1	3	0	2	0	C	C
+1145	PR0046	S04	03	Multiplicação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1156	PR0046	S04	03	Multiplicação	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	1	0	2	0	1	0	E	C
+1158	PR0046	S04	03	Multiplicação	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	0	1	3	0	2	0	C	C
+1163	PR0047	S04	04	Divisão por partes	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1167	PR0047	S04	04	Divisão por partes	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+1172	PR0047	S04	04	Divisão por partes	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	E
+1180	PR0047	S04	04	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	2	1	1	C	C
+1182	PR0047	S04	04	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	5	2	2	0	C	C
+1187	PR0048	S04	05	Divisão por cotas	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1191	PR0048	S04	05	Divisão por cotas	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+1202	PR0048	S04	05	Divisão por cotas	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	1a2	zero	C	1	1	0	3	1	1	0	C	C
+1204	PR0048	S04	05	Divisão por cotas	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	4	1	2	0	C	C
+1209	PR0049	S04	06	Divisão por cotas	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1213	PR0049	S04	06	Divisão por cotas	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1224	PR0049	S04	06	Divisão por cotas	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	1a2	zero	C	1	1	0	3	1	1	0	E	C
+1226	PR0049	S04	06	Divisão por cotas	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	4	1	2	0	C	C
+1231	PR0050	S04	07	Divisão por partes	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1242	PR0050	S04	07	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	1	0	2	0	1	0	E	C
+1244	PR0050	S04	07	Divisão por partes	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	1	0	1	3	0	2	0	C	C
+1249	PR0051	S9	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1251	PR0051	S9	01	Transformação	Executar ação do sujeito	E	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1253	PR0051	S9	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	0	3	1	1	1	E	C
+1258	PR0051	S9	01	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	1	0	4	1	2	0	E	E
+1259	PR0051	S9	01	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	5	2	2	1	C	E
+1263	PR0051	S9	01	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	dois	E	1	1	1	6	3	2	2	E	C
+1266	PR0051	S9	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	1	1	1	7	4	2	3	E	C
+1268	PR0051	S9	01	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	8	4	3	0	C	E
+1273	PR0051	S9	01	Transformação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	0	1	0	9	5	3	1	E	E
+1275	PR0051	S9	01	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	10	5	4	0	C	E
+1276	PR0051	S9	01	Transformação	Informar o resultado	E	resultado	campo_resultado	intermediaria2	6mais	um	E	0	0	0	11	6	4	1	E	E
+1278	PR0051	S9	01	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria2	6mais	dois	E	1	1	0	12	7	4	2	E	E
+1283	PR0052	S9	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1289	PR0052	S9	02	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	2	0	1	0	E	E
+1292	PR0052	S9	02	Transformação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+1294	PR0052	S9	02	Transformação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	dois	E	0	0	1	4	2	1	2	E	E
+1302	PR0052	S9	02	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	1	5	3	1	3	E	E
+1306	PR0052	S9	02	Transformação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	zero	C	1	0	1	6	3	2	0	C	C
+1307	PR0052	S9	02	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria1	3a5	zero	C	0	0	0	7	3	3	0	C	C
+1313	PR0052	S9	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria2	3a5	zero	C	0	0	0	8	3	4	0	C	E
+1315	PR0052	S9	02	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria2	3a5	zero	C	0	0	0	9	3	5	0	C	E
+1328	PR0052	S9	02	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria2	3a5	zero	C	1	1	0	10	3	6	0	C	C
+1333	PR0053	S9	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1335	PR0053	S9	04	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1345	PR0053	S9	04	Composição	Associar um elemento ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1350	PR0054	S9	04	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1352	PR0054	S9	04	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1355	PR0054	S9	04	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1357	PR0054	S9	04	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	E	C
+1359	PR0054	S9	04	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+1362	PR0054	S9	04	Comparação	Informar o resultado	C	resultado	campo_resultado	intermediaria1	zero	zero	C	1	0	0	6	0	5	0	C	C
+1367	PR0055	S9	06	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1369	PR0055	S9	06	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1372	PR0055	S9	06	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1374	PR0055	S9	06	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+1376	PR0055	S9	06	Comparação	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+1379	PR0055	S9	06	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	6	1	4	1	C	C
+1380	PR0055	S9	06	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	7	1	5	0	C	C
+1382	PR0055	S9	06	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	1	0	1	8	1	6	0	C	C
+1383	PR0055	S9	06	Comparação	Executar ação do sujeito	C	outra	interface	intermediaria2	1a2	zero	C	0	0	0	9	1	7	0	C	C
+1389	PR0056	S13.07.10	01	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1391	PR0056	S13.07.10	01	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1393	PR0056	S13.07.10	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1395	PR0056	S13.07.10	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1397	PR0056	S13.07.10	01	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	5	0	4	0	C	C
+1403	PR0057	S13.07.10	02	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1405	PR0057	S13.07.10	02	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1407	PR0057	S13.07.10	02	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+1411	PR0057	S13.07.10	02	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	4	1	2	1	C	C
+1413	PR0057	S13.07.10	02	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	1	3	0	C	C
+1415	PR0057	S13.07.10	02	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	6	1	4	0	C	C
+1417	PR0057	S13.07.10	02	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	7	1	5	0	E	C
+1419	PR0057	S13.07.10	02	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	0	0	8	1	6	0	E	C
+1425	PR0057	S13.07.10	02	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	um	E	1	0	1	9	2	6	1	C	C
+1431	PR0058	S13.07.10	03	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1435	PR0058	S13.07.10	03	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	E
+1437	PR0058	S13.07.10	03	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	1a2	zero	C	0	0	0	3	1	1	0	C	C
+1439	PR0058	S13.07.10	03	Composição	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	E	E
+1443	PR0058	S13.07.10	03	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	5	2	2	1	C	C
+1445	PR0058	S13.07.10	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	6	2	3	0	C	C
+1447	PR0058	S13.07.10	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	7	2	4	0	C	C
+1453	PR0059	S13.07.10	04	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1455	PR0059	S13.07.10	04	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+1457	PR0059	S13.07.10	04	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1459	PR0059	S13.07.10	04	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1461	PR0059	S13.07.10	04	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+1463	PR0059	S13.07.10	04	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	0	6	0	5	0	E	C
+1469	PR0060	S13.07.10	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1471	PR0060	S13.07.10	05	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1473	PR0060	S13.07.10	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+1475	PR0060	S13.07.10	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+1477	PR0060	S13.07.10	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	E
+1479	PR0060	S13.07.10	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	6	0	5	0	C	C
+1485	PR0061	S13.07.10	06	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1489	PR0061	S13.07.10	06	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1491	PR0061	S13.07.10	06	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	inicio	1a2	zero	C	0	0	0	3	1	1	0	E	C
+1497	PR0062	S13.07.10	07	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1499	PR0062	S13.07.10	07	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1501	PR0062	S13.07.10	07	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1503	PR0062	S13.07.10	07	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	E	C
+1505	PR0062	S13.07.10	07	Transformação	Associar incorretamente o estado inicial ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	0	5	1	3	1	E	C
+1507	PR0062	S13.07.10	07	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	1a2	dois	E	1	1	0	6	2	3	2	E	E
+1511	PR0062	S13.07.10	07	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	7	3	3	3	E	C
+1517	PR0063	S13.07.10	08	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1519	PR0063	S13.07.10	08	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1521	PR0063	S13.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1523	PR0063	S13.07.10	08	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	1	2	1	E	C
+1525	PR0063	S13.07.10	08	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	1	3	0	C	C
+1527	PR0063	S13.07.10	08	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+1529	PR0063	S13.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	7	1	5	0	E	C
+1531	PR0063	S13.07.10	08	Comparação	Executar ação do sujeito	C	outra	interface	intermediaria2	1a2	um	E	1	1	0	8	2	5	1	E	C
+1537	PR0064	S14.07.10	01	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1541	PR0064	S14.07.10	01	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1545	PR0064	S14.07.10	01	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	C
+1552	PR0064	S14.07.10	01	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	0	1	4	3	0	3	E	C
+1554	PR0064	S14.07.10	01	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria1	3a5	zero	C	0	0	0	5	3	1	0	C	C
+1556	PR0064	S14.07.10	01	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	zero	C	0	0	0	6	3	2	0	E	E
+1560	PR0064	S14.07.10	01	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	um	E	0	0	1	7	4	2	1	C	C
+1564	PR0064	S14.07.10	01	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	dois	E	0	1	1	8	5	2	2	E	C
+1566	PR0064	S14.07.10	01	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	9	5	3	0	C	C
+1568	PR0064	S14.07.10	01	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	0	0	0	10	5	4	0	E	E
+1570	PR0064	S14.07.10	01	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	11	5	5	0	C	C
+1575	PR0064	S14.07.10	01	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria2	3a5	zero	C	0	0	0	12	5	6	0	C	C
+1577	PR0064	S14.07.10	01	Comparação	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria2	6mais	um	E	0	0	0	13	6	6	1	C	E
+1579	PR0064	S14.07.10	01	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	dois	E	0	0	0	14	7	6	2	E	E
+1581	PR0064	S14.07.10	01	Comparação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	0	0	1	15	7	7	0	C	C
+1583	PR0064	S14.07.10	01	Comparação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	tardia	6mais	zero	C	1	0	1	16	7	8	0	C	C
+1589	PR0065	S14.07.10	03	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1591	PR0065	S14.07.10	03	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1593	PR0065	S14.07.10	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	E
+1595	PR0065	S14.07.10	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1597	PR0065	S14.07.10	03	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	5	0	4	0	C	C
+1603	PR0066	S14.07.10	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1607	PR0066	S14.07.10	04	Composição	Identificar o elemento representativo	E	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1610	PR0066	S14.07.10	04	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	0	3	1	1	1	E	C
+1614	PR0066	S14.07.10	04	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	1a2	dois	E	0	0	1	4	2	1	2	E	E
+1616	PR0066	S14.07.10	04	Composição	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria1	3a5	tresmais	E	0	0	0	5	3	1	3	C	C
+1618	PR0066	S14.07.10	04	Composição	Associar o estado inicial ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	0	6	4	1	4	E	C
+1620	PR0066	S14.07.10	04	Composição	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	zero	C	0	0	1	7	4	2	0	C	C
+1624	PR0066	S14.07.10	04	Composição	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	1	1	8	4	3	0	C	C
+1630	PR0067	S14.07.10	05	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1634	PR0067	S14.07.10	05	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1638	PR0067	S14.07.10	05	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	E	C
+1640	PR0067	S14.07.10	05	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria1	1a2	zero	C	0	0	0	4	2	1	0	C	C
+1642	PR0067	S14.07.10	05	Composição	Associar incorretamente o estado inicial ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	E	C
+1650	PR0067	S14.07.10	05	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	um	E	1	1	1	6	3	2	1	E	C
+1655	PR0067	S14.07.10	05	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	3a5	zero	C	0	0	0	7	3	3	0	C	C
+1659	PR0067	S14.07.10	05	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria2	3a5	um	E	0	0	1	8	4	3	1	E	C
+1661	PR0067	S14.07.10	05	Composição	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria2	3a5	dois	E	0	0	0	9	5	3	2	E	E
+1663	PR0067	S14.07.10	05	Composição	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	6mais	tresmais	E	0	0	0	10	6	3	3	E	E
+1669	PR0068	S14.07.10	07	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1673	PR0068	S14.07.10	07	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1675	PR0068	S14.07.10	07	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	1a2	zero	C	0	0	0	3	1	1	0	C	C
+1677	PR0068	S14.07.10	07	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	C	C
+1683	PR0069	S14.07.10	08	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1685	PR0069	S14.07.10	08	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1687	PR0069	S14.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+1689	PR0069	S14.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	1	2	1	C	C
+1693	PR0069	S14.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	dois	E	0	0	1	5	2	2	2	C	C
+1696	PR0069	S14.07.10	08	Comparação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	1	6	3	2	3	C	C
+1700	PR0069	S14.07.10	08	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	3a5	tresmais	E	0	0	1	7	4	2	4	C	C
+1702	PR0069	S14.07.10	08	Comparação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	8	4	3	0	C	C
+1706	PR0069	S14.07.10	08	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	um	E	1	0	0	9	5	3	1	E	C
+1710	PR0069	S14.07.10	08	Comparação	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	dois	E	0	1	1	10	6	3	2	C	C
+1716	PR0070	Sujeito	01	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+1722	PR0070	Sujeito	01	Composição	Associar incorretamente uma parte ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	1	0	0	2	0	1	0	E	C
+1728	PR0070	Sujeito	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+1732	PR0070	Sujeito	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+1736	PR0070	Sujeito	01	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	1	3	0	C	C
+1739	PR0070	Sujeito	01	Composição	Associar um elemento ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	6	1	4	0	C	C
+1745	PR0071	Sujeito	02	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1751	PR0071	Sujeito	02	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+1757	PR0071	Sujeito	02	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	1a2	zero	C	0	1	0	3	1	1	0	E	E
+1761	PR0071	Sujeito	02	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+1765	PR0071	Sujeito	02	Composição	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	1	3	0	C	C
+1770	PR0071	Sujeito	02	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	C	C
+1802	PR0072	Sujeito	04	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	E
+1806	PR0072	Sujeito	04	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	2	0	1	0	E	E
+1808	PR0072	Sujeito	04	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	1	1	3	0	2	0	C	C
+1812	PR0072	Sujeito	04	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+1817	PR0073	Sujeito	05	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1826	PR0073	Sujeito	05	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	2	0	1	0	E	C
+1829	PR0073	Sujeito	05	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+1832	PR0073	Sujeito	05	Transformação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	intermediaria1	zero	zero	C	0	1	1	4	0	3	0	C	C
+1841	PR0073	Sujeito	05	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	1a2	um	E	0	0	0	5	1	3	1	E	C
+1845	PR0073	Sujeito	05	Transformação	Associar incorretamente o estado inicial ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	1	0	6	1	4	0	E	C
+1850	PR0073	Sujeito	05	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	1	1	7	2	4	1	E	C
+1852	PR0073	Sujeito	05	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	1	1	8	2	5	0	C	C
+1854	PR0073	Sujeito	05	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	1a2	zero	C	0	0	1	9	2	6	0	C	C
+1855	PR0073	Sujeito	05	Transformação	Informar o resultado	C	resultado	campo_resultado	intermediaria2	1a2	zero	C	0	0	0	10	2	7	0	E	C
+1861	PR0073	Sujeito	05	Transformação	Executar ação do sujeito	C	outra	interface	intermediaria2	1a2	zero	C	1	0	0	11	2	8	0	C	C
+1866	PR0074	Sujeito	06	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1871	PR0074	Sujeito	06	Comparação	Executar ação do sujeito	C	outra	interface	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+1878	PR0075	Sujeito	07	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+1882	PR0075	Sujeito	07	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	2	0	1	0	E	C
+1886	PR0075	Sujeito	07	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+1891	PR0075	Sujeito	07	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+1893	PR0075	Sujeito	07	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+1897	PR0075	Sujeito	07	Comparação	Executar ação do sujeito	E	outra	interface	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+1901	PR0075	Sujeito	07	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	0	7	2	4	1	E	C
+1915	PR0076	S21.07.10	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+1925	PR0076	S21.07.10	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	0	2	1	0	1	E	E
+1935	PR0076	S21.07.10	01	Transformação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	inicio	1a2	zero	C	0	0	1	3	1	1	0	C	C
+1945	PR0076	S21.07.10	01	Transformação	Associar incorretamente o número relativo ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	4	2	1	1	E	E
+1949	PR0076	S21.07.10	01	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	3a5	dois	E	0	0	0	5	3	1	2	E	E
+1960	PR0076	S21.07.10	01	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	3a5	tresmais	E	0	0	1	6	4	1	3	E	E
+1964	PR0076	S21.07.10	01	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	3a5	zero	C	0	0	1	7	4	2	0	E	C
+1966	PR0076	S21.07.10	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria2	3a5	zero	C	0	0	0	8	4	3	0	E	E
+1978	PR0076	S21.07.10	01	Transformação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	um	E	0	0	0	9	5	3	1	C	C
+1980	PR0076	S21.07.10	01	Transformação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	6mais	dois	E	1	1	1	10	6	3	2	E	C
+1982	PR0076	S21.07.10	01	Transformação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	1	1	1	11	7	3	3	E	C
+1992	PR0076	S21.07.10	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria2	6mais	tresmais	E	0	0	0	12	8	3	4	E	E
+2002	PR0076	S21.07.10	01	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria2	6mais	zero	C	1	0	0	13	8	4	0	E	C
+2005	PR0077	S21.07.10	03	Comparação	Ler o enunciado	C	leitura	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2007	PR0077	S21.07.10	03	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2009	PR0077	S21.07.10	03	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	3	0	2	0	C	C
+2013	PR0077	S21.07.10	03	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	E	C
+2015	PR0077	S21.07.10	03	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	zero	zero	C	0	0	0	5	0	4	0	E	C
+2017	PR0077	S21.07.10	03	Comparação	Executar ação do sujeito	E	outra	interface	intermediaria1	zero	zero	C	1	0	0	6	0	5	0	C	C
+2023	PR0077	S21.07.10	03	Comparação	Executar ação do sujeito	C	outra	interface	intermediaria1	1a2	um	E	0	0	1	7	1	5	1	E	C
+2029	PR0078	S21.07.10	04	Composição	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2033	PR0078	S21.07.10	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+2035	PR0078	S21.07.10	04	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	1a2	zero	C	0	0	0	3	1	1	0	C	C
+2037	PR0078	S21.07.10	04	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	1	0	4	1	2	0	E	E
+2039	PR0078	S21.07.10	04	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	1	5	1	3	0	C	C
+2044	PR0079	S21.07.10	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2046	PR0079	S21.07.10	05	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2048	PR0079	S21.07.10	05	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	3	0	2	0	E	E
+2054	PR0079	S21.07.10	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	1a2	um	E	0	0	0	4	1	2	1	C	E
+2056	PR0079	S21.07.10	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	1	0	0	5	1	3	0	E	E
+2060	PR0079	S21.07.10	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	C	C
+2064	PR0079	S21.07.10	05	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	1a2	zero	C	0	0	1	7	1	5	0	E	C
+2066	PR0079	S21.07.10	05	Comparação	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria2	1a2	um	E	0	0	0	8	2	5	1	C	E
+2068	PR0079	S21.07.10	05	Comparação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	dois	E	0	1	0	9	3	5	2	E	E
+2070	PR0079	S21.07.10	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	10	3	6	0	C	C
+2072	PR0079	S21.07.10	05	Comparação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	0	11	3	7	0	E	E
+2078	PR0080	S(01-06-10)	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2083	PR0080	S(01-06-10)	01	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	C	C
+2091	PR0080	S(01-06-10)	01	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	dois	E	0	0	1	3	2	0	2	C	C
+2094	PR0080	S(01-06-10)	01	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	4	2	1	0	C	C
+2097	PR0080	S(01-06-10)	01	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	5	2	2	0	E	C
+2098	PR0080	S(01-06-10)	01	Transformação	Informar o resultado	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	C	C
+2105	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2109	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	2	1	0	1	E	C
+2112	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	1a2	zero	C	0	0	1	3	1	1	0	E	C
+2114	PR0081	S(01-06-10)	02	Transformação	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	C	C
+2117	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	E	categoria	menu_categoria	intermediaria1	1a2	um	E	0	0	0	5	2	2	1	E	C
+2119	PR0081	S(01-06-10)	02	Transformação	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria1	3a5	dois	E	0	0	0	6	3	2	2	E	E
+2125	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	3a5	tresmais	E	0	1	0	7	4	2	3	E	C
+2128	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria2	3a5	zero	C	0	0	1	8	4	3	0	E	C
+2130	PR0081	S(01-06-10)	02	Transformação	Identificar o elemento representativo	E	simbolo_categoria	outro	intermediaria2	3a5	zero	C	0	0	0	9	4	4	0	C	C
+2133	PR0081	S(01-06-10)	02	Transformação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria2	3a5	um	E	0	0	0	10	5	4	1	E	E
+2135	PR0081	S(01-06-10)	02	Transformação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria2	3a5	zero	C	0	0	0	11	5	5	0	C	C
+2144	PR0081	S(01-06-10)	02	Transformação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	0	1	0	12	5	6	0	E	C
+2147	PR0081	S(01-06-10)	02	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	3a5	zero	C	0	0	0	13	5	7	0	E	C
+2148	PR0081	S(01-06-10)	02	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	6mais	um	E	0	0	1	14	6	7	1	C	E
+2151	PR0081	S(01-06-10)	02	Transformação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria2	6mais	dois	E	1	1	1	15	7	7	2	E	E
+2154	PR0081	S(01-06-10)	02	Transformação	Definir o sinal do número relativo	C	sinal	controle_sinal	tardia	6mais	tresmais	E	1	1	1	16	8	7	3	E	E
+2159	PR0081	S(01-06-10)	02	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	tardia	6mais	zero	C	0	0	0	17	8	8	0	E	C
+2162	PR0081	S(01-06-10)	02	Transformação	Associar o estado inicial ao modelo	C	posicionamento	diagrama	tardia	6mais	zero	C	1	0	1	18	8	9	0	C	C
+2164	PR0081	S(01-06-10)	02	Transformação	Informar o resultado	C	resultado	campo_resultado	tardia	6mais	zero	C	1	0	0	19	8	10	0	C	C
+2171	PR0082	S(01-06-10)	03	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2173	PR0082	S(01-06-10)	03	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2176	PR0082	S(01-06-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+2178	PR0082	S(01-06-10)	03	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	0	0	1	4	0	3	0	C	C
+2180	PR0082	S(01-06-10)	03	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	zero	zero	C	1	0	1	5	0	4	0	C	C
+2187	PR0083	S(01-06-10)	04	Composição	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2189	PR0083	S(01-06-10)	04	Composição	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2194	PR0083	S(01-06-10)	04	Composição	Associar incorretamente um elemento ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	1	0	3	0	2	0	E	C
+2206	PR0083	S(01-06-10)	04	Composição	Associar o todo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	1	4	1	2	1	C	E
+2207	PR0083	S(01-06-10)	04	Composição	Informar o resultado	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	C	C
+2214	PR0084	S(01-06-10)	05	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2216	PR0084	S(01-06-10)	05	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2220	PR0084	S(01-06-10)	05	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+2225	PR0084	S(01-06-10)	05	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	1	4	1	2	1	C	C
+2229	PR0084	S(01-06-10)	05	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	dois	E	0	1	1	5	2	2	2	C	C
+2232	PR0084	S(01-06-10)	05	Comparação	Definir o sinal do número relativo	E	sinal	controle_sinal	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	C	C
+2237	PR0084	S(01-06-10)	05	Comparação	Definir o sinal do número relativo	C	sinal	controle_sinal	intermediaria1	3a5	um	E	0	0	1	7	3	3	1	C	C
+2241	PR0084	S(01-06-10)	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	0	0	0	8	3	4	0	E	C
+2246	PR0084	S(01-06-10)	05	Comparação	Associar uma medida da comparação ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	zero	C	1	0	1	9	3	5	0	C	C
+2249	PR0084	S(01-06-10)	05	Comparação	Informar o resultado	C	resultado	campo_resultado	intermediaria2	3a5	zero	C	1	0	0	10	3	6	0	C	C
+2251	PR0084	S(01-06-10)	05	Comparação	Informar o resultado	E	resultado	campo_resultado	intermediaria2	3a5	zero	C	1	1	1	11	3	7	0	E	E
+2254	PR0084	S(01-06-10)	05	Comparação	Informar o resultado	C	resultado	campo_resultado	intermediaria2	3a5	um	E	1	1	1	12	4	7	1	E	E
+2261	PR0085	S(01-06-10)	06	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2265	PR0085	S(01-06-10)	06	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	zero	zero	C	0	0	1	2	0	1	0	E	C
+2270	PR0085	S(01-06-10)	06	Comparação	Identificar o tipo de problema	E	categoria	menu_categoria	inicio	1a2	um	E	0	0	1	3	1	1	1	E	C
+2275	PR0085	S(01-06-10)	06	Comparação	Identificar o tipo de problema	C	categoria	menu_categoria	intermediaria1	1a2	dois	E	0	0	1	4	2	1	2	E	C
+2277	PR0085	S(01-06-10)	06	Comparação	Identificar o elemento representativo	C	simbolo_categoria	outro	intermediaria1	1a2	zero	C	0	0	0	5	2	2	0	C	C
+2283	PR0085	S(01-06-10)	06	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	1	0	6	2	3	0	E	E
+2289	PR0085	S(01-06-10)	06	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria1	3a5	um	E	0	0	1	7	3	3	1	C	C
+2295	PR0085	S(01-06-10)	06	Comparação	Associar incorretamente uma medida da comparação ao modelo	E	posicionamento	diagrama	intermediaria2	3a5	dois	E	0	0	1	8	4	3	2	E	C
+2300	PR0085	S(01-06-10)	06	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria2	3a5	tresmais	E	0	0	1	9	5	3	3	E	C
+2308	PR0086	Aldenira	01	Composição	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2311	PR0086	Aldenira	01	Composição	Associar a primeira parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2312	PR0086	Aldenira	01	Composição	Associar a segunda parte ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2314	PR0086	Aldenira	01	Composição	Entrar com o resultado	C	resultado	outro	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+2321	PR0087	Aldenira	Novo	Composição	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2324	PR0087	Aldenira	Novo	Composição	Associar incorretamente o total a uma parte	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2325	PR0087	Aldenira	Novo	Composição	Associar uma parte ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+2326	PR0087	Aldenira	Novo	Composição	Associar incorretamente a resposta ao todo	E	posicionamento	campo_resultado	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+2328	PR0087	Aldenira	Novo	Composição	Justificar a tentativa realizada	E	outra	diagrama	intermediaria1	1a2	um	E	1	1	0	5	2	2	1	E	C
+2330	PR0087	Aldenira	Novo	Composição	Repetir associação incorreta do total	E	outra	diagrama	intermediaria1	3a5	dois	E	0	0	1	6	3	2	2	E	C
+2331	PR0087	Aldenira	Novo	Composição	Repetir associação da parte conhecida	C	outra	diagrama	intermediaria1	3a5	tresmais	E	0	0	1	7	4	2	3	E	C
+2332	PR0087	Aldenira	Novo	Composição	Repetir associação incorreta da resposta	E	outra	campo_resultado	intermediaria2	3a5	zero	C	0	0	1	8	4	3	0	C	C
+2337	PR0087	Aldenira	Novo	Composição	Executar a ação na ajuda	C	ajuda	ajuda_concreta	intermediaria2	3a5	um	E	0	1	0	9	5	3	1	E	C
+2339	PR0087	Aldenira	Novo	Composição	Informar valor da parte conhecida	C	resultado	campo_resultado	intermediaria2	3a5	zero	C	0	1	0	10	5	4	0	C	C
+2342	PR0087	Aldenira	Novo	Composição	Repetir associação incorreta do total	E	outra	diagrama	intermediaria2	3a5	zero	C	0	1	0	11	5	5	0	E	C
+2343	PR0087	Aldenira	Novo	Composição	Repetir associação da parte conhecida	C	outra	diagrama	intermediaria2	6mais	um	E	0	0	1	12	6	5	1	C	C
+2344	PR0087	Aldenira	Novo	Composição	Repetir associação incorreta da resposta	E	outra	campo_resultado	intermediaria2	6mais	zero	C	0	0	1	13	6	6	0	C	C
+2346	PR0087	Aldenira	Novo	Composição	Expressar dúvida sobre o modelo	E	duvida	diagrama	intermediaria2	6mais	um	E	1	1	0	14	7	6	1	E	C
+2350	PR0087	Aldenira	Novo	Composição	Associar corretamente o total ao todo	C	posicionamento	diagrama	intermediaria2	6mais	dois	E	0	0	0	15	8	6	2	E	E
+2351	PR0087	Aldenira	Novo	Composição	Associar corretamente a parte conhecida	C	posicionamento	diagrama	tardia	6mais	zero	C	0	0	1	16	8	7	0	C	C
+2353	PR0087	Aldenira	Novo	Composição	Entrar com o resultado	C	resultado	diagrama	tardia	6mais	zero	C	0	0	0	17	8	8	0	E	C
+2360	PR0088	Aldenira	04	Comparação	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2363	PR0088	Aldenira	04	Comparação	Associar incorretamente o referente ao número relativo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2370	PR0088	Aldenira	04	Comparação	Associar o referente ao modelo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+2371	PR0088	Aldenira	04	Comparação	Associar o número relativo ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+2372	PR0088	Aldenira	04	Comparação	Entrar com resultado incorreto	E	resultado	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C
+2374	PR0088	Aldenira	04	Comparação	Corrigir o resultado	C	resultado	diagrama	intermediaria1	1a2	um	E	1	1	1	6	2	3	1	C	C
+2381	PR0089	Aldenira	03	Transformação	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2386	PR0089	Aldenira	03	Transformação	Associar o valor gasto ao número relativo sem sinal	E	sinal	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2389	PR0089	Aldenira	03	Transformação	Associar corretamente o número relativo	C	posicionamento	diagrama	inicio	1a2	um	E	1	1	0	3	1	1	1	E	E
+2390	PR0089	Aldenira	03	Transformação	Associar o estado final	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	E	C
+2392	PR0089	Aldenira	03	Transformação	Entrar com o resultado	C	resultado	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	C	C
+2397	PR0090	Glaudionor	P1	Composição	Selecionar a legenda Composição	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2399	PR0090	Glaudionor	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2400	PR0090	Glaudionor	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2402	PR0090	Glaudionor	P1	Composição	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	zero	zero	C	0	1	0	4	0	3	0	C	C
+2407	PR0091	Glaudionor	P2	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2410	PR0091	Glaudionor	P2	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2411	PR0091	Glaudionor	P2	Transformação	Associar valor do enunciado a um elemento do modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2413	PR0091	Glaudionor	P2	Transformação	Informar valor ou número relativo no modelo	E	resultado	campo_resultado	intermediaria1	1a2	um	E	1	0	0	4	1	2	1	E	E
+2415	PR0091	Glaudionor	P2	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	dois	E	1	0	1	5	2	2	2	E	C
+2417	PR0091	Glaudionor	P2	Transformação	Informar valor ou número relativo no modelo	E	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	1	1	6	2	3	0	E	C
+2419	PR0091	Glaudionor	P2	Transformação	Confirmar a mensagem da interface	C	confirmacao	confirmacao	intermediaria1	3a5	um	E	1	0	0	7	3	3	1	E	E
+2424	PR0092	Glaudionor	P4	Comparação	Selecionar a legenda Comparação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2426	PR0092	Glaudionor	P4	Comparação	Associar valor do enunciado a um elemento do modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2428	PR0092	Glaudionor	P4	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	1a2	um	E	1	0	1	3	1	1	1	C	C
+2429	PR0092	Glaudionor	P4	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	C	C
+2431	PR0092	Glaudionor	P4	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	1	1	5	1	3	0	E	C
+2436	PR0093	Glaudionor	P3	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	C
+2438	PR0093	Glaudionor	P3	Transformação	Ler o enunciado do problema	C	leitura	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2439	PR0093	Glaudionor	P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+2441	PR0093	Glaudionor	P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	zero	zero	C	0	1	1	4	0	3	0	E	E
+2446	PR0094	Glaudionor	P5	Comparação	Selecionar a legenda Comparação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2448	PR0094	Glaudionor	P5	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2449	PR0094	Glaudionor	P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	inicio	zero	zero	C	0	0	0	3	0	2	0	C	C
+2451	PR0094	Glaudionor	P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	zero	zero	C	0	1	1	4	0	3	0	E	C
+2456	PR0095	Glaudionor	Erro proposital - P3	Transformação	Selecionar a legenda Comparação	E	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2459	PR0095	Glaudionor	Erro proposital - P3	Transformação	Selecionar a legenda Composição	E	categoria	outro	inicio	1a2	um	E	1	0	1	2	1	0	1	C	C
+2463	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	inicio	1a2	dois	E	0	0	0	3	2	0	2	E	E
+2464	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar valor ou número relativo no modelo	E	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	1	4	2	1	0	E	C
+2478	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar resultado ou valor no modelo	C	resultado	diagrama	intermediaria1	3a5	um	E	0	0	1	5	3	1	1	E	C
+2480	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar resultado ou valor no modelo	C	resultado	confirmacao	intermediaria1	3a5	zero	C	0	1	1	6	3	2	0	E	C
+2482	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar valor ou número relativo no modelo	E	resultado	outro	intermediaria1	3a5	zero	C	0	0	1	7	3	3	0	E	C
+2485	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria2	3a5	um	E	1	1	1	8	4	3	1	E	C
+2486	PR0095	Glaudionor	Erro proposital - P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria2	3a5	zero	C	0	0	1	9	4	4	0	E	E
+2493	PR0096	Glaudionor	Erro proposital - P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2494	PR0096	Glaudionor	Erro proposital - P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	outro	inicio	zero	zero	C	0	0	1	2	0	1	0	C	C
+2495	PR0096	Glaudionor	Erro proposital - P5	Comparação	Informar valor ou número relativo no modelo	E	resultado	outro	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2512	PR0096	Glaudionor	Erro proposital - P5	Comparação	Informar resultado ou valor no modelo	C	resultado	diagrama	intermediaria1	1a2	um	E	0	1	1	4	1	2	1	C	C
+2515	PR0096	Glaudionor	Erro proposital - P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	1	1	5	1	3	0	E	E
+2524	PR0097	Michele	P1	Composição	Selecionar a legenda Composição	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2527	PR0097	Michele	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2528	PR0097	Michele	P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2530	PR0097	Michele	P1	Composição	Informar resultado ou valor no modelo	C	resultado	diagrama	intermediaria1	zero	zero	C	0	1	0	4	0	3	0	E	C
+2537	PR0098	Michele	P2	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2540	PR0098	Michele	P2	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2541	PR0098	Michele	P2	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2543	PR0098	Michele	P2	Transformação	Informar resultado ou valor no modelo	E	resultado	diagrama	intermediaria1	zero	zero	C	0	1	0	4	0	3	0	C	C
+2548	PR0098	Michele	P2	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	um	E	0	0	1	5	1	3	1	E	C
+2550	PR0098	Michele	P2	Transformação	Realizar ação no modelo	C	outra	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+2557	PR0099	Michele	P3	Transformação	Selecionar a legenda Transformação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2560	PR0099	Michele	P3	Transformação	Ler o enunciado do problema	E	leitura	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2563	PR0099	Michele	P3	Transformação	Ler o enunciado do problema	C	leitura	diagrama	inicio	1a2	um	E	1	0	1	3	1	1	1	E	E
+2564	PR0099	Michele	P3	Transformação	Associar valor do enunciado a um elemento do modelo	E	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	0	4	1	2	0	E	C
+2567	PR0099	Michele	P3	Transformação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	0	1	5	2	2	1	E	E
+2568	PR0099	Michele	P3	Transformação	Informar valor ou número relativo no modelo	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	0	0	6	2	3	0	C	C
+2575	PR0100	Michele	P4	Comparação	Selecionar a legenda Comparação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2578	PR0100	Michele	P4	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2579	PR0100	Michele	P4	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2580	PR0100	Michele	P4	Comparação	Informar valor ou número relativo no modelo	C	resultado	outro	intermediaria1	zero	zero	C	0	0	0	4	0	3	0	C	C
+2587	PR0101	Michele	P5	Comparação	Selecionar a legenda Comparação	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2590	PR0101	Michele	P5	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2591	PR0101	Michele	P5	Comparação	Associar valor do enunciado a um elemento do modelo	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2594	PR0101	Michele	P5	Comparação	Associar valor do enunciado a um elemento do modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	1	0	1	4	1	2	1	C	C
+2595	PR0101	Michele	P5	Comparação	Informar valor ou número relativo no modelo	C	resultado	outro	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	C	C
+2602	PR0102	Michele	Segundo teste - P1	Composição	Selecionar a legenda Composição	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2605	PR0102	Michele	Segundo teste - P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	0	2	0	1	0	C	C
+2606	PR0102	Michele	Segundo teste - P1	Composição	Associar valor do enunciado a um elemento do modelo	C	posicionamento	outro	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2608	PR0102	Michele	Segundo teste - P1	Composição	Informar resultado ou valor no modelo	E	resultado	diagrama	intermediaria1	zero	zero	C	0	1	0	4	0	3	0	C	C
+2610	PR0102	Michele	Segundo teste - P1	Composição	Solicitar a dica da interface	C	ajuda	outro	intermediaria1	1a2	um	E	1	1	0	5	1	3	1	E	E
+2612	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria1	1a2	zero	C	0	1	1	6	1	4	0	C	E
+2614	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria1	1a2	zero	C	0	0	1	7	1	5	0	C	C
+2616	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	8	1	6	0	C	C
+2618	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	9	1	7	0	C	C
+2620	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	10	1	8	0	C	C
+2622	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	11	1	9	0	C	C
+2624	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	12	1	10	0	C	C
+2626	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	13	1	11	0	C	C
+2628	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	14	1	12	0	C	C
+2630	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	intermediaria2	1a2	zero	C	0	0	1	15	1	13	0	C	C
+2632	PR0102	Michele	Segundo teste - P1	Composição	Manipular elementos concretos da ajuda	C	ajuda	diagrama	tardia	1a2	zero	C	0	0	1	16	1	14	0	C	C
+2636	PR0102	Michele	Segundo teste - P1	Composição	Informar resultado ou valor no modelo	C	resultado	diagrama	tardia	1a2	zero	C	0	0	0	17	1	15	0	C	C
+2641	PR0103	Michele	Segundo teste - P3	Transformação	Ler o enunciado do problema	E	leitura	confirmacao	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+2657	PR0103	Michele	Segundo teste - P3	Transformação	Informar resultado ou valor no modelo	C	resultado	diagrama	inicio	1a2	um	E	0	1	0	2	1	0	1	E	E
+2659	PR0103	Michele	Segundo teste - P3	Transformação	Informar resultado ou valor no modelo	C	resultado	confirmacao	inicio	1a2	zero	C	0	1	1	3	1	1	0	C	C
+2664	PR0104	Michele	Segundo teste - P2	Transformação	Confirmar a mensagem da interface	E	confirmacao	confirmacao	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	E	E
+2666	PR0104	Michele	Segundo teste - P2	Transformação	Confirmar a mensagem da interface	E	confirmacao	confirmacao	inicio	1a2	um	E	1	0	1	2	1	0	1	E	E
+2668	PR0104	Michele	Segundo teste - P2	Transformação	Confirmar a mensagem da interface	E	confirmacao	confirmacao	inicio	1a2	dois	E	1	0	1	3	2	0	2	E	E
+2675	PR0104	Michele	Segundo teste - P2	Transformação	Realizar ação no modelo	C	outra	diagrama	intermediaria1	3a5	tresmais	E	1	1	0	4	3	0	3	E	E
+2677	PR0104	Michele	Segundo teste - P2	Transformação	Realizar ação no modelo	C	outra	confirmacao	intermediaria1	3a5	zero	C	0	1	1	5	3	1	0	E	E
+2683	PR0105	Valderlangela	03	Transformação	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2686	PR0105	Valderlangela	03	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2687	PR0105	Valderlangela	03	Transformação	Associar incorretamente o valor gasto ao estado inicial	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	1	3	0	2	0	C	C
+2693	PR0105	Valderlangela	AJ02	Transformação	Executar a ação na ajuda	C	ajuda	ajuda_concreta	intermediaria1	1a2	um	E	0	1	0	4	1	2	1	E	E
+2695	PR0105	Valderlangela	AJ02	Transformação	Informar valor na ajuda	C	resultado	campo_resultado	intermediaria1	1a2	zero	C	0	1	0	5	1	3	0	C	C
+2699	PR0105	Valderlangela	03	Transformação	Repetir associação incorreta do valor gasto	E	outra	diagrama	intermediaria1	1a2	zero	C	0	0	0	6	1	4	0	E	C
+2700	PR0105	Valderlangela	03	Transformação	Associar o estado final ao modelo	C	posicionamento	diagrama	intermediaria1	1a2	um	E	0	0	0	7	2	4	1	E	E
+2705	PR0105	Valderlangela	03	Transformação	Repetir associação incorreta do valor gasto	E	outra	diagrama	intermediaria2	1a2	zero	C	0	0	0	8	2	5	0	E	C
+2709	PR0105	Valderlangela	03	Transformação	Informar o resultado antes do momento adequado	E	resultado	diagrama	intermediaria2	3a5	um	E	0	0	0	9	3	5	1	E	E
+2711	PR0105	Valderlangela	03	Transformação	Repetir associação incorreta do valor gasto	E	outra	diagrama	intermediaria2	3a5	dois	E	0	1	0	10	4	5	2	E	C
+2714	PR0105	Valderlangela	03	Transformação	Repetir entrada antecipada do resultado	E	resultado	diagrama	intermediaria2	3a5	tresmais	E	1	1	0	11	5	5	3	E	E
+2716	PR0105	Valderlangela	03	Transformação	Repetir associação incorreta do valor gasto	E	outra	diagrama	intermediaria2	6mais	tresmais	E	0	1	0	12	6	5	4	E	C
+2721	PR0105	Valderlangela	03	Transformação	Associar número relativo sem sinal	E	sinal	diagrama	intermediaria2	6mais	tresmais	E	1	0	0	13	7	5	5	E	E
+2725	PR0105	Valderlangela	03	Transformação	Informar número relativo com sinal incorreto	E	sinal	diagrama	intermediaria2	6mais	tresmais	E	1	1	1	14	8	5	6	E	E
+2727	PR0105	Valderlangela	03	Transformação	Associar corretamente o número relativo	C	posicionamento	diagrama	intermediaria2	6mais	tresmais	E	1	1	0	15	9	5	7	E	E
+2729	PR0105	Valderlangela	03	Transformação	Associar o estado final	C	posicionamento	diagrama	tardia	6mais	zero	C	0	0	1	16	9	6	0	C	C
+2731	PR0105	Valderlangela	03	Transformação	Entrar com resultado incorreto	E	resultado	diagrama	tardia	6mais	zero	C	0	0	0	17	9	7	0	C	C
+2734	PR0105	Valderlangela	03	Transformação	Entrar com resultado correto	C	resultado	diagrama	tardia	6mais	um	E	0	0	1	18	10	7	1	E	C
+2741	PR0106	Valderlangela	05	Comparação	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2744	PR0106	Valderlangela	05	Comparação	Associar o referente ao modelo	C	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	E
+2745	PR0106	Valderlangela	05	Comparação	Associar número relativo sem sinal	E	sinal	diagrama	inicio	zero	zero	C	0	0	0	3	0	2	0	E	C
+2748	PR0106	Valderlangela	05	Comparação	Associar incorretamente a diferença ao referido	E	posicionamento	diagrama	intermediaria1	1a2	um	E	1	1	0	4	1	2	1	E	E
+2752	PR0106	Valderlangela	05	Comparação	Associar incorretamente o referente ao número relativo	E	posicionamento	diagrama	intermediaria1	1a2	dois	E	1	1	1	5	2	2	2	C	E
+2756	PR0106	Valderlangela	05	Comparação	Entrar com o referido	C	outra	diagrama	intermediaria1	3a5	tresmais	E	0	1	0	6	3	2	3	E	E
+2757	PR0106	Valderlangela	05	Comparação	Informar a diferença sem sinal	E	sinal	diagrama	intermediaria1	3a5	zero	C	0	1	0	7	3	3	0	E	E
+2762	PR0106	Valderlangela	05	Comparação	Associar corretamente o número relativo	C	posicionamento	diagrama	intermediaria2	3a5	um	E	0	1	0	8	4	3	1	E	C
+2769	PR0107	Valderlangela	06	Composição	Identificar o tipo de problema	C	categoria	outro	inicio	zero	zero	INICIO	0	0	0	1	0	0	0	C	C
+2772	PR0107	Valderlangela	06	Composição	Associar incorretamente o total a uma parte	E	posicionamento	diagrama	inicio	zero	zero	C	0	0	0	2	0	1	0	E	C
+2776	PR0107	Valderlangela	06	Composição	Associar corretamente o total ao todo	C	posicionamento	diagrama	inicio	1a2	um	E	0	0	1	3	1	1	1	C	C
+2777	PR0107	Valderlangela	06	Composição	Associar corretamente a parte conhecida	C	posicionamento	diagrama	intermediaria1	1a2	zero	C	0	0	1	4	1	2	0	C	C
+2779	PR0107	Valderlangela	06	Composição	Entrar com o resultado	C	resultado	diagrama	intermediaria1	1a2	zero	C	0	0	0	5	1	3	0	E	C

@@ -1,0 +1,275 @@
+{
+  "schema_version": "2.0.0",
+  "tipo_registro": "evento",
+  "identificacao": {
+    "event_id": "EVT-EP-JAMILE-S9-P2-G0001-E001",
+    "episode_id": "EP-JAMILE-S9-P2",
+    "session_id": "SESSAO-20260731-001",
+    "gesture_id": "GESTO-0001",
+    "action_id": "ACAO-0001",
+    "evaluation_id": "AVAL-0001-001",
+    "step_user": 1,
+    "step_internal": 1,
+    "timestamp": "2026-07-31T12:42:59.649-03:00",
+    "user_id": "hist_doutorado_jamile_s9_090610",
+    "problem_id": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+    "category": "transformacao",
+    "unknown_role": "estadoFinal",
+    "system_version": "Gerard-2026.07.31",
+    "rules_base_version": "1.0.0",
+    "execution_sequence": [
+      "MONITOR",
+      "ZDP",
+      "MODELADOR"
+    ]
+  },
+  "classificacao_evento": {
+    "origin": "soltura_usuario",
+    "canonical": true,
+    "reactive_evaluation": false,
+    "counts_for_user_profile": true,
+    "counts_for_error_sequence": true,
+    "counts_for_case_base": true,
+    "counts_for_rule_learning": true,
+    "idempotency_key": "SESSAO-20260731-001|EP-JAMILE-S9-P2|GESTO-0001"
+  },
+  "acao_usuario": {
+    "type": "drag",
+    "element": "32",
+    "source_role": "estadoInicial",
+    "target_role": "transformacao",
+    "source_artifact": "texto",
+    "target_artifact": "diagrama_vergnaud",
+    "interface_state_before": {
+      "estadoInicial": null,
+      "transformacao": null,
+      "estadoFinal": null
+    },
+    "interface_state_after": {
+      "estadoInicial": null,
+      "transformacao": null,
+      "estadoFinal": null
+    }
+  },
+  "agents": {
+    "MONITOR": {
+      "input": {
+        "gesture_id": "GESTO-0001",
+        "action_id": "ACAO-0001",
+        "category": "transformacao",
+        "element": "32",
+        "expected_role": "estadoInicial",
+        "received_role": "transformacao"
+      },
+      "state_before": {
+        "stateless": true
+      },
+      "decision": {
+        "evaluation": "E",
+        "error_type": "posicionamento_semantico",
+        "severity": "media",
+        "confidence": 1.0,
+        "rationale": "O valor correspondente ao estado inicial foi colocado no papel da transformação."
+      },
+      "rules_fired": [
+        {
+          "rule_id": "R-DOM-TR-PAPEL-001",
+          "source": "dominio",
+          "version": "1.0",
+          "antecedents_satisfied": [
+            "category=transformacao",
+            "expected_role=estadoInicial",
+            "received_role=transformacao"
+          ],
+          "conclusion": "acao_incorreta",
+          "priority": 100,
+          "used_in_final_decision": true,
+          "discard_reason": null
+        }
+      ],
+      "output": {
+        "event": "MONITOR_ACAO_INCORRETA",
+        "action_accepted": false,
+        "allow_retry": true,
+        "forward_to_zdp": true,
+        "forward_to_modeler": true
+      },
+      "state_after": {
+        "stateless": true
+      },
+      "state_change": {},
+      "processing_time_ms": 3,
+      "error": null
+    },
+    "ZDP": {
+      "input": {
+        "gesture_id": "GESTO-0001",
+        "evaluation": "E",
+        "error_type": "posicionamento_semantico",
+        "consecutive_user_errors_before": 0,
+        "total_user_errors_before": 0,
+        "previous_help": false
+      },
+      "state_before": {
+        "help_level": 0,
+        "episode_interventions": 0
+      },
+      "decision": {
+        "intervention": "questionamento_leve",
+        "help_level": 1,
+        "provide_answer": false,
+        "allow_retry": true,
+        "rationale": "Primeiro erro canônico do usuário nesta família de ação."
+      },
+      "rules_fired": [
+        {
+          "rule_id": "R-PED-PRIMEIRO-ERRO-001",
+          "source": "pedagogica",
+          "version": "1.0",
+          "antecedents_satisfied": [
+            "canonical=true",
+            "consecutive_user_errors_before=0"
+          ],
+          "conclusion": "questionamento_leve",
+          "priority": 80,
+          "used_in_final_decision": true,
+          "discard_reason": null
+        }
+      ],
+      "output": {
+        "output_type": "message",
+        "message": "Observe qual quantidade Maria possuía antes de ganhar as figurinhas.",
+        "message_displayed": true
+      },
+      "state_after": {
+        "help_level": 1,
+        "episode_interventions": 1
+      },
+      "state_change": {
+        "help_level": {
+          "before": 0,
+          "after": 1
+        },
+        "episode_interventions": {
+          "before": 0,
+          "after": 1
+        }
+      },
+      "processing_time_ms": 4,
+      "error": null
+    },
+    "MODELADOR": {
+      "input": {
+        "gesture_id": "GESTO-0001",
+        "evaluation": "E",
+        "error_type": "posicionamento_semantico",
+        "expected_role": "estadoInicial",
+        "received_role": "transformacao"
+      },
+      "profile_before": {
+        "total_user_errors": 0,
+        "consecutive_user_errors": 0,
+        "positioning_user_errors": 0,
+        "total_user_correct": 0,
+        "last_user_evaluation": null,
+        "last_user_action_family": null
+      },
+      "diagnosis_before": {
+        "available": false,
+        "diagnosis_id": null,
+        "description": null,
+        "confidence": null,
+        "evidence": [],
+        "unavailable_reason": "Motor automático de diagnóstico ainda não implementado."
+      },
+      "detected_strategy": {
+        "available": false,
+        "strategy_id": null,
+        "name": null,
+        "confidence": null,
+        "evidence": [],
+        "unavailable_reason": "Estratégia não inferida automaticamente nesta etapa."
+      },
+      "decision": {
+        "update_profile": true,
+        "create_case": true,
+        "incorporate_pattern": false,
+        "rationale": "Evento canônico e ainda não processado para esta chave de idempotência."
+      },
+      "rules_fired": [],
+      "update_applied": {
+        "total_user_errors": {
+          "before": 0,
+          "after": 1
+        },
+        "consecutive_user_errors": {
+          "before": 0,
+          "after": 1
+        },
+        "positioning_user_errors": {
+          "before": 0,
+          "after": 1
+        },
+        "last_user_evaluation": {
+          "before": null,
+          "after": "E"
+        },
+        "last_user_action_family": {
+          "before": null,
+          "after": "posicionamento"
+        }
+      },
+      "new_case_inserted": {
+        "inserted": true,
+        "case_id": "CASO-EP-JAMILE-S9-P2-G0001",
+        "idempotency_key": "SESSAO-20260731-001|EP-JAMILE-S9-P2|GESTO-0001",
+        "duplicate": false,
+        "case_base": "diagnosticos_tarefa.tsv"
+      },
+      "rule_or_pattern_incorporated": {
+        "incorporated": false,
+        "reason": "A incorporação de padrões é executada sob demanda e não por ação."
+      },
+      "diagnosis_after": {
+        "available": false,
+        "diagnosis_id": null,
+        "description": null,
+        "confidence": null,
+        "evidence": [],
+        "unavailable_reason": "Motor automático de diagnóstico ainda não implementado."
+      },
+      "profile_after": {
+        "total_user_errors": 1,
+        "consecutive_user_errors": 1,
+        "positioning_user_errors": 1,
+        "total_user_correct": 0,
+        "last_user_evaluation": "E",
+        "last_user_action_family": "posicionamento"
+      },
+      "output": {
+        "event": "MODELO_USUARIO_ATUALIZADO",
+        "profile_persisted": true,
+        "case_inserted": true
+      },
+      "processing_time_ms": 5,
+      "error": null
+    }
+  },
+  "interaction_result": {
+    "comparison_status": "evaluated",
+    "expected": {
+      "monitor_evaluation": "E",
+      "zdp_intervention": "questionamento_leve",
+      "modeler_case_inserted": true
+    },
+    "observed": {
+      "monitor_evaluation": "E",
+      "zdp_intervention": "questionamento_leve",
+      "modeler_case_inserted": true
+    },
+    "divergence": false,
+    "divergence_type": null,
+    "divergence_reason": null,
+    "responsible_agent": null
+  }
+}

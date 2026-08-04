@@ -1,0 +1,139 @@
+{
+  "schema_version": "2.0.0",
+  "title": "Modelo da unidade de análise A-B-C-D do Gérard",
+  "description": "A unidade de análise é composta obrigatoriamente pela ação do computador (A) e pela ação do usuário (B). As perguntas explicativas (C) e as respostas do usuário (D) são opcionais e dependem do acionamento, pelo próprio usuário, de uma tela de explicações.",
+  "principios_metodologicos": {
+    "unidade_de_analise": "A-B com extensão opcional C-D",
+    "componentes_obrigatorios": [
+      "A",
+      "B"
+    ],
+    "componentes_opcionais": [
+      "C",
+      "D"
+    ],
+    "regra_de_ausencia": "A ausência de C e D não significa falta de compreensão, recusa ou erro. Significa apenas que o usuário não acionou a tela de explicações ou não concluiu o preenchimento.",
+    "acao_do_usuario": "Cada ação do usuário em B deve ser classificada em um dos seis tipos de protocolo e avaliada exatamente uma vez como correta (C) ou errada (E).",
+    "tipos_de_protocolo": [
+      "SELECIONAR",
+      "POSICIONAR",
+      "ORIENTAR",
+      "QUANTIFICAR",
+      "CAMINHO",
+      "TEXTO"
+    ]
+  },
+  "status_explicacao_permitidos": {
+    "not_opened": "O botão não foi acionado; perguntas e respostas não foram apresentadas/coletadas.",
+    "opened_not_answered": "A tela foi aberta, mas nenhum campo foi respondido.",
+    "partially_answered": "A tela foi aberta e apenas parte dos campos foi respondida.",
+    "answered": "A tela foi aberta e os campos previstos foram respondidos."
+  },
+  "analysis_unit_example": {
+    "analysis_unit_id": "UA-EP-JAMILE-S9-0002",
+    "session_id": "SESSAO-20260731-001",
+    "episode_id": "EP-HIST_DOUTORADO_JAMILE_S9_090610-2",
+    "user_id": "hist_doutorado_jamile_s9_090610",
+    "sequence_order": 2,
+    "started_at": "2026-07-31T21:00:00-03:00",
+    "finished_at": "2026-07-31T21:00:03-03:00",
+    "status": "completed",
+    "A_computer_action": {
+      "action_id": "A-0002",
+      "action_type": "instruction",
+      "content": "Posicione o valor correspondente no papel semântico correto.",
+      "message_template_id": "MSG-POSICIONAMENTO-001",
+      "feedback_presented": false,
+      "technical_events": []
+    },
+    "B_user_action": {
+      "protocol_instance_id": "PI-EP-JAMILE-S9-0002",
+      "protocol_type": "POSICIONAR",
+      "action_description": "Arrastar o valor 32 para o estado final.",
+      "semantic_context": {
+        "category": "transformacao",
+        "element": "32",
+        "source_role": "estadoInicial",
+        "target_role": "estadoFinal",
+        "expected_role": "estadoInicial"
+      },
+      "evaluation": {
+        "result": "E",
+        "evaluation_type": "protocol_final",
+        "effective": true,
+        "error_type": "posicionamento_semantico",
+        "rationale": "O valor 32 representa o estado inicial, mas foi colocado no estado final."
+      },
+      "agent_effects": {
+        "monitor_final_evaluations": 1,
+        "zdp_effective_decisions": 1,
+        "modeler_effective_updates": 1,
+        "cases_inserted": 1
+      },
+      "technical_events": [
+        {
+          "technical_event_id": "TE-0002-001",
+          "event_type": "mousePressed",
+          "counts_as_analysis_unit": false,
+          "counts_as_protocol_instance": false,
+          "effective": false
+        },
+        {
+          "technical_event_id": "TE-0002-002",
+          "event_type": "mouseDragged",
+          "counts_as_analysis_unit": false,
+          "counts_as_protocol_instance": false,
+          "effective": false
+        },
+        {
+          "technical_event_id": "TE-0002-003",
+          "event_type": "mouseReleased",
+          "counts_as_analysis_unit": false,
+          "counts_as_protocol_instance": false,
+          "effective": false
+        }
+      ],
+      "idempotency_key": "SESSAO-20260731-001|EP-HIST_DOUTORADO_JAMILE_S9_090610-2|PI-EP-JAMILE-S9-0002"
+    },
+    "C_explanation_questions": {
+      "button_available": true,
+      "button_activated": false,
+      "screen_opened": false,
+      "status": "not_opened",
+      "questions": [
+        {
+          "question_id": "Q-0002-01",
+          "question_type": "motivo_da_acao",
+          "content": "Por que você realizou essa ação?",
+          "presented_to_user": false
+        }
+      ]
+    },
+    "D_user_explanations": {
+      "status": "not_opened",
+      "responses": [],
+      "completed_at": null
+    },
+    "analysis_unit_completeness": "A_B",
+    "research_use": {
+      "eligible_for_behavioral_analysis": true,
+      "eligible_for_explanatory_analysis": false,
+      "missing_explanation_reason": "user_did_not_open_explanation_screen"
+    }
+  },
+  "validation_rules": [
+    "A e B são obrigatórios em toda unidade de análise.",
+    "C e D são opcionais e dependem do acionamento da tela de explicações.",
+    "Se o botão não for acionado, C.status e D.status devem ser not_opened.",
+    "Campos vazios em D não podem ser interpretados automaticamente como falta de compreensão.",
+    "Cada B_user_action deve ter exatamente um protocol_type entre os seis tipos definidos.",
+    "Cada B_user_action deve ter exatamente uma avaliação final C ou E.",
+    "Eventos técnicos não criam novas unidades de análise.",
+    "Eventos técnicos não criam novas instâncias de protocolo.",
+    "Cada instância de protocolo pode produzir no máximo uma decisão efetiva do ZDP.",
+    "Cada instância de protocolo pode produzir no máximo uma atualização efetiva do Modelador.",
+    "Cada instância de protocolo pode inserir no máximo um caso.",
+    "A análise explicativa só pode usar unidades com C e D efetivamente disponíveis.",
+    "A análise comportamental pode usar unidades A-B mesmo sem C-D."
+  ]
+}

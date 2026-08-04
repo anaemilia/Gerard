@@ -231,6 +231,122 @@ não tinha — como as duas são do mesmo período (2011, confirmado pela
 usuária), sem saber qual é cronologicamente mais recente entre si, não dá
 para afirmar qual das duas versões da mensagem é a mais tardia/refinada.
 
+## Diários de bordo do doutorado (D:\doutorado\Experimentos, 2010) — evidência de campo pré-arquitetura (2026-07-30)
+
+⚠️ Fonte diferente de todas as anteriores: não é relatório de pesquisa nem
+tabela — são os **diários de bordo da própria usuária** (`diárioBordoAnaEmilia*.doc`),
+escritos em campo durante a coleta de dados do doutorado (junho–julho de
+2010), 5 anos antes da tese e 16 anos antes do relatório de 2026. 12 diários
+únicos identificados (18 arquivos no total, 6 são cópias byte-a-byte em
+`transcrições/`, confirmadas por hash MD5) — extraídos com `antiword` e lidos
+na íntegra. Um deles (`sem entrevistas/18-05-10-/diárioBordoAnaEmilia.doc`) é
+idêntico ao diário de 01-06-10 — provável arquivo copiado para a pasta errada
+ou pasta sem diário próprio; não investigado further.
+
+Diferente do relatório 2026 (protocolo em papel formal, 5 usuários, 556 ações
+codificadas) e das tabelas de 2011 (mensagens já formalizadas), os diários são
+**observação de campo não estruturada** — a autora registrando o que via,
+sessão a sessão, com professoras da rede pública (majoritariamente escola
+"Maria José", Juazeiro-BA) e uma da rede particular (escola Cristal) testando
+o protótipo em papel. Valor específico desta fonte: é o registro mais antigo
+disponível, então funciona como confirmação (ou não) de que padrões vistos
+depois (2011, 2026) já apareciam desde o início da coleta.
+
+**Datas dos diários coincidem com sessões já usadas em `CatalogoProtocolosReaisReplay.java`**
+(ex.: 08-06, 13-07, 14-07, 21-07 ↔ Jamilly; 01-06, 15-06, 19-07 ↔
+FelipeWanderley) — **são as mesmas sessões**, não duas populações diferentes.
+Os diários registram o nome real da professora (anotação de campo privada da
+pesquisadora); as transcrições correspondentes anonimizam para sujeito
+codificado (`S8`, `S9`...) para proteger a identificação dos participantes —
+confirmado pela usuária em 2026-07-30, depois de eu checar (erradamente) que
+os nomes das professoras não apareciam nas transcrições e ter suspeitado, sem
+razão, de que fossem duas populações separadas. Ou seja: isto **é**
+triangulação da mesma evidência por duas fontes (relato do pesquisador de
+fora + fala do participante durante a tarefa), não replicação em amostra
+diferente. Não existe (ainda) um mapeamento explícito diário-data ↔
+código-de-sujeito neste repositório de skills — se precisar cruzar um diário
+específico com o episódio replay correspondente, checar a data e, quando
+necessário, confirmar com a usuária qual sujeito codificado corresponde a
+qual professora nomeada.
+
+**Achados que confirmam, de forma independente, coisas já documentadas nesta
+skill**:
+
+- **Confusão sinal↔operação** (quase toda sessão relatada — 01-06, 09-06,
+  13-07, 14-07, 15-06, 20-07, 21-07, às vezes com a mesma frase repetida:
+  "as professoras não conseguem perceber as diferenças entre o sinal do
+  número relativo e a operação que será realizada"). Confirma o mesmo
+  diagnóstico da Tabela 50 acima ("erro de sinal vs. erro de posição") 16
+  anos antes do relatório 2026 chegar à mesma distinção de forma
+  independente.
+- **Referente/referido (comparação) e estado inicial (transformação) como as
+  categorias mais difíceis** (14-07, 20-07, 21-07) — inclusive um relato rico
+  em 21-07: diante de "Maria tem 15 a mais", a professora interpretava 15
+  como elemento do conjunto dos naturais ("Ele não tem? Se ele tem"),
+  associando o verbo "ter" a uma quantidade absoluta em vez de uma diferença.
+  Confirma, com relato de campo detalhado, a mesma ambiguidade
+  referente/referido que motivou a regra de exclusão desses passos em
+  `CatalogoProtocolosReaisReplay.java` (ver skill de sessão de replay) — a
+  ambiguidade não é um artefato dos protocolos posteriores, já existia desde
+  o início da coleta.
+- **Feedback visual (cores) não percebido** (13-07, 14-07, 20-07): cores
+  usadas no protótipo para indicar posicionamento correto passaram
+  despercebidas — uma professora disse explicitamente na entrevista "não ter
+  percebido a presença das cores". É uma falha de comunicabilidade (De
+  Souza) no sentido exato da seção abaixo, só que capturada 16 anos antes da
+  conversa que introduziu o conceito nesta skill — dado empírico retroativo
+  para o mesmo princípio.
+- **"Mais dica" pedida como confirmação de sucesso, não como explicação**
+  (01-06, 15-06): usuárias queriam que a interface dissesse "você acertou"
+  ou desse a operação certa diretamente, não uma explicação conceitual. Em
+  15-06 a autora já anota, em 2010: "a dica de dar explicações não foi
+  efetiva... o questionamento foi o mais eficaz" — o mesmo princípio por
+  trás da distinção "Feedback de questionamento" vs. "Automatização de
+  passos com dica completa" da tabela de 2011 (seção acima), e por trás das
+  camadas N1/N2 vs. N4 do relatório 2026.
+
+**Achados novos, não documentados em nenhuma outra fonte desta skill**:
+
+- **Viés de ordem do texto**: dois diários (09-06, 15-06) trazem parágrafo
+  quase idêntico descrevendo usuárias que tentam "armar" o diagrama seguindo
+  a ordem em que os elementos aparecem no texto do problema, não a estrutura
+  semântica da situação — sugere um padrão de erro sistemático que nenhuma
+  das tabelas posteriores nomeia explicitamente.
+- **Protocolo "quantificar" (contagem um a um) rejeitado pelos usuários**,
+  vs. "texto"/arrastar preferido (08-06, 09-06, 15-06: "visto como um
+  processo lento"). Relevante para `gerard-log-acao-instrumental`, que
+  documenta os protocolos de mouse (`SELECIONAR`/`POSICIONAR`/`TEXTO`/
+  `QUANTIFICAR` etc.) do ponto de vista do esquema de captura, não da
+  preferência do usuário — este é um dado de preferência empírica que
+  aquela skill não tem.
+- **Evolução do protótipo é rastreável dia a dia**: radio-button para forma
+  de representação introduzido em 08-06; gráfico de barras no Excel como
+  ponte pedagógica introduzido no encontro de extensão de 12-06 e já
+  reaproveitado como "dica" em 14-07; primeira professora a aceitar testar o
+  campo multiplicativo aparece em 20-07 (sessão marcada para 22-07) — é o
+  primeiro sinal, em qualquer fonte revisada até agora, do início dos testes
+  multiplicativos cujos dados brutos ficam preservados (sem uso pelos
+  agentes, por falta de categoria em código) em `CampoMultiplicativoDadosFuturos.java`.
+- **Variação individual extrema entre professoras**: a de 14-07 é descrita
+  com compreensão aparentemente boa mas discurso "prolixo sem objetividade";
+  a de 19-07 mostra o oposto — desatenção extrema, ansiedade, e chega a
+  sabotar o próprio teste reinserindo dicas que deveriam ter sido retiradas
+  ("colocar sozinha os indicativos no texto"). Nenhuma tabela posterior
+  captura essa variabilidade de perfil de usuário — só o relato de campo.
+- **Interferência constante do contexto escolar**: câmera desligada sem
+  querer (02-06, perdendo 8 minutos de gravação), crianças entrando na sala
+  repetidamente (09-06), sala sem mesa e suja (14-07), entrevistas
+  remarcadas por falta de tempo (19-07, 20-07, 21-07). Não afeta as
+  tabelas/regras diretamente, mas é contexto relevante para avaliar a
+  confiabilidade das transcrições correspondentes, caso usadas em
+  `CatalogoProtocolosReaisReplay.java` no futuro.
+
+**Não usar como**: dado pronto para citação acadêmica formal sem revisão (é
+diário de campo, não protocolo codificado) nem como substituto das tabelas
+já formalizadas acima — o valor aqui é de triangulação (confirma padrões já
+tabelados) e de contexto (mostra a origem em campo de padrões que só
+apareceriam formalizados anos depois), não de dado quantitativo novo.
+
 ## Comunicabilidade (De Souza, 1999) como princípio de posicionamento das mensagens (2026-07-27)
 
 ⚠️ Fonte: conceito trazido pela usuária em conversa (não em documento
@@ -420,6 +536,44 @@ enfraquecer a associação, em vez de presumir que ela vale para sempre.
   aponta a mesma tabela 51/52 como candidata a alimentar `internalizado`) —
   pode ser o mesmo mecanismo, pode ser dois mecanismos irmãos que
   precisariam ser desenhados juntos. Não decidido.
+
+## Trabalho futuro: estender o freio de erros consecutivos (circuit-breaker) de CATEGORIA para POSICIONAR (2026-07-30)
+
+**Não implementado — proposta registrada a pedido da usuária ("por isso
+coloque para trabalho futuro"), para não implementar sem alinhamento.**
+
+Hoje só a ação CATEGORIA tem um freio de erros consecutivos
+(`gerard.agente.zdp.LimiteErrosConsecutivosCategoria`, limite=3, ver
+`Main.java`/`clicarAtalhoCategoria`): depois de 3 erros seguidos, sai do
+quiz e mostra as 3 definições juntas, usando a `MidiaPreferida` do modelo do
+usuário. POSICIONAR (arrastar número pro diagrama) não tem equivalente — a
+pessoa pode ficar clicando "tentar novamente" indefinidamente.
+
+`C:\Users\cecomp\Downloads\transcriçõesDoutorado\analise_padroes_erros.md`
+(análise de 20 transcrições de ação + 29 de entrevista do doutorado) dá
+lastro empírico a estender o mesmo freio pra POSICIONAR:
+
+- O ciclo "Tem certeza que...? Clique em ok para tentar novamente" aparece
+  132 vezes em 17 dos 20 arquivos de ação — o mesmo tipo de ciclo repetitivo
+  que motivou o freio de CATEGORIA.
+- Dos 76 erros anotados pelos transcritores, posicionamento no diagrama é a
+  2ª maior causa (22 ocorrências, 29%) — atrás só de categoria errada (25,
+  33%).
+- Nas entrevistas, os sujeitos atribuem os erros a não-entendimento
+  conceitual ("não entendi", "achei que", "não sabia" — 50+22+17 menções),
+  quase nunca a erro de clique/mira — reforça que o ciclo de tentativa-e-erro
+  do sistema corrige a ação, mas não resolve a confusão conceitual que a
+  gerou (ver seção 3, "Conclusão", do documento).
+
+**Diferença-chave em relação ao freio de CATEGORIA, que trava a
+implementação**: a reexplicação de CATEGORIA é fácil porque são só 3
+definições fixas (composição/transformação/comparação) — dá pra mostrar as
+3 juntas. POSICIONAR não tem uma explicação única: o erro é específico de
+qual papel semântico (`papel.parte1`, `papel.referente`,
+`papel.estadoInicial` etc.) a pessoa está errando dentro de qual diagrama.
+O conteúdo da ajuda pós-freio precisaria ser selecionado por papel semântico
+alvo, não uma tela fixa — isso ainda não tem desenho, só o diagnóstico do
+gap.
 
 ## Nota de honestidade do próprio material
 

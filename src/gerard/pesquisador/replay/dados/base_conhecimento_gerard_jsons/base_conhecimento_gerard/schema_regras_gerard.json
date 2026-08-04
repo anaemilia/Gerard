@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gerard.local/schema/regras-gerard-1.0.json",
+  "title": "Regra da base de conhecimento Gérard",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "nome",
+    "tipo",
+    "versao",
+    "status",
+    "prioridade",
+    "antecedentes",
+    "conclusoes",
+    "fontes",
+    "explicacao"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "nome": {
+      "type": "string",
+      "minLength": 3
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "dominio",
+        "consistencia",
+        "preditiva",
+        "associativa",
+        "qualitativa",
+        "pedagogica",
+        "integrada"
+      ]
+    },
+    "versao": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "experimental",
+        "arquivada"
+      ]
+    },
+    "prioridade": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "escopo": {
+      "type": "object"
+    },
+    "antecedentes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "campo",
+          "operador",
+          "valor"
+        ],
+        "properties": {
+          "campo": {
+            "type": "string"
+          },
+          "operador": {
+            "type": "string",
+            "enum": [
+              "=",
+              "!=",
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "entre",
+              "contem",
+              "contem_semanticamente",
+              "em",
+              "nao_em",
+              "existe",
+              "nao_existe"
+            ]
+          },
+          "valor": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "conclusoes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "campo",
+          "valor"
+        ],
+        "properties": {
+          "campo": {
+            "type": "string"
+          },
+          "valor": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "fontes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidencias": {
+      "type": "array"
+    },
+    "metricas": {
+      "type": "object",
+      "properties": {
+        "suporte": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confianca": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "lift": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "precisao_treino": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "cobertura": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "erros_cobertos": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "explicacao": {
+      "type": "string"
+    },
+    "limites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proveniencia": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

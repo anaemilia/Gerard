@@ -371,6 +371,13 @@ public class Main extends JFrame {
         // iniciarQuizCategoria/clicarAtalhoCategoria.
         TipoSituacaoAditiva categoriaSorteioOculta;
         boolean aguardandoAdivinhacaoCategoria = false;
+        // Circuit-breaker do quiz de adivinhação de categoria — contagem e
+        // limite vivem em LimiteErrosConsecutivosCategoria (gerard.agente.zdp),
+        // não soltos aqui na Main (usuária pediu explicitamente para não
+        // deixar essa lógica solta, 2026-07-30). Ver clicarAtalhoCategoria/
+        // avaliarRespostaConfirmacaoCategoriaErrada/acionarTimeoutCategoria.
+        final gerard.agente.zdp.LimiteErrosConsecutivosCategoria limiteErrosCategoria =
+                new gerard.agente.zdp.LimiteErrosConsecutivosCategoria(3);
         RepositorioSituacoesAditivas repositorioSituacoesAditivas = new RepositorioSituacoesAditivas();
         CadastroIdiomasSituacao cadastroIdiomasSituacao = new CadastroIdiomasSituacao();
         CatalogoDefinicoesAditivas catalogoDefinicoesAditivas = new CatalogoDefinicoesAditivas();
@@ -496,6 +503,16 @@ public class Main extends JFrame {
                 new gerard.agente.modelousuario.RepositorioModeloUsuario();
         final AgenteModelador agenteModelador = new AgenteModelador(repositorioModeloUsuario);
         final ConectorVereditoModelador conectorVereditoModelador = new ConectorVereditoModelador(agenteModelador);
+        // Log estruturado de auditoria dos 3 agentes (ver
+        // gerard.pesquisador.auditoria.AgentAuditService) — null por padrão:
+        // só existe quando quem instancia TelaGerard anexa um serviço (ver
+        // TesteMonkeyGuiadoPorCasosReais), igual GravadorAtividadeAgentes já
+        // funciona hoje. Não force-liga no app ao vivo por padrão.
+        gerard.pesquisador.auditoria.AgentAuditService agentAuditService;
+        // Unidade de análise A-B-C-D (rodada 5, 2026-07-31) — mesmo padrão do
+        // campo acima: null por padrão no app ao vivo, só existe quando quem
+        // instancia TelaGerard anexa o serviço (TesteMonkeyGuiadoPorCasosReais).
+        gerard.pesquisador.analiseunidade.AnalysisUnitAuditService analysisUnitAuditService;
         ScaffoldingFeedbackMultissensorialErro scaffoldingFeedbackMultissensorialErro = new ScaffoldingFeedbackMultissensorialErro();
         ControladorAnotacaoTemporaria controladorAnotacaoTemporaria = new ControladorAnotacaoTemporaria();
         CatalogoPapeisSemanticosAditivos catalogoPapeisSemanticos = new CatalogoPapeisSemanticosAditivos();
@@ -656,6 +673,15 @@ public class Main extends JFrame {
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
         ItemTextoArrastavel itemSelecionado = null;
+        int ultimoDispatchIndexMouseReleased = 0;
+        // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
+        // ver mouseReleased: um release na MESMA posicao do pickup nao e
+        // um arrasto real (é um clique parado — inclusive cada clique de
+        // um duplo-clique sobre o item, usado pra abrir o dialogo de
+        // edicao), so mouseDragged move itemSelecionado.x/y. Distingue
+        // "soltura real do usuario" de "clique sem deslocamento".
+        int xDoItemNoPickup = Integer.MIN_VALUE;
+        int yDoItemNoPickup = Integer.MIN_VALUE;
         ItemTextoArrastavel itemFocado = null;
         ElementoTextoMovel elementoTextoSelecionado = null;
         ElementoTextoMovel elementoTextoFocado = null;
@@ -2051,7 +2077,8 @@ public class Main extends JFrame {
                             modoFeedbackTeste == null ? "" : modoFeedbackTeste.name(),
                             "Diagrama de Vergnaud",
                             fotografarImagemModelagem());
-            boolean salvo = TelaArtefatoExplicativo.mostrar(this, itens, contexto, agenteModelador);
+            boolean salvo = TelaArtefatoExplicativo.mostrar(this, itens, contexto, agenteModelador,
+                    analysisUnitAuditService);
             if (salvo) {
                 registrarAcaoGranular("TEXTO", "Explicitar decisões da modelagem",
                         "Análise qualitativa da tentativa", "ARTEFATO_EXPLICATIVO",
@@ -2081,6 +2108,9 @@ public class Main extends JFrame {
             boolean disponivel = existeAoMenosUmPosicionamentoNoDiagramaVergnaud();
             botaoArtefatoExplicativo.setVisible(disponivel);
             botaoArtefatoExplicativo.setEnabled(disponivel);
+            if (analysisUnitAuditService != null) {
+                analysisUnitAuditService.definirDisponibilidadeBotaoAtual(disponivel);
+            }
         }
 
         private BufferedImage fotografarImagemModelagem() {
@@ -2475,8 +2505,8 @@ public class Main extends JFrame {
         }
 
         /**
-         * Checkbox de mídia preferida (Som/Gráfico/Linguagem natural) —
-         * mesmas 3 opções e mesma exclusividade mútua de
+         * Checkbox de mídia preferida (Som/Gráfico/Linguagem natural/Vídeo) —
+         * mesmas 4 opções e mesma exclusividade mútua de
          * DialogoUsuario.campoMidia (só uma mídia preferida por usuário),
          * reaproveitando as chaves i18n ui.userDialog.media.* em vez de
          * duplicá-las. Ocupa o espaço que antes mostrava só o texto estático
@@ -2513,7 +2543,14 @@ public class Main extends JFrame {
             final JCheckBox caixaLinguagemNatural = new JCheckBox(
                     localizacao.texto("ui.userDialog.media.linguagemNatural"),
                     midiaAtual == gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL);
-            final JCheckBox[] todasAsCaixas = {caixaSom, caixaGrafico, caixaLinguagemNatural};
+            final JCheckBox caixaVideo = new JCheckBox(
+                    localizacao.texto("ui.userDialog.media.video"), midiaAtual == gerard.agente.modelousuario.MidiaPreferida.VIDEO);
+            final JCheckBox[] todasAsCaixas = {caixaSom, caixaGrafico, caixaLinguagemNatural, caixaVideo};
+            final gerard.agente.modelousuario.MidiaPreferida[] midiasDasCaixas = {
+                    gerard.agente.modelousuario.MidiaPreferida.SOM,
+                    gerard.agente.modelousuario.MidiaPreferida.GRAFICO,
+                    gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL,
+                    gerard.agente.modelousuario.MidiaPreferida.VIDEO};
             for (JCheckBox caixa : todasAsCaixas) {
                 caixa.setOpaque(false);
                 caixa.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -2521,28 +2558,19 @@ public class Main extends JFrame {
                 caixa.setFocusPainted(false);
                 caixa.setAlignmentX(Component.LEFT_ALIGNMENT);
             }
-            caixaSom.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    aplicarSelecaoUnicaMidia(caixaSom, todasAsCaixas,
-                            gerard.agente.modelousuario.MidiaPreferida.SOM, idUsuario);
-                }
-            });
-            caixaGrafico.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    aplicarSelecaoUnicaMidia(caixaGrafico, todasAsCaixas,
-                            gerard.agente.modelousuario.MidiaPreferida.GRAFICO, idUsuario);
-                }
-            });
-            caixaLinguagemNatural.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    aplicarSelecaoUnicaMidia(caixaLinguagemNatural, todasAsCaixas,
-                            gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL, idUsuario);
-                }
-            });
+            for (int i = 0; i < todasAsCaixas.length; i++) {
+                final JCheckBox caixa = todasAsCaixas[i];
+                final gerard.agente.modelousuario.MidiaPreferida midia = midiasDasCaixas[i];
+                caixa.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        aplicarSelecaoUnicaMidia(caixa, todasAsCaixas, midia, idUsuario);
+                    }
+                });
+            }
 
-            painelMidia.add(caixaSom);
-            painelMidia.add(caixaGrafico);
-            painelMidia.add(caixaLinguagemNatural);
+            for (JCheckBox caixa : todasAsCaixas) {
+                painelMidia.add(caixa);
+            }
             return painelMidia;
         }
 
@@ -2728,8 +2756,11 @@ public class Main extends JFrame {
             botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             botao.setIconTextGap(6);
             if (logado) {
-                botao.setIcon(criarIconePessoaMenuBar());
-                botao.setText(textoBotaoUsuario() + "  ▾");
+                gerard.agente.modelousuario.ModeloUsuario meuPerfilBotao =
+                        repositorioModeloUsuario.obter(loggerInteracaoGerard.getUsuarioAtual());
+                botao.setIcon(criarIconePessoaMenuBar(
+                        meuPerfilBotao == null ? null : meuPerfilBotao.getPerfilAluno().getFotoCaminho()));
+                botao.setText(textoBotaoUsuario() + "  ▼");
             } else {
                 botao.setIcon(null);
                 botao.setText(localizacao.texto("ui.userDialog.enter"));
@@ -2775,9 +2806,33 @@ public class Main extends JFrame {
             return modelo != null && modelo.getPerfilAluno().getNome() != null;
         }
 
-        /** Silhueta de pessoa (círculo + cabeça + ombros) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
-        private Icon criarIconePessoaMenuBar() {
+        /**
+         * Foto do usuário recortada em círculo, se cadastrada (ver
+         * PerfilAluno.getFotoCaminho()); sem foto, cai na silhueta genérica
+         * (círculo + cabeça + ombros, mesmo traço fino neutro dos outros
+         * ícones, ver prepararTracoIconeCategoria) — pedido da usuária,
+         * 2026-07-30.
+         */
+        private Icon criarIconePessoaMenuBar(String caminhoFoto) {
             final int tamanho = 16;
+            if (caminhoFoto != null) {
+                try {
+                    java.awt.Image imagemOriginal = javax.imageio.ImageIO.read(new java.io.File(caminhoFoto));
+                    if (imagemOriginal != null) {
+                        final BufferedImage circular = recortarImagemCircular(imagemOriginal, tamanho);
+                        return new Icon() {
+                            public int getIconWidth() { return tamanho; }
+                            public int getIconHeight() { return tamanho; }
+
+                            public void paintIcon(Component c, Graphics g, int x, int y) {
+                                g.drawImage(circular, x, y, null);
+                            }
+                        };
+                    }
+                } catch (java.io.IOException ex) {
+                    // Falha ao ler a foto cai na silhueta genérica abaixo.
+                }
+            }
             return new Icon() {
                 public int getIconWidth() { return tamanho; }
                 public int getIconHeight() { return tamanho; }
@@ -2798,6 +2853,20 @@ public class Main extends JFrame {
                     }
                 }
             };
+        }
+
+        /** Recorta origem num círculo de tamanho x tamanho, esticando pra preencher (mesmo comportamento de crop de rotuloPreviewFoto em DialogoUsuario). */
+        private BufferedImage recortarImagemCircular(Image origem, int tamanho) {
+            BufferedImage quadro = new BufferedImage(tamanho, tamanho, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = quadro.createGraphics();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setClip(new java.awt.geom.Ellipse2D.Float(0, 0, tamanho, tamanho));
+                g2.drawImage(origem, 0, 0, tamanho, tamanho, null);
+            } finally {
+                g2.dispose();
+            }
+            return quadro;
         }
 
         private JButton criarBotaoReportarBugMenuBar() {
@@ -3208,6 +3277,15 @@ public class Main extends JFrame {
         }
 
         /**
+         * Tarefa usada pelo ZDP/Modelador para a escolha de categoria — mesma
+         * convenção "papel.xxx" das tarefas de posicionamento
+         * (papel.parte1, papel.todo, ...), embora não corresponda a um papel
+         * dentro do diagrama: é a categoria da situação-problema como um
+         * todo, escolhida antes de qualquer posicionamento existir.
+         */
+        private static final String CHAVE_PAPEL_CATEGORIA = "papel.categoria";
+
+        /**
          * Ponto de entrada único dos 6 ícones de atalho de categoria
          * (criarBotaoAtalhoCategoria). Fora do modo de adivinhação, se
          * comporta como sempre (seleção direta, selecionarCategoria). Durante
@@ -3215,13 +3293,48 @@ public class Main extends JFrame {
          * categoria secreta em vez de carregar uma situação nova — usuária
          * confirmou em 2026-07-28 que só o ícone participa dessa validação
          * (o menu Categoria continua sendo navegação livre).
+         *
+         * Primeira ação avaliável do usuário, antes de qualquer
+         * posicionamento no diagrama — o erro de categorização é
+         * fundamental para a continuidade da modelagem (o diálogo em
+         * mostrarQuestionamentoCategoriaErrada impede prosseguir até
+         * acertar, e o erro pode se repetir várias vezes seguidas, como nos
+         * diários de 2010 — ver agente-zdp.md). Captura a categoria real
+         * antes de chamar confirmarCategoriaAdivinhada, que zera
+         * categoriaSorteioOculta.
          */
         private void clicarAtalhoCategoria(TipoSituacaoAditiva tipo) {
             if (aguardandoAdivinhacaoCategoria) {
-                if (tipo == categoriaSorteioOculta) {
+                TipoSituacaoAditiva categoriaReal = categoriaSorteioOculta;
+                if (agentAuditService != null) {
+                    agentAuditService.iniciarAcao(
+                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                    loggerInteracaoGerard.getUsuarioAtual(),
+                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                    textoProblema, String.valueOf(categoriaReal), null),
+                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                    "select", String.valueOf(tipo), null, null, CHAVE_PAPEL_CATEGORIA, null, null, null, null),
+                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA, categoriaReal);
+                }
+                boolean correto = agenteMonitor.avaliarCategoria(tipo, categoriaReal);
+                String chaveIdempotenciaCategoria =
+                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
+                gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
+                        loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CATEGORIA, correto,
+                        chaveIdempotenciaCategoria);
+                conectorVereditoModelador.registrarVeredito(
+                        loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CATEGORIA,
+                        estrategia, "SELECIONAR", chaveIdempotenciaCategoria);
+                if (agentAuditService != null) {
+                    agentAuditService.finalizarAcao();
+                }
+                if (correto) {
+                    limiteErrosCategoria.registrarAcerto(loggerInteracaoGerard.getUsuarioAtual());
                     confirmarCategoriaAdivinhada(tipo);
+                } else if (limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
+                    acionarTimeoutCategoria();
                 } else {
-                    mostrarQuestionamentoCategoriaErrada(tipo);
+                    mostrarQuestionamentoCategoriaErrada(tipo, categoriaReal);
                 }
                 return;
             }
@@ -3238,7 +3351,7 @@ public class Main extends JFrame {
         private void confirmarCategoriaAdivinhada(TipoSituacaoAditiva tipo) {
             registrarLogUsuario(
                     "Adivinhar a categoria da situação-problema sorteada",
-                    "-",
+                    "C",
                     "Faixa de ícones de categoria",
                     "Ícone " + tipo.getRotuloBotao(),
                     "Representar a estrutura escolhida para o problema",
@@ -3263,17 +3376,19 @@ public class Main extends JFrame {
         }
 
         /**
-         * O usuário clicou um ícone diferente da categoria sorteada. Mostra a
-         * pergunta que define a categoria clicada (catálogo de questionamento
-         * de gerard-ajuda-adaptativa/references/agente-zdp.md) com Sim/Não —
-         * a resposta não é avaliada (decisão da usuária, 2026-07-28): o
-         * diálogo só fecha e o usuário pode tentar outro ícone, mesmo padrão
-         * já usado em confirmarValorIncognitaAceito para o mismatch de valor.
+         * Tarefa usada pelo ZDP/Modelador para a resposta ao diálogo de
+         * confirmação — sinal distinto de CHAVE_PAPEL_CATEGORIA (o clique no
+         * ícone): a pessoa pode reconhecer o erro no clique mas insistir
+         * nele quando questionada diretamente ("Sim, essa definição se
+         * aplica"), ou vice-versa. Contagem de erros consecutivos separada
+         * no ZDP para cada um dos dois sinais.
          */
-        private void mostrarQuestionamentoCategoriaErrada(TipoSituacaoAditiva tipo) {
+        private static final String CHAVE_PAPEL_CONFIRMACAO_CATEGORIA = "papel.categoria.confirmacao";
+
+        private void mostrarQuestionamentoCategoriaErrada(TipoSituacaoAditiva tipo, final TipoSituacaoAditiva categoriaReal) {
             registrarLogUsuario(
                     "Adivinhar a categoria da situação-problema sorteada",
-                    "-",
+                    "E",
                     "Faixa de ícones de categoria",
                     "Ícone " + tipo.getRotuloBotao(),
                     "Representar a estrutura escolhida para o problema",
@@ -3283,7 +3398,212 @@ public class Main extends JFrame {
                     "categoriaClicada=" + tipo.name()
             );
             String pergunta = localizacao.texto("ui.question.category." + tipo.name().toLowerCase());
-            mostrarDialogoConfirmacaoSimNao(pergunta);
+            mostrarDialogoConfirmacaoSimNao(pergunta, new Runnable() {
+                public void run() {
+                    avaliarRespostaConfirmacaoCategoriaErrada(true, categoriaReal);
+                }
+            }, new Runnable() {
+                public void run() {
+                    avaliarRespostaConfirmacaoCategoriaErrada(false, categoriaReal);
+                }
+            });
+        }
+
+        /**
+         * Segundo tipo de erro consecutivo revelado pelo diálogo de
+         * confirmação (relatado pela usuária, 2026-07-30): a pessoa pode
+         * insistir dizendo "Sim", concordando que a definição da categoria
+         * ERRADA (a que ela clicou) se aplica à situação-problema — sinal
+         * diferente de simplesmente repetir o clique no ícone errado. "Sim"
+         * = insiste no erro; "Não" = reconhece corretamente que a definição
+         * errada não se aplica.
+         */
+        private void avaliarRespostaConfirmacaoCategoriaErrada(boolean concordou, TipoSituacaoAditiva categoriaReal) {
+            boolean correto = agenteMonitor.avaliarConfirmacaoCategoriaErrada(concordou);
+            registrarLogUsuario(
+                    "Confirmar se a definição da categoria clicada se aplica à situação-problema",
+                    correto ? "C" : "E",
+                    "Diálogo de confirmação",
+                    concordou ? "Botão Sim" : "Botão Não",
+                    "Reconhecer (ou não) o próprio erro de categorização",
+                    "OBJ8",
+                    "Concordar com a definição da categoria errada é insistir no erro; discordar é reconhecê-lo.",
+                    "CONFIRMACAO_CATEGORIA_ERRADA",
+                    "concordou=" + concordou
+            );
+            gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
+                    loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CONFIRMACAO_CATEGORIA, correto);
+            conectorVereditoModelador.registrarVeredito(
+                    loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CONFIRMACAO_CATEGORIA,
+                    estrategia, "SELECIONAR");
+            // "Não" (correto) não reseta o contador: a categoria ainda não
+            // foi acertada, só o próprio erro é que a pessoa reconheceu.
+            // Só o acerto do ícone (clicarAtalhoCategoria) zera de fato —
+            // ver LimiteErrosConsecutivosCategoria.registrarAcerto.
+            if (!correto && limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
+                acionarTimeoutCategoria();
+            }
+        }
+
+        /**
+         * Disparado por LimiteErrosConsecutivosCategoria (gerard.agente.zdp)
+         * ao atingir o limite de erros consecutivos (ícone errado +
+         * confirmação "Sim", somados): para a adivinhação — em vez de
+         * deixar a pessoa clicando infinitamente — e reexplica as 3
+         * categorias de uma vez. Reflete a intervenção que a própria
+         * usuária fazia manualmente como pesquisadora nos experimentos em
+         * papel: parar a ação e explicar novamente cada categoria.
+         */
+        private void acionarTimeoutCategoria() {
+            aguardandoAdivinhacaoCategoria = false;
+            categoriaSorteioOculta = null;
+            atualizarHabilitacaoIconesAtalhoCategoria();
+            registrarLogUsuario(
+                    "Encerrar a adivinhação após erros consecutivos e reexplicar as categorias",
+                    "-",
+                    "Faixa de ícones de categoria",
+                    "Diálogo de reexplicação",
+                    "Retomar a compreensão da categoria antes de continuar a modelagem",
+                    "OBJ8",
+                    "Após erros consecutivos, o sistema para a adivinhação e reexplica as 3 categorias.",
+                    "TIMEOUT_CATEGORIA",
+                    ""
+            );
+            mostrarExplicacaoCategorias();
+        }
+
+        /**
+         * Reexplica composição/transformação/comparação de uma vez, no
+         * formato da MidiaPreferida do usuário (Modelo do Usuário) —
+         * primeira vez que esse campo passa a influenciar algo mostrado na
+         * tela; até agora só era gravado (ver criarPainelMidiaAjudaContextual).
+         * Só LINGUAGEM_NATURAL tem conteúdo pronto hoje. GRAFICO, SOM e
+         * VIDEO ainda não têm conteúdo próprio de verdade — nenhum ícone
+         * é uma explicação gráfica real, não há narração/texto-para-voz
+         * (só o beep genérico de ScaffoldingFeedbackMultissensorialErro), e
+         * não há player de vídeo embutido em lugar nenhum do app. Decisão
+         * explícita da usuária (2026-07-30): "não pode ser uma decisão às
+         * pressas" — em vez de fingir esses 3 formatos prontos, mostra o
+         * aviso de "em construção" e cai para o mesmo texto de
+         * LINGUAGEM_NATURAL por baixo, em vez de deixar a pessoa sem
+         * explicação nenhuma.
+         */
+        private void mostrarExplicacaoCategorias() {
+            String idUsuario = loggerInteracaoGerard.getUsuarioAtual();
+            gerard.agente.modelousuario.ModeloUsuario modeloAtual = repositorioModeloUsuario.obter(idUsuario);
+            gerard.agente.modelousuario.MidiaPreferida midia =
+                    modeloAtual == null ? null : modeloAtual.getPerfilAprendizagem().getMidiaPreferida();
+            if (midia == null) {
+                midia = gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL;
+            }
+
+            final JDialog dialogo = new JDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    localizacao.texto("ui.dialog.categoryExplanation.title"),
+                    Dialog.ModalityType.APPLICATION_MODAL
+            );
+            dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            dialogo.setResizable(false);
+
+            JPanel conteudo = new JPanel(new BorderLayout(0, 16));
+            conteudo.setBorder(BorderFactory.createEmptyBorder(18, 20, 14, 20));
+            conteudo.setBackground(COR_SUPERFICIE);
+
+            JPanel corpo = new JPanel();
+            corpo.setLayout(new BoxLayout(corpo, BoxLayout.Y_AXIS));
+            corpo.setOpaque(false);
+
+            JLabel intro = new JLabel("<html><body style='width: 320px'>"
+                    + localizacao.texto("ui.dialog.categoryExplanation.intro") + "</body></html>");
+            intro.setFont(new Font("Arial", Font.PLAIN, 15));
+            intro.setForeground(COR_TEXTO);
+            intro.setAlignmentX(Component.LEFT_ALIGNMENT);
+            corpo.add(intro);
+            corpo.add(Box.createVerticalStrut(12));
+
+            boolean formatoPendente = midia != gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL;
+            if (formatoPendente) {
+                JLabel avisoConstrucao = new JLabel("<html><body style='width: 320px'><i>"
+                        + localizacao.texto("ui.dialog.categoryExplanation.midiaPendente") + "</i></body></html>");
+                avisoConstrucao.setFont(new Font("Arial", Font.PLAIN, 13));
+                avisoConstrucao.setForeground(COR_TEXTO);
+                avisoConstrucao.setAlignmentX(Component.LEFT_ALIGNMENT);
+                corpo.add(avisoConstrucao);
+                corpo.add(Box.createVerticalStrut(10));
+            }
+
+            corpo.add(criarLinhaExplicacaoCategoria(
+                    TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, criarIconeCategoriaComposicao()));
+            corpo.add(Box.createVerticalStrut(10));
+            corpo.add(criarLinhaExplicacaoCategoria(
+                    TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, criarIconeCategoriaTransformacao()));
+            corpo.add(Box.createVerticalStrut(10));
+            corpo.add(criarLinhaExplicacaoCategoria(
+                    TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao()));
+
+            conteudo.add(corpo, BorderLayout.CENTER);
+
+            final JButton fechar = new JButton(localizacao.texto("ui.dialog.categoryExplanation.close"));
+            fechar.setOpaque(true);
+            fechar.setBackground(COR_SUPERFICIE_SUAVE);
+            fechar.setForeground(COR_TEXTO);
+            fechar.setFocusPainted(false);
+            fechar.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            ActionListener fecharDialogo = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dialogo.dispose();
+                }
+            };
+            fechar.addActionListener(fecharDialogo);
+            JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            botoes.setOpaque(false);
+            botoes.add(fechar);
+            conteudo.add(botoes, BorderLayout.SOUTH);
+
+            dialogo.getRootPane().setDefaultButton(fechar);
+            dialogo.getRootPane().registerKeyboardAction(
+                    fecharDialogo,
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                    JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
+
+            dialogo.setContentPane(conteudo);
+            dialogo.pack();
+            dialogo.setLocationRelativeTo(this);
+            dialogo.setVisible(true);
+        }
+
+        /**
+         * Uma linha da explicação por categoria: ícone (mesmo desenhado nos
+         * botões de atalho) + rótulo + o texto de definição
+         * (ui.question.category.*) — mesmo conteúdo para todo mundo, já que
+         * só LINGUAGEM_NATURAL tem conteúdo pronto hoje (ver
+         * mostrarExplicacaoCategorias).
+         */
+        private JPanel criarLinhaExplicacaoCategoria(TipoSituacaoAditiva tipo, Icon icone) {
+            JPanel linha = new JPanel();
+            linha.setLayout(new BoxLayout(linha, BoxLayout.Y_AXIS));
+            linha.setOpaque(false);
+            linha.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            JPanel cabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+            cabecalho.setOpaque(false);
+            cabecalho.setAlignmentX(Component.LEFT_ALIGNMENT);
+            cabecalho.add(new JLabel(icone));
+            JLabel rotulo = new JLabel(tipo.getRotuloBotao());
+            rotulo.setFont(new Font("Arial", Font.BOLD, 14));
+            rotulo.setForeground(COR_TEXTO);
+            cabecalho.add(rotulo);
+            linha.add(cabecalho);
+
+            JLabel definicao = new JLabel("<html><body style='width: 300px'>"
+                    + localizacao.texto("ui.question.category." + tipo.name().toLowerCase()) + "</body></html>");
+            definicao.setFont(new Font("Arial", Font.PLAIN, 13));
+            definicao.setForeground(COR_TEXTO);
+            definicao.setAlignmentX(Component.LEFT_ALIGNMENT);
+            definicao.setBorder(BorderFactory.createEmptyBorder(2, 4, 0, 0));
+            linha.add(definicao);
+            return linha;
         }
 
         /**
@@ -3293,9 +3613,12 @@ public class Main extends JFrame {
          * os rótulos "Yes"/"No" nativos do Swing/SO, que não seguem o idioma
          * selecionado nem a paleta neutra do app (relatado pela usuária,
          * 2026-07-28, com captura de tela mostrando o diálogo nativo em
-         * inglês). Não avalia a resposta — só fecha ao clicar Sim, Não ou Esc.
+         * inglês). aoResponderSim/aoResponderNao são opcionais (podem ser
+         * null) — quem não precisa avaliar a resposta (ex.: outros usos
+         * futuros deste diálogo genérico) passa null nos dois.
          */
-        private void mostrarDialogoConfirmacaoSimNao(String pergunta) {
+        private void mostrarDialogoConfirmacaoSimNao(String pergunta, final Runnable aoResponderSim,
+                final Runnable aoResponderNao) {
             final JDialog dialogo = new JDialog(
                     SwingUtilities.getWindowAncestor(this),
                     localizacao.texto("ui.dialog.confirm"),
@@ -3343,8 +3666,22 @@ public class Main extends JFrame {
                     dialogo.dispose();
                 }
             };
-            sim.addActionListener(fechar);
-            nao.addActionListener(fechar);
+            sim.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dialogo.dispose();
+                    if (aoResponderSim != null) {
+                        aoResponderSim.run();
+                    }
+                }
+            });
+            nao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dialogo.dispose();
+                    if (aoResponderNao != null) {
+                        aoResponderNao.run();
+                    }
+                }
+            });
 
             dialogo.getRootPane().setDefaultButton(sim);
             dialogo.getRootPane().registerKeyboardAction(
@@ -5107,6 +5444,48 @@ public class Main extends JFrame {
         }
 
         /**
+         * @return null quando não há valor curado disponível pra conferir o
+         *         sinal (mesmo critério de valorDigitadoCorrespondeAoCurado:
+         *         problema digitado livremente, sem situação curada
+         *         carregada, ou papel sem valor numérico); caso contrário, se
+         *         o sinal escolhido (“+”/“-”) bate com o sinal do valor
+         *         curado do papel indicado.
+         */
+        private Boolean sinalEscolhidoCorrespondeAoCurado(String papel, String sinalEscolhido) {
+            Integer curado = obterValorCuradoParaPapel(papel);
+            if (curado == null) {
+                return null;
+            }
+            boolean curadoNegativo = curado.intValue() < 0;
+            boolean escolhidoNegativo = "-".equals(sinalEscolhido);
+            return Boolean.valueOf(curadoNegativo == escolhidoNegativo);
+        }
+
+        /**
+         * Chave de papel semântico do número relativo sendo editado no menu
+         * de sinal — mesmo padrão de índice→papel usado em
+         * avaliarQuestionamentoPosicionamento e
+         * ehElementoEstadoFinalIncognito (scaffoldingQuestionamento.
+         * obterChavePapelDoElemento), aplicado aqui ao próprio elemento do
+         * círculo/número relativo, não ao item de texto arrastado sobre ele.
+         */
+        private String obterChavePapelDoNumeroRelativo(ElementoVergnaud numeroRelativo) {
+            if (numeroRelativo == null) {
+                return null;
+            }
+            int indice = elementosVergnaud.indexOf(numeroRelativo);
+            if (indice < 0) {
+                return null;
+            }
+            return scaffoldingQuestionamento.obterChavePapelDoElemento(
+                    tipoSituacaoSelecionada,
+                    indice,
+                    usaDiagramasEncadeadosTransformacaoComposta(),
+                    quantidadePassosTransformacaoComposta
+            );
+        }
+
+        /**
          * Verdadeiro só quando o item é a incógnita original, já foi
          * preenchida pelo protocolo mouse/texto, e o valor diverge do valor
          * curado da situação (quando há um valor curado disponível para
@@ -5137,7 +5516,50 @@ public class Main extends JFrame {
          *         houver divergência, independente da resposta do usuário.
          */
         private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item) {
-            if (!incognitaAguardandoConfirmacaoDeValor(item)) {
+            // Mesma comparação de incognitaAguardandoConfirmacaoDeValor, mas
+            // sem perder a distinção "não aplicável" (null) de "correto"
+            // (true) — precisamos das duas pra decidir se notifica os
+            // agentes. Ver AgenteMonitor.avaliarValorIncognita (2026-07-30):
+            // essa comparação já existia, só não notificava ninguém.
+            Boolean correto = null;
+            if (item != null && item.representaIncognitaOriginal() && item.isPreenchidoPeloProtocoloMouseTexto()) {
+                correto = valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor);
+            }
+            if (correto != null) {
+                String papelAlvo = obterPapelIncognitaAtual();
+                if (agentAuditService != null) {
+                    agentAuditService.iniciarAcao(
+                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                    loggerInteracaoGerard.getUsuarioAtual(),
+                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo),
+                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                    "type", papelAlvo, item == null ? null : item.valor, null, papelAlvo,
+                                    null, null, null, null),
+                            gerard.pesquisador.auditoria.OrigemAvaliacao.QUANTIFICACAO, tipoSituacaoSelecionada);
+                }
+                agenteMonitor.avaliarValorIncognita(correto.booleanValue());
+                String chaveIdempotenciaIncognita =
+                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
+                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaIncognita = agenteZDP.decidirEstrategia(
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, papelAlvo,
+                        correto.booleanValue(), chaveIdempotenciaIncognita);
+                conectorVereditoModelador.registrarVeredito(
+                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, papelAlvo,
+                        estrategiaIncognita, "TEXTO", chaveIdempotenciaIncognita);
+                if (agentAuditService != null) {
+                    agentAuditService.finalizarAcao();
+                }
+            }
+            if (agentAuditService != null) {
+                // Consome/libera a reserva feita em editarNumeroNatural
+                // (rodada 3) — seja porque este subevento acabou de usá-la
+                // (correto != null), seja porque este item nem chegou a
+                // qualificar pra confirmação (correto == null): de todo
+                // jeito, ninguém mais vai chamar iniciarAcao pra esta ação.
+                agentAuditService.liberarReservaDeGesto();
+            }
+            if (correto == null || correto.booleanValue()) {
                 return true;
             }
             String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
@@ -9931,6 +10353,8 @@ public class Main extends JFrame {
                 itemFocado = itemSelecionado;
                 deslocamentoX = x - itemSelecionado.x;
                 deslocamentoY = y - itemSelecionado.y;
+                xDoItemNoPickup = itemSelecionado.x;
+                yDoItemNoPickup = itemSelecionado.y;
                 iniciarRastreamentoGranular(x, y, itemSelecionado.valor, "Item arrastável", true);
                 registrarAcaoGranular("SELECIONAR", "Selecionar item arrastável", "Área de trabalho", "Item arrastável", "Escolher valor para posicionamento", "valor=" + itemSelecionado.valor, "Item selecionado.");
                 iniciarFantasmaItem(itemSelecionado);
@@ -10105,6 +10529,13 @@ public class Main extends JFrame {
         }
 
         public void mouseReleased(MouseEvent e) {
+            // Diagnostico de baixo nivel (rodada 4, 2026-07-31) — captura
+            // identidade real do MouseEvent/thread/listener ANTES de
+            // qualquer logica de negocio, pra achar a causa do disparo
+            // triplo achado na rodada 3. So observa (grava em
+            // despacho_mouse_released.log), nunca decide nada.
+            ultimoDispatchIndexMouseReleased = gerard.pesquisador.auditoria.DespachoMouseReleasedDiagnostico
+                    .registrarDespacho(e, this, "mouseReleased");
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
             }
@@ -10157,6 +10588,23 @@ public class Main extends JFrame {
             }
 
             ItemTextoArrastavel itemSolto = itemSelecionado;
+            // Causa raiz confirmada na rodada 4 (2026-07-31, ver
+            // despacho_mouse_released.log): um release na MESMA posicao do
+            // pickup — sem mouseDragged real no meio — nao e um novo
+            // arrasto. E exatamente o padrao de cada clique de um
+            // duplo-clique sobre um item ja posicionado (ex.:
+            // executarPassoTexto abre o dialogo de edicao com
+            // duplo-clique sobre a interrogacao recem-solta): cada um dos
+            // 2 cliques do duplo-clique tambem passa por mousePressed
+            // (que reseleciona o mesmo item) e mouseReleased, disparando
+            // avaliarQuestionamentoPosicionamento de novo — 3 avaliacoes
+            // canonicas reais (drop + clique 1 + clique 2) pra 1 gesto do
+            // usuario. Corrigido na origem: so classifica SOLTURA_USUARIO
+            // (canonica) quando o item REALMENTE se moveu do pickup ate a
+            // soltura; senao, e reavaliacao de consistencia (reativa —
+            // preserva debounce/idempotencia como defesa, nao os remove).
+            boolean itemRealmenteMoveu = itemSolto != null
+                    && (itemSolto.x != xDoItemNoPickup || itemSolto.y != yDoItemNoPickup);
             if (itemSelecionado != null) {
                 ElementoVergnaud alvo = obterAlvoCorretoParaItem(itemSelecionado);
                 boolean proximo = alvo != null && itemEstaProximoDoElemento(itemSelecionado, alvo);
@@ -10165,8 +10613,21 @@ public class Main extends JFrame {
                 }
             }
 
+            gerard.pesquisador.auditoria.OrigemAvaliacao origemSoltura = itemRealmenteMoveu
+                    ? gerard.pesquisador.auditoria.OrigemAvaliacao.SOLTURA_USUARIO
+                    : gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA;
+            int dispatchIndexParaCorrelacao = ultimoDispatchIndexMouseReleased;
             ResultadoQuestionamento resultadoPosicionamento =
-                    avaliarQuestionamentoPosicionamento(itemSolto);
+                    avaliarQuestionamentoPosicionamento(itemSolto, origemSoltura);
+            gerard.pesquisador.auditoria.DespachoMouseReleasedDiagnostico.registrarCorrelacaoAvaliacao(
+                    dispatchIndexParaCorrelacao,
+                    agentAuditService == null ? null : agentAuditService.getUltimoGestureIdGravado(),
+                    agentAuditService == null ? null : agentAuditService.getUltimoGestureIdGravado(),
+                    itemSolto != null,
+                    resultadoPosicionamento != null && resultadoPosicionamento.isAplicavel(),
+                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico(),
+                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico(),
+                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico());
             boolean posicionamentoIncorreto = resultadoPosicionamento.isAplicavel()
                     && !resultadoPosicionamento.isCorreto();
             finalizarProxyTextoSolto(itemSolto, !posicionamentoIncorreto);
@@ -10365,7 +10826,8 @@ public class Main extends JFrame {
             String regras = "A ação não foi avaliada como acerto ou erro matemático.";
 
             if (elemento != null && scaffoldingNumeroRelativo.ehNumeroOuInterrogacao(item.valor)) {
-                ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item);
+                ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+                        gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
                 if (resultado.isAplicavel()) {
                     ce = resultado.isCorreto() ? "C" : "E";
                     regras = resultado.isCorreto()
@@ -10481,7 +10943,26 @@ public class Main extends JFrame {
             return encontrarElementoVergnaud(centroX, centroY);
         }
 
-        private ResultadoQuestionamento avaliarQuestionamentoPosicionamento(ItemTextoArrastavel item) {
+        /**
+         * Correção 2026-07-31: este método é chamado de 7 pontos diferentes
+         * (soltar o item, reavaliação de consistência logo depois, log,
+         * bloqueio do menu de sinal, durante o próprio arraste, habilitação
+         * de sincronização de estado final, e depois de digitar um número) —
+         * só o primeiro (soltura real do item) e o de digitação representam
+         * um gesto de verdade do usuário; os outros são reavaliação reativa
+         * interna. AgenteMonitor.avaliarPosicionamento continua chamado
+         * SEMPRE (é stateless, não tem custo real em chamar de novo — e a
+         * usuária pediu explicitamente pra manter toda avaliação técnica no
+         * log). O que muda é o GATE: agenteZDP.decidirEstrategia e
+         * conectorVereditoModelador.registrarVeredito (que mutam estado
+         * real — erros consecutivos, camada de ajuda, casos no Modelo do
+         * Usuário) só são chamados quando origem.isCanonica() — antes desta
+         * correção, eram chamados em TODAS as 7 origens, inclusive a cada
+         * evento de mouse durante o arraste, inflando erros/casos no app
+         * real (não só no teste). Ver RELATORIO_AUDITORIA_MULTIAGENTE.
+         */
+        private ResultadoQuestionamento avaliarQuestionamentoPosicionamento(
+                ItemTextoArrastavel item, gerard.pesquisador.auditoria.OrigemAvaliacao origem) {
             if (item == null || !item.estaNoDiagrama()) {
                 return ResultadoQuestionamento.naoAplicavel();
             }
@@ -10510,25 +10991,43 @@ public class Main extends JFrame {
             );
             String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
 
+            if (agentAuditService != null) {
+                agentAuditService.iniciarAcao(
+                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                loggerInteracaoGerard.getUsuarioAtual(),
+                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                textoProblema, String.valueOf(tipoSituacaoSelecionada), null),
+                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                "drag", chavePapelNumeral, valorParaValidacao, chavePapelNumeral, chavePapelAlvo,
+                                null, null, null, null),
+                        origem, tipoSituacaoSelecionada);
+            }
             ResultadoQuestionamento resultado = agenteMonitor.avaliarPosicionamento(
                     chavePapelNumeral,
                     chavePapelAlvo,
                     papelDoElementoNoDiagrama,
-                    localizacao.descricaoTipo(tipoSituacaoSelecionada)
+                    localizacao.descricaoTipo(tipoSituacaoSelecionada),
+                    tipoSituacaoSelecionada
             );
-            if (resultado != null && resultado.isAplicavel()) {
+            if (resultado != null && resultado.isAplicavel() && origem.isCanonica()) {
+                String chaveIdempotenciaPosicionamento =
+                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
                 gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
                         loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
-                        resultado.isCorreto());
+                        resultado.isCorreto(), chaveIdempotenciaPosicionamento);
                 conectorVereditoModelador.registrarVeredito(
                         loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
-                        estrategia, "POSICIONAR");
+                        estrategia, "POSICIONAR", chaveIdempotenciaPosicionamento);
+            }
+            if (agentAuditService != null) {
+                agentAuditService.finalizarAcao();
             }
             return resultado;
         }
 
         private boolean processarQuestionamentoPosicionamento(ItemTextoArrastavel item) {
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item);
+            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+                    gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
 
             if (resultado.isAplicavel() && !resultado.isCorreto()) {
                 registrarQuestionamentoPersistente(item, resultado);
@@ -10547,7 +11046,8 @@ public class Main extends JFrame {
         }
 
         private boolean deveBloquearMenuNumeroRelativoPorQuestionamento(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo) {
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item);
+            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+                    gerard.pesquisador.auditoria.OrigemAvaliacao.SINCRONIZACAO_REPRESENTACOES);
             ElementoVergnaud elementoAlvo = encontrarElementoVergnaudPorItem(item);
             boolean itemSobreNumeroRelativo = numeroRelativo != null && numeroRelativo == elementoAlvo;
 
@@ -10597,7 +11097,8 @@ public class Main extends JFrame {
                 return;
             }
 
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item);
+            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+                    gerard.pesquisador.auditoria.OrigemAvaliacao.SINCRONIZACAO_REPRESENTACOES);
             if (!resultado.isAplicavel() || resultado.isCorreto()) {
                 limparQuestionamentoPersistente();
                 return;
@@ -10719,7 +11220,8 @@ public class Main extends JFrame {
                 return;
             }
 
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item);
+            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+                    gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
             if (resultado.isAplicavel() && !resultado.isCorreto()) {
                 return;
             }
@@ -11299,9 +11801,37 @@ public class Main extends JFrame {
                                 return;
                             }
                             elemento.textoEditavel = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
+                            String chavePapelSinal = obterChavePapelDoNumeroRelativo(elemento);
+                            Boolean sinalCorreto = sinalEscolhidoCorrespondeAoCurado(chavePapelSinal, sinal);
+                            if (sinalCorreto != null) {
+                                if (agentAuditService != null) {
+                                    agentAuditService.iniciarAcao(
+                                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                                    loggerInteracaoGerard.getUsuarioAtual(),
+                                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), chavePapelSinal),
+                                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                                    "select", chavePapelSinal, sinal, null, chavePapelSinal,
+                                                    null, null, null, null),
+                                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
+                                            tipoSituacaoSelecionada);
+                                }
+                                agenteMonitor.avaliarSinalNumeroRelativo(sinalCorreto.booleanValue());
+                                String chaveIdempotenciaSinal =
+                                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
+                                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaSinal = agenteZDP.decidirEstrategia(
+                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
+                                        chavePapelSinal, sinalCorreto.booleanValue(), chaveIdempotenciaSinal);
+                                conectorVereditoModelador.registrarVeredito(
+                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
+                                        chavePapelSinal, estrategiaSinal, "SELECIONAR", chaveIdempotenciaSinal);
+                                if (agentAuditService != null) {
+                                    agentAuditService.finalizarAcao();
+                                }
+                            }
                             registrarLogUsuario(
                                     "Escolher sinal do número relativo",
-                                    "C",
+                                    (sinalCorreto == null || sinalCorreto.booleanValue()) ? "C" : "E",
                                     "Menu de radio buttons",
                                     "Número relativo do diagrama",
                                     "Representar perda ou ganho com sinal",
@@ -11364,9 +11894,37 @@ public class Main extends JFrame {
                                     && item.representaIncognitaOriginal()) {
                                 item.registrarPreenchimentoPeloProtocoloMouseTexto();
                             }
+                            String chavePapelSinal = obterChavePapelDoNumeroRelativo(numeroRelativoFinal);
+                            Boolean sinalCorreto = sinalEscolhidoCorrespondeAoCurado(chavePapelSinal, sinal);
+                            if (sinalCorreto != null) {
+                                if (agentAuditService != null) {
+                                    agentAuditService.iniciarAcao(
+                                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                                    loggerInteracaoGerard.getUsuarioAtual(),
+                                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), chavePapelSinal),
+                                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                                    "select", chavePapelSinal, sinal, null, chavePapelSinal,
+                                                    null, null, null, null),
+                                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
+                                            tipoSituacaoSelecionada);
+                                }
+                                agenteMonitor.avaliarSinalNumeroRelativo(sinalCorreto.booleanValue());
+                                String chaveIdempotenciaSinal =
+                                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
+                                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaSinal = agenteZDP.decidirEstrategia(
+                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
+                                        chavePapelSinal, sinalCorreto.booleanValue(), chaveIdempotenciaSinal);
+                                conectorVereditoModelador.registrarVeredito(
+                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
+                                        chavePapelSinal, estrategiaSinal, "SELECIONAR", chaveIdempotenciaSinal);
+                                if (agentAuditService != null) {
+                                    agentAuditService.finalizarAcao();
+                                }
+                            }
                             registrarLogUsuario(
                                     "Escolher sinal do número relativo",
-                                    "C",
+                                    (sinalCorreto == null || sinalCorreto.booleanValue()) ? "C" : "E",
                                     "Menu de radio buttons",
                                     "Número relativo do diagrama",
                                     "Representar perda ou ganho com sinal",
@@ -11622,9 +12180,26 @@ public class Main extends JFrame {
                 entrada = entrada.trim();
 
                 if (entrada.matches("[0-9]+")) {
+                    // Correção rodada 3 (2026-07-31): a checagem de posição
+                    // abaixo e a checagem de valor em
+                    // confirmarValorIncognitaAceito (mais adiante, só no
+                    // ramo de preenchimento de incógnita) são duas
+                    // perguntas do MESMO gesto do usuário ("digitar e
+                    // confirmar um número") — reservarProximoGesto faz as
+                    // duas compartilharem gesture_id/action_id.
+                    // A posição já foi validada quando o item foi
+                    // solto/arrastado até aqui (evento SOLTURA_USUARIO
+                    // anterior); reconferir agora é reavaliação de
+                    // consistência (reativa — não conta como 2ª ação
+                    // pedagógica, não mexe em ZDP/Modelador de novo), não
+                    // um gesto canônico novo.
+                    if (agentAuditService != null) {
+                        agentAuditService.reservarProximoGesto();
+                    }
                     String ceIncognita = "-";
                     String regrasIncognita = "A ação não foi avaliada como acerto ou erro matemático.";
-                    ResultadoQuestionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item);
+                    ResultadoQuestionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item,
+                            gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
                     if (resultadoIncognita.isAplicavel()) {
                         ceIncognita = resultadoIncognita.isCorreto() ? "C" : "E";
                         regrasIncognita = resultadoIncognita.isCorreto()
@@ -11650,6 +12225,12 @@ public class Main extends JFrame {
                     boolean preenchimentoDeInterrogacao = SimboloDesconhecido.eh(item.origemValor)
                             || SimboloDesconhecido.eh(scaffoldingNumeroRelativo.removerSinal(item.valor));
                     if (numeroRelativo != null) {
+                        // Fluxo de sinal, não de confirmação de valor da
+                        // incógnita — não há 2º subevento vindo, libera a
+                        // reserva aqui.
+                        if (agentAuditService != null) {
+                            agentAuditService.liberarReservaDeGesto();
+                        }
                         item.valor = scaffoldingNumeroRelativo.removerSinal(entrada);
                         ajustarTamanhoDoItem(item);
                         if (!deveBloquearMenuNumeroRelativoPorQuestionamento(item, numeroRelativo)) {
@@ -11661,6 +12242,12 @@ public class Main extends JFrame {
                         }
                         item.valor = scaffoldingNumeroRelativo.removerSinalPositivo(entrada);
                         ajustarTamanhoDoItem(item);
+                        if (!preenchimentoDeInterrogacao && agentAuditService != null) {
+                            // Não é preenchimento de incógnita: não há
+                            // confirmarValorIncognitaAceito por vir, ninguém
+                            // mais vai consumir a reserva.
+                            agentAuditService.liberarReservaDeGesto();
+                        }
                         if (preenchimentoDeInterrogacao && !confirmarValorIncognitaAceito(item)) {
                             // Usuário respondeu "Não" à pergunta de confirmação:
                             // volta a pedir o valor em vez de propagar um valor

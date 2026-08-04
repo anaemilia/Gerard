@@ -45,6 +45,16 @@ public class ConectorVereditoModelador {
 
     public void registrarVeredito(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
                                    CamadaEstrategiaZDP estrategia, String regraDeAcao) {
+        registrarVeredito(idUsuario, categoria, chavePapelAlvo, estrategia, regraDeAcao, null);
+    }
+
+    /**
+     * Versão com chave de idempotência (ver AgenteModelador.armazenarCaso) —
+     * usada pelos pontos de chamada canônicos de Main.java (2026-07-31), pra
+     * garantir no máximo um caso por gesto real do usuário.
+     */
+    public void registrarVeredito(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
+                                   CamadaEstrategiaZDP estrategia, String regraDeAcao, String idempotencyKey) {
         if (idUsuario == null || categoria == null || chavePapelAlvo == null) {
             return;
         }
@@ -52,7 +62,7 @@ public class ConectorVereditoModelador {
         DiagnosticoTarefa diagnostico = new DiagnosticoTarefa(tarefa);
         diagnostico.setSuporte(mapearSuporte(estrategia));
         diagnostico.setRegraDeAcao(regraDeAcao);
-        agenteModelador.armazenarCaso(idUsuario, diagnostico);
+        agenteModelador.armazenarCaso(idUsuario, diagnostico, idempotencyKey);
     }
 
     public void registrarAcaoNeutra(String idUsuario, TipoSituacaoAditiva categoria, String regraDeAcao) {

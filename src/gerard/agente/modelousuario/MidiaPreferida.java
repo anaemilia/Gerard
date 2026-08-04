@@ -7,5 +7,6 @@ package gerard.agente.modelousuario;
 public enum MidiaPreferida {
     SOM,
     GRAFICO,
-    LINGUAGEM_NATURAL
+    LINGUAGEM_NATURAL,
+    VIDEO
 }

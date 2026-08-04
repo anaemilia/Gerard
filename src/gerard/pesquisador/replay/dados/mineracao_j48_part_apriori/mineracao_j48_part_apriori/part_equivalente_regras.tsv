@@ -1,0 +1,11 @@
+ordem	regra	classe_predita	cobertura	erros_cobertos	precisao_treino
+1	consecutivos_bin!=zero E categoria!=Categoria não determinada E artifact_family!=outro E categoria=Transformação E task_family!=categoria E task_family!=resultado	E	60	34	0.5666666666666667
+2	categoria=Categoria não determinada E artifact_family=menu_categoria	E	11	11	1.0
+3	task_family!=ajuda E historico_erros!=3a5 E repete_familia!=1 E artifact_family=diagrama E categoria=Comparação E historico_erros=1a2	E	13	9	0.6923076923076923
+4	task_family!=ajuda E historico_erros=3a5 E categoria!=Comparação E ajuda_previa!=1 E categoria!=Transformação	E	13	9	0.6923076923076923
+5	task_family!=ajuda E categoria=Transformação E task_family!=posicionamento E artifact_family!=campo_resultado E artifact_family=diagrama	E	16	8	0.5
+6	task_family!=ajuda E ultima_avaliacao=C E historico_erros!=3a5 E artifact_family!=outro E fase_protocolo=inicio E categoria=Comparação	E	34	17	0.5
+7	ultima_avaliacao!=C E categoria!=Transformação E ultima_avaliacao=E E categoria=Comparação E fase_protocolo=inicio	E	14	8	0.5714285714285714
+8	categoria=Transformação E ultima_avaliacao!=C E task_family!=categoria	E	13	7	0.5384615384615384
+9	task_family!=ajuda E historico_erros!=3a5 E artifact_family!=menu_categoria E task_family!=outra E consecutivos_bin=um E fase_protocolo!=intermediaria1	E	11	5	0.45454545454545453
+10	task_family!=ajuda E artifact_family!=outro E historico_erros!=6mais E historico_erros=3a5 E task_family=sinal	E	11	5	0.45454545454545453

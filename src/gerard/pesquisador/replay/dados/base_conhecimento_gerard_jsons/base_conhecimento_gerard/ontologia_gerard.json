@@ -1,0 +1,161 @@
+{
+  "nome": "Ontologia mínima da base de conhecimento Gérard",
+  "versao": "1.0",
+  "idioma": "pt-BR",
+  "escopos": {
+    "principal": "estruturas_aditivas",
+    "historico": "estruturas_multiplicativas_historicas",
+    "observacao": "As categorias multiplicativas aparecem em entrevistas e protocolos históricos. Não ampliam automaticamente o escopo atual do software."
+  },
+  "entidades": [
+    "Participante",
+    "Sessao",
+    "Tentativa",
+    "Protocolo",
+    "Problema",
+    "Categoria",
+    "PapelSemantico",
+    "Acao",
+    "Artefato",
+    "Erro",
+    "Estrategia",
+    "Feedback",
+    "Ajuda",
+    "Intervencao",
+    "Explicacao",
+    "Regra",
+    "Evidencia"
+  ],
+  "categorias": [
+    {
+      "id": "composicao",
+      "rotulo": "Composição",
+      "escopo": "aditivo"
+    },
+    {
+      "id": "transformacao",
+      "rotulo": "Transformação",
+      "escopo": "aditivo"
+    },
+    {
+      "id": "comparacao",
+      "rotulo": "Comparação",
+      "escopo": "aditivo"
+    },
+    {
+      "id": "multiplicacao",
+      "rotulo": "Multiplicação",
+      "escopo": "multiplicativo_historico"
+    },
+    {
+      "id": "divisao_por_partes",
+      "rotulo": "Divisão por partes",
+      "escopo": "multiplicativo_historico"
+    },
+    {
+      "id": "divisao_por_cotas",
+      "rotulo": "Divisão por cotas",
+      "escopo": "multiplicativo_historico"
+    },
+    {
+      "id": "categoria_nao_determinada",
+      "rotulo": "Categoria não determinada",
+      "escopo": "geral"
+    }
+  ],
+  "papeis_semanticos": [
+    "parte_1",
+    "parte_2",
+    "todo",
+    "estado_inicial",
+    "transformacao",
+    "estado_final",
+    "referido",
+    "referendo",
+    "valor_relativo",
+    "termo_desconhecido"
+  ],
+  "universos_numericos": {
+    "quantidades_naturais": [
+      "parte_1",
+      "parte_2",
+      "todo",
+      "estado_inicial",
+      "estado_final",
+      "referido",
+      "referendo"
+    ],
+    "inteiros_com_sinal": [
+      "transformacao",
+      "valor_relativo"
+    ]
+  },
+  "agentes": [
+    "USUARIO",
+    "COMPUTADOR",
+    "PESQUISADOR",
+    "SISTEMA"
+  ],
+  "estrategias": {
+    "SEM": "Justificativa semântico-relacional",
+    "VIS": "Correspondência por cor, forma ou rótulo",
+    "ORD": "Ordem de leitura, ordem espacial ou primeiro espaço",
+    "OPE": "Raciocínio orientado pela operação aritmética",
+    "ELI": "Escolha por eliminação, tentativa ou falta de opção",
+    "FBK-C": "Mudança após feedback com reconstrução conceitual",
+    "FBK-E": "Mudança após feedback por eliminação",
+    "FBK-V": "Mudança após feedback por correspondência visual",
+    "RER": "Releitura e reconstrução conceitual",
+    "MOT": "Dificuldade motora ou operacional da interface",
+    "SOP": "Confusão entre sinal semântico e operação de cálculo",
+    "INT-R": "Pergunta reformulada pelo entrevistador",
+    "INT-D": "Direcionamento do entrevistador",
+    "INT-C": "Confirmação oferecida pelo entrevistador",
+    "AFE": "Estado afetivo de nervosismo, frustração ou confronto com o erro"
+  },
+  "tipos_erro": [
+    "categoria",
+    "posicionamento",
+    "simbolo_categoria",
+    "resultado",
+    "sinal",
+    "interface",
+    "conceitual_generico"
+  ],
+  "intervencoes": [
+    "permitir_acao",
+    "feedback_minimo",
+    "feedback_conceitual",
+    "ajuda_conceitual",
+    "ajuda_operacional",
+    "solicitar_releitura",
+    "solicitar_justificativa",
+    "comparar_estruturas_semanticas",
+    "contrastar_evento_e_operacao",
+    "mudar_modalidade_de_ajuda",
+    "permitir_nova_tentativa",
+    "nao_entregar_resposta"
+  ],
+  "relacoes": [
+    "participante_realiza_acao",
+    "acao_pertence_a_protocolo",
+    "acao_utiliza_artefato",
+    "acao_ocupa_papel_semantico",
+    "acao_recebe_avaliacao",
+    "erro_possui_causa_provavel",
+    "feedback_sucede_erro",
+    "explicacao_justifica_acao",
+    "regra_derivada_de_fonte",
+    "regra_possui_evidencia",
+    "intervencao_responde_a_diagnostico"
+  ],
+  "prioridade_por_tipo": {
+    "dominio": 100,
+    "consistencia": 95,
+    "pedagogica": 80,
+    "integrada": 75,
+    "qualitativa": 60,
+    "preditiva": 50,
+    "associativa": 40
+  }
+}

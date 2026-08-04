@@ -1,0 +1,11 @@
+R1: SE consecutivos_bin!=zero E categoria!=Categoria não determinada E artifact_family!=outro E categoria=Transformação E task_family!=categoria E task_family!=resultado ENTÃO E [cobertura=60, precisão=0.567]
+R2: SE categoria=Categoria não determinada E artifact_family=menu_categoria ENTÃO E [cobertura=11, precisão=1.000]
+R3: SE task_family!=ajuda E historico_erros!=3a5 E repete_familia!=1 E artifact_family=diagrama E categoria=Comparação E historico_erros=1a2 ENTÃO E [cobertura=13, precisão=0.692]
+R4: SE task_family!=ajuda E historico_erros=3a5 E categoria!=Comparação E ajuda_previa!=1 E categoria!=Transformação ENTÃO E [cobertura=13, precisão=0.692]
+R5: SE task_family!=ajuda E categoria=Transformação E task_family!=posicionamento E artifact_family!=campo_resultado E artifact_family=diagrama ENTÃO E [cobertura=16, precisão=0.500]
+R6: SE task_family!=ajuda E ultima_avaliacao=C E historico_erros!=3a5 E artifact_family!=outro E fase_protocolo=inicio E categoria=Comparação ENTÃO E [cobertura=34, precisão=0.500]
+R7: SE ultima_avaliacao!=C E categoria!=Transformação E ultima_avaliacao=E E categoria=Comparação E fase_protocolo=inicio ENTÃO E [cobertura=14, precisão=0.571]
+R8: SE categoria=Transformação E ultima_avaliacao!=C E task_family!=categoria ENTÃO E [cobertura=13, precisão=0.538]
+R9: SE task_family!=ajuda E historico_erros!=3a5 E artifact_family!=menu_categoria E task_family!=outra E consecutivos_bin=um E fase_protocolo!=intermediaria1 ENTÃO E [cobertura=11, precisão=0.455]
+R10: SE task_family!=ajuda E artifact_family!=outro E historico_erros!=6mais E historico_erros=3a5 E task_family=sinal ENTÃO E [cobertura=11, precisão=0.455]
+PADRÃO: C
