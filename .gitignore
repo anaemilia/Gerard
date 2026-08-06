@@ -21,6 +21,9 @@ nbdist/
 *.iws
 *.ipr
 
+# Claude Code (config/permissões locais desta máquina)
+.claude/settings.local.json
+
 # Maven / Gradle (caso venha a usar)
 .gradle/
 mvnw
