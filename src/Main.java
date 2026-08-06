@@ -5541,15 +5541,50 @@ public class Main extends JFrame {
          *         valor curado do papel.
          */
         private Boolean valorDigitadoCorrespondeAoCurado(String papel, String valorDigitado) {
-            Integer curado = obterValorCuradoParaPapel(papel);
-            if (curado == null) {
+            Integer alvo = obterValorAlvoParaPapel(papel);
+            if (alvo == null) {
                 return null;
             }
             Integer digitado = converterTextoParaInteiro(valorDigitado);
             if (digitado == null) {
                 return null;
             }
-            return Boolean.valueOf(digitado.intValue() == curado.intValue());
+            return Boolean.valueOf(digitado.intValue() == alvo.intValue());
+        }
+
+        /**
+         * Valor-alvo para conferir a incógnita — "estado modificado"
+         * (2026-08-06): quando o papel indicado é a incógnita atual e a
+         * arquitetura rica (Fase B1) já tem, no Snapshot corrente de
+         * EstadoSemanticoCompartilhado, um valor calculado a partir dos
+         * papéis-dado ATUAIS (Estado inicial/Transformação/etc.), esse valor
+         * recalculado é o alvo — não o curado original do problema. Isso
+         * cobre o caso em que o usuário alterou um papel-dado por outra
+         * representação (ex.: arrastando o eixo x) e quer continuar operando
+         * a partir desse novo valor, em vez de ser cobrado pela resposta do
+         * problema original.
+         *
+         * Cai no curado (comportamento anterior, inalterado) quando: o papel
+         * não é a incógnita atual; ou os papéis-dado ainda não estão todos
+         * conhecidos no Snapshot (nesse caso não há recálculo válido ainda,
+         * independente do tipo de situação — inclui os 2 tipos "Em
+         * construção", hoje inalcançáveis pela UI). O valor do Snapshot usado
+         * aqui vem da mesma resolução (rica, Fase B1, ou genérica de
+         * fallback para os tipos ainda não cobertos por ela) que já preenche
+         * a incógnita no "primeiro preenchimento" — não é um cálculo novo.
+         */
+        private Integer obterValorAlvoParaPapel(String papel) {
+            if (papel != null && papel.equals(obterPapelIncognitaAtual())) {
+                int indice = obterIndiceIncognitaProtegidaNoEstadoCompartilhado();
+                if (indice >= 0) {
+                    EstadoSemanticoCompartilhado.Snapshot snapshot =
+                            estadoSemanticoCompartilhado.snapshot();
+                    if (snapshot != null && snapshot.isConhecido(indice)) {
+                        return Integer.valueOf(snapshot.valorOuZero(indice));
+                    }
+                }
+            }
+            return obterValorCuradoParaPapel(papel);
         }
 
         /**
