@@ -6519,87 +6519,18 @@ public class Main extends JFrame {
 
         private void desenharPistaVisualDoModo(Graphics2D g2, ItemTextoArrastavel item,
                                                ElementoVergnaud alvo, boolean proximo, boolean dentro) {
+            // Extraído para EstrategiaEstiloInteracao.desenhar(...): a decisão de
+            // estado (calcularEstado) já morava nas estratégias; a pista visual
+            // ramificava de novo sobre o mesmo EstiloInteracao aqui, duplicando
+            // o despacho por modo. Ver gerard.estilointeracao.estrategia.
             Stroke original = g2.getStroke();
             Color corOriginal = g2.getColor();
-            int itemCx = item.x + item.largura / 2;
-            int itemCy = item.y + item.altura / 2;
-            int alvoCx = alvo.x + alvo.largura / 2;
-            int alvoCy = alvo.y + alvo.altura / 2;
-
-            if (modoFeedbackTeste == EstiloInteracao.PROXIMIDADE && proximo) {
-                g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-                        1.0f, new float[]{5.0f, 5.0f}, 0.0f));
-                g2.setColor(COR_PRIMARIA);
-                g2.drawLine(itemCx, itemCy, alvoCx, alvoCy);
-                g2.drawRoundRect(alvo.x - 4, alvo.y - 4, alvo.largura + 8, alvo.altura + 8, 10, 10);
-            } else if (modoFeedbackTeste == EstiloInteracao.DROP_TARGET_HIGHLIGHTING && dentro) {
-                Composite compostoOriginal = g2.getComposite();
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.16f));
-                g2.setColor(COR_PRIMARIA);
-                g2.fillRoundRect(alvo.x + 2, alvo.y + 2, alvo.largura - 4, alvo.altura - 4, 10, 10);
-                g2.setComposite(compostoOriginal);
-                g2.setStroke(new BasicStroke(2.4f));
-                g2.setColor(COR_PRIMARIA);
-                int px = alvo.x + Math.max(5, (alvo.largura - item.largura) / 2);
-                int py = alvo.y + Math.max(5, (alvo.altura - item.altura) / 2);
-                g2.drawRoundRect(px, py, Math.max(4, Math.min(item.largura, alvo.largura - 10)),
-                        Math.max(4, Math.min(item.altura, alvo.altura - 10)), 8, 8);
-            } else if (modoFeedbackTeste == EstiloInteracao.DRAG_OVER_FEEDBACK && (proximo || dentro)) {
-                g2.setStroke(new BasicStroke(dentro ? 3.0f : 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(COR_PRIMARIA);
-                g2.drawLine(itemCx, itemCy, alvoCx, alvoCy);
-                g2.drawRoundRect(alvo.x - (dentro ? 5 : 3), alvo.y - (dentro ? 5 : 3),
-                        alvo.largura + (dentro ? 10 : 6), alvo.altura + (dentro ? 10 : 6), 10, 10);
-                g2.fillOval(alvoCx - (dentro ? 5 : 3), alvoCy - (dentro ? 5 : 3),
-                        dentro ? 10 : 6, dentro ? 10 : 6);
-            } else if (modoFeedbackTeste == EstiloInteracao.AFFORDANCE) {
-                // Indica disponibilidade por cantos de enquadramento. Evita o sinal "+",
-                // que pode ser confundido com o sinal positivo da representação formal.
-                g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(COR_PRIMARIA);
-                desenharCantosDeEnquadramento(g2, alvo);
-            } else if (modoFeedbackTeste == EstiloInteracao.SNAP_TO_TARGET && proximo) {
-                g2.setStroke(new BasicStroke(2.0f));
-                g2.setColor(COR_PRIMARIA);
-                desenharSetaCurta(g2, itemCx, itemCy, alvoCx, alvoCy);
-            }
-
+            scaffoldingProximidade.desenhar(modoFeedbackTeste, g2,
+                    item.x, item.y, item.largura, item.altura,
+                    alvo.x, alvo.y, alvo.largura, alvo.altura,
+                    proximo, dentro);
             g2.setStroke(original);
             g2.setColor(corOriginal);
-        }
-
-        private void desenharCantosDeEnquadramento(Graphics2D g2, ElementoVergnaud alvo) {
-            int margem = 5;
-            int comprimento = Math.max(6, Math.min(10, Math.min(alvo.largura, alvo.altura) / 4));
-            int esquerda = alvo.x + margem;
-            int direita = alvo.x + alvo.largura - margem;
-            int topo = alvo.y + margem;
-            int base = alvo.y + alvo.altura - margem;
-
-            // Canto superior esquerdo.
-            g2.drawLine(esquerda, topo, esquerda + comprimento, topo);
-            g2.drawLine(esquerda, topo, esquerda, topo + comprimento);
-            // Canto superior direito.
-            g2.drawLine(direita - comprimento, topo, direita, topo);
-            g2.drawLine(direita, topo, direita, topo + comprimento);
-            // Canto inferior esquerdo.
-            g2.drawLine(esquerda, base, esquerda + comprimento, base);
-            g2.drawLine(esquerda, base - comprimento, esquerda, base);
-            // Canto inferior direito.
-            g2.drawLine(direita - comprimento, base, direita, base);
-            g2.drawLine(direita, base - comprimento, direita, base);
-        }
-
-        private void desenharSetaCurta(Graphics2D g2, int x1, int y1, int x2, int y2) {
-            g2.drawLine(x1, y1, x2, y2);
-            double angulo = Math.atan2(y2 - y1, x2 - x1);
-            int tamanho = 9;
-            int ax1 = x2 - (int) Math.round(tamanho * Math.cos(angulo - Math.PI / 6));
-            int ay1 = y2 - (int) Math.round(tamanho * Math.sin(angulo - Math.PI / 6));
-            int ax2 = x2 - (int) Math.round(tamanho * Math.cos(angulo + Math.PI / 6));
-            int ay2 = y2 - (int) Math.round(tamanho * Math.sin(angulo + Math.PI / 6));
-            g2.drawLine(x2, y2, ax1, ay1);
-            g2.drawLine(x2, y2, ax2, ay2);
         }
 
         private void desenharRodapeInstrucao(Graphics2D g2) {
