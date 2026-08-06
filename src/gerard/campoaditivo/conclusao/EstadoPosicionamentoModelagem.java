@@ -12,6 +12,7 @@ public final class EstadoPosicionamentoModelagem {
     private final boolean incognitaOriginal;
     private final boolean preenchidoPeloProtocoloMouseTexto;
     private final Boolean valorCorrespondeAoCurado;
+    private final Boolean estadoModificado;
 
     /** Compatibilidade com estados antigos sem conteúdo. */
     public EstadoPosicionamentoModelagem(String papelItem, String papelAlvo,
@@ -46,6 +47,28 @@ public final class EstadoPosicionamentoModelagem {
             boolean incognitaOriginal,
             boolean preenchidoPeloProtocoloMouseTexto,
             Boolean valorCorrespondeAoCurado) {
+        this(papelItem, papelAlvo, valorMatematico, noDiagrama,
+                incognitaOriginal, preenchidoPeloProtocoloMouseTexto,
+                valorCorrespondeAoCurado, null);
+    }
+
+    /**
+     * @param estadoModificado "estado modificado" (2026-08-06): diferente de
+     *        valorCorrespondeAoCurado (só relevante para a incógnita), este
+     *        se aplica a QUALQUER papel — inclusive papéis-dado (ex.:
+     *        Transformação), que o usuário pode alterar por outra
+     *        representação (ex.: arrastar o eixo x) sem que isso seja um
+     *        erro em si. true quando o valor atual do papel diverge do
+     *        curado do problema original; null quando não há curado
+     *        disponível para conferir (mesmo critério de
+     *        valorCorrespondeAoCurado).
+     */
+    public EstadoPosicionamentoModelagem(String papelItem, String papelAlvo,
+            String valorMatematico, boolean noDiagrama,
+            boolean incognitaOriginal,
+            boolean preenchidoPeloProtocoloMouseTexto,
+            Boolean valorCorrespondeAoCurado,
+            Boolean estadoModificado) {
         this.papelItem = limpar(papelItem);
         this.papelAlvo = limpar(papelAlvo);
         this.valorMatematico = limpar(valorMatematico);
@@ -54,6 +77,7 @@ public final class EstadoPosicionamentoModelagem {
         this.preenchidoPeloProtocoloMouseTexto =
                 preenchidoPeloProtocoloMouseTexto;
         this.valorCorrespondeAoCurado = valorCorrespondeAoCurado;
+        this.estadoModificado = estadoModificado;
     }
 
     public String getPapelItem() { return papelItem; }
@@ -66,6 +90,9 @@ public final class EstadoPosicionamentoModelagem {
     }
     public Boolean getValorCorrespondeAoCurado() {
         return valorCorrespondeAoCurado;
+    }
+    public Boolean getEstadoModificado() {
+        return estadoModificado;
     }
 
     private static String limpar(String valor) {

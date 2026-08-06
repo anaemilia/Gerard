@@ -5498,7 +5498,8 @@ public class Main extends JFrame {
                             item.isPreenchidoPeloProtocoloMouseTexto(),
                             item.representaIncognitaOriginal()
                                     ? valorDigitadoCorrespondeAoCurado(papelAlvo, item.valor)
-                                    : null));
+                                    : null,
+                            calcularEstadoModificado(papelAlvo, item.valor)));
                 } else {
                     String valorDigitado = alvo.textoEditavel == null
                             ? "" : alvo.textoEditavel.trim();
@@ -5506,10 +5507,40 @@ public class Main extends JFrame {
                             papelAlvo,
                             papelAlvo,
                             valorDigitado,
-                            valorDigitado.length() > 0));
+                            valorDigitado.length() > 0,
+                            false,
+                            false,
+                            null,
+                            calcularEstadoModificado(papelAlvo, valorDigitado)));
                 }
             }
             return estados;
+        }
+
+        /**
+         * "Estado modificado" (2026-08-06): true quando o valor atual do
+         * papel diverge do curado do problema original — para QUALQUER
+         * papel, não só a incógnita (ver getEstadoModificado em
+         * EstadoPosicionamentoModelagem). Um papel-dado divergir não é em si
+         * um erro: o usuário pode ter alterado o valor por outra
+         * representação (ex.: eixo x) e estar operando legitimamente a
+         * partir do novo valor — ver obterValorAlvoParaPapel, que já
+         * recalcula o alvo da incógnita a partir disso. Este método só
+         * detecta a divergência; não julga se ela é intencional.
+         *
+         * @return null quando não há curado disponível para conferir (mesmo
+         *         critério de valorDigitadoCorrespondeAoCurado).
+         */
+        private Boolean calcularEstadoModificado(String papel, String valorAtual) {
+            Integer curado = obterValorCuradoParaPapel(papel);
+            if (curado == null) {
+                return null;
+            }
+            Integer atual = converterTextoParaInteiro(valorAtual);
+            if (atual == null) {
+                return null;
+            }
+            return Boolean.valueOf(atual.intValue() != curado.intValue());
         }
 
         /**
@@ -5670,6 +5701,7 @@ public class Main extends JFrame {
                 correto = valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor);
             }
             if (correto != null) {
+                registrarPapeisDadoModificadosSeHouver();
                 String papelAlvo = obterPapelIncognitaAtual();
                 if (agentAuditService != null) {
                     agentAuditService.iniciarAcao(
@@ -5715,6 +5747,49 @@ public class Main extends JFrame {
                 mostrarDicaOperacaoIncognita();
             }
             return false;
+        }
+
+        /**
+         * "Estado modificado" (2026-08-06) — registro de auditoria visível,
+         * extensão de obterValorAlvoParaPapel: no momento em que o estudante
+         * submete um valor para a incógnita, se algum papel-dado (não a
+         * incógnita) diverge do curado do problema original, registra um log
+         * de sistema identificando quais papéis e com que valores. Não
+         * bloqueia nem altera o fluxo de confirmação — só torna visível, para
+         * pesquisa, que a incógnita está sendo avaliada contra um contexto
+         * que não é mais o problema original (o alvo já foi recalculado a
+         * partir disso, não travado no curado — ver obterValorAlvoParaPapel).
+         * Chamado só de dentro do bloco `correto != null` de
+         * confirmarValorIncognitaAceito, mesma condição que já garante haver
+         * curado disponível e uma submissão real de incógnita em andamento.
+         */
+        private void registrarPapeisDadoModificadosSeHouver() {
+            StringBuilder detalhes = null;
+            for (EstadoPosicionamentoModelagem estado : capturarPosicionamentosConclusao()) {
+                if (estado.isIncognitaOriginal()
+                        || !Boolean.TRUE.equals(estado.getEstadoModificado())) {
+                    continue;
+                }
+                if (detalhes == null) {
+                    detalhes = new StringBuilder();
+                } else {
+                    detalhes.append("; ");
+                }
+                detalhes.append(localizacao.texto(estado.getPapelAlvo()))
+                        .append("=").append(estado.getValorMatematico());
+            }
+            if (detalhes != null) {
+                registrarLogComputador(
+                        "Detectar papel-dado modificado",
+                        "Estado semântico compartilhado",
+                        "Papel(éis)-dado divergente(s) do curado",
+                        "Sinalizar, para pesquisa, que a incógnita está sendo avaliada "
+                                + "contra papéis-dado alterados pelo usuário, não o problema original",
+                        "Um papel-dado divergir do curado não é em si um erro — o alvo da "
+                                + "incógnita já é recalculado a partir do valor atual.",
+                        "ESTADO_MODIFICADO",
+                        "papeis=" + detalhes);
+            }
         }
 
         /**
