@@ -10544,8 +10544,17 @@ public class Main extends JFrame {
                     // A coordenada y do ElementoTextoMovel corresponde à linha de base do texto.
                     // Por isso, os limites verticais consideram a altura do texto para impedir
                     // que palavras sem número ultrapassem a área visual do enunciado.
-                    int limiteSuperior = 58 + elementoTextoSelecionado.altura;
-                    int limiteInferior = 184;
+                    //
+                    // Bug registrado em 2026-08-06 (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_
+                    // TEXTO_ENUNCIADO): 58/184 eram valores fixos que não acompanharam
+                    // ALTURA_PAINEL_ATALHOS_CATEGORIA (a barra de ícones Medidas/Relações
+                    // acima do enunciado) quando ela cresceu — permitindo arrastar a palavra
+                    // para dentro da barra. estaNaAreaDoTexto já usa a mesma constante para
+                    // os limites da área do enunciado; aqui os dois valores originais (58 e
+                    // 184) são preservados como offset relativo, somados à mesma constante.
+                    int limiteSuperior = 58 + ALTURA_PAINEL_ATALHOS_CATEGORIA
+                            + elementoTextoSelecionado.altura;
+                    int limiteInferior = 184 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
 
                     if (novoX < limiteEsquerdo) {
                         novoX = limiteEsquerdo;

@@ -1,27 +1,32 @@
-# Bug registrado — limite superior de arraste de palavra do enunciado sobrepõe a barra de ícones
+# Bug — limite superior de arraste de palavra do enunciado sobrepõe a barra de ícones
 
-Data: 2026-08-06. Registrado a partir de relato do usuário (print de tela) durante teste manual, não investigado a fundo nem corrigido — fica para retomada posterior, por pedido explícito ("deixe registrado para depois").
+Data: 2026-08-06. Registrado a partir de relato do usuário (print de tela) durante teste manual; **corrigido** na retomada da mesma tarde, por pedido explícito do usuário.
 
 ## Sintoma
 
 Ao arrastar uma palavra comum do enunciado (ex.: "economizado", não um número nem "?") para cima, ela sobrepõe visualmente a barra de ícones de categoria (Medidas/Relações) acima do enunciado, em vez de parar abaixo dela. A palavra "solta" fica presa nessa posição alta, sobreposta à barra, com aparência de texto colado/fora de lugar.
 
-## Causa provável (não confirmada por execução — só leitura de código)
+## Causa confirmada
 
 `Main.java`, método `processarMovimentoArraste` (ramo `elementoTextoSelecionado`, dentro de `if (!ehNumeroOuInterrogacaoDoTexto(elementoTextoSelecionado))`):
 
 ```java
 int limiteSuperior = 58 + elementoTextoSelecionado.altura;
+int limiteInferior = 184;
 ```
 
-`58` é uma constante fixa em pixels que não é derivada da altura real da barra de ícones de categoria. Se a barra ocupar mais que ~58px (o que o print sugere), a palavra pode ser arrastada para dentro da área da barra antes de ser barrada pelo clamp.
+`58` e `184` eram constantes fixas em pixels que não acompanhavam `ALTURA_PAINEL_ATALHOS_CATEGORIA` (L7425, `= 130`) — a altura real da barra de ícones de categoria (Medidas/Relações) acima do enunciado. `estaNaAreaDoTexto` (L9838-9840), a função irmã que decide se um ponto está dentro da área do enunciado, já soma essa constante (`55 + ALTURA_PAINEL_ATALHOS_CATEGORIA` / `190 + ALTURA_PAINEL_ATALHOS_CATEGORIA`); o clamp de arraste tinha ficado para trás — provavelmente escrito antes da barra crescer para a altura atual, e nunca atualizado junto.
 
-## Por que não foi corrigido agora
+## Correção aplicada (2026-08-06, tarde)
 
-Encontrado durante teste manual do usuário logo após a extração de `RELATORIO_EXTRACAO_DESENHO_ESTILO_INTERACAO_2026-08-06.md` (Fase B2/estilo de interação). Confirmado que não tem relação com essa mudança — o clamp e toda a lógica de `elementoTextoSelecionado` em `processarMovimentoArraste` não foram tocados nela. Por pedido do usuário, fica registrado para uma sessão futura em vez de misturar a correção com o commit já verificado.
+```java
+int limiteSuperior = 58 + ALTURA_PAINEL_ATALHOS_CATEGORIA
+        + elementoTextoSelecionado.altura;
+int limiteInferior = 184 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+```
 
-## Próximo passo, quando retomado
+Os offsets relativos originais (58, 184) foram preservados — só a constante que faltava foi somada, no mesmo padrão já usado por `estaNaAreaDoTexto`. `limiteEsquerdo`/`limiteDireito` (mesma função) não dependem da altura da barra de ícones (são margens horizontais) — conferido, sem o mesmo problema.
 
-- Medir/obter a altura real da barra de ícones de categoria (Medidas/Relações) em vez do `58` fixo, ou usar uma constante nomeada que documente a origem do valor.
-- Confirmar reprodução isolando o cenário (arrastar uma palavra comum para cima) antes de alterar.
-- Verificar se `limiteEsquerdo`/`limiteDireito`/`limiteInferior` (mesma função) têm o mesmo tipo de problema (valores fixos não derivados da geometria real dos painéis vizinhos).
+## Verificação
+
+Compilação completa: 435 arquivos, 0 erros. Sem harness automatizado (mesma limitação de todo código de arraste em `Main.java`/Swing) — verificado por leitura comparada com `estaNaAreaDoTexto`, que usa a mesma constante para a mesma área.
