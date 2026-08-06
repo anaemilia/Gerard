@@ -1,6 +1,6 @@
 # Tarefa pendente — arquitetura rica integral + princípio da localidade do conhecimento em EstadoSemanticoCompartilhado
 
-Status: **registrada, não autorizada a começar (Fase B/C abaixo). Fase A autorizada, ver seção "Autorização".**
+Status: **Fase A concluída (commit `c69fde4`, 2026-08-06) — ver seção "Autorização". Fase B/C não autorizadas a começar.**
 
 ---
 
@@ -51,5 +51,5 @@ Isso é estruturalmente diferente do pacote piloto (uma classe `RelacaoEstrutura
 
 ## Autorização
 
-- **Fase A: autorizada** (aprovada nesta conversa, decisões de nomes e contrato já confirmadas).
+- **Fase A: concluída.** Composição ganhou o contrato rico, Comparação foi criada, os três harnesses (`TestePilotoComposicaoMedidas`, `TestePilotoTransformacaoMedidas`, `TestePilotoComparacaoMedidas`) passam, compilação limpa (424 arquivos). Commit `c69fde4`. Zero mudança em `Main.java` ou caminho de produção, como planejado.
 - **Fase B e C: não autorizadas a começar.** Ficam registradas aqui para não se perderem só em conversa — retomar quando a Fase B for pedida explicitamente.
