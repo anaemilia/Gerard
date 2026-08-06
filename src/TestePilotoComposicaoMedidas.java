@@ -162,6 +162,26 @@ public class TestePilotoComposicaoMedidas {
         checar("Parte2 resolvida corretamente (6)", String.valueOf(parte2D.valorAtual().valorOuNull()), "6");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo parte1E = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2E = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoE = PapelQuantitativo.todo(publicador);
+        parte1E.posicionar(new NumeroNatural(8));
+        parte2E.posicionar(new NumeroNatural(6));
+        checar("proposta correta (14) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(parte1E, parte2E, todoE, todoE, new NumeroNatural(14)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (8 - 6 = 2, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(parte1E, parte2E, todoE, todoE, new NumeroNatural(2)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(parte1E, parte2E, todoE, todoE, new NumeroNatural(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+        checar("proposta fora do domínio (Todo natural, -1) -> VALOR_FORA_DO_DOMINIO",
+                relacao.diagnosticarValorProposto(parte1E, parte2E, todoE, todoE, new NumeroInteiro(-1)).get().getTipo().name(),
+                "VALOR_FORA_DO_DOMINIO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO PASSARAM.");
     }
 

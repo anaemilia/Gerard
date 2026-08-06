@@ -108,6 +108,62 @@ public final class RelacaoEstruturalComposicao {
     }
 
     /**
+     * Diagnostica um valor PROPOSTO (ex.: o que o estudante digitou) para o
+     * papelAlvo, contra o valor correto calculado a partir dos outros dois
+     * papéis — distinção que calcularValorAusente sozinho não faz (ele só
+     * preenche o que falta; nunca avalia se um valor já presente está certo).
+     *
+     * Optional.empty() significa correto — não "não avaliado" (essa
+     * ambiguidade não existe aqui: pré-condição não satisfeita lança
+     * exceção, mesmo estilo de aplicar(...)). Quando incorreto, tenta
+     * reconhecer o padrão "operação invertida" (ex.: subtraiu quando devia
+     * somar) antes de cair no diagnóstico genérico — ver TipoErroPapel.
+     *
+     * @throws IllegalStateException se papelAlvo não for exatamente o único
+     *         papel incógnito entre os três — mesma pré-condição de
+     *         calcularValorAusente, violação de contrato do chamador
+     */
+    public java.util.Optional<DiagnosticoErroPapel> diagnosticarValorProposto(
+            PapelQuantitativo parte1, PapelQuantitativo parte2, PapelQuantitativo todo,
+            PapelQuantitativo papelAlvo, gerard.semantica.numero.ValorNumerico valorProposto) {
+        exigirNaoNulo(parte1, "parte1");
+        exigirNaoNulo(parte2, "parte2");
+        exigirNaoNulo(todo, "todo");
+        exigirNaoNulo(papelAlvo, "papelAlvo");
+        if (valorProposto == null || !valorProposto.ehConhecido()) {
+            throw new IllegalArgumentException("valorProposto precisa ser um valor conhecido para ser diagnosticado");
+        }
+        if (!papelAlvo.aceita(valorProposto)) {
+            return java.util.Optional.of(new DiagnosticoErroPapel(TipoErroPapel.VALOR_FORA_DO_DOMINIO,
+                    "erro.papel.valorForaDoDominio", "feedback.papel.valorForaDoDominio",
+                    "correcao.papel.valorForaDoDominio"));
+        }
+        ResultadoCalculo esperado = calcularValorAusente(parte1, parte2, todo);
+        if (!esperado.temValorCalculavel() || esperado.getPapelCalculado() != papelAlvo) {
+            throw new IllegalStateException(
+                    "papelAlvo precisa ser exatamente o único papel incógnito entre os três — mesma "
+                            + "pré-condição de calcularValorAusente (estado: " + esperado.getEstadoConsistencia() + ")");
+        }
+        int correto = esperado.getValorCalculado().valorOuNull();
+        int proposto = valorProposto.valorOuNull();
+        if (proposto == correto) {
+            return java.util.Optional.empty();
+        }
+        int invertido = papelAlvo == todo
+                ? parte1.valorAtual().valorOuNull() - parte2.valorAtual().valorOuNull()
+                : papelAlvo == parte1
+                        ? todo.valorAtual().valorOuNull() + parte2.valorAtual().valorOuNull()
+                        : todo.valorAtual().valorOuNull() + parte1.valorAtual().valorOuNull();
+        if (proposto == invertido) {
+            return java.util.Optional.of(new DiagnosticoErroPapel(TipoErroPapel.OPERACAO_INVERTIDA,
+                    "erro.papel.operacaoInvertida", "feedback.papel.operacaoInvertida",
+                    "correcao.papel.operacaoInvertida"));
+        }
+        return java.util.Optional.of(new DiagnosticoErroPapel(TipoErroPapel.VALOR_INCORRETO,
+                "erro.papel.valorIncorreto", "feedback.papel.valorIncorreto", "correcao.papel.valorIncorreto"));
+    }
+
+    /**
      * Aplica um ResultadoCalculo previamente obtido ao papel que ele
      * calculou — o passo explícito que uma camada externa decide dar. Só
      * então o papel gera seu evento semântico, com a origem que o

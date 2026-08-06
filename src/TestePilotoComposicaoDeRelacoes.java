@@ -174,6 +174,23 @@ public class TestePilotoComposicaoDeRelacoes {
         checar("mapa serializado traz o valor correto (-6)", String.valueOf(d1.paraMapa().get("valor_atual")), "-6");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo r1E = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2E = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfE = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1E.posicionar(new NumeroInteiro(10));
+        r2E.posicionar(new NumeroInteiro(-3));
+        checar("proposta correta (7) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(r1E, r2E, rfE, rfE, new NumeroInteiro(7)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (10 - (-3) = 13, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(r1E, r2E, rfE, rfE, new NumeroInteiro(13)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(r1E, r2E, rfE, rfE, new NumeroInteiro(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE RELAÇÕES PASSARAM.");
     }
 

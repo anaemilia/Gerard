@@ -228,7 +228,46 @@ public class TestePilotoTransformacaoMedidas {
         checar("mapa serializado traz o valor correto (-3)", String.valueOf(tr2.paraMapa().get("valor_atual")), "-3");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo eiD = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trD = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efD = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiD.posicionar(new NumeroNatural(10));
+        trD.posicionar(new NumeroInteiro(-3));
+        checar("proposta correta (7) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(eiD, trD, efD, efD, new NumeroNatural(7)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (10 - (-3) = 13, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(eiD, trD, efD, efD, new NumeroNatural(13)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(eiD, trD, efD, efD, new NumeroNatural(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+        checar("proposta fora do domínio (EstadoFinal natural, -1) -> VALOR_FORA_DO_DOMINIO",
+                relacao.diagnosticarValorProposto(eiD, trD, efD, efD, new NumeroInteiro(-1)).get().getTipo().name(),
+                "VALOR_FORA_DO_DOMINIO");
+
+        PapelQuantitativo eiD2 = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trD2 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efD2 = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        efD2.posicionar(new NumeroNatural(7));
+        checar("EstadoInicial proposto corretamente (10, EstadoFinal - Transformacao é a incógnita errada aqui) "
+                        + "-> exceção de pré-condição (dois incógnitos, não um)",
+                verificaLancaIllegalState(() ->
+                        relacao.diagnosticarValorProposto(eiD2, trD2, efD2, eiD2, new NumeroNatural(10))),
+                "true");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE MEDIDAS PASSARAM.");
+    }
+
+    private static String verificaLancaIllegalState(Runnable acao) {
+        try {
+            acao.run();
+            return "false";
+        } catch (IllegalStateException esperada) {
+            return "true";
+        }
     }
 
     private static void checar(String rotulo, String obtido, String esperado) {

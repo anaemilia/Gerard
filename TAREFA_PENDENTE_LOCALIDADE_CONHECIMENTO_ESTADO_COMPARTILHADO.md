@@ -1,6 +1,6 @@
 # Tarefa pendente — arquitetura rica integral + princípio da localidade do conhecimento em EstadoSemanticoCompartilhado
 
-Status: **Fase A concluída (commit `c69fde4`, 2026-08-06). Fase B: investigação concluída, opção B1 implementada e depois estendida aos 3 tipos "Relações" alcançáveis pela UI (2026-08-06). Fase B2, passo 2 (catálogo das 8 origens) concluída. Fase B2 literal (migração de fato) permanece em aberto — a conversa pivotou para duas frentes adjacentes, já implementadas e commitadas: extração do desenho de estilo de interação (`EstiloInteracao`) e recálculo do alvo da incógnita ("estado modificado") — ver seção "Autorização" e "Desdobramentos 2026-08-06 (tarde)".**
+Status: **Fase A concluída (commit `c69fde4`, 2026-08-06). Fase B: investigação concluída, opção B1 implementada e depois estendida aos 3 tipos "Relações" alcançáveis pela UI (2026-08-06). Fase B2, passo 2 (catálogo das 8 origens) concluída. Fase B2 literal (migração de fato) permanece em aberto — a conversa pivotou para frentes adjacentes, já implementadas e commitadas: extração do desenho de estilo de interação (`EstiloInteracao`), recálculo do alvo da incógnita ("estado modificado"), e enriquecimento de `TipoErroPapel`/`DiagnosticoErroPapel` no piloto (passo 1 do plano de 3 passos combinado em 2026-08-06 à noite) — ver "Desdobramentos 2026-08-06 (tarde)" e "Desdobramentos 2026-08-06 (noite)".**
 
 ---
 
@@ -70,3 +70,11 @@ A discussão sobre reduzir `Main.java` (por que é tão grande) levou por um cam
 5. **Nova skill `gerard-posicionamento-relativo`** (`d758c26`, `.claude/skills/`): captura o princípio do item 3 — posição/limite de qualquer elemento deve derivar da geometria real do contêiner, nunca de um número de pixel copiado — para carregar automaticamente em sessões futuras que mexerem em posicionamento/layout.
 
 **Fase B2 literal (`Main.java` manipulando os objetos do piloto diretamente) continua não autorizada e sem decisão tomada** — a conversa não voltou a ela; a tarde toda foi para os achados de teste manual acima.
+
+## Desdobramentos 2026-08-06 (noite) — plano de 3 passos para retomar a fronteira Main↔piloto
+
+Revisitada a Fase B2 literal. Investigação (só leitura) encontrou evidência decisiva no próprio código: `PapelQuantitativo` (piloto) documenta em javadoc que é "isolado por design: não é referenciado por Main.java nem por nenhum caminho de produção", tratando reuso entre esquemas como "hipótese arquitetural ainda não validada"; e `TipoErroPapel` tinha só 1 valor, insuficiente para qualquer diagnóstico real de erro do estudante. Diante disso, o usuário definiu a ordem explícita:
+
+1. **Enriquecer o piloto primeiro** — dar mais valores reais a `TipoErroPapel`/`DiagnosticoErroPapel`, zero risco de produção, mesmo espírito da Fase A. **Concluído** (commit a seguir): `TipoErroPapel` ganhou `OPERACAO_INVERTIDA` e `VALOR_INCORRETO` (de 1 para 3 valores); as 6 classes `RelacaoEstrutural*` ganharam `diagnosticarValorProposto(...)`, que avalia um valor proposto (não só calcula o que falta) e distingue correto / fora do domínio / operação invertida / genericamente errado. Ver `RELATORIO_ENRIQUECIMENTO_TIPOERROPAPEL_DIAGNOSTICO_2026-08-06.md`. Cobertura de teste adicionada nos 6 harnesses `TestePiloto*.java`; projeto completo compilado (0 erros) e todos os 6 harnesses executados com sucesso.
+2. **Adotar só `OrigemAcao` na Main** — tipar a origem das ações no lugar dos flags ad-hoc (ex.: `isPreenchidoPeloProtocoloMouseTexto`, `Origem.PROTOCOLO`), cruzando a fronteira "isolado por design" de forma bem mais estreita que a B2 completa. **Pendente, próximo passo.**
+3. **B2 completa como desenhada originalmente** — Main manipula `PapelQuantitativo` diretamente, substitui `EstadoSemanticoCompartilhado`. **Pendente, último passo desta sequência, maior risco/escopo.**

@@ -174,6 +174,23 @@ public class TestePilotoTransformacaoDeRelacao {
         checar("mapa serializado traz o valor correto (-4)", String.valueOf(d1.paraMapa().get("valor_atual")), "-4");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo riE = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trE = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfE = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riE.posicionar(new NumeroInteiro(10));
+        trE.posicionar(new NumeroInteiro(-3));
+        checar("proposta correta (7) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(riE, trE, rfE, rfE, new NumeroInteiro(7)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (10 - (-3) = 13, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(riE, trE, rfE, rfE, new NumeroInteiro(13)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(riE, trE, rfE, rfE, new NumeroInteiro(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE RELAÇÃO PASSARAM.");
     }
 

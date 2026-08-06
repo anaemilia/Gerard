@@ -226,6 +226,26 @@ public class TestePilotoComparacaoMedidas {
         checar("mapa serializado traz o valor correto (8)", String.valueOf(vr2.paraMapa().get("valor_atual")), "8");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo rdE = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrE = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnE = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdE.posicionar(new NumeroNatural(10));
+        vrE.posicionar(new NumeroInteiro(-3));
+        checar("proposta correta (7) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(rdE, vrE, rnE, rnE, new NumeroNatural(7)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (10 - (-3) = 13, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(rdE, vrE, rnE, rnE, new NumeroNatural(13)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(rdE, vrE, rnE, rnE, new NumeroNatural(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+        checar("proposta fora do domínio (Referendo natural, -1) -> VALOR_FORA_DO_DOMINIO",
+                relacao.diagnosticarValorProposto(rdE, vrE, rnE, rnE, new NumeroInteiro(-1)).get().getTipo().name(),
+                "VALOR_FORA_DO_DOMINIO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPARAÇÃO DE MEDIDAS PASSARAM.");
     }
 

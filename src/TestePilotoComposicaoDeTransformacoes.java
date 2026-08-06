@@ -177,6 +177,23 @@ public class TestePilotoComposicaoDeTransformacoes {
         checar("mapa serializado traz o valor correto (8)", String.valueOf(d1.paraMapa().get("valor_atual")), "8");
 
         System.out.println();
+        System.out.println("=== diagnosticarValorProposto (2026-08-06): avalia o que foi proposto, não só o que falta ===");
+        PapelQuantitativo t1E = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2E = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfE = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1E.posicionar(new NumeroInteiro(10));
+        t2E.posicionar(new NumeroInteiro(-3));
+        checar("proposta correta (7) -> Optional.empty()",
+                String.valueOf(relacao.diagnosticarValorProposto(t1E, t2E, tfE, tfE, new NumeroInteiro(7)).isPresent()),
+                "false");
+        checar("proposta com operação invertida (10 - (-3) = 13, devia somar) -> OPERACAO_INVERTIDA",
+                relacao.diagnosticarValorProposto(t1E, t2E, tfE, tfE, new NumeroInteiro(13)).get().getTipo().name(),
+                "OPERACAO_INVERTIDA");
+        checar("proposta sem padrão reconhecido (999) -> VALOR_INCORRETO",
+                relacao.diagnosticarValorProposto(t1E, t2E, tfE, tfE, new NumeroInteiro(999)).get().getTipo().name(),
+                "VALOR_INCORRETO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE TRANSFORMAÇÕES PASSARAM.");
     }
 
