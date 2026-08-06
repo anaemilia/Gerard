@@ -1,6 +1,6 @@
 # Tarefa pendente — arquitetura rica integral + princípio da localidade do conhecimento em EstadoSemanticoCompartilhado
 
-Status: **Fase A concluída (commit `c69fde4`, 2026-08-06) — ver seção "Autorização". Fase B/C não autorizadas a começar.**
+Status: **Fase A concluída (commit `c69fde4`, 2026-08-06). Fase B: investigação concluída e opção B1 implementada e verificada (2026-08-06) — ver seção "Autorização". Fase B2/C não autorizadas a começar.**
 
 ---
 
@@ -52,4 +52,6 @@ Isso é estruturalmente diferente do pacote piloto (uma classe `RelacaoEstrutura
 ## Autorização
 
 - **Fase A: concluída.** Composição ganhou o contrato rico, Comparação foi criada, os três harnesses (`TestePilotoComposicaoMedidas`, `TestePilotoTransformacaoMedidas`, `TestePilotoComparacaoMedidas`) passam, compilação limpa (424 arquivos). Commit `c69fde4`. Zero mudança em `Main.java` ou caminho de produção, como planejado.
-- **Fase B e C: não autorizadas a começar.** Ficam registradas aqui para não se perderem só em conversa — retomar quando a Fase B for pedida explicitamente.
+- **Fase B, passo 1 (investigação): concluída**, sem código tocado — ver `RELATORIO_INVESTIGACAO_FASE_B_LOCALIDADE_CONHECIMENTO_2026-08-06.md`. Achado principal: só `Main.java` guarda estado mutável; os 7 arquivos satélites só leem `Snapshot`. `EstadoSemanticoCompartilhado` já atende 8 tipos de `TipoSituacaoAditiva` com uma fórmula genérica só de índice, não 3 — o pacote piloto cobre só 3 desses 8.
+- **Fase B, opção B1: implementada e verificada (2026-08-06)**, sem commit ainda até esta edição. `resolverRelacaoAditiva()` em `EstadoSemanticoCompartilhado` agora delega para `RelacaoEstruturalComposicao/Transformacao/Comparacao.calcularValorAusente()` nos 3 tipos cobertos, mas só no caso de "primeiro preenchimento" (exatamente 1 papel incógnito entre os três, e essa incógnita não é a posição que acabou de ser tocada) — ver `RELATORIO_DELEGACAO_ESTADO_SEMANTICO_COMPARTILHADO_2026-08-06.md` para o porquê dessa condição (o algoritmo original mistura "preencher o que falta" com "sobrescrever para manter consistência depois que o diagrama já está completo" — só o primeiro bate com o contrato de `calcularValorAusente`). O segundo comportamento, e os outros 5 tipos, continuam 100% no algoritmo genérico original, inalterados. Verificado por compilação completa (426 arquivos), os três harnesses do piloto, e uma suíte comparativa nova de 28 cenários (`src/TesteComparativoEstadoSemanticoCompartilhado.java` + `src/EstadoSemanticoCompartilhadoOriginal.java`, cópia da versão anterior usada só para comparação) rodando a versão antiga e a nova lado a lado — 0 divergências. Zero mudança em `Main.java` ou nos 7 arquivos satélites.
+- **Fase B, opção B2 (substituir `EstadoSemanticoCompartilhado` pelos objetos do piloto em produção) e Fase C: não autorizadas a começar.** Ficam registradas aqui para não se perderem só em conversa — retomar quando forem pedidas explicitamente. Também em aberto: os 5 tipos de `TipoSituacaoAditiva` fora do piloto (verificar se os compostos se reduzem a aplicações sequenciais das 3 relações já existentes, ou se precisam de classes novas).
