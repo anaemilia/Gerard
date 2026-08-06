@@ -43,7 +43,8 @@ public class EventoLogGerard {
             "invariante_simbolico",
             "invariante_observacao",
             "natureza_acao",
-            "efeito_acao"
+            "efeito_acao",
+            "invariante_sugestao_adotada"
     };
 
     private String timestamp;
@@ -76,6 +77,7 @@ public class EventoLogGerard {
     private String invarianteObservacao = "";
     private String naturezaAcao = "";
     private String efeitoAcao = "";
+    private String invarianteSugestaoAdotada = "";
 
     public EventoLogGerard() {
         this.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
@@ -156,7 +158,8 @@ public class EventoLogGerard {
                 tarefa, ce, instrumentoOrganizacao, instrumentoArtefato,
                 funcaoDoArtefato, objeto, regras, categoria, enunciado,
                 origemEvento, detalhes, tipoAcaoInteracao, propriedadeAcao, mudancaObservavel, tentativaNumeroSituacao,
-                invarianteOrigem, invarianteCodigo, invarianteSimbolico, invarianteObservacao, naturezaAcao, efeitoAcao
+                invarianteOrigem, invarianteCodigo, invarianteSimbolico, invarianteObservacao, naturezaAcao, efeitoAcao,
+                invarianteSugestaoAdotada
         };
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < campos.length; i++) {
@@ -218,6 +221,7 @@ public class EventoLogGerard {
         evento.invarianteObservacao = campo(campos, 27);
         evento.naturezaAcao = campo(campos, 28);
         evento.efeitoAcao = campo(campos, 29);
+        evento.invarianteSugestaoAdotada = campo(campos, 30);
         return evento;
     }
 
@@ -234,6 +238,9 @@ public class EventoLogGerard {
         String upper = removerAcentos(v).toUpperCase();
         if ("C".equals(upper) || upper.indexOf("COMPUTADOR") >= 0 || upper.indexOf("INTERFACE") >= 0) {
             return "C";
+        }
+        if ("P".equals(upper) || upper.indexOf("PESQUISADOR") >= 0) {
+            return "P";
         }
         if ("S".equals(upper) || upper.indexOf("SUJEITO") >= 0 || upper.indexOf("USUARIO") >= 0 || upper.indexOf("USUARIA") >= 0) {
             return "S";
@@ -312,4 +319,6 @@ public class EventoLogGerard {
     public String getEfeitoAcao() { return efeitoAcao; }
     public void setNaturezaAcao(String valor) { naturezaAcao = valor(valor); }
     public void setEfeitoAcao(String valor) { efeitoAcao = valor(valor); }
+    public String getInvarianteSugestaoAdotada() { return invarianteSugestaoAdotada; }
+    public void setInvarianteSugestaoAdotada(String valor) { invarianteSugestaoAdotada = valor(valor); }
 }

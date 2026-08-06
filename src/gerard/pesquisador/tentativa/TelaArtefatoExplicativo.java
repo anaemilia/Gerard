@@ -394,11 +394,14 @@ public final class TelaArtefatoExplicativo extends JDialog {
         String codigoInvariante = inserirNovaForma.isSelected() ? "PERSONALIZADO" : (selecionado == null ? "NAO_IDENTIFICADO" : selecionado.codigo);
         String simbolicoInvariante = inserirNovaForma.isSelected() ? formaConstruida.getText() : (selecionado == null ? "" : selecionado.expressao);
         String observacao = observacaoInvariante.getText();
+        String codigoSugerido = codigoSugeridoPeloSistema(contexto.categoria);
+        String sugestaoAdotada = codigoSugerido == null ? ""
+                : (codigoSugerido.equals(codigoInvariante) ? "true" : "false");
         // O invariante pertence à tentativa, não apenas ao evento de salvamento.
         // Por isso, ele é repetido em todas as ações já registradas e também
         // passa a acompanhar qualquer ação posterior da mesma tentativa.
         logger.associarInvarianteATentativaAtual(origemInvariante, codigoInvariante,
-                simbolicoInvariante, observacao);
+                simbolicoInvariante, observacao, sugestaoAdotada);
         for (LinhaResposta linha : linhas) {
             RespostaElementoModelagem r = linha.resposta();
             logger.registrarExplicacaoMatematica(r.getElemento(), r.getPapelSemantico(),
@@ -513,6 +516,20 @@ public final class TelaArtefatoExplicativo extends JDialog {
      * Só uma pré-seleção: o pesquisador ainda escolhe livremente antes de
      * salvar. Decisão do usuário em 2026-07-23.
      */
+    private String codigoSugeridoPeloSistema(String categoria) {
+        if (itensExplicacao == null) {
+            return null;
+        }
+        String chavePapelIncognita = null;
+        for (ItemExplicacaoModelagem item : itensExplicacao) {
+            if (item != null && !item.isConhecido()) {
+                chavePapelIncognita = item.getChavePapel();
+                break;
+            }
+        }
+        return sugestorInvarianteOperatorio.sugerirCodigo(categoria, chavePapelIncognita);
+    }
+
     private void preSelecionarInvarianteSugerido(List<ItemExplicacaoModelagem> itens, String categoria) {
         if (itens == null) {
             return;

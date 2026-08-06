@@ -60,6 +60,7 @@ public class LoggerInteracaoGerard {
     private String invarianteCodigoAtual = "";
     private String invarianteSimbolicoAtual = "";
     private String invarianteObservacaoAtual = "";
+    private String invarianteSugestaoAdotadaAtual = "";
 
     private LoggerInteracaoGerard() {
         sessao = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -394,6 +395,7 @@ public class LoggerInteracaoGerard {
         private final String invarianteCodigoAtual;
         private final String invarianteSimbolicoAtual;
         private final String invarianteObservacaoAtual;
+        private final String invarianteSugestaoAdotadaAtual;
 
         private ContextoInteracao(LoggerInteracaoGerard logger) {
             this.problemaAtual = logger.problemaAtual;
@@ -408,6 +410,7 @@ public class LoggerInteracaoGerard {
             this.invarianteCodigoAtual = logger.invarianteCodigoAtual;
             this.invarianteSimbolicoAtual = logger.invarianteSimbolicoAtual;
             this.invarianteObservacaoAtual = logger.invarianteObservacaoAtual;
+            this.invarianteSugestaoAdotadaAtual = logger.invarianteSugestaoAdotadaAtual;
         }
     }
 
@@ -431,6 +434,7 @@ public class LoggerInteracaoGerard {
         invarianteCodigoAtual = contexto.invarianteCodigoAtual;
         invarianteSimbolicoAtual = contexto.invarianteSimbolicoAtual;
         invarianteObservacaoAtual = contexto.invarianteObservacaoAtual;
+        invarianteSugestaoAdotadaAtual = contexto.invarianteSugestaoAdotadaAtual;
     }
 
 
@@ -462,6 +466,7 @@ public class LoggerInteracaoGerard {
         invarianteCodigoAtual = "";
         invarianteSimbolicoAtual = "";
         invarianteObservacaoAtual = "";
+        invarianteSugestaoAdotadaAtual = "";
         registrarComputador(
                 t("pesq.log.task.presentQuestion"),
                 t("pesq.log.instrument.taskStatement"),
@@ -612,6 +617,7 @@ public class LoggerInteracaoGerard {
         evento.setInvarianteCodigo(invarianteCodigoAtual);
         evento.setInvarianteSimbolico(invarianteSimbolicoAtual);
         evento.setInvarianteObservacao(invarianteObservacaoAtual);
+        evento.setInvarianteSugestaoAdotada(invarianteSugestaoAdotadaAtual);
         evento.setNaturezaAcao(classificarNaturezaAcao(tarefa, origemEvento, tipoAcaoInteracao, instrumentoArtefato));
         evento.setEfeitoAcao(classificarEfeitoAcao(tarefa, origemEvento, tipoAcaoInteracao, mudancaObservavel));
         gravar(evento);
@@ -690,11 +696,13 @@ public class LoggerInteracaoGerard {
     public synchronized void associarInvarianteATentativaAtual(String origem,
                                                                 String codigo,
                                                                 String simbolico,
-                                                                String observacao) {
+                                                                String observacao,
+                                                                String sugestaoAdotada) {
         invarianteOrigemAtual = origem == null ? "" : origem;
         invarianteCodigoAtual = codigo == null ? "" : codigo;
         invarianteSimbolicoAtual = simbolico == null ? "" : simbolico;
         invarianteObservacaoAtual = observacao == null ? "" : observacao;
+        invarianteSugestaoAdotadaAtual = sugestaoAdotada == null ? "" : sugestaoAdotada;
 
         File temporario = new File(arquivoSessao.getParentFile(), arquivoSessao.getName() + ".invariante.tmp");
         BufferedReader reader = null;
@@ -713,6 +721,7 @@ public class LoggerInteracaoGerard {
                         evento.setInvarianteCodigo(invarianteCodigoAtual);
                         evento.setInvarianteSimbolico(invarianteSimbolicoAtual);
                         evento.setInvarianteObservacao(invarianteObservacaoAtual);
+                        evento.setInvarianteSugestaoAdotada(invarianteSugestaoAdotadaAtual);
                         writer.write(evento.toTsv());
                     } else {
                         writer.write(linha);
@@ -758,7 +767,7 @@ public class LoggerInteracaoGerard {
                 + ";invariante_simbolico=" + campoDetalhe(invarianteSimbolico)
                 + ";invariante_observacao=" + campoDetalhe(invarianteObservacao)
                 + ";fotografia_modelagem=" + campoDetalhe(fotografiaModelagem);
-        registrar("S",
+        registrar("P",
                 "TAREFA_MATEMATICA_EXPLICACAO",
                 "-",
                 "Interpretacao da situacao-problema",

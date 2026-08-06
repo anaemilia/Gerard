@@ -2152,6 +2152,10 @@ public class Main extends JFrame {
         }
 
         private void abrirArtefatoExplicativo() {
+            if (!autenticarPesquisador()) {
+                requestFocusInWindow();
+                return;
+            }
             if (situacaoProblemaAtual == null || resultadoInterpretacao == null) {
                 JOptionPane.showMessageDialog(this, localizacao.texto("analise.unavailable"),
                         localizacao.texto("analise.title"), JOptionPane.INFORMATION_MESSAGE);
