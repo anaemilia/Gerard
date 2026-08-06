@@ -23,7 +23,9 @@
 
 Uma relação estrutural deve preferencialmente retornar um resultado de cálculo sem modificar diretamente o papel. Outra camada decide se o valor será sugerido, aplicado ou comparado.
 
-Se houver aplicação automática, o evento deve registrar origem `SISTEMA` ou `INFERENCIA_COMPUTACIONAL`.
+Se houver aplicação automática de uma relação estrutural, o evento deve
+registrar origem `SISTEMA`, conforme o critério definido em
+`REFERENCE.md §4.8`.
 
 ## 4. Hipóteses cognitivas
 

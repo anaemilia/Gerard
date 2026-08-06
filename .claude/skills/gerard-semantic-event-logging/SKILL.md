@@ -57,7 +57,16 @@ Usar enumeração explícita, no mínimo:
 - `INFERENCIA_COMPUTACIONAL`;
 - `PESQUISADOR`.
 
-Se uma relação estrutural calcula um valor, o evento deve registrar `SISTEMA` ou `INFERENCIA_COMPUTACIONAL`, nunca `USUARIO`.
+Se uma relação estrutural calcula um valor, o evento deve registrar
+`SISTEMA`, nunca `USUARIO` nem `INFERENCIA_COMPUTACIONAL` — o cálculo
+aplica uma regra explícita e fixa, não deriva um juízo a partir de
+evidências (critério completo em `REFERENCE.md §4.8`).
+
+A sugestão de um código de invariante operatório pelo sistema
+(`SugestorInvarianteOperatorio.sugerirCodigo`) não é, por si só, um evento com
+origem definida — é um auxílio opcional. O evento que registra a mobilização
+de um invariante operatório é sempre o do pesquisador selecionando ou criando
+o invariante e relacionando-o à ação; sua origem é sempre `PESQUISADOR`.
 
 ## Tipos de eventos
 
