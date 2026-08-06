@@ -74,6 +74,7 @@ import gerard.interpretacao.modelo.ResultadoInterpretacao;
 import gerard.interpretacao.modelo.CategoriaProblema;
 import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
+import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
@@ -10951,17 +10952,8 @@ public class Main extends JFrame {
                 String regras,
                 String origemEvento,
                 String detalhes) {
-            loggerInteracaoGerard.registrarUsuario(
-                    tarefa,
-                    ce,
-                    instrumentoOrganizacao,
-                    instrumentoArtefato,
-                    funcaoDoArtefato,
-                    objeto,
-                    regras,
-                    origemEvento,
-                    detalhes
-            );
+            registrarLogPorOrigem(OrigemAcao.ORIGEM_USUARIO, tarefa, ce, instrumentoOrganizacao,
+                    instrumentoArtefato, funcaoDoArtefato, objeto, regras, origemEvento, detalhes);
         }
 
         private void registrarLogComputador(String tarefa,
@@ -10971,15 +10963,67 @@ public class Main extends JFrame {
                 String regras,
                 String origemEvento,
                 String detalhes) {
-            loggerInteracaoGerard.registrarComputador(
-                    tarefa,
-                    instrumentoOrganizacao,
-                    instrumentoArtefato,
-                    funcaoDoArtefato,
-                    regras,
-                    origemEvento,
-                    detalhes
-            );
+            registrarLogPorOrigem(OrigemAcao.ORIGEM_SISTEMA, tarefa, null, instrumentoOrganizacao,
+                    instrumentoArtefato, funcaoDoArtefato, null, regras, origemEvento, detalhes);
+        }
+
+        /**
+         * Ponto único de despacho do log de interação, tipado pela origem da
+         * ação (gerard.dominio.campoaditivo.OrigemAcao) — no lugar da
+         * distinção puramente por nome de método que existia antes
+         * (registrarLogUsuario/registrarLogComputador cada uma chamando
+         * diretamente o método correspondente de LoggerInteracaoGerard, sem
+         * nenhum valor tipado carregando essa decisão).
+         *
+         * Único ponto desta classe que referencia o pacote piloto
+         * gerard.dominio.campoaditivo — usa apenas o tipo OrigemAcao, não
+         * PapelQuantitativo nem nenhuma outra peça da arquitetura rica; ver
+         * o javadoc de PapelQuantitativo para o estado da fronteira.
+         *
+         * ce e objeto só fazem sentido semântico para ORIGEM_USUARIO (o
+         * registro de computador não avalia acerto/erro nem aponta um
+         * objeto do sujeito); por isso os dois wrappers acima passam null
+         * quando a origem é ORIGEM_SISTEMA, e esses valores são descartados
+         * aqui — LoggerInteracaoGerard.registrarComputador nunca os recebeu.
+         *
+         * ORIGEM_INFERENCIA e ORIGEM_PESQUISADOR não têm, hoje, nenhum
+         * ponto de chamada em Main.java — caem no mesmo ramo de
+         * ORIGEM_SISTEMA por não haver, ainda, um registro de log
+         * específico para essas origens.
+         */
+        private void registrarLogPorOrigem(OrigemAcao origem,
+                String tarefa,
+                String ce,
+                String instrumentoOrganizacao,
+                String instrumentoArtefato,
+                String funcaoDoArtefato,
+                String objeto,
+                String regras,
+                String origemEvento,
+                String detalhes) {
+            if (origem == OrigemAcao.ORIGEM_USUARIO) {
+                loggerInteracaoGerard.registrarUsuario(
+                        tarefa,
+                        ce,
+                        instrumentoOrganizacao,
+                        instrumentoArtefato,
+                        funcaoDoArtefato,
+                        objeto,
+                        regras,
+                        origemEvento,
+                        detalhes
+                );
+            } else {
+                loggerInteracaoGerard.registrarComputador(
+                        tarefa,
+                        instrumentoOrganizacao,
+                        instrumentoArtefato,
+                        funcaoDoArtefato,
+                        regras,
+                        origemEvento,
+                        detalhes
+                );
+            }
         }
 
         private void registrarLogSolturaItem(ItemTextoArrastavel item) {

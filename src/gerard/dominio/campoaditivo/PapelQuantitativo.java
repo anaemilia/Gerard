@@ -34,8 +34,17 @@ import java.util.Optional;
  * gerard.semantica.numero — as auditorias anteriores já identificaram esses
  * dois como objetos já corretos do sistema por esta mesma régua.
  *
- * Este piloto é isolado por design: não é referenciado por Main.java nem
- * por nenhum caminho de produção.
+ * Este piloto é isolado por design: PapelQuantitativo (e o restante da
+ * arquitetura rica — RelacaoEstrutural*, ResultadoCalculo,
+ * DiagnosticoErroPapel) não é referenciado por Main.java nem por nenhum
+ * caminho de produção.
+ *
+ * Exceção pontual, registrada em 2026-08-06: OrigemAcao — só o enum, um
+ * tipo de valor sem lógica — passou a ser usado por Main.java para tipar
+ * a origem (usuário vs. sistema) do log de interação, no lugar da
+ * distinção implícita por nome de método que existia antes. Ver
+ * Main.registrarLogPorOrigem. Essa é a única peça deste pacote referenciada
+ * fora do piloto; a hipótese de reuso mais ampla continua não validada.
  */
 public final class PapelQuantitativo {
 
