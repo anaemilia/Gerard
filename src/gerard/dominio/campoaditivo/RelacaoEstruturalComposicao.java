@@ -1,5 +1,7 @@
 package gerard.dominio.campoaditivo;
 
+import gerard.semantica.numero.NumeroInteiro;
+
 /**
  * Relação estrutural formal do esquema Composição de Medidas:
  * Todo = Parte1 + Parte2.
@@ -57,6 +59,69 @@ public final class RelacaoEstruturalComposicao {
         int p2 = parte2.valorAtual().valorOuNull();
         int t = todo.valorAtual().valorOuNull();
         return (t == p1 + p2) ? EstadoConsistencia.CONSISTENTE : EstadoConsistencia.REPRESENTACAO_INCONSISTENTE;
+    }
+
+    /**
+     * Calcula o valor do único papel incógnito entre os três, sem
+     * modificá-lo. Se não houver exatamente uma incógnita, o resultado é
+     * NAO_RESOLVIVEL_NESTE_ESTADO — não uma exceção: em uma atividade
+     * pedagógica interativa, zero, duas ou três incógnitas são estados
+     * legítimos (representação ainda incompleta, ou já totalmente
+     * preenchida), não violações de contrato de programação. Exceção só é
+     * lançada para argumento nulo, que é, de fato, um erro do chamador.
+     */
+    public ResultadoCalculo calcularValorAusente(PapelQuantitativo parte1, PapelQuantitativo parte2,
+                                                  PapelQuantitativo todo) {
+        exigirNaoNulo(parte1, "parte1");
+        exigirNaoNulo(parte2, "parte2");
+        exigirNaoNulo(todo, "todo");
+
+        int incognitas = 0;
+        if (parte1.ehIncognita()) incognitas++;
+        if (parte2.ehIncognita()) incognitas++;
+        if (todo.ehIncognita()) incognitas++;
+
+        if (incognitas != 1) {
+            return new ResultadoCalculo(null, null, descreverRelacao(),
+                    EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                    "Encontrados " + incognitas + " papéis incógnitos entre os três; "
+                            + "é preciso exatamente 1 para calcular um valor ausente único.",
+                    OrigemAcao.ORIGEM_SISTEMA);
+        }
+
+        if (todo.ehIncognita()) {
+            int calculado = parte1.valorAtual().valorOuNull() + parte2.valorAtual().valorOuNull();
+            return new ResultadoCalculo(todo, new NumeroInteiro(calculado), descreverRelacao(),
+                    EstadoConsistencia.CONSISTENTE, "Todo = Parte1 + Parte2",
+                    OrigemAcao.ORIGEM_SISTEMA);
+        }
+        if (parte1.ehIncognita()) {
+            int calculado = todo.valorAtual().valorOuNull() - parte2.valorAtual().valorOuNull();
+            return new ResultadoCalculo(parte1, new NumeroInteiro(calculado), descreverRelacao(),
+                    EstadoConsistencia.CONSISTENTE, "Parte1 = Todo - Parte2",
+                    OrigemAcao.ORIGEM_SISTEMA);
+        }
+        int calculado = todo.valorAtual().valorOuNull() - parte1.valorAtual().valorOuNull();
+        return new ResultadoCalculo(parte2, new NumeroInteiro(calculado), descreverRelacao(),
+                EstadoConsistencia.CONSISTENTE, "Parte2 = Todo - Parte1",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    /**
+     * Aplica um ResultadoCalculo previamente obtido ao papel que ele
+     * calculou — o passo explícito que uma camada externa decide dar. Só
+     * então o papel gera seu evento semântico, com a origem que o
+     * resultado já carregava (tipicamente ORIGEM_SISTEMA).
+     *
+     * @throws IllegalStateException se o resultado não tiver valor calculável — violação de contrato do chamador
+     */
+    public java.util.Optional<DiagnosticoErroPapel> aplicar(ResultadoCalculo resultado, ContextoAcao contexto) {
+        if (resultado == null || !resultado.temValorCalculavel()) {
+            throw new IllegalStateException(
+                    "Não há valor calculado para aplicar (estado: "
+                            + (resultado == null ? "resultado nulo" : resultado.getEstadoConsistencia()) + ")");
+        }
+        return resultado.getPapelCalculado().posicionar(resultado.getValorCalculado(), resultado.getOrigem(), contexto);
     }
 
     private static void exigirNaoNulo(PapelQuantitativo papel, String nomeParametro) {

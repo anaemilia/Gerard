@@ -4,6 +4,7 @@ import gerard.dominio.campoaditivo.EstadoConsistencia;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComposicao;
+import gerard.dominio.campoaditivo.ResultadoCalculo;
 import gerard.dominio.campoaditivo.evento.EventoDominio;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.numero.NumeroInteiro;
@@ -21,7 +22,7 @@ import java.util.Optional;
  *
  * Não toca em Main.java nem em nenhum caminho de produção.
  */
-public class TestePilotoPapelQuantitativo {
+public class TestePilotoComposicaoMedidas {
 
     public static void main(String[] args) {
         List<EventoDominio> eventosCapturados = new ArrayList<>();
@@ -122,6 +123,43 @@ public class TestePilotoPapelQuantitativo {
         comNenhum.posicionar(new NumeroNatural(9));
         checar("papel construído explicitamente com PublicadorEventoDominio.NENHUM funciona",
                 String.valueOf(comNenhum.valorAtual().valorOuNull()), "9");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com Todo desconhecido (8 + 6 = ?) ===");
+        PapelQuantitativo parte1B = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2B = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoB = PapelQuantitativo.todo(publicador);
+        parte1B.posicionar(new NumeroNatural(8));
+        parte2B.posicionar(new NumeroNatural(6));
+        ResultadoCalculo resTodo = relacao.calcularValorAusente(parte1B, parte2B, todoB);
+        checar("cálculo não modifica o papel (ainda incógnita antes de aplicar)", String.valueOf(todoB.ehIncognita()), "true");
+        checar("resultado do cálculo é CONSISTENTE", resTodo.getEstadoConsistencia().name(), "CONSISTENTE");
+        checar("origem do resultado calculado é ORIGEM_SISTEMA", resTodo.getOrigem().name(), "ORIGEM_SISTEMA");
+        Optional<DiagnosticoErroPapel> aplicTodo = relacao.aplicar(resTodo, contexto);
+        checar("aplicar o resultado calculado é aceito", String.valueOf(aplicTodo.isPresent()), "false");
+        checar("Todo resolvido corretamente (14) após aplicar", String.valueOf(todoB.valorAtual().valorOuNull()), "14");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com Parte1 desconhecida (? + 6 = 14) ===");
+        PapelQuantitativo parte1C = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2C = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoC = PapelQuantitativo.todo(publicador);
+        parte2C.posicionar(new NumeroNatural(6));
+        todoC.posicionar(new NumeroNatural(14));
+        ResultadoCalculo resParte1 = relacao.calcularValorAusente(parte1C, parte2C, todoC);
+        relacao.aplicar(resParte1, contexto);
+        checar("Parte1 resolvida corretamente (8)", String.valueOf(parte1C.valorAtual().valorOuNull()), "8");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com Parte2 desconhecida (8 + ? = 14) ===");
+        PapelQuantitativo parte1D = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2D = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoD = PapelQuantitativo.todo(publicador);
+        parte1D.posicionar(new NumeroNatural(8));
+        todoD.posicionar(new NumeroNatural(14));
+        ResultadoCalculo resParte2 = relacao.calcularValorAusente(parte1D, parte2D, todoD);
+        relacao.aplicar(resParte2, contexto);
+        checar("Parte2 resolvida corretamente (6)", String.valueOf(parte2D.valorAtual().valorOuNull()), "6");
 
         System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO PASSARAM.");
