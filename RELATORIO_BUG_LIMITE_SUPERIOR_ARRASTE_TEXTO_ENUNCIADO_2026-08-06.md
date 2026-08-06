@@ -19,13 +19,14 @@ int limiteInferior = 184;
 
 ## Correção aplicada (2026-08-06, tarde)
 
+Primeira versão do fix só somou `ALTURA_PAINEL_ATALHOS_CATEGORIA` aos valores fixos (58/184), preservando-os como offset relativo. Questionada pelo usuário: por que manter números exatos em vez de derivar da área real de renderização do texto? Correta — o problema de origem era justamente ter *duas cópias independentes* da mesma geometria (o clamp e `estaNaAreaDoTexto`) que podiam divergir, como de fato divergiram. Substituído por uma fonte única:
+
 ```java
-int limiteSuperior = 58 + ALTURA_PAINEL_ATALHOS_CATEGORIA
-        + elementoTextoSelecionado.altura;
-int limiteInferior = 184 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+private static final int TOPO_AREA_ENUNCIADO = 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+private static final int BASE_AREA_ENUNCIADO = 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
 ```
 
-Os offsets relativos originais (58, 184) foram preservados — só a constante que faltava foi somada, no mesmo padrão já usado por `estaNaAreaDoTexto`. `limiteEsquerdo`/`limiteDireito` (mesma função) não dependem da altura da barra de ícones (são margens horizontais) — conferido, sem o mesmo problema.
+(55/190 são os mesmos números que `desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18)` já usa para desenhar o card do enunciado — a área real, não uma aproximação.) `estaNaAreaDoTexto` e o clamp de arraste agora leem as mesmas duas constantes; não há mais uma segunda cópia dos limites verticais para desatualizar no futuro. `limiteEsquerdo`/`limiteDireito` (mesma função) não dependem da altura da barra de ícones (são margens horizontais) — conferido, sem o mesmo problema.
 
 ## Verificação
 

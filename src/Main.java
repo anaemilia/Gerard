@@ -7423,6 +7423,18 @@ public class Main extends JFrame {
         // rótulos "Medidas"/"Relações" acima dos ícones (ver
         // desenharFaixaAtalhoCategoria) — decisão da usuária, 2026-07-28.
         private static final int ALTURA_PAINEL_ATALHOS_CATEGORIA = 130;
+        // Topo/base reais do card do enunciado (ver desenharCard(g2, 15,
+        // 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18) em
+        // desenharTextoProblema/desenharTextoProblemaAdivinhacao) — fonte
+        // única para quem precisa saber se um ponto está dentro da área do
+        // enunciado (estaNaAreaDoTexto) ou limitar arraste a essa área
+        // (processarMovimentoArraste). Bug registrado em 2026-08-06
+        // (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_TEXTO_ENUNCIADO): o clamp de
+        // arraste tinha sua própria cópia desses números (58/184), que ficou
+        // pra trás quando ALTURA_PAINEL_ATALHOS_CATEGORIA cresceu — daí em
+        // diante, os dois pontos de uso compartilham as mesmas constantes.
+        private static final int TOPO_AREA_ENUNCIADO = 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+        private static final int BASE_AREA_ENUNCIADO = 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int X_BASE_VERGNAUD = 25;
         private static final int Y_BASE_VERGNAUD = 215 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int LARGURA_BASE_VERGNAUD = 655;
@@ -9836,8 +9848,8 @@ public class Main extends JFrame {
 
         private boolean estaNaAreaDoTexto(int x, int y) {
             return x >= 15 && x <= getWidth() - 15
-                    && y >= 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA
-                    && y <= 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+                    && y >= TOPO_AREA_ENUNCIADO
+                    && y <= BASE_AREA_ENUNCIADO;
         }
 
         private boolean ehNumeroDoTexto(ElementoTextoMovel elemento) {
@@ -10542,19 +10554,15 @@ public class Main extends JFrame {
                     int limiteDireito = getWidth() - 25 - elementoTextoSelecionado.largura;
 
                     // A coordenada y do ElementoTextoMovel corresponde à linha de base do texto.
-                    // Por isso, os limites verticais consideram a altura do texto para impedir
-                    // que palavras sem número ultrapassem a área visual do enunciado.
-                    //
-                    // Bug registrado em 2026-08-06 (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_
-                    // TEXTO_ENUNCIADO): 58/184 eram valores fixos que não acompanharam
-                    // ALTURA_PAINEL_ATALHOS_CATEGORIA (a barra de ícones Medidas/Relações
-                    // acima do enunciado) quando ela cresceu — permitindo arrastar a palavra
-                    // para dentro da barra. estaNaAreaDoTexto já usa a mesma constante para
-                    // os limites da área do enunciado; aqui os dois valores originais (58 e
-                    // 184) são preservados como offset relativo, somados à mesma constante.
-                    int limiteSuperior = 58 + ALTURA_PAINEL_ATALHOS_CATEGORIA
-                            + elementoTextoSelecionado.altura;
-                    int limiteInferior = 184 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+                    // Por isso o limite superior soma a altura do texto — para impedir que
+                    // palavras sem número ultrapassem a área visual do enunciado, a mesma área
+                    // que estaNaAreaDoTexto verifica (TOPO_AREA_ENUNCIADO/BASE_AREA_ENUNCIADO,
+                    // fonte única — ver comentário junto da constante). Antes de 2026-08-06 este
+                    // clamp tinha sua própria cópia desses limites (58/184), independente da de
+                    // estaNaAreaDoTexto, que ficou desatualizada quando ALTURA_PAINEL_ATALHOS_
+                    // CATEGORIA cresceu (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_TEXTO_ENUNCIADO).
+                    int limiteSuperior = TOPO_AREA_ENUNCIADO + elementoTextoSelecionado.altura;
+                    int limiteInferior = BASE_AREA_ENUNCIADO;
 
                     if (novoX < limiteEsquerdo) {
                         novoX = limiteEsquerdo;
