@@ -17,6 +17,8 @@ import java.util.Map;
 import gerard.agente.monitor.AgenteMonitor;
 import gerard.agente.monitor.IndicadorAgenteMonitor;
 import gerard.agente.modelador.AgenteModelador;
+import gerard.agente.modelador.InferenciaRegrasModelador;
+import gerard.agente.modelador.RepositorioRegrasInferidas;
 import gerard.agente.modelador.ConectorVereditoModelador;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
@@ -209,12 +211,115 @@ public class Main extends JFrame {
     public static void main(String[] args) {
         semearDadosPesquisadorSeNecessario();
         aplicarTemaSwingPadrao();
+        prepararGatilhoMineracaoAutomatica();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Main janela = new Main();
                 janela.setVisible(true);
+                dispararMineracaoSeNecessario();
             }
         });
+    }
+
+    // ---- Gatilho automático de mineração (PART + Apriori) sobre o conjunto
+    // acumulado de todos os participantes — ver proposta aprovada em
+    // 2026-08-04. Contador global (ContadorMineracao, incrementado em
+    // AgenteModelador.armazenarCaso) decide quando disparar; roda ao abrir
+    // e ao fechar o Gerard — nunca durante a interação pedagógica em
+    // andamento — para não ser perceptível ao participante. Um guard em
+    // memória evita que os dois gatilhos disparem mineração concorrente
+    // sobre praticamente os mesmos dados.
+
+    private static final int LIMIAR_MINERACAO_AUTOMATICA = 50;
+    private static final int MINIMO_INSTANCIAS_PART_AUTOMATICO = 10;
+    private static final int MINIMO_INSTANCIAS_APRIORI_AUTOMATICO = 10;
+    private static final long TIMEOUT_MINERACAO_MS = 10_000L;
+
+    private static final java.util.concurrent.atomic.AtomicBoolean mineracaoEmAndamento =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+    private static volatile Thread threadMineracao;
+    private static volatile boolean mineracaoTimeoutExpirado;
+
+    /**
+     * Registra o gatilho de fechamento uma única vez, no início de main().
+     * Roda numa thread própria da JVM (shutdown hook), separada da
+     * interface — não trava nenhuma tela, que já está fechando/fechada
+     * nesse ponto. EXIT_ON_CLOSE (já configurado no construtor de Main)
+     * chama System.exit(), que espera o shutdown hook terminar antes de
+     * encerrar o processo — por isso o timeout: sem ele, uma mineração
+     * travada manteria o processo do Gerard rodando indefinidamente em
+     * segundo plano, mesmo com a janela já fechada.
+     */
+    private static void prepararGatilhoMineracaoAutomatica() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                dispararMineracaoSeNecessario();
+                Thread t = threadMineracao;
+                if (t != null) {
+                    try {
+                        t.join(TIMEOUT_MINERACAO_MS);
+                    } catch (InterruptedException ignored) {
+                    }
+                    if (t.isAlive()) {
+                        // Timeout estourado: a thread de mineração ainda vai checar
+                        // esta flag antes de gravar — se estourou, ela descarta o
+                        // resultado em vez de arriscar uma escrita interrompida.
+                        mineracaoTimeoutExpirado = true;
+                    }
+                }
+            }
+        }));
+    }
+
+    /**
+     * Chamado ao abrir (logo após a janela ficar visível) e ao fechar (do
+     * shutdown hook). A checagem do limiar é barata e roda direto; se
+     * disparar, a mineração em si roda numa thread separada — nunca na
+     * thread de eventos do Swing. compareAndSet garante que, se os dois
+     * gatilhos chamarem isto quase juntos, só uma mineração é iniciada; o
+     * outro chamador só vê a mesma thread já em andamento (via
+     * threadMineracao) e, no caso do fechamento, espera por ela.
+     */
+    private static void dispararMineracaoSeNecessario() {
+        final RepositorioModeloUsuario repositorio = new RepositorioModeloUsuario();
+        final AgenteModelador agenteModelador = new AgenteModelador(repositorio);
+        if (agenteModelador.contadorMineracaoAtual() < LIMIAR_MINERACAO_AUTOMATICA) {
+            return;
+        }
+        if (!mineracaoEmAndamento.compareAndSet(false, true)) {
+            return;
+        }
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    executarMineracaoGlobalEPersistir(agenteModelador);
+                } finally {
+                    mineracaoEmAndamento.set(false);
+                }
+            }
+        });
+        t.setDaemon(true);
+        threadMineracao = t;
+        t.start();
+    }
+
+    private static void executarMineracaoGlobalEPersistir(AgenteModelador agenteModelador) {
+        try {
+            InferenciaRegrasModelador.Resultado resultado = agenteModelador.inferirRegrasGlobal(
+                    MINIMO_INSTANCIAS_PART_AUTOMATICO, MINIMO_INSTANCIAS_APRIORI_AUTOMATICO);
+            if (mineracaoTimeoutExpirado) {
+                // Timeout já estourado enquanto o Weka rodava — não grava
+                // resultado tardio, mesmo que tenha terminado a tempo do
+                // cálculo em si.
+                return;
+            }
+            new RepositorioRegrasInferidas().salvar("TODOS", resultado);
+            agenteModelador.zerarContadorMineracao();
+        } catch (Exception ex) {
+            // Falha na mineração automática não deve derrubar o app nem o
+            // encerramento — a próxima abertura/fechamento tenta de novo,
+            // já que o contador só zera após sucesso.
+        }
     }
 
     /**

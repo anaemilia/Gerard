@@ -28,6 +28,11 @@ public class AgenteModelador {
     private final RepositorioModeloUsuario repositorio;
     private final InferenciaRegrasModelador inferenciaRegras = new InferenciaRegrasModelador();
     private final AnalisadorNivelConceitual analisadorNivelConceitual = new AnalisadorNivelConceitual();
+    // Contador global de novos casos, para o gatilho automático de mineração
+    // (ver Main — dispara ao abrir/fechar quando o limiar é atingido).
+    // Arquivo compartilhado em ~/Gerard/analises/contador_mineracao.txt —
+    // qualquer instância de AgenteModelador lê/escreve o mesmo contador.
+    private final ContadorMineracao contadorMineracao = new ContadorMineracao();
     private final List<OuvinteCasoAgenteModelador> ouvintes = new ArrayList<OuvinteCasoAgenteModelador>();
     private final List<OuvinteAuditoriaAgenteModelador> ouvintesAuditoria =
             new ArrayList<OuvinteAuditoriaAgenteModelador>();
@@ -86,6 +91,7 @@ public class AgenteModelador {
             if (!duplicado) {
                 modelo.adicionarDiagnostico(diagnostico);
                 repositorio.salvarDiagnosticos();
+                contadorMineracao.incrementar();
                 if (idempotencyKey != null) {
                     chavesDeIdempotenciaProcessadas.add(idempotencyKey);
                 }
@@ -245,5 +251,32 @@ public class AgenteModelador {
         ModeloUsuario modelo = repositorio.obterOuCriar(idUsuario);
         return inferenciaRegras.inferir(modelo.getDiagnosticos(), numeroMinimoInstanciasPart,
                 numeroMinimoInstanciasApriori);
+    }
+
+    /**
+     * Mesma ação 2, mas sobre o conjunto acumulado de TODOS os
+     * participantes — usada pelo gatilho automático de mineração (Main),
+     * nunca pela ferramenta manual (que continua por usuário, ver
+     * inferirRegras acima). Reaproveita exatamente a mesma chamada a
+     * InferenciaRegrasModelador.inferir — só a montagem da lista de entrada
+     * muda (todos os modelos, em vez de um só).
+     */
+    public InferenciaRegrasModelador.Resultado inferirRegrasGlobal(int numeroMinimoInstanciasPart,
+                                                                     int numeroMinimoInstanciasApriori) throws Exception {
+        List<DiagnosticoTarefa> todos = new ArrayList<DiagnosticoTarefa>();
+        for (ModeloUsuario modelo : repositorio.listarTodosOsModelos()) {
+            todos.addAll(modelo.getDiagnosticos());
+        }
+        return inferenciaRegras.inferir(todos, numeroMinimoInstanciasPart, numeroMinimoInstanciasApriori);
+    }
+
+    /** Quantidade de novos casos armazenados desde a última mineração automática bem-sucedida. */
+    public int contadorMineracaoAtual() {
+        return contadorMineracao.obter();
+    }
+
+    /** Chamado depois que o gatilho automático persiste um resultado com sucesso. */
+    public void zerarContadorMineracao() {
+        contadorMineracao.zerar();
     }
 }
