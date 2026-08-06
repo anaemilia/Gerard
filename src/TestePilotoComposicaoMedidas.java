@@ -182,6 +182,47 @@ public class TestePilotoComposicaoMedidas {
                 "VALOR_FORA_DO_DOMINIO");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo parte1R = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2R = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoR = PapelQuantitativo.todo(publicador);
+        parte1R.posicionar(new NumeroNatural(8));
+        parte2R.posicionar(new NumeroNatural(6));
+        todoR.posicionar(new NumeroNatural(14));
+        checar("Parte1 alterada, Parte1 e Parte2 conhecidas -> recalcula Todo (8+6=14)",
+                String.valueOf(relacao.recalcularParaConsistencia(parte1R, parte2R, todoR, parte1R).getValorCalculado().valorOuNull()),
+                "14");
+        checar("papel recalculado é Todo",
+                String.valueOf(relacao.recalcularParaConsistencia(parte1R, parte2R, todoR, parte1R).getPapelCalculado() == todoR),
+                "true");
+
+        PapelQuantitativo parte1R2 = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2R2 = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoR2 = PapelQuantitativo.todo(publicador);
+        parte1R2.posicionar(new NumeroNatural(8));
+        todoR2.posicionar(new NumeroNatural(14));
+        checar("Todo alterado, Parte1 e Todo conhecidos (Parte2 ainda incógnita) -> recalcula Parte2 (14-8=6)",
+                String.valueOf(relacao.recalcularParaConsistencia(parte1R2, parte2R2, todoR2, todoR2).getValorCalculado().valorOuNull()),
+                "6");
+
+        PapelQuantitativo parte1R3 = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2R3 = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoR3 = PapelQuantitativo.todo(publicador);
+        parte2R3.posicionar(new NumeroNatural(6));
+        todoR3.posicionar(new NumeroNatural(14));
+        checar("Parte2 alterada, só Parte2 e Todo conhecidos (Parte1 incógnita) -> recalcula Parte1 (14-6=8)",
+                String.valueOf(relacao.recalcularParaConsistencia(parte1R3, parte2R3, todoR3, parte2R3).getValorCalculado().valorOuNull()),
+                "8");
+
+        PapelQuantitativo parte1R4 = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2R4 = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoR4 = PapelQuantitativo.todo(publicador);
+        parte1R4.posicionar(new NumeroNatural(8));
+        checar("Parte1 alterada, só ela conhecida (Parte2 e Todo incógnitos) -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(parte1R4, parte2R4, todoR4, parte1R4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO PASSARAM.");
     }
 

@@ -91,6 +91,97 @@ public final class RelacaoEstruturalComposicaoDeTransformacoes {
     }
 
     /**
+     * Recalcula um papel já conhecido para preservar a consistência da
+     * relação aditiva quando outro papel muda depois que os três já
+     * estavam preenchidos — situação distinta da que calcularValorAusente
+     * resolve (lá, exatamente um papel está incógnito; aqui, os três já
+     * têm valor, e um deles acabou de ser alterado, o que pode invalidar
+     * a soma se nenhum dos outros dois se ajustar). Cenário comum durante
+     * interação real: o sujeito arrasta um valor já posicionado num
+     * diagrama já completo.
+     *
+     * Réplica, no piloto, do algoritmo genérico que já existia em
+     * EstadoSemanticoCompartilhado.resolverRelacaoAditiva (2026-08-06, ver
+     * RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md): nunca
+     * recalcula o próprio papelAlterado; entre os outros dois, prioriza
+     * recalcular TransformacaoFinal quando o par necessário (Transformacao1
+     * e Transformacao2) está totalmente conhecido; só recalcula uma das
+     * duas transformações quando TransformacaoFinal não está disponível
+     * como alvo (porque TransformacaoFinal foi o papel alterado, ou porque
+     * falta valor no par).
+     *
+     * Não modifica nenhum papel — mesmo contrato de calcularValorAusente:
+     * devolve um ResultadoCalculo; aplicar esse valor é decisão explícita
+     * de outra camada, chamando aplicar(...).
+     *
+     * @param papelAlterado precisa ser exatamente um entre transformacao1,
+     *        transformacao2 ou transformacaoFinal (por referência) — o
+     *        papel que acabou de mudar
+     * @return ResultadoCalculo com o papel recalculado (CONSISTENTE), ou
+     *         com EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO se nenhum
+     *         dos pares necessários estiver totalmente conhecido —
+     *         situação legítima, não uma exceção
+     * @throws IllegalArgumentException se papelAlterado não for
+     *         exatamente um dos três papéis desta relação
+     */
+    public ResultadoCalculo recalcularParaConsistencia(PapelQuantitativo transformacao1, PapelQuantitativo transformacao2,
+            PapelQuantitativo transformacaoFinal, PapelQuantitativo papelAlterado) {
+        exigirNaoNulo(transformacao1, "transformacao1");
+        exigirNaoNulo(transformacao2, "transformacao2");
+        exigirNaoNulo(transformacaoFinal, "transformacaoFinal");
+        exigirNaoNulo(papelAlterado, "papelAlterado");
+        if (papelAlterado != transformacao1 && papelAlterado != transformacao2 && papelAlterado != transformacaoFinal) {
+            throw new IllegalArgumentException(
+                    "papelAlterado precisa ser exatamente um dos três papéis desta relação");
+        }
+
+        if (papelAlterado == transformacao1) {
+            if (transformacao1.estaPreenchido() && transformacao2.estaPreenchido()) {
+                int calculado = transformacao1.valorAtual().valorOuNull() + transformacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacaoFinal, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "TransformacaoFinal recalculada = Transformacao1 + Transformacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (transformacao1.estaPreenchido() && transformacaoFinal.estaPreenchido()) {
+                int calculado = transformacaoFinal.valorAtual().valorOuNull() - transformacao1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacao2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Transformacao2 recalculada = TransformacaoFinal - Transformacao1",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else if (papelAlterado == transformacao2) {
+            if (transformacao1.estaPreenchido() && transformacao2.estaPreenchido()) {
+                int calculado = transformacao1.valorAtual().valorOuNull() + transformacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacaoFinal, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "TransformacaoFinal recalculada = Transformacao1 + Transformacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (transformacao2.estaPreenchido() && transformacaoFinal.estaPreenchido()) {
+                int calculado = transformacaoFinal.valorAtual().valorOuNull() - transformacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacao1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Transformacao1 recalculada = TransformacaoFinal - Transformacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else {
+            if (transformacao1.estaPreenchido() && transformacaoFinal.estaPreenchido()) {
+                int calculado = transformacaoFinal.valorAtual().valorOuNull() - transformacao1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacao2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Transformacao2 recalculada = TransformacaoFinal - Transformacao1",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (transformacao2.estaPreenchido() && transformacaoFinal.estaPreenchido()) {
+                int calculado = transformacaoFinal.valorAtual().valorOuNull() - transformacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(transformacao1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Transformacao1 recalculada = TransformacaoFinal - Transformacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        }
+
+        return new ResultadoCalculo(null, null, descreverRelacao(), EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                "Nenhum dos papéis não alterados tem o par necessário totalmente conhecido para recalcular.",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    /**
      * Diagnostica um valor PROPOSTO (ex.: o que o estudante digitou) para o
      * papelAlvo, contra o valor correto calculado a partir dos outros dois
      * papéis — distinção que calcularValorAusente sozinho não faz (ele só

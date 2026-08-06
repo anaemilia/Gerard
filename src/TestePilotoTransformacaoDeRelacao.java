@@ -191,6 +191,50 @@ public class TestePilotoTransformacaoDeRelacao {
                 "VALOR_INCORRETO");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo riR = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trR = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfR = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riR.posicionar(new NumeroInteiro(10));
+        trR.posicionar(new NumeroInteiro(-3));
+        rfR.posicionar(new NumeroInteiro(7));
+        checar("RelacaoInicial alterada, RelacaoInicial e Transformacao conhecidas -> recalcula RelacaoFinal (10+(-3)=7)",
+                String.valueOf(relacao.recalcularParaConsistencia(riR, trR, rfR, riR).getValorCalculado().valorOuNull()),
+                "7");
+        checar("papel recalculado é RelacaoFinal",
+                String.valueOf(relacao.recalcularParaConsistencia(riR, trR, rfR, riR).getPapelCalculado() == rfR),
+                "true");
+
+        PapelQuantitativo riR2 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trR2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfR2 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riR2.posicionar(new NumeroInteiro(10));
+        rfR2.posicionar(new NumeroInteiro(7));
+        checar("RelacaoFinal alterada, RelacaoInicial e RelacaoFinal conhecidas (Transformacao ainda incógnita) "
+                        + "-> recalcula Transformacao (7-10=-3)",
+                String.valueOf(relacao.recalcularParaConsistencia(riR2, trR2, rfR2, rfR2).getValorCalculado().valorOuNull()),
+                "-3");
+
+        PapelQuantitativo riR3 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trR3 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfR3 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        trR3.posicionar(new NumeroInteiro(-3));
+        rfR3.posicionar(new NumeroInteiro(7));
+        checar("Transformacao alterada, só Transformacao e RelacaoFinal conhecidas (RelacaoInicial incógnita) "
+                        + "-> recalcula RelacaoInicial (7-(-3)=10)",
+                String.valueOf(relacao.recalcularParaConsistencia(riR3, trR3, rfR3, trR3).getValorCalculado().valorOuNull()),
+                "10");
+
+        PapelQuantitativo riR4 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trR4 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfR4 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riR4.posicionar(new NumeroInteiro(10));
+        checar("RelacaoInicial alterada, só ela conhecida (Transformacao e RelacaoFinal incógnitas) "
+                        + "-> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(riR4, trR4, rfR4, riR4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE RELAÇÃO PASSARAM.");
     }
 

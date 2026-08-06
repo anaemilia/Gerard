@@ -106,6 +106,97 @@ public final class RelacaoEstruturalComparacao {
     }
 
     /**
+     * Recalcula um papel já conhecido para preservar a consistência da
+     * relação aditiva quando outro papel muda depois que os três já
+     * estavam preenchidos — situação distinta da que calcularValorAusente
+     * resolve (lá, exatamente um papel está incógnito; aqui, os três já
+     * têm valor, e um deles acabou de ser alterado, o que pode invalidar
+     * a soma se nenhum dos outros dois se ajustar). Cenário comum durante
+     * interação real: o sujeito arrasta um valor já posicionado num
+     * diagrama já completo.
+     *
+     * Réplica, no piloto, do algoritmo genérico que já existia em
+     * EstadoSemanticoCompartilhado.resolverRelacaoAditiva (2026-08-06, ver
+     * RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md): nunca
+     * recalcula o próprio papelAlterado; entre os outros dois, prioriza
+     * recalcular Referendo quando o par necessário (Referido e
+     * ValorRelativo) está totalmente conhecido; só recalcula um dos dois
+     * papéis restantes quando Referendo não está disponível como alvo
+     * (porque Referendo foi o papel alterado, ou porque falta valor no
+     * par).
+     *
+     * Não modifica nenhum papel — mesmo contrato de calcularValorAusente:
+     * devolve um ResultadoCalculo; aplicar esse valor é decisão explícita
+     * de outra camada, chamando aplicar(...).
+     *
+     * @param papelAlterado precisa ser exatamente um entre referido,
+     *        valorRelativo ou referendo (por referência) — o papel que
+     *        acabou de mudar
+     * @return ResultadoCalculo com o papel recalculado (CONSISTENTE), ou
+     *         com EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO se nenhum
+     *         dos pares necessários estiver totalmente conhecido —
+     *         situação legítima, não uma exceção
+     * @throws IllegalArgumentException se papelAlterado não for
+     *         exatamente um dos três papéis desta relação
+     */
+    public ResultadoCalculo recalcularParaConsistencia(PapelQuantitativo referido, PapelQuantitativo valorRelativo,
+            PapelQuantitativo referendo, PapelQuantitativo papelAlterado) {
+        exigirNaoNulo(referido, "referido");
+        exigirNaoNulo(valorRelativo, "valorRelativo");
+        exigirNaoNulo(referendo, "referendo");
+        exigirNaoNulo(papelAlterado, "papelAlterado");
+        if (papelAlterado != referido && papelAlterado != valorRelativo && papelAlterado != referendo) {
+            throw new IllegalArgumentException(
+                    "papelAlterado precisa ser exatamente um dos três papéis desta relação");
+        }
+
+        if (papelAlterado == referido) {
+            if (referido.estaPreenchido() && valorRelativo.estaPreenchido()) {
+                int calculado = referido.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull();
+                return new ResultadoCalculo(referendo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Referendo recalculado = Referido + ValorRelativo",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (referido.estaPreenchido() && referendo.estaPreenchido()) {
+                int calculado = referendo.valorAtual().valorOuNull() - referido.valorAtual().valorOuNull();
+                return new ResultadoCalculo(valorRelativo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "ValorRelativo recalculado = Referendo - Referido",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else if (papelAlterado == valorRelativo) {
+            if (referido.estaPreenchido() && valorRelativo.estaPreenchido()) {
+                int calculado = referido.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull();
+                return new ResultadoCalculo(referendo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Referendo recalculado = Referido + ValorRelativo",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (valorRelativo.estaPreenchido() && referendo.estaPreenchido()) {
+                int calculado = referendo.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull();
+                return new ResultadoCalculo(referido, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Referido recalculado = Referendo - ValorRelativo",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else {
+            if (referido.estaPreenchido() && referendo.estaPreenchido()) {
+                int calculado = referendo.valorAtual().valorOuNull() - referido.valorAtual().valorOuNull();
+                return new ResultadoCalculo(valorRelativo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "ValorRelativo recalculado = Referendo - Referido",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (valorRelativo.estaPreenchido() && referendo.estaPreenchido()) {
+                int calculado = referendo.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull();
+                return new ResultadoCalculo(referido, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Referido recalculado = Referendo - ValorRelativo",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        }
+
+        return new ResultadoCalculo(null, null, descreverRelacao(), EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                "Nenhum dos papéis não alterados tem o par necessário totalmente conhecido para recalcular.",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    /**
      * Diagnostica um valor PROPOSTO (ex.: o que o estudante digitou) para o
      * papelAlvo, contra o valor correto calculado a partir dos outros dois
      * papéis — distinção que calcularValorAusente sozinho não faz (ele só

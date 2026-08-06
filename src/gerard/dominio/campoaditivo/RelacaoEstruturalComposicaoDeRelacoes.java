@@ -91,6 +91,97 @@ public final class RelacaoEstruturalComposicaoDeRelacoes {
     }
 
     /**
+     * Recalcula um papel já conhecido para preservar a consistência da
+     * relação aditiva quando outro papel muda depois que os três já
+     * estavam preenchidos — situação distinta da que calcularValorAusente
+     * resolve (lá, exatamente um papel está incógnito; aqui, os três já
+     * têm valor, e um deles acabou de ser alterado, o que pode invalidar
+     * a soma se nenhum dos outros dois se ajustar). Cenário comum durante
+     * interação real: o sujeito arrasta um valor já posicionado num
+     * diagrama já completo.
+     *
+     * Réplica, no piloto, do algoritmo genérico que já existia em
+     * EstadoSemanticoCompartilhado.resolverRelacaoAditiva (2026-08-06, ver
+     * RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md): nunca
+     * recalcula o próprio papelAlterado; entre os outros dois, prioriza
+     * recalcular RelacaoFinal quando o par necessário (Relacao1 e
+     * Relacao2) está totalmente conhecido; só recalcula um dos dois
+     * papéis restantes quando RelacaoFinal não está disponível como alvo
+     * (porque RelacaoFinal foi o papel alterado, ou porque falta valor no
+     * par).
+     *
+     * Não modifica nenhum papel — mesmo contrato de calcularValorAusente:
+     * devolve um ResultadoCalculo; aplicar esse valor é decisão explícita
+     * de outra camada, chamando aplicar(...).
+     *
+     * @param papelAlterado precisa ser exatamente um entre relacao1,
+     *        relacao2 ou relacaoFinal (por referência) — o papel que
+     *        acabou de mudar
+     * @return ResultadoCalculo com o papel recalculado (CONSISTENTE), ou
+     *         com EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO se nenhum
+     *         dos pares necessários estiver totalmente conhecido —
+     *         situação legítima, não uma exceção
+     * @throws IllegalArgumentException se papelAlterado não for
+     *         exatamente um dos três papéis desta relação
+     */
+    public ResultadoCalculo recalcularParaConsistencia(PapelQuantitativo relacao1, PapelQuantitativo relacao2,
+            PapelQuantitativo relacaoFinal, PapelQuantitativo papelAlterado) {
+        exigirNaoNulo(relacao1, "relacao1");
+        exigirNaoNulo(relacao2, "relacao2");
+        exigirNaoNulo(relacaoFinal, "relacaoFinal");
+        exigirNaoNulo(papelAlterado, "papelAlterado");
+        if (papelAlterado != relacao1 && papelAlterado != relacao2 && papelAlterado != relacaoFinal) {
+            throw new IllegalArgumentException(
+                    "papelAlterado precisa ser exatamente um dos três papéis desta relação");
+        }
+
+        if (papelAlterado == relacao1) {
+            if (relacao1.estaPreenchido() && relacao2.estaPreenchido()) {
+                int calculado = relacao1.valorAtual().valorOuNull() + relacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacaoFinal, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "RelacaoFinal recalculada = Relacao1 + Relacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (relacao1.estaPreenchido() && relacaoFinal.estaPreenchido()) {
+                int calculado = relacaoFinal.valorAtual().valorOuNull() - relacao1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacao2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Relacao2 recalculada = RelacaoFinal - Relacao1",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else if (papelAlterado == relacao2) {
+            if (relacao1.estaPreenchido() && relacao2.estaPreenchido()) {
+                int calculado = relacao1.valorAtual().valorOuNull() + relacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacaoFinal, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "RelacaoFinal recalculada = Relacao1 + Relacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (relacao2.estaPreenchido() && relacaoFinal.estaPreenchido()) {
+                int calculado = relacaoFinal.valorAtual().valorOuNull() - relacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacao1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Relacao1 recalculada = RelacaoFinal - Relacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else {
+            if (relacao1.estaPreenchido() && relacaoFinal.estaPreenchido()) {
+                int calculado = relacaoFinal.valorAtual().valorOuNull() - relacao1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacao2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Relacao2 recalculada = RelacaoFinal - Relacao1",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (relacao2.estaPreenchido() && relacaoFinal.estaPreenchido()) {
+                int calculado = relacaoFinal.valorAtual().valorOuNull() - relacao2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(relacao1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Relacao1 recalculada = RelacaoFinal - Relacao2",
+                        OrigemAcao.ORIGEM_SISTEMA);
+            }
+        }
+
+        return new ResultadoCalculo(null, null, descreverRelacao(), EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                "Nenhum dos papéis não alterados tem o par necessário totalmente conhecido para recalcular.",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    /**
      * Diagnostica um valor PROPOSTO (ex.: o que o estudante digitou) para o
      * papelAlvo, contra o valor correto calculado a partir dos outros dois
      * papéis — distinção que calcularValorAusente sozinho não faz (ele só

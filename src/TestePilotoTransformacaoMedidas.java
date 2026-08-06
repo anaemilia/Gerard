@@ -258,6 +258,56 @@ public class TestePilotoTransformacaoMedidas {
                 "true");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo eiR = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trR = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efR = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiR.posicionar(new NumeroNatural(10));
+        trR.posicionar(new NumeroInteiro(-3));
+        efR.posicionar(new NumeroNatural(7));
+        checar("EstadoInicial alterado, EstadoInicial e Transformacao conhecidos -> recalcula EstadoFinal (10+(-3)=7)",
+                String.valueOf(relacao.recalcularParaConsistencia(eiR, trR, efR, eiR).getValorCalculado().valorOuNull()),
+                "7");
+        checar("papel recalculado é EstadoFinal",
+                String.valueOf(relacao.recalcularParaConsistencia(eiR, trR, efR, eiR).getPapelCalculado() == efR),
+                "true");
+
+        PapelQuantitativo eiR2 = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trR2 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efR2 = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiR2.posicionar(new NumeroNatural(10));
+        efR2.posicionar(new NumeroNatural(7));
+        checar("EstadoFinal alterado, EstadoInicial e EstadoFinal conhecidos (Transformacao ainda incógnita) "
+                        + "-> recalcula Transformacao (7-10=-3)",
+                String.valueOf(relacao.recalcularParaConsistencia(eiR2, trR2, efR2, efR2).getValorCalculado().valorOuNull()),
+                "-3");
+
+        PapelQuantitativo eiR3 = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trR3 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efR3 = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        trR3.posicionar(new NumeroInteiro(-3));
+        efR3.posicionar(new NumeroNatural(7));
+        checar("Transformacao alterada, só Transformacao e EstadoFinal conhecidos (EstadoInicial incógnito) "
+                        + "-> recalcula EstadoInicial (7-(-3)=10)",
+                String.valueOf(relacao.recalcularParaConsistencia(eiR3, trR3, efR3, trR3).getValorCalculado().valorOuNull()),
+                "10");
+
+        PapelQuantitativo eiR4 = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trR4 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efR4 = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiR4.posicionar(new NumeroNatural(10));
+        checar("EstadoInicial alterado, só ele conhecido (Transformacao e EstadoFinal incógnitos) "
+                        + "-> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(eiR4, trR4, efR4, eiR4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo papelEstranho = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        checar("papelAlterado que não pertence à relação -> IllegalArgumentException",
+                verificaLancaIllegalArgument(() ->
+                        relacao.recalcularParaConsistencia(eiR4, trR4, efR4, papelEstranho)),
+                "true");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE MEDIDAS PASSARAM.");
     }
 
@@ -266,6 +316,15 @@ public class TestePilotoTransformacaoMedidas {
             acao.run();
             return "false";
         } catch (IllegalStateException esperada) {
+            return "true";
+        }
+    }
+
+    private static String verificaLancaIllegalArgument(Runnable acao) {
+        try {
+            acao.run();
+            return "false";
+        } catch (IllegalArgumentException esperada) {
             return "true";
         }
     }

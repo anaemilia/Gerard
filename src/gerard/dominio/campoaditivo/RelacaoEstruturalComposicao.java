@@ -108,6 +108,89 @@ public final class RelacaoEstruturalComposicao {
     }
 
     /**
+     * Recalcula um papel já conhecido para preservar a consistência da
+     * relação aditiva quando outro papel muda depois que os três já
+     * estavam preenchidos — situação distinta da que calcularValorAusente
+     * resolve (lá, exatamente um papel está incógnito; aqui, os três já
+     * têm valor, e um deles acabou de ser alterado, o que pode invalidar
+     * a soma se nenhum dos outros dois se ajustar). Cenário comum durante
+     * interação real: o sujeito arrasta um valor já posicionado num
+     * diagrama já completo.
+     *
+     * Réplica, no piloto, do algoritmo genérico que já existia em
+     * EstadoSemanticoCompartilhado.resolverRelacaoAditiva (2026-08-06, ver
+     * RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md): nunca
+     * recalcula o próprio papelAlterado; entre os outros dois, prioriza
+     * recalcular Todo quando o par necessário (Parte1 e Parte2) está
+     * totalmente conhecido; só recalcula uma das duas partes quando Todo
+     * não está disponível como alvo (porque Todo foi o papel alterado, ou
+     * porque falta valor no par).
+     *
+     * Não modifica nenhum papel — mesmo contrato de calcularValorAusente:
+     * devolve um ResultadoCalculo; aplicar esse valor é decisão explícita
+     * de outra camada, chamando aplicar(...).
+     *
+     * @param papelAlterado precisa ser exatamente um entre parte1, parte2
+     *        ou todo (por referência) — o papel que acabou de mudar
+     * @return ResultadoCalculo com o papel recalculado (CONSISTENTE), ou
+     *         com EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO se nenhum
+     *         dos pares necessários estiver totalmente conhecido —
+     *         situação legítima, não uma exceção
+     * @throws IllegalArgumentException se papelAlterado não for
+     *         exatamente um dos três papéis desta relação
+     */
+    public ResultadoCalculo recalcularParaConsistencia(PapelQuantitativo parte1, PapelQuantitativo parte2,
+            PapelQuantitativo todo, PapelQuantitativo papelAlterado) {
+        exigirNaoNulo(parte1, "parte1");
+        exigirNaoNulo(parte2, "parte2");
+        exigirNaoNulo(todo, "todo");
+        exigirNaoNulo(papelAlterado, "papelAlterado");
+        if (papelAlterado != parte1 && papelAlterado != parte2 && papelAlterado != todo) {
+            throw new IllegalArgumentException(
+                    "papelAlterado precisa ser exatamente um dos três papéis desta relação");
+        }
+
+        if (papelAlterado == parte1) {
+            if (parte1.estaPreenchido() && parte2.estaPreenchido()) {
+                int calculado = parte1.valorAtual().valorOuNull() + parte2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(todo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Todo recalculado = Parte1 + Parte2", OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (parte1.estaPreenchido() && todo.estaPreenchido()) {
+                int calculado = todo.valorAtual().valorOuNull() - parte1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(parte2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Parte2 recalculada = Todo - Parte1", OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else if (papelAlterado == parte2) {
+            if (parte1.estaPreenchido() && parte2.estaPreenchido()) {
+                int calculado = parte1.valorAtual().valorOuNull() + parte2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(todo, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Todo recalculado = Parte1 + Parte2", OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (parte2.estaPreenchido() && todo.estaPreenchido()) {
+                int calculado = todo.valorAtual().valorOuNull() - parte2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(parte1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Parte1 recalculada = Todo - Parte2", OrigemAcao.ORIGEM_SISTEMA);
+            }
+        } else {
+            if (parte1.estaPreenchido() && todo.estaPreenchido()) {
+                int calculado = todo.valorAtual().valorOuNull() - parte1.valorAtual().valorOuNull();
+                return new ResultadoCalculo(parte2, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Parte2 recalculada = Todo - Parte1", OrigemAcao.ORIGEM_SISTEMA);
+            }
+            if (parte2.estaPreenchido() && todo.estaPreenchido()) {
+                int calculado = todo.valorAtual().valorOuNull() - parte2.valorAtual().valorOuNull();
+                return new ResultadoCalculo(parte1, new NumeroInteiro(calculado), descreverRelacao(),
+                        EstadoConsistencia.CONSISTENTE, "Parte1 recalculada = Todo - Parte2", OrigemAcao.ORIGEM_SISTEMA);
+            }
+        }
+
+        return new ResultadoCalculo(null, null, descreverRelacao(), EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                "Nenhum dos papéis não alterados tem o par necessário totalmente conhecido para recalcular.",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    /**
      * Diagnostica um valor PROPOSTO (ex.: o que o estudante digitou) para o
      * papelAlvo, contra o valor correto calculado a partir dos outros dois
      * papéis — distinção que calcularValorAusente sozinho não faz (ele só

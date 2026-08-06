@@ -194,6 +194,50 @@ public class TestePilotoComposicaoDeTransformacoes {
                 "VALOR_INCORRETO");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo t1R = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2R = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfR = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1R.posicionar(new NumeroInteiro(10));
+        t2R.posicionar(new NumeroInteiro(-3));
+        tfR.posicionar(new NumeroInteiro(7));
+        checar("Transformacao1 alterada, Transformacao1 e Transformacao2 conhecidas -> recalcula TransformacaoFinal (10+(-3)=7)",
+                String.valueOf(relacao.recalcularParaConsistencia(t1R, t2R, tfR, t1R).getValorCalculado().valorOuNull()),
+                "7");
+        checar("papel recalculado é TransformacaoFinal",
+                String.valueOf(relacao.recalcularParaConsistencia(t1R, t2R, tfR, t1R).getPapelCalculado() == tfR),
+                "true");
+
+        PapelQuantitativo t1R2 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2R2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfR2 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1R2.posicionar(new NumeroInteiro(10));
+        tfR2.posicionar(new NumeroInteiro(7));
+        checar("TransformacaoFinal alterada, Transformacao1 e TransformacaoFinal conhecidas (Transformacao2 ainda incógnita) "
+                        + "-> recalcula Transformacao2 (7-10=-3)",
+                String.valueOf(relacao.recalcularParaConsistencia(t1R2, t2R2, tfR2, tfR2).getValorCalculado().valorOuNull()),
+                "-3");
+
+        PapelQuantitativo t1R3 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2R3 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfR3 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t2R3.posicionar(new NumeroInteiro(-3));
+        tfR3.posicionar(new NumeroInteiro(7));
+        checar("Transformacao2 alterada, só Transformacao2 e TransformacaoFinal conhecidas (Transformacao1 incógnita) "
+                        + "-> recalcula Transformacao1 (7-(-3)=10)",
+                String.valueOf(relacao.recalcularParaConsistencia(t1R3, t2R3, tfR3, t2R3).getValorCalculado().valorOuNull()),
+                "10");
+
+        PapelQuantitativo t1R4 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2R4 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfR4 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1R4.posicionar(new NumeroInteiro(10));
+        checar("Transformacao1 alterada, só ela conhecida (Transformacao2 e TransformacaoFinal incógnitas) "
+                        + "-> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(t1R4, t2R4, tfR4, t1R4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE TRANSFORMAÇÕES PASSARAM.");
     }
 

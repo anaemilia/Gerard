@@ -246,6 +246,49 @@ public class TestePilotoComparacaoMedidas {
                 "VALOR_FORA_DO_DOMINIO");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo rdR = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrR = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnR = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdR.posicionar(new NumeroNatural(10));
+        vrR.posicionar(new NumeroInteiro(-3));
+        rnR.posicionar(new NumeroNatural(7));
+        checar("Referido alterado, Referido e ValorRelativo conhecidos -> recalcula Referendo (10+(-3)=7)",
+                String.valueOf(relacao.recalcularParaConsistencia(rdR, vrR, rnR, rdR).getValorCalculado().valorOuNull()),
+                "7");
+        checar("papel recalculado é Referendo",
+                String.valueOf(relacao.recalcularParaConsistencia(rdR, vrR, rnR, rdR).getPapelCalculado() == rnR),
+                "true");
+
+        PapelQuantitativo rdR2 = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrR2 = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnR2 = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdR2.posicionar(new NumeroNatural(10));
+        rnR2.posicionar(new NumeroNatural(7));
+        checar("Referendo alterado, Referido e Referendo conhecidos (ValorRelativo ainda incógnito) "
+                        + "-> recalcula ValorRelativo (7-10=-3)",
+                String.valueOf(relacao.recalcularParaConsistencia(rdR2, vrR2, rnR2, rnR2).getValorCalculado().valorOuNull()),
+                "-3");
+
+        PapelQuantitativo rdR3 = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrR3 = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnR3 = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        vrR3.posicionar(new NumeroInteiro(-3));
+        rnR3.posicionar(new NumeroNatural(7));
+        checar("ValorRelativo alterado, só ValorRelativo e Referendo conhecidos (Referido incógnito) "
+                        + "-> recalcula Referido (7-(-3)=10)",
+                String.valueOf(relacao.recalcularParaConsistencia(rdR3, vrR3, rnR3, vrR3).getValorCalculado().valorOuNull()),
+                "10");
+
+        PapelQuantitativo rdR4 = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrR4 = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnR4 = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdR4.posicionar(new NumeroNatural(10));
+        checar("Referido alterado, só ele conhecido (ValorRelativo e Referendo incógnitos) -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(rdR4, vrR4, rnR4, rdR4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPARAÇÃO DE MEDIDAS PASSARAM.");
     }
 

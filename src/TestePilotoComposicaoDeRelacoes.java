@@ -191,6 +191,49 @@ public class TestePilotoComposicaoDeRelacoes {
                 "VALOR_INCORRETO");
 
         System.out.println();
+        System.out.println("=== recalcularParaConsistencia (2026-08-06): recalcula um papel já conhecido quando outro muda ===");
+        PapelQuantitativo r1R = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2R = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfR = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1R.posicionar(new NumeroInteiro(10));
+        r2R.posicionar(new NumeroInteiro(-3));
+        rfR.posicionar(new NumeroInteiro(7));
+        checar("Relacao1 alterada, Relacao1 e Relacao2 conhecidas -> recalcula RelacaoFinal (10+(-3)=7)",
+                String.valueOf(relacao.recalcularParaConsistencia(r1R, r2R, rfR, r1R).getValorCalculado().valorOuNull()),
+                "7");
+        checar("papel recalculado é RelacaoFinal",
+                String.valueOf(relacao.recalcularParaConsistencia(r1R, r2R, rfR, r1R).getPapelCalculado() == rfR),
+                "true");
+
+        PapelQuantitativo r1R2 = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2R2 = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfR2 = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1R2.posicionar(new NumeroInteiro(10));
+        rfR2.posicionar(new NumeroInteiro(7));
+        checar("RelacaoFinal alterada, Relacao1 e RelacaoFinal conhecidas (Relacao2 ainda incógnita) "
+                        + "-> recalcula Relacao2 (7-10=-3)",
+                String.valueOf(relacao.recalcularParaConsistencia(r1R2, r2R2, rfR2, rfR2).getValorCalculado().valorOuNull()),
+                "-3");
+
+        PapelQuantitativo r1R3 = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2R3 = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfR3 = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r2R3.posicionar(new NumeroInteiro(-3));
+        rfR3.posicionar(new NumeroInteiro(7));
+        checar("Relacao2 alterada, só Relacao2 e RelacaoFinal conhecidas (Relacao1 incógnita) "
+                        + "-> recalcula Relacao1 (7-(-3)=10)",
+                String.valueOf(relacao.recalcularParaConsistencia(r1R3, r2R3, rfR3, r2R3).getValorCalculado().valorOuNull()),
+                "10");
+
+        PapelQuantitativo r1R4 = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2R4 = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfR4 = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1R4.posicionar(new NumeroInteiro(10));
+        checar("Relacao1 alterada, só ela conhecida (Relacao2 e RelacaoFinal incógnitas) -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.recalcularParaConsistencia(r1R4, r2R4, rfR4, r1R4).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE RELAÇÕES PASSARAM.");
     }
 
