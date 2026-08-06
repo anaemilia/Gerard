@@ -89,6 +89,57 @@ public class TesteComparativoEstadoSemanticoCompartilhado {
                 TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
                 new Integer[]{3, -10, null}, new boolean[]{true, true, false}, 1);
 
+        // ================= COMPOSIÇÃO DE TRANSFORMAÇÕES (Relações) =================
+        // índices: 0=transformacao1, 1=transformacao2, 2=transformacaoFinal — todos INTEIROS
+        System.out.println();
+        System.out.println("=== COMPOSICAO_TRANSFORMACOES ===");
+        cenario("preencher transformacaoFinal (0+1->2), indiceAlterado=0",
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                new Integer[]{8, -3, null}, new boolean[]{true, true, false}, 0);
+        cenario("preencher transformacao1 (2-1->0), indiceAlterado=2",
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                new Integer[]{null, -3, 5}, new boolean[]{false, true, true}, 2);
+        cenario("fase 2: consistencia, todos preenchidos, edita indice0 -> sobrescreve indice2",
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                new Integer[]{10, -3, 5}, new boolean[]{true, true, true}, 0);
+        cenario("incognita na propria posicao editada, nao deve auto-preencher",
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                new Integer[]{null, -3, 5}, new boolean[]{false, true, true}, 0);
+        cenario("valor negativo sempre aceito (INTEIROS nos tres, sem rejeicao)",
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                new Integer[]{null, 20, -15}, new boolean[]{false, true, true}, 1);
+
+        // ================= TRANSFORMAÇÃO DE RELAÇÃO (Relações) =================
+        // índices: 0=relacaoInicial, 1=transformacao, 2=relacaoFinal — todos INTEIROS
+        System.out.println();
+        System.out.println("=== TRANSFORMACAO_RELACAO ===");
+        cenario("preencher relacaoFinal (0+1->2), indiceAlterado=0",
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                new Integer[]{-4, 9, null}, new boolean[]{true, true, false}, 0);
+        cenario("preencher relacaoInicial (2-1->0), indiceAlterado=2",
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                new Integer[]{null, 9, 5}, new boolean[]{false, true, true}, 2);
+        cenario("fase 2: consistencia, todos preenchidos, edita transformacao(indice1) -> sobrescreve relacaoFinal",
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                new Integer[]{-4, 20, 5}, new boolean[]{true, true, true}, 1);
+
+        // ================= COMPOSIÇÃO DE RELAÇÕES (Relações) =================
+        // índices: 0=relacao1, 1=relacao2, 2=relacaoFinal — todos INTEIROS
+        System.out.println();
+        System.out.println("=== COMPOSICAO_RELACOES ===");
+        cenario("preencher relacaoFinal (0+1->2), indiceAlterado=0",
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                new Integer[]{-6, 11, null}, new boolean[]{true, true, false}, 0);
+        cenario("preencher relacao2 (2-0->1), indiceAlterado=2",
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                new Integer[]{-6, null, 5}, new boolean[]{true, false, true}, 2);
+        cenario("fase 2: consistencia, todos preenchidos, edita relacao1(indice0) -> sobrescreve relacaoFinal",
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                new Integer[]{7, 8, 14}, new boolean[]{true, true, true}, 0);
+        cenario("2 incognitas (nao resolvivel)",
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                new Integer[]{-6, null, null}, new boolean[]{true, false, false}, 0);
+
         // ================= incognitaProtegida =================
         System.out.println();
         System.out.println("=== indiceIncognitaProtegida (assinatura de 7 argumentos) ===");

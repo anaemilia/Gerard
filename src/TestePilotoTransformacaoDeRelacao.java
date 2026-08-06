@@ -1,0 +1,186 @@
+import gerard.dominio.campoaditivo.ContextoAcao;
+import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
+import gerard.dominio.campoaditivo.EstadoConsistencia;
+import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoDeRelacao;
+import gerard.dominio.campoaditivo.OrigemAcao;
+import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacaoDeRelacao;
+import gerard.dominio.campoaditivo.ResultadoCalculo;
+import gerard.dominio.campoaditivo.evento.EventoDominio;
+import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
+import gerard.semantica.numero.NumeroInteiro;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Harness executável do piloto Transformação de Relação — categoria
+ * "Relações" de Vergnaud, não "Medidas": os três papéis (RelacaoInicial,
+ * Transformacao, RelacaoFinal) são todos INTEIROS, sem restrição de sinal —
+ * por isso, diferente dos harnesses de Composição/Transformação/Comparação
+ * de Medidas, não há cenário de rejeição por domínio aqui. Mesmo padrão dos
+ * outros harnesses do piloto quanto ao resto.
+ *
+ * Não toca em Main.java nem em nenhum caminho de produção.
+ */
+public class TestePilotoTransformacaoDeRelacao {
+
+    public static void main(String[] args) {
+        List<EventoDominio> eventos = new ArrayList<>();
+        PublicadorEventoDominio publicador = eventos::add;
+        RelacaoEstruturalTransformacaoDeRelacao relacao = RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao();
+        ContextoAcao contexto = new ContextoAcao("sessao-teste-5", "usuario-local-1", "tentativa-5",
+                "situacao-transformacao-relacao-menos4-mais9-5", "diagrama-vergnaud-5");
+        System.out.println("relação estrutural: " + relacao.descreverRelacao());
+
+        System.out.println();
+        System.out.println("=== Testes: papéis começam como incógnita ===");
+        checar("RelacaoInicial começa como incógnita",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador).ehIncognita()), "true");
+        checar("Transformacao começa como incógnita",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.transformacao(publicador).ehIncognita()), "true");
+        checar("RelacaoFinal começa como incógnita",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador).ehIncognita()), "true");
+
+        System.out.println();
+        System.out.println("=== Os três aceitam positivo, negativo e nulo (domínio INTEIROS nos três) ===");
+        PapelQuantitativo t1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        checar("positivo (+5) é aceito", String.valueOf(t1.posicionar(new NumeroInteiro(5)).isPresent()), "false");
+        PapelQuantitativo t2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        checar("negativo (-3) é aceito", String.valueOf(t2.posicionar(new NumeroInteiro(-3)).isPresent()), "false");
+        PapelQuantitativo t3 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        checar("nulo (0) é aceito", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "false");
+
+        System.out.println();
+        System.out.println("=== relação estrutural CONSISTENTE (-4 + 9 = 5) ===");
+        PapelQuantitativo a1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo a2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo af = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        a1.posicionar(new NumeroInteiro(-4));
+        a2.posicionar(new NumeroInteiro(9));
+        af.posicionar(new NumeroInteiro(5));
+        checar("relação estrutural satisfeita", relacao.verificarConsistencia(a1, a2, af).name(), "CONSISTENTE");
+
+        System.out.println();
+        System.out.println("=== Representação estruturalmente inconsistente (-4 + 9 != 999) ===");
+        PapelQuantitativo b1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo b2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo bf = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        b1.posicionar(new NumeroInteiro(-4));
+        b2.posicionar(new NumeroInteiro(9));
+        bf.posicionar(new NumeroInteiro(999));
+        checar("representação estruturalmente inconsistente detectada",
+                relacao.verificarConsistencia(b1, b2, bf).name(), "REPRESENTACAO_INCONSISTENTE");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com RelacaoFinal desconhecida (-4 + 9 = ?) ===");
+        PapelQuantitativo c1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo c2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo cf = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        c1.posicionar(new NumeroInteiro(-4));
+        c2.posicionar(new NumeroInteiro(9));
+        ResultadoCalculo resFinal = relacao.calcularValorAusente(c1, c2, cf);
+        checar("cálculo não modifica o papel (ainda incógnita antes de aplicar)", String.valueOf(cf.ehIncognita()), "true");
+        checar("resultado do cálculo é CONSISTENTE", resFinal.getEstadoConsistencia().name(), "CONSISTENTE");
+        checar("origem do resultado calculado é ORIGEM_SISTEMA", resFinal.getOrigem().name(), "ORIGEM_SISTEMA");
+        Optional<DiagnosticoErroPapel> aplicFinal = relacao.aplicar(resFinal, contexto);
+        checar("aplicar o resultado calculado é aceito", String.valueOf(aplicFinal.isPresent()), "false");
+        checar("RelacaoFinal resolvida corretamente (5) após aplicar", String.valueOf(cf.valorAtual().valorOuNull()), "5");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com RelacaoInicial desconhecida (? + 9 = 5) ===");
+        PapelQuantitativo d1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo d2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo df = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        d2.posicionar(new NumeroInteiro(9));
+        df.posicionar(new NumeroInteiro(5));
+        ResultadoCalculo resRI = relacao.calcularValorAusente(d1, d2, df);
+        relacao.aplicar(resRI, contexto);
+        checar("RelacaoInicial resolvida corretamente (-4)", String.valueOf(d1.valorAtual().valorOuNull()), "-4");
+
+        System.out.println();
+        System.out.println("=== calcularValorAusente com Transformacao desconhecida (-4 + ? = 5) ===");
+        PapelQuantitativo e1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo e2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo ef = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        e1.posicionar(new NumeroInteiro(-4));
+        ef.posicionar(new NumeroInteiro(5));
+        ResultadoCalculo resTr = relacao.calcularValorAusente(e1, e2, ef);
+        relacao.aplicar(resTr, contexto);
+        checar("Transformacao resolvida corretamente (9)", String.valueOf(e2.valorAtual().valorOuNull()), "9");
+
+        System.out.println();
+        System.out.println("=== Estados incompletos/não resolvíveis não lançam exceção ===");
+        PapelQuantitativo f1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo f2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo ff = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        f1.posicionar(new NumeroInteiro(1));
+        f2.posicionar(new NumeroInteiro(1));
+        ff.posicionar(new NumeroInteiro(2));
+        ResultadoCalculo resZeroIncognitas = relacao.calcularValorAusente(f1, f2, ff);
+        checar("zero incógnitas -> NAO_RESOLVIVEL_NESTE_ESTADO (não é exceção)",
+                resZeroIncognitas.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("resultado sem valor calculável não tem valor calculável", String.valueOf(resZeroIncognitas.temValorCalculavel()), "false");
+
+        boolean lancouExcecaoAoAplicarSemValor;
+        try {
+            relacao.aplicar(resZeroIncognitas, contexto);
+            lancouExcecaoAoAplicarSemValor = false;
+        } catch (IllegalStateException esperada) {
+            lancouExcecaoAoAplicarSemValor = true;
+        }
+        checar("aplicar(...) sem valor calculável lança IllegalStateException (violação de contrato do chamador, não erro pedagógico)",
+                String.valueOf(lancouExcecaoAoAplicarSemValor), "true");
+
+        PapelQuantitativo g1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo g2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo gf = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        g1.posicionar(new NumeroInteiro(5));
+        checar("duas incógnitas -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.calcularValorAusente(g1, g2, gf).getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo h1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo h2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo hf = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        checar("três incógnitas -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.calcularValorAusente(h1, h2, hf).getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("representação totalmente vazia -> REPRESENTACAO_INCOMPLETA na verificação",
+                relacao.verificarConsistencia(h1, h2, hf).name(), "REPRESENTACAO_INCOMPLETA");
+
+        System.out.println();
+        System.out.println("=== Eventos semânticos (só ACEITO — INTEIROS nos três nunca rejeita) ===");
+        long aceitos = eventos.stream().filter(e -> "ACEITO".equals(e.paraMapa().get("resultado"))).count();
+        long rejeitados = eventos.stream().filter(e -> "REJEITADO".equals(e.paraMapa().get("resultado"))).count();
+        System.out.println("total de eventos: " + eventos.size() + " (aceitos=" + aceitos + ", rejeitados=" + rejeitados + ")");
+        checar("existe ao menos um evento de valor aceito", String.valueOf(aceitos > 0), "true");
+        checar("nenhum evento de rejeição (domínio INTEIROS nos três nunca rejeita)", String.valueOf(rejeitados), "0");
+
+        System.out.println();
+        System.out.println("=== Null Object do publicador ===");
+        PapelQuantitativo semPublicador = FabricaPapeisTransformacaoDeRelacao.transformacao(null);
+        semPublicador.posicionar(new NumeroInteiro(-4));
+        checar("Transformacao com publicador nulo (Null Object) ainda funciona",
+                String.valueOf(semPublicador.valorAtual().valorOuNull()), "-4");
+        PapelQuantitativo comNenhum = FabricaPapeisTransformacaoDeRelacao.transformacao(PublicadorEventoDominio.NENHUM);
+        comNenhum.posicionar(new NumeroInteiro(-7));
+        checar("Transformacao com PublicadorEventoDominio.NENHUM explícito ainda funciona",
+                String.valueOf(comNenhum.valorAtual().valorOuNull()), "-7");
+
+        System.out.println();
+        System.out.println("=== Serialização por paraMapa() ===");
+        System.out.println("d1.paraMapa() = " + d1.paraMapa());
+        checar("mapa serializado traz domínio INTEIROS", String.valueOf(d1.paraMapa().get("dominio")), "INTEIROS");
+        checar("mapa serializado traz o valor correto (-4)", String.valueOf(d1.paraMapa().get("valor_atual")), "-4");
+
+        System.out.println();
+        System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE RELAÇÃO PASSARAM.");
+    }
+
+    private static void checar(String rotulo, String obtido, String esperado) {
+        if (!esperado.equals(obtido)) {
+            throw new AssertionError(rotulo + ": esperado [" + esperado + "], obtido [" + obtido + "]");
+        }
+        System.out.println("OK - " + rotulo);
+    }
+}

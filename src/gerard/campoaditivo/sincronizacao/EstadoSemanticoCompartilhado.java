@@ -4,12 +4,18 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.PoliticaValoresAditivos;
 import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.FabricaPapeisComparacaoMedidas;
+import gerard.dominio.campoaditivo.FabricaPapeisComposicaoDeRelacoes;
+import gerard.dominio.campoaditivo.FabricaPapeisComposicaoDeTransformacoes;
+import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoDeRelacao;
 import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoMedidas;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComposicao;
+import gerard.dominio.campoaditivo.RelacaoEstruturalComposicaoDeRelacoes;
+import gerard.dominio.campoaditivo.RelacaoEstruturalComposicaoDeTransformacoes;
 import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacao;
+import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacaoDeRelacao;
 import gerard.dominio.campoaditivo.ResultadoCalculo;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.categoria.CatalogoEsquemasCategoriasAditivas;
@@ -220,9 +226,14 @@ public final class EstadoSemanticoCompartilhado {
      * é o mesmo problema que calcularValorAusente resolve, e forçar os dois
      * no mesmo contrato mudaria comportamento hoje em produção.
      *
-     * Cobre só os 3 tipos que o piloto atende (Composição, Transformação,
-     * Comparação de Medidas); os outros 5 tipos de TipoSituacaoAditiva
-     * continuam inteiramente no algoritmo genérico abaixo.
+     * Cobre os 3 tipos "Medidas" (Composição, Transformação, Comparação) e,
+     * desde 2026-08-06, os 3 tipos "Relações" alcançáveis pela UI
+     * (Composição de Transformações, Transformação de Relação, Composição
+     * de Relações — ver RELATORIO_INVESTIGACAO_5_TIPOS_NAO_COBERTOS_2026-08-06.md).
+     * Os 2 tipos restantes (Composição seguida de Transformação,
+     * Transformação Composta em Dois Passos) ficam de fora: "Em construção"
+     * no menu, nenhum caminho de UI os alcança hoje — sem urgência, sem
+     * usuário para proteger.
      *
      * @return true se este caminho tratou a resolução (calculou e escreveu,
      *         ou não havia nada a calcular) — o chamador não deve rodar o
@@ -232,7 +243,10 @@ public final class EstadoSemanticoCompartilhado {
             boolean permitirPreenchimentoIncognita) {
         if (tipo != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
                 && tipo != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS
+                && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
+                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             return false;
         }
         int indiceIncognita = -1;
@@ -298,6 +312,36 @@ public final class EstadoSemanticoCompartilhado {
             posicionarSeConhecido(referendo, v2);
             return RelacaoEstruturalComparacao.comparacaoDeMedidas()
                     .calcularValorAusente(referido, valorRelativo, referendo);
+        }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            PapelQuantitativo transformacao1 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(semEventos);
+            PapelQuantitativo transformacao2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(semEventos);
+            PapelQuantitativo transformacaoFinal = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(semEventos);
+            posicionarSeConhecido(transformacao1, v0);
+            posicionarSeConhecido(transformacao2, v1);
+            posicionarSeConhecido(transformacaoFinal, v2);
+            return RelacaoEstruturalComposicaoDeTransformacoes.composicaoDeTransformacoes()
+                    .calcularValorAusente(transformacao1, transformacao2, transformacaoFinal);
+        }
+        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            PapelQuantitativo relacaoInicial = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(semEventos);
+            PapelQuantitativo transformacao = FabricaPapeisTransformacaoDeRelacao.transformacao(semEventos);
+            PapelQuantitativo relacaoFinal = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(semEventos);
+            posicionarSeConhecido(relacaoInicial, v0);
+            posicionarSeConhecido(transformacao, v1);
+            posicionarSeConhecido(relacaoFinal, v2);
+            return RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao()
+                    .calcularValorAusente(relacaoInicial, transformacao, relacaoFinal);
+        }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            PapelQuantitativo relacao1 = FabricaPapeisComposicaoDeRelacoes.relacao1(semEventos);
+            PapelQuantitativo relacao2 = FabricaPapeisComposicaoDeRelacoes.relacao2(semEventos);
+            PapelQuantitativo relacaoFinal = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(semEventos);
+            posicionarSeConhecido(relacao1, v0);
+            posicionarSeConhecido(relacao2, v1);
+            posicionarSeConhecido(relacaoFinal, v2);
+            return RelacaoEstruturalComposicaoDeRelacoes.composicaoDeRelacoes()
+                    .calcularValorAusente(relacao1, relacao2, relacaoFinal);
         }
         return null; // inalcançável — já filtrado em resolverViaRelacaoEstruturalRica
     }
