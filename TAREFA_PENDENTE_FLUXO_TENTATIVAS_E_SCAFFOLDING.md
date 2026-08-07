@@ -1,9 +1,29 @@
 # Tarefa pendente — fluxo de N=3 tentativas rejeitadas + repertório local de Scaffolding
 
-Status: **registrada como alvo de implementação futura. Não autorizada a
-começar.** Momento de implementação ainda não decidido.
+Status: **mecanismo de tentativas implementado (2026-08-07)** — piloto
+(`RELATORIO_...PapelQuantitativo...md`, commit `032e12e`) e produção
+(`RELATORIO_FLUXO_TENTATIVAS_PRODUCAO_2026-08-07.md`). Ver "O que já foi
+implementado" abaixo. O repertório local de Scaffolding (2 eixos) e a
+lógica de seleção dentro dele **continuam não implementados, não
+decididos**.
 
 ---
+
+## O que já foi implementado (2026-08-07)
+
+- `PapelQuantitativo.registrarTentativa`/`restaurar`/
+  `estaBloqueadoPorLimiteTentativas`: contagem de tentativas + action_id
+  + bloqueio ao atingir N=3, exatamente como descrito abaixo. Estado mora
+  no papel, como este documento e a REFERENCE.md §4.8 determinam.
+- Ligado em produção: `confirmarValorIncognitaAceito` (Main.java) conta
+  cada rejeição real da incógnita; ao atingir 3, mostra um aviso mínimo
+  (`mostrarAvisoLimiteTentativasAtingido`) e bloqueia novas tentativas
+  até um dos dois botões "Restaurar" existentes ser acionado.
+- **Não implementado**: a "tela de ajuda" descrita abaixo tem conteúdo
+  pedagógico específico ainda não decidido — o aviso atual é só um
+  placeholder operacional ("você tentou várias vezes, use Restaurar"),
+  por instrução explícita da usuária ("implementar mesmo sem padrão").
+  Decidir o conteúdo real é a próxima peça desta tarefa, ainda pendente.
 
 ## O fluxo-alvo
 

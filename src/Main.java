@@ -599,6 +599,18 @@ public class Main extends JFrame {
         // retirada progressiva) a partir do veredito do Monitor, antes do
         // Modelador armazenar o caso — ver AgenteZDP.decidirEstrategia.
         final gerard.agente.zdp.AgenteZDP agenteZDP = new gerard.agente.zdp.AgenteZDP();
+        // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8, cardinalidade
+        // ação:evento, Alternativa B; TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md,
+        // 2026-08-07): só a contagem de tentativas/action_id
+        // (PapelQuantitativo.registrarTentativa), nunca armazenamento de
+        // valor real — isso continua exclusivamente com
+        // estadoSemanticoCompartilhado. Recriado sempre que o papel da
+        // incógnita atual muda — ver garantirTentativasIncognitaAtual.
+        // Segunda referência desta classe a gerard.dominio.campoaditivo,
+        // além de OrigemAcao (ver javadoc de registrarLogPorOrigem, que
+        // precisa ser atualizado para não dizer mais "único ponto").
+        private gerard.dominio.campoaditivo.PapelQuantitativo tentativasIncognitaAtual;
+        private String papelDaTentativaAtual;
         // Modelo do Usuário (ver gerard-modelo-usuario/SKILL.md) e Agente
         // Modelador (agente-modelador.md): ação 1 (armazenar caso) conectada
         // e já recebe a estratégia do Agente ZDP — ver ConectorVereditoModelador.
@@ -5257,6 +5269,7 @@ public class Main extends JFrame {
         }
 
         private void restaurarElementosForaDoDiagrama() {
+            restaurarTentativasIncognitaAtual();
             itemSelecionado = null;
             elementoTextoSelecionado = null;
             quadradinhoVennSelecionado = null;
@@ -5315,6 +5328,7 @@ public class Main extends JFrame {
          * é a única operação autorizada a limpar o estado dos diagramas.
          */
         private void restaurarModelagemDiagrama() {
+            restaurarTentativasIncognitaAtual();
             cancelarEfeitosArraste();
             reiniciarConclusaoModelagem();
             controladorEstadoAtividade.registrar(AcaoAtividade.RESTAURAR);
@@ -5680,6 +5694,107 @@ public class Main extends JFrame {
         }
 
         /**
+         * Aciona "restaurar" no fluxo de tentativas (REFERENCE.md §4.8):
+         * chamado pelos dois botões "Restaurar" já existentes em produção
+         * (botaoRestaurar e botaoRestaurarDiagrama) — nenhum foi desenhado
+         * especificamente para este fluxo, mas ambos já reiniciam a
+         * interação com o item de alguma forma, e não há um terceiro botão
+         * dedicado. Sem efeito se nenhuma tentativa foi registrada ainda.
+         */
+        private void restaurarTentativasIncognitaAtual() {
+            if (tentativasIncognitaAtual != null) {
+                tentativasIncognitaAtual.restaurar();
+            }
+        }
+
+        /**
+         * Garante que tentativasIncognitaAtual rastreia o papel indicado —
+         * recria a instância quando o papel da incógnita atual mudou desde a
+         * última chamada (nova situação, ou o sujeito avançou para outro
+         * item). Usada só para contagem (registrarTentativa/restaurar);
+         * nunca para armazenar um valor real — isso continua com
+         * estadoSemanticoCompartilhado. Ver PapelQuantitativo.registrarTentativa
+         * — REFERENCE.md §4.8.
+         */
+        private void garantirTentativasIncognitaAtual(String papelAtual) {
+            String chave = papelAtual == null || papelAtual.trim().length() == 0
+                    ? "papel.valor" : papelAtual.trim();
+            if (tentativasIncognitaAtual == null
+                    || !chave.equals(papelDaTentativaAtual)) {
+                tentativasIncognitaAtual = new gerard.dominio.campoaditivo.PapelQuantitativo(
+                        chave, "Incógnita atual",
+                        gerard.semantica.numero.DominioNumerico.INTEIROS,
+                        new gerard.dominio.campoaditivo.DescritorRepresentacaoPapel(
+                                gerard.dominio.campoaditivo.TipoRepresentacaoAbstrata.FIGURA_RETANGULAR,
+                                "rotulo.papel.incognitaAtual"),
+                        gerard.dominio.campoaditivo.evento.PublicadorEventoDominio.NENHUM);
+                papelDaTentativaAtual = chave;
+            }
+        }
+
+        /**
+         * Contabiliza uma avaliação da incógnita no fluxo de tentativas
+         * rejeitadas (REFERENCE.md §4.8; TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md)
+         * — delega a PapelQuantitativo.registrarTentativa, que é onde o
+         * documento normativo determina que esse conhecimento deve morar.
+         * Main só mantém a instância (garantirTentativasIncognitaAtual) e
+         * traduz o resultado para o log de produção
+         * (registrarLogComputador) — o publicador de eventos do piloto
+         * continua descartando (PublicadorEventoDominio.NENHUM), os dois
+         * mecanismos de log permanecem deliberadamente separados.
+         *
+         * @return true se esta chamada atingiu o limite de tentativas
+         *         rejeitadas consecutivas agora — quem chama deve então
+         *         avisar o participante (mostrarAvisoLimiteTentativasAtingido);
+         *         o conteúdo pedagógico específico da ajuda continua uma
+         *         decisão futura, não tomada aqui.
+         */
+        private boolean registrarTentativaIncognita(String papelAlvo, boolean correto, ItemTextoArrastavel item) {
+            garantirTentativasIncognitaAtual(papelAlvo);
+            Integer valorNumerico = item == null ? null : converterTextoParaInteiro(item.valor);
+            gerard.semantica.numero.ValorNumerico valorProposto = valorNumerico == null
+                    ? null : new gerard.semantica.numero.NumeroInteiro(valorNumerico.intValue());
+            java.util.Optional<gerard.dominio.campoaditivo.DiagnosticoErroPapel> diagnostico = correto
+                    ? java.util.Optional.<gerard.dominio.campoaditivo.DiagnosticoErroPapel>empty()
+                    : java.util.Optional.of(new gerard.dominio.campoaditivo.DiagnosticoErroPapel(
+                            gerard.dominio.campoaditivo.TipoErroPapel.VALOR_INCORRETO,
+                            "erro.papel.valorIncorreto", "feedback.papel.valorIncorreto",
+                            "correcao.papel.valorIncorreto"));
+            boolean limiteAtingidoAgora = tentativasIncognitaAtual.registrarTentativa(
+                    diagnostico, gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO,
+                    gerard.dominio.campoaditivo.ContextoAcao.NAO_INFORMADO, valorProposto);
+            if (limiteAtingidoAgora) {
+                registrarLogComputador(
+                        "Limite de tentativas rejeitadas atingido",
+                        "Fluxo de tentativas (REFERENCE.md §4.8)",
+                        "3ª rejeição consecutiva do mesmo item",
+                        "Encerrar a ação e bloquear novas tentativas até 'restaurar' ser acionado",
+                        "Mecanismo implementado; conteúdo específico da ajuda pedagógica é decisão "
+                                + "futura, não tomada aqui — ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md",
+                        "LIMITE_TENTATIVAS_ATINGIDO",
+                        "papel=" + papelAlvo + "; action_id=" + tentativasIncognitaAtual.getActionIdAtual());
+            }
+            return limiteAtingidoAgora;
+        }
+
+        /**
+         * Aviso mínimo quando o limite de tentativas rejeitadas é atingido
+         * (REFERENCE.md §4.8). Conteúdo pedagógico específico ("qual ajuda
+         * concreta mostrar") é uma decisão futura, ainda não tomada — ver
+         * TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md. Por instrução
+         * explícita da usuária (2026-08-07), o mecanismo foi implementado
+         * mesmo sem esse conteúdo decidido: este método é só o aviso
+         * operacional mínimo (usar "Restaurar"), sem inventar orientação
+         * pedagógica nova.
+         */
+        private void mostrarAvisoLimiteTentativasAtingido() {
+            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
+            String mensagem = localizacao.formatar("ui.notice.attemptLimitReached", nomePapel);
+            JOptionPane.showMessageDialog(this, mensagem,
+                    localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        /**
          * Pergunta de confirmação quando o valor diverge do curado. Decisão
          * do usuário em 2026-07-22: a modelagem só volta a propagar/concluir
          * depois que o valor correto for inserido — "Sim" (o usuário insiste
@@ -5701,9 +5816,12 @@ public class Main extends JFrame {
             if (item != null && item.representaIncognitaOriginal() && item.isPreenchidoPeloProtocoloMouseTexto()) {
                 correto = valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor);
             }
+            boolean limiteTentativasAtingidoAgora = false;
             if (correto != null) {
                 registrarPapeisDadoModificadosSeHouver();
                 String papelAlvo = obterPapelIncognitaAtual();
+                limiteTentativasAtingidoAgora =
+                        registrarTentativaIncognita(papelAlvo, correto.booleanValue(), item);
                 if (agentAuditService != null) {
                     agentAuditService.iniciarAcao(
                             new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
@@ -5738,6 +5856,15 @@ public class Main extends JFrame {
             }
             if (correto == null || correto.booleanValue()) {
                 return true;
+            }
+            if (limiteTentativasAtingidoAgora) {
+                // 3ª rejeição consecutiva do mesmo item: encerra a ação e
+                // bloqueia novas tentativas (ver registrarTentativaIncognita)
+                // — mostra o aviso mínimo em vez do diálogo normal de
+                // confirmação/dica, já que novas tentativas ficam bloqueadas
+                // até "restaurar" mesmo que o participante confirme.
+                mostrarAvisoLimiteTentativasAtingido();
+                return false;
             }
             String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
             String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
@@ -10975,10 +11102,14 @@ public class Main extends JFrame {
          * diretamente o método correspondente de LoggerInteracaoGerard, sem
          * nenhum valor tipado carregando essa decisão).
          *
-         * Único ponto desta classe que referencia o pacote piloto
-         * gerard.dominio.campoaditivo — usa apenas o tipo OrigemAcao, não
-         * PapelQuantitativo nem nenhuma outra peça da arquitetura rica; ver
-         * o javadoc de PapelQuantitativo para o estado da fronteira.
+         * Referencia o pacote piloto gerard.dominio.campoaditivo (tipo
+         * OrigemAcao) — não é mais o único ponto desde 2026-08-07:
+         * tentativasIncognitaAtual (fluxo de tentativas rejeitadas,
+         * REFERENCE.md §4.8) também referencia PapelQuantitativo/
+         * DiagnosticoErroPapel/TipoErroPapel/ContextoAcao/DominioNumerico,
+         * mas só para contagem — nunca para armazenar um valor real, que
+         * continua exclusivo de estadoSemanticoCompartilhado. Ver o
+         * javadoc de PapelQuantitativo para o estado geral da fronteira.
          *
          * ce e objeto só fazem sentido semântico para ORIGEM_USUARIO (o
          * registro de computador não avalia acerto/erro nem aponta um

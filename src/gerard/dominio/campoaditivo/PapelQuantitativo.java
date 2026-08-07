@@ -34,17 +34,27 @@ import java.util.Optional;
  * gerard.semantica.numero — as auditorias anteriores já identificaram esses
  * dois como objetos já corretos do sistema por esta mesma régua.
  *
- * Este piloto é isolado por design: PapelQuantitativo (e o restante da
- * arquitetura rica — RelacaoEstrutural*, ResultadoCalculo,
- * DiagnosticoErroPapel) não é referenciado por Main.java nem por nenhum
- * caminho de produção.
+ * Este piloto é isolado por design para armazenamento/cálculo de valor: a
+ * hipótese de reuso mais ampla de PapelQuantitativo como guardião do
+ * estado real de um esquema continua não validada — quem guarda e calcula
+ * o valor real em produção é EstadoSemanticoCompartilhado (ver Fase B2
+ * completa, RELATORIO_MIGRACAO_B2_MAIN_PILOTO_2026-08-07.md), não este
+ * piloto diretamente.
  *
- * Exceção pontual, registrada em 2026-08-06: OrigemAcao — só o enum, um
- * tipo de valor sem lógica — passou a ser usado por Main.java para tipar
- * a origem (usuário vs. sistema) do log de interação, no lugar da
- * distinção implícita por nome de método que existia antes. Ver
- * Main.registrarLogPorOrigem. Essa é a única peça deste pacote referenciada
- * fora do piloto; a hipótese de reuso mais ampla continua não validada.
+ * Duas exceções pontuais, registradas nesta mesma linha de decisão:
+ *
+ * <ul>
+ * <li>2026-08-06: OrigemAcao — só o enum, um tipo de valor sem lógica —
+ * passou a ser usado por Main.java para tipar a origem (usuário vs.
+ * sistema) do log de interação. Ver Main.registrarLogPorOrigem.</li>
+ * <li>2026-08-07: Main.java passou a manter uma instância de
+ * PapelQuantitativo (tentativasIncognitaAtual) só para o fluxo de
+ * tentativas rejeitadas (REFERENCE.md §4.8 — registrarTentativa/
+ * restaurar/estaBloqueadoPorLimiteTentativas). Uso deliberadamente
+ * restrito: nunca chama posicionar(...) para armazenar um valor real, só
+ * a contagem/bloqueio. Ver Main.garantirTentativasIncognitaAtual e
+ * TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md.</li>
+ * </ul>
  */
 public final class PapelQuantitativo {
 
