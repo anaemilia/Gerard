@@ -73,3 +73,14 @@ Corrigido: a chave agora é `papel + "@" + id_da_situacao`.
 `garantirTentativasIncognitaAtual` ganha o id da situação na chave).
 Nenhum dos ~10 call sites que dependem de `deveExibirDiagramaComplementar()`
 precisou de mudança própria.
+
+## Atualização — ativação temporária só para testes (mesmo dia)
+
+A pedido da usuária, logo após esta implementação: manter o diagrama
+complementar sempre visível por enquanto, para ela testar a interação com
+ele e a manutenção de consistência entre representações sem precisar
+errar 3 vezes a cada verificação. `Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true`
+sobrescreve só o resultado final de `deveExibirDiagramaComplementar()` —
+a regra de escalada acima continua implementada e calculada normalmente
+por baixo. Apagar essa constante (e o `||` que a usa) restaura o
+comportamento definitivo sem mais nenhuma mudança de código.

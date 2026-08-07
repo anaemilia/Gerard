@@ -7917,6 +7917,22 @@ public class Main extends JFrame {
         }
 
         /**
+         * ATIVAÇÃO TEMPORÁRIA SÓ PARA TESTES (2026-08-07) — NÃO é a decisão
+         * final de comportamento. A regra definitiva (AG_EMCME, item 5 do
+         * levantamento de pendências — TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md)
+         * é o material concreto (diagrama complementar) só aparecer na 3ª
+         * tentativa rejeitada consecutiva da incógnita atual, implementada
+         * logo abaixo em deveExibirDiagramaComplementar(). A usuária pediu
+         * para mantê-lo visível o tempo todo por enquanto, para poder testar
+         * a interação com ele e a manutenção de consistência entre
+         * representações sem precisar errar 3 vezes a cada verificação.
+         * Quando o teste terminar, apagar esta constante (e o `||` que a usa
+         * logo abaixo) restaura o comportamento definitivo sem precisar
+         * desfazer mais nada.
+         */
+        private static final boolean EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true;
+
+        /**
          * O material concreto (diagrama complementar — quadradinhos, barras,
          * processo) só aparece na última opção da escalada de Scaffolding
          * (3ª tentativa rejeitada consecutiva da incógnita atual — AG_EMCME),
@@ -7926,6 +7942,11 @@ public class Main extends JFrame {
          * Vergnaud. `tentativasIncognitaAtual` é null antes da primeira
          * tentativa rejeitada de uma situação-problema — tratado como "não
          * bloqueado", igual a uma instância recém-criada.
+         *
+         * Ver EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES acima: enquanto
+         * essa constante for true, a regra de escalada abaixo é calculada
+         * normalmente (nada nela mudou), mas o resultado final ignora o
+         * bloqueio e sempre mostra — só para a fase de teste manual.
          */
         private boolean deveExibirDiagramaComplementar() {
             boolean escaladaNoLimite = tentativasIncognitaAtual != null
@@ -7933,7 +7954,7 @@ public class Main extends JFrame {
             return seletorRepresentacaoComplementar.deveExibir(
                     categoriaSelecionadaParaAtividade,
                     tipoSituacaoSelecionada,
-                    escaladaNoLimite);
+                    escaladaNoLimite || EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES);
         }
 
         private boolean ehProcessoTransformacaoMedidas() {

@@ -94,6 +94,16 @@ pesquisador"), significa que a implementação de `AG_AC`/`AG_AE` exige uma
 decisão de modelagem própria, apresentada e aprovada antes de qualquer
 diff — não decidida aqui.
 
+**Ativação temporária só para testes (2026-08-07)**: a pedido da usuária,
+`Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true` faz o
+diagrama complementar aparecer sempre de novo (como antes desta tarefa),
+para ela testar a interação com ele e a manutenção de consistência entre
+representações sem precisar errar 3 vezes a cada verificação. A regra de
+escalada (abaixo) continua implementada e calculada normalmente — só o
+resultado final é sobrescrito por essa constante. Apagar a constante (e o
+`||` que a usa em `deveExibirDiagramaComplementar()`) restaura o
+comportamento definitivo sem mais nenhuma mudança de código.
+
 **`AG_EMCME` — material concreto implementado (2026-08-07).** A usuária
 esclareceu que "material concreto" é o diagrama complementar que já existe
 ao lado do diagrama de Vergnaud (quadradinhos/Venn, barras da Comparação,
