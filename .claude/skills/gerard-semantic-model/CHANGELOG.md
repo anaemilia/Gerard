@@ -1,5 +1,22 @@
 # Changelog — GERARD Semantic Model and Skills v2
 
+## 2.5 — 2026-08-07
+
+### Nova skill: gerard-handlers-de-interacao (direção, não implementada)
+
+- Registrada a pedido da usuária, a partir de uma discussão externa sobre
+  a concentração de código de mouse em `TelaGerard` (`mousePressed` com
+  ~366 linhas).
+- Propõe um padrão concreto (handler de interação por tipo de elemento,
+  `TelaGerard` só roteando) para a camada "Interação" que
+  `gerard-domain-model-first` já definia conceitualmente, mas sem
+  prescrever estrutura de código.
+- `gerard-domain-model-first` ganhou uma única linha de referência
+  cruzada na seção "Interação", sem alterar nenhuma regra existente.
+- Nenhum código de produção muda por este registro — status explícito de
+  "proposta, não implementada", com roteiro incremental que exige
+  confirmação explícita antes de cada etapa.
+
 ## 2.4 — 2026-08-04
 
 ### Correção do registro 2.3: Comparação já tem lógica coberta, fora do pacote piloto

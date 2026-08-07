@@ -77,6 +77,8 @@ Define como usuário, sistema, agente ou pesquisador produz solicitações de mu
 - distinção da origem da ação;
 - apresentação de feedbacks e apoios.
 
+Para um padrão concreto (ainda não implementado) de como estruturar essa camada em código, ver `gerard-handlers-de-interacao`.
+
 ## Representação dinâmica
 
 A representação não deve ser tratada somente como uma forma estática. Manipulações, transformações e passagens entre formas gráficas, simbólicas e linguísticas podem integrar o processo representacional.
