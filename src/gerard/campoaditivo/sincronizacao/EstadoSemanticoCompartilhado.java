@@ -167,6 +167,9 @@ public final class EstadoSemanticoCompartilhado {
         if (resolverViaRelacaoEstruturalRica(indiceIncognitaProtegida, permitirPreenchimentoIncognita)) {
             return;
         }
+        if (resolverConsistenciaViaRelacaoEstruturalRica(indiceIncognitaProtegida, permitirPreenchimentoIncognita)) {
+            return;
+        }
         if (indiceAlterado == 0) {
             if (conhecido(0) && conhecido(1)) {
                 definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
@@ -222,9 +225,13 @@ public final class EstadoSemanticoCompartilhado {
      * valor que falta, nunca sobrescreve um valor que o usuário acabou de
      * editar/esvaziar. O preenchimento automático de consistência (quando os
      * três já estão preenchidos e um deles muda, podendo sobrescrever outro
-     * já preenchido) continua no algoritmo genérico abaixo, inalterado — não
-     * é o mesmo problema que calcularValorAusente resolve, e forçar os dois
-     * no mesmo contrato mudaria comportamento hoje em produção.
+     * já preenchido) não é o mesmo problema que calcularValorAusente resolve
+     * — por isso não está aqui —, mas também é delegado ao piloto, em
+     * resolverConsistenciaViaRelacaoEstruturalRica (fechado em 2026-08-06,
+     * Fase B2 completa). O algoritmo genérico abaixo só continua ativo, para
+     * os 6 tipos cobertos, nos casos que nenhum dos dois métodos ricos trata
+     * (ex.: indiceAlterado fora de 0-2 com 2+ incógnitas) — e integralmente
+     * para os 2 tipos "Em construção", que o piloto não cobre.
      *
      * Cobre os 3 tipos "Medidas" (Composição, Transformação, Comparação) e,
      * desde 2026-08-06, os 3 tipos "Relações" alcançáveis pela UI
@@ -277,73 +284,197 @@ public final class EstadoSemanticoCompartilhado {
         return true;
     }
 
-    private ResultadoCalculo calcularComRelacaoRica() {
+    /**
+     * Constrói os três papéis descartáveis (sem identidade persistente, sem
+     * publicação de eventos — mesma "calculadora e se?" que este método já
+     * era antes de ser extraído) que representam o tipo atual, posicionados
+     * com os valores já conhecidos do estado compartilhado. Único ponto de
+     * construção do trio, compartilhado entre o cálculo de "primeiro
+     * preenchimento" (calcularValorAusenteDoTipo, via calcularComRelacaoRica)
+     * e o de "recálculo de consistência" (recalcularParaConsistenciaDoTipo,
+     * via resolverConsistenciaViaRelacaoEstruturalRica) — ver Fase B2
+     * completa em TAREFA_PENDENTE_LOCALIDADE_CONHECIMENTO_ESTADO_COMPARTILHADO.md.
+     *
+     * @return os três papéis na ordem (índice 0, índice 1, índice 2), ou
+     *         null se o tipo atual não é um dos 6 cobertos pela
+     *         arquitetura rica do piloto
+     */
+    private PapelQuantitativo[] criarTrioDePapeis() {
         ValorNumerico v0 = valores[0];
         ValorNumerico v1 = valores[1];
         ValorNumerico v2 = valores[2];
         PublicadorEventoDominio semEventos = PublicadorEventoDominio.NENHUM;
-
+        PapelQuantitativo p0;
+        PapelQuantitativo p1;
+        PapelQuantitativo p2;
         if (tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
-            PapelQuantitativo parte1 = PapelQuantitativo.parte1(semEventos);
-            PapelQuantitativo parte2 = PapelQuantitativo.parte2(semEventos);
-            PapelQuantitativo todo = PapelQuantitativo.todo(semEventos);
-            posicionarSeConhecido(parte1, v0);
-            posicionarSeConhecido(parte2, v1);
-            posicionarSeConhecido(todo, v2);
-            return RelacaoEstruturalComposicao.composicaoDeMedidas()
-                    .calcularValorAusente(parte1, parte2, todo);
+            p0 = PapelQuantitativo.parte1(semEventos);
+            p1 = PapelQuantitativo.parte2(semEventos);
+            p2 = PapelQuantitativo.todo(semEventos);
+        } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+            p0 = FabricaPapeisTransformacaoMedidas.estadoInicial(semEventos);
+            p1 = FabricaPapeisTransformacaoMedidas.transformacao(semEventos);
+            p2 = FabricaPapeisTransformacaoMedidas.estadoFinal(semEventos);
+        } else if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+            p0 = FabricaPapeisComparacaoMedidas.referido(semEventos);
+            p1 = FabricaPapeisComparacaoMedidas.valorRelativo(semEventos);
+            p2 = FabricaPapeisComparacaoMedidas.referendo(semEventos);
+        } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            p0 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(semEventos);
+            p1 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(semEventos);
+            p2 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(semEventos);
+        } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            p0 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(semEventos);
+            p1 = FabricaPapeisTransformacaoDeRelacao.transformacao(semEventos);
+            p2 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(semEventos);
+        } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            p0 = FabricaPapeisComposicaoDeRelacoes.relacao1(semEventos);
+            p1 = FabricaPapeisComposicaoDeRelacoes.relacao2(semEventos);
+            p2 = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(semEventos);
+        } else {
+            return null; // inalcançável — já filtrado pelos chamadores
+        }
+        posicionarSeConhecido(p0, v0);
+        posicionarSeConhecido(p1, v1);
+        posicionarSeConhecido(p2, v2);
+        return new PapelQuantitativo[] { p0, p1, p2 };
+    }
+
+    private ResultadoCalculo calcularComRelacaoRica() {
+        PapelQuantitativo[] trio = criarTrioDePapeis();
+        if (trio == null) {
+            return null; // inalcançável — já filtrado em resolverViaRelacaoEstruturalRica
+        }
+        return calcularValorAusenteDoTipo(trio[0], trio[1], trio[2]);
+    }
+
+    private ResultadoCalculo calcularValorAusenteDoTipo(
+            PapelQuantitativo p0, PapelQuantitativo p1, PapelQuantitativo p2) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            return RelacaoEstruturalComposicao.composicaoDeMedidas().calcularValorAusente(p0, p1, p2);
         }
         if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
-            PapelQuantitativo estadoInicial = FabricaPapeisTransformacaoMedidas.estadoInicial(semEventos);
-            PapelQuantitativo transformacao = FabricaPapeisTransformacaoMedidas.transformacao(semEventos);
-            PapelQuantitativo estadoFinal = FabricaPapeisTransformacaoMedidas.estadoFinal(semEventos);
-            posicionarSeConhecido(estadoInicial, v0);
-            posicionarSeConhecido(transformacao, v1);
-            posicionarSeConhecido(estadoFinal, v2);
-            return RelacaoEstruturalTransformacao.transformacaoDeMedidas()
-                    .calcularValorAusente(estadoInicial, transformacao, estadoFinal);
+            return RelacaoEstruturalTransformacao.transformacaoDeMedidas().calcularValorAusente(p0, p1, p2);
         }
         if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
-            PapelQuantitativo referido = FabricaPapeisComparacaoMedidas.referido(semEventos);
-            PapelQuantitativo valorRelativo = FabricaPapeisComparacaoMedidas.valorRelativo(semEventos);
-            PapelQuantitativo referendo = FabricaPapeisComparacaoMedidas.referendo(semEventos);
-            posicionarSeConhecido(referido, v0);
-            posicionarSeConhecido(valorRelativo, v1);
-            posicionarSeConhecido(referendo, v2);
-            return RelacaoEstruturalComparacao.comparacaoDeMedidas()
-                    .calcularValorAusente(referido, valorRelativo, referendo);
+            return RelacaoEstruturalComparacao.comparacaoDeMedidas().calcularValorAusente(p0, p1, p2);
         }
         if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            PapelQuantitativo transformacao1 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(semEventos);
-            PapelQuantitativo transformacao2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(semEventos);
-            PapelQuantitativo transformacaoFinal = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(semEventos);
-            posicionarSeConhecido(transformacao1, v0);
-            posicionarSeConhecido(transformacao2, v1);
-            posicionarSeConhecido(transformacaoFinal, v2);
             return RelacaoEstruturalComposicaoDeTransformacoes.composicaoDeTransformacoes()
-                    .calcularValorAusente(transformacao1, transformacao2, transformacaoFinal);
+                    .calcularValorAusente(p0, p1, p2);
         }
         if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-            PapelQuantitativo relacaoInicial = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(semEventos);
-            PapelQuantitativo transformacao = FabricaPapeisTransformacaoDeRelacao.transformacao(semEventos);
-            PapelQuantitativo relacaoFinal = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(semEventos);
-            posicionarSeConhecido(relacaoInicial, v0);
-            posicionarSeConhecido(transformacao, v1);
-            posicionarSeConhecido(relacaoFinal, v2);
-            return RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao()
-                    .calcularValorAusente(relacaoInicial, transformacao, relacaoFinal);
+            return RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao().calcularValorAusente(p0, p1, p2);
         }
         if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            PapelQuantitativo relacao1 = FabricaPapeisComposicaoDeRelacoes.relacao1(semEventos);
-            PapelQuantitativo relacao2 = FabricaPapeisComposicaoDeRelacoes.relacao2(semEventos);
-            PapelQuantitativo relacaoFinal = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(semEventos);
-            posicionarSeConhecido(relacao1, v0);
-            posicionarSeConhecido(relacao2, v1);
-            posicionarSeConhecido(relacaoFinal, v2);
-            return RelacaoEstruturalComposicaoDeRelacoes.composicaoDeRelacoes()
-                    .calcularValorAusente(relacao1, relacao2, relacaoFinal);
+            return RelacaoEstruturalComposicaoDeRelacoes.composicaoDeRelacoes().calcularValorAusente(p0, p1, p2);
         }
-        return null; // inalcançável — já filtrado em resolverViaRelacaoEstruturalRica
+        return null; // inalcançável — já filtrado pelos chamadores
+    }
+
+    /**
+     * Recalcula um papel já conhecido para preservar a consistência da
+     * relação aditiva quando os três papéis já estavam preenchidos e um
+     * deles muda (ex.: o sujeito arrasta um valor já posicionado num
+     * diagrama já completo) — delega às 6 classes RelacaoEstrutural* do
+     * piloto (recalcularParaConsistencia), a capacidade que faltava no
+     * Achado 2 de RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md e
+     * foi fechada em 2026-08-06 (RELATORIO_RECALCULAR_PARA_CONSISTENCIA_2026-08-06.md).
+     * Com esta chamada, resolverRelacaoAditiva passa a delegar 100% da
+     * lógica de relação aditiva ao piloto para os 6 tipos cobertos — Main.java
+     * não muda uma linha (já só chama atualizar(...) neste objeto), mas
+     * tudo que acontece a partir daqui são objetos do piloto (Fase B2
+     * completa, no espírito "Main só chama métodos de objetos que já
+     * funcionam", em vez de reescrever os funis de escrita de Main.java).
+     *
+     * Cobre os mesmos 6 tipos que resolverViaRelacaoEstruturalRica; os 2
+     * tipos "Em construção" continuam no algoritmo genérico abaixo, sem
+     * cobertura no piloto.
+     *
+     * Só se aplica quando indiceAlterado é 0, 1 ou 2 (o algoritmo genérico
+     * equivalente também só age nesses três casos — quando indiceAlterado
+     * está fora desse intervalo, ou já foi tratado por
+     * resolverViaRelacaoEstruturalRica, ou não há informação suficiente
+     * sobre o que mudou) e os três papéis já estão conhecidos — se não, não
+     * é "recálculo de consistência", é "primeiro preenchimento"
+     * (resolverViaRelacaoEstruturalRica) ou estado ainda incompleto, e este
+     * método não interfere.
+     *
+     * @return true se este caminho tratou a resolução (o chamador não deve
+     *         rodar o algoritmo genérico por cima); false se o tipo não é
+     *         coberto ou não é o caso de consistência
+     */
+    private boolean resolverConsistenciaViaRelacaoEstruturalRica(
+            int indiceIncognitaProtegida, boolean permitirPreenchimentoIncognita) {
+        if (tipo != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
+                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
+                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS
+                && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
+                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            return false;
+        }
+        if (indiceAlterado < 0 || indiceAlterado > 2) {
+            return false;
+        }
+        if (!conhecido(0) || !conhecido(1) || !conhecido(2)) {
+            return false;
+        }
+
+        PapelQuantitativo[] trio = criarTrioDePapeis();
+        if (trio == null) {
+            return false; // inalcançável — já filtrado acima
+        }
+        PapelQuantitativo papelAlterado = trio[indiceAlterado];
+        ResultadoCalculo resultado =
+                recalcularParaConsistenciaDoTipo(trio[0], trio[1], trio[2], papelAlterado);
+        if (resultado != null && resultado.temValorCalculavel()) {
+            int indiceRecalculado = indiceDoPapel(trio, resultado.getPapelCalculado());
+            if (indiceRecalculado >= 0) {
+                definirSePermitido(indiceRecalculado,
+                        resultado.getValorCalculado().valorOuNull().intValue(),
+                        indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+            }
+        }
+        return true;
+    }
+
+    private ResultadoCalculo recalcularParaConsistenciaDoTipo(PapelQuantitativo p0,
+            PapelQuantitativo p1, PapelQuantitativo p2, PapelQuantitativo papelAlterado) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            return RelacaoEstruturalComposicao.composicaoDeMedidas()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+            return RelacaoEstruturalTransformacao.transformacaoDeMedidas()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+            return RelacaoEstruturalComparacao.comparacaoDeMedidas()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            return RelacaoEstruturalComposicaoDeTransformacoes.composicaoDeTransformacoes()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            return RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            return RelacaoEstruturalComposicaoDeRelacoes.composicaoDeRelacoes()
+                    .recalcularParaConsistencia(p0, p1, p2, papelAlterado);
+        }
+        return null; // inalcançável — já filtrado pelos chamadores
+    }
+
+    private static int indiceDoPapel(PapelQuantitativo[] trio, PapelQuantitativo papel) {
+        for (int i = 0; i < trio.length; i++) {
+            if (trio[i] == papel) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static void posicionarSeConhecido(PapelQuantitativo papel, ValorNumerico valor) {

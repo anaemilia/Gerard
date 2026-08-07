@@ -80,3 +80,35 @@ Revisitada a Fase B2 literal. Investigação (só leitura) encontrou evidência 
 3. **B2 completa como desenhada originalmente** — Main manipula `PapelQuantitativo` diretamente, substitui `EstadoSemanticoCompartilhado`. **Investigação (só leitura) concluída, decisão de execução pendente.** Ver `RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md`. Achados principais: (1) a superfície real em Main.java é bem mais concentrada do que o catálogo original sugeria — só 2 funis de escrita (`capturarEstadoCompartilhadoDoVergnaud`/`capturarEstadoCompartilhadoDoDiagramaComplementar`) e 1 fan-out (`aplicarEstadoCompartilhadoEmTodasAsRepresentacoes`), não dezenas de caminhos espalhados; (2) bloqueio real encontrado: `resolverRelacaoAditiva` tem um segundo algoritmo, "preenchimento automático de consistência" (papel já conhecido é recalculado quando outro muda), que não tem equivalente no contrato do piloto (`calcularValorAusente` exige exatamente 1 incógnito) — migrar Main de fato exigiria primeiro desenhar essa capacidade nova no piloto, não é redirecionamento mecânico de chamadas. Caminhos possíveis: fechar essa lacuna no piloto primeiro (zero risco), não fazer B2 completa (o valor arquitetural principal já foi capturado nos passos 1 e 2), ou uma migração parcial de escopo reduzido.
 
 **Lacuna fechada em 2026-08-06 (noite):** `recalcularParaConsistencia(papelA, papelB, papelC, papelAlterado)` implementado nas 6 classes `RelacaoEstrutural*` — réplica fiel, branch a branch, do algoritmo genérico de `resolverRelacaoAditiva` (nunca recalcula o papel alterado; prioriza recalcular o papel "C"; cai para `NAO_RESOLVIVEL_NESTE_ESTADO` quando nenhum par está totalmente conhecido). Zero mudança em Main.java. Ver `RELATORIO_RECALCULAR_PARA_CONSISTENCIA_2026-08-06.md`. Cobertura de teste nos 6 harnesses; projeto completo compilado (435 arquivos, 0 erros); todos os 6 harnesses executados com sucesso. Com isso, a Fase B2 completa deixa de depender de design novo no piloto — mas **continua não autorizada**: decidir se/como migrar Main.java de fato (usando os achados 1/3/4 do relatório de investigação) é o próximo passo, só a começar quando pedido explicitamente.
+
+## Fase B2 completa: concluída (2026-08-07)
+
+Pedido explicitamente pela usuária. Escopo decidido antes de implementar
+(ver `RELATORIO_MIGRACAO_B2_MAIN_PILOTO_2026-08-07.md`): padrão
+descartável (sem identidade persistente, sem eventos — mesmo estilo já
+usado em `calcularComRelacaoRica`), prioridade de "Main só chama métodos
+de objetos que já funcionam bem", e inclusão do simulador do Venn.
+
+**Zero linhas mudaram em `Main.java`** — a superfície real (Achado 1) já
+era só dois funis de escrita chamando `estadoSemanticoCompartilhado.atualizar(...)`;
+não havia lógica de domínio em Main para migrar. A mudança real foi
+dentro de `EstadoSemanticoCompartilhado`: `resolverConsistenciaViaRelacaoEstruturalRica`
+(novo) delega o algoritmo de "preenchimento automático de consistência" —
+o único que ainda não passava pelo piloto — a `recalcularParaConsistencia`,
+usando o mesmo padrão descartável de `criarTrioDePapeis()` (extraído,
+compartilhado com o cálculo de "primeiro preenchimento"). `resolverRelacaoAditiva`
+agora delega 100% da lógica de relação aditiva ao piloto para os 6 tipos
+alcançáveis pela UI. `SimuladorEstadoComplementarVenn.simular()` herdou a
+delegação automaticamente, sem precisar de nenhuma mudança de código
+(já criava um `EstadoSemanticoCompartilhado` descartável e chamava
+`atualizar(...)`).
+
+Verificado: projeto completo compilado (435 arquivos, 0 erros);
+`TesteComparativoEstadoSemanticoCompartilhado` (40 cenários, incluindo os
+6 de "fase 2: consistência") com 0 divergências; verificação dirigida
+confirma que a guarda de estouro de int continua ativa através do novo
+caminho delegado.
+
+**Fase B2 completa está encerrada.** `PapelQuantitativo`/`RelacaoEstrutural*`/`ResultadoCalculo`
+continuam isolados por design — só referenciados de dentro de
+`EstadoSemanticoCompartilhado`, nunca de `Main.java` diretamente.
