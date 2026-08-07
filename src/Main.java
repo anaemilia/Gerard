@@ -1425,10 +1425,10 @@ public class Main extends JFrame {
                         java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
                         seta.moveTo(cx, y + 23);
                         seta.lineTo(cx, y + 58);
-                        seta.moveTo(cx, y + 61);
-                        seta.lineTo(cx - 7, y + 52);
-                        seta.moveTo(cx, y + 61);
-                        seta.lineTo(cx + 7, y + 52);
+                        seta.moveTo(cx, y + 20);
+                        seta.lineTo(cx - 7, y + 29);
+                        seta.moveTo(cx, y + 20);
+                        seta.lineTo(cx + 7, y + 29);
                         g2.draw(seta);
                     } finally {
                         g2.dispose();
@@ -13805,7 +13805,9 @@ public class Main extends JFrame {
                     double r = escalaTraco();
                     int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
                     g2.drawLine(x,h/5+gap,x,h*4/5-gap);
-                    g2.drawLine(x,h*4/5-gap,x-asa,h*4/5-ponta); g2.drawLine(x,h*4/5-gap,x+asa,h*4/5-ponta);
+                    // Seta sai do quadrado de baixo para o de cima (2026-08-07,
+                    // mesma correção do ícone de atalho em criarIconeCategoriaComparacao).
+                    g2.drawLine(x,h/5+gap,x-asa,h/5+ponta); g2.drawLine(x,h/5+gap,x+asa,h/5+ponta);
                 }
 
                 void desenharComposicao(Graphics2D g2) {
@@ -13837,7 +13839,9 @@ public class Main extends JFrame {
                     double r = escalaTraco();
                     int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
                     g2.drawLine(x,h/5+gap,x,h*4/5-gap);
-                    g2.drawLine(x,h*4/5-gap,x-asa,h*4/5-ponta); g2.drawLine(x,h*4/5-gap,x+asa,h*4/5-ponta);
+                    // Seta sai do quadrado de baixo para o de cima (2026-08-07,
+                    // mesma correção do ícone de atalho em criarIconeCategoriaComparacao).
+                    g2.drawLine(x,h/5+gap,x-asa,h/5+ponta); g2.drawLine(x,h/5+gap,x+asa,h/5+ponta);
                 }
 
                 private String solicitarValorInteiro(int valorAtual) {
