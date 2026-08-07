@@ -55,12 +55,20 @@ public final class ScaffoldingLimiteQuantidadeVenn {
         Integer b = valores[1];
         Integer c = valores[2];
 
-        if (a == null && b != null && c != null) {
-            valores[0] = Integer.valueOf(c.intValue() - b.intValue());
-        } else if (b == null && a != null && c != null) {
-            valores[1] = Integer.valueOf(c.intValue() - a.intValue());
-        } else if (c == null && a != null && b != null) {
-            valores[2] = Integer.valueOf(a.intValue() + b.intValue());
+        try {
+            if (a == null && b != null && c != null) {
+                valores[0] = Integer.valueOf(Math.subtractExact(c.intValue(), b.intValue()));
+            } else if (b == null && a != null && c != null) {
+                valores[1] = Integer.valueOf(Math.subtractExact(c.intValue(), a.intValue()));
+            } else if (c == null && a != null && b != null) {
+                valores[2] = Integer.valueOf(Math.addExact(a.intValue(), b.intValue()));
+            }
+        } catch (ArithmeticException estouro) {
+            // Não representável como int: mantém a incógnita sem resolver em
+            // vez de gravar um valor de limite estourado (que se
+            // comportaria como um "+infinito"/"-infinito" espúrio nos
+            // botões de + e - dos quadradinhos — poderia liberar adição
+            // ilimitada ou bloquear tudo, conforme o sinal do estouro).
         }
     }
 
