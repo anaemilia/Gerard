@@ -308,6 +308,38 @@ public class TestePilotoTransformacaoMedidas {
                 "true");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo eiO = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trO = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efO = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiO.posicionar(new NumeroNatural(2000000000));
+        trO.posicionar(new NumeroInteiro(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(eiO, trO, efO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(eiO, trO, efO, eiO).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("aplicar de um resultado sem valor calculável continua lançando IllegalStateException",
+                verificaLancaIllegalState(() -> relacao.aplicar(resO, contexto)),
+                "true");
+        checar("diagnosticarValorProposto com valor correto não representável -> ArithmeticException",
+                verificaLancaArithmetic(() ->
+                        relacao.diagnosticarValorProposto(eiO, trO, efO, efO, new NumeroNatural(7))),
+                "true");
+
+        PapelQuantitativo eiO2 = FabricaPapeisTransformacaoMedidas.estadoInicial(publicador);
+        PapelQuantitativo trO2 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
+        PapelQuantitativo efO2 = FabricaPapeisTransformacaoMedidas.estadoFinal(publicador);
+        eiO2.posicionar(new NumeroNatural(2000000000));
+        trO2.posicionar(new NumeroInteiro(2000000000));
+        efO2.posicionar(new NumeroNatural(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(eiO2, trO2, efO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE MEDIDAS PASSARAM.");
     }
 
@@ -325,6 +357,15 @@ public class TestePilotoTransformacaoMedidas {
             acao.run();
             return "false";
         } catch (IllegalArgumentException esperada) {
+            return "true";
+        }
+    }
+
+    private static String verificaLancaArithmetic(Runnable acao) {
+        try {
+            acao.run();
+            return "false";
+        } catch (ArithmeticException esperada) {
             return "true";
         }
     }

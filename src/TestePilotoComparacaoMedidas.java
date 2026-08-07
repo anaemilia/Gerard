@@ -289,6 +289,31 @@ public class TestePilotoComparacaoMedidas {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo rdO = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrO = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnO = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdO.posicionar(new NumeroNatural(2000000000));
+        vrO.posicionar(new NumeroInteiro(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(rdO, vrO, rnO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(rdO, vrO, rnO, rdO).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo rdO2 = FabricaPapeisComparacaoMedidas.referido(publicador);
+        PapelQuantitativo vrO2 = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);
+        PapelQuantitativo rnO2 = FabricaPapeisComparacaoMedidas.referendo(publicador);
+        rdO2.posicionar(new NumeroNatural(2000000000));
+        vrO2.posicionar(new NumeroInteiro(2000000000));
+        rnO2.posicionar(new NumeroNatural(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(rdO2, vrO2, rnO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPARAÇÃO DE MEDIDAS PASSARAM.");
     }
 

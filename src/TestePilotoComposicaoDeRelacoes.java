@@ -234,6 +234,31 @@ public class TestePilotoComposicaoDeRelacoes {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo r1O = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2O = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfO = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1O.posicionar(new NumeroInteiro(2000000000));
+        r2O.posicionar(new NumeroInteiro(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(r1O, r2O, rfO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(r1O, r2O, rfO, r1O).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo r1O2 = FabricaPapeisComposicaoDeRelacoes.relacao1(publicador);
+        PapelQuantitativo r2O2 = FabricaPapeisComposicaoDeRelacoes.relacao2(publicador);
+        PapelQuantitativo rfO2 = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(publicador);
+        r1O2.posicionar(new NumeroInteiro(2000000000));
+        r2O2.posicionar(new NumeroInteiro(2000000000));
+        rfO2.posicionar(new NumeroInteiro(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(r1O2, r2O2, rfO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE RELAÇÕES PASSARAM.");
     }
 

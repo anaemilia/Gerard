@@ -235,6 +235,31 @@ public class TestePilotoTransformacaoDeRelacao {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo riO = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trO = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfO = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riO.posicionar(new NumeroInteiro(2000000000));
+        trO.posicionar(new NumeroInteiro(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(riO, trO, rfO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(riO, trO, rfO, riO).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo riO2 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
+        PapelQuantitativo trO2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        PapelQuantitativo rfO2 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
+        riO2.posicionar(new NumeroInteiro(2000000000));
+        trO2.posicionar(new NumeroInteiro(2000000000));
+        rfO2.posicionar(new NumeroInteiro(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(riO2, trO2, rfO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE RELAÇÃO PASSARAM.");
     }
 

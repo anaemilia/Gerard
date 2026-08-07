@@ -56,7 +56,14 @@ public final class RelacaoEstruturalComparacao {
         int rd = referido.valorAtual().valorOuNull();
         int vr = valorRelativo.valorAtual().valorOuNull();
         int rn = referendo.valorAtual().valorOuNull();
-        return (rn == rd + vr) ? EstadoConsistencia.CONSISTENTE : EstadoConsistencia.REPRESENTACAO_INCONSISTENTE;
+        try {
+            return (rn == Math.addExact(rd, vr))
+                    ? EstadoConsistencia.CONSISTENTE : EstadoConsistencia.REPRESENTACAO_INCONSISTENTE;
+        } catch (ArithmeticException estouro) {
+            // A soma não é representável como int — não dá para afirmar nem
+            // consistência nem inconsistência sem inventar um número errado.
+            return EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO;
+        }
     }
 
     /**
@@ -74,11 +81,7 @@ public final class RelacaoEstruturalComparacao {
         exigirNaoNulo(valorRelativo, "valorRelativo");
         exigirNaoNulo(referendo, "referendo");
 
-        int incognitas = 0;
-        if (referido.ehIncognita()) incognitas++;
-        if (valorRelativo.ehIncognita()) incognitas++;
-        if (referendo.ehIncognita()) incognitas++;
-
+        int incognitas = contarIncognitas(referido, valorRelativo, referendo);
         if (incognitas != 1) {
             return new ResultadoCalculo(null, null, descreverRelacao(),
                     EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
@@ -88,21 +91,15 @@ public final class RelacaoEstruturalComparacao {
         }
 
         if (referendo.ehIncognita()) {
-            int calculado = referido.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull();
-            return new ResultadoCalculo(referendo, new NumeroInteiro(calculado), descreverRelacao(),
-                    EstadoConsistencia.CONSISTENTE, "Referendo = Referido + ValorRelativo",
-                    OrigemAcao.ORIGEM_SISTEMA);
+            return resultadoDaSoma(referendo, referido.valorAtual().valorOuNull(),
+                    valorRelativo.valorAtual().valorOuNull(), "Referendo = Referido + ValorRelativo");
         }
         if (referido.ehIncognita()) {
-            int calculado = referendo.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull();
-            return new ResultadoCalculo(referido, new NumeroInteiro(calculado), descreverRelacao(),
-                    EstadoConsistencia.CONSISTENTE, "Referido = Referendo - ValorRelativo",
-                    OrigemAcao.ORIGEM_SISTEMA);
+            return resultadoDaSubtracao(referido, referendo.valorAtual().valorOuNull(),
+                    valorRelativo.valorAtual().valorOuNull(), "Referido = Referendo - ValorRelativo");
         }
-        int calculado = referendo.valorAtual().valorOuNull() - referido.valorAtual().valorOuNull();
-        return new ResultadoCalculo(valorRelativo, new NumeroInteiro(calculado), descreverRelacao(),
-                EstadoConsistencia.CONSISTENTE, "ValorRelativo = Referendo - Referido",
-                OrigemAcao.ORIGEM_SISTEMA);
+        return resultadoDaSubtracao(valorRelativo, referendo.valorAtual().valorOuNull(),
+                referido.valorAtual().valorOuNull(), "ValorRelativo = Referendo - Referido");
     }
 
     /**
@@ -152,42 +149,36 @@ public final class RelacaoEstruturalComparacao {
 
         if (papelAlterado == referido) {
             if (referido.estaPreenchido() && valorRelativo.estaPreenchido()) {
-                int calculado = referido.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull();
-                return new ResultadoCalculo(referendo, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "Referendo recalculado = Referido + ValorRelativo",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSoma(referendo, referido.valorAtual().valorOuNull(),
+                        valorRelativo.valorAtual().valorOuNull(),
+                        "Referendo recalculado = Referido + ValorRelativo");
             }
             if (referido.estaPreenchido() && referendo.estaPreenchido()) {
-                int calculado = referendo.valorAtual().valorOuNull() - referido.valorAtual().valorOuNull();
-                return new ResultadoCalculo(valorRelativo, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "ValorRelativo recalculado = Referendo - Referido",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSubtracao(valorRelativo, referendo.valorAtual().valorOuNull(),
+                        referido.valorAtual().valorOuNull(),
+                        "ValorRelativo recalculado = Referendo - Referido");
             }
         } else if (papelAlterado == valorRelativo) {
             if (referido.estaPreenchido() && valorRelativo.estaPreenchido()) {
-                int calculado = referido.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull();
-                return new ResultadoCalculo(referendo, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "Referendo recalculado = Referido + ValorRelativo",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSoma(referendo, referido.valorAtual().valorOuNull(),
+                        valorRelativo.valorAtual().valorOuNull(),
+                        "Referendo recalculado = Referido + ValorRelativo");
             }
             if (valorRelativo.estaPreenchido() && referendo.estaPreenchido()) {
-                int calculado = referendo.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull();
-                return new ResultadoCalculo(referido, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "Referido recalculado = Referendo - ValorRelativo",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSubtracao(referido, referendo.valorAtual().valorOuNull(),
+                        valorRelativo.valorAtual().valorOuNull(),
+                        "Referido recalculado = Referendo - ValorRelativo");
             }
         } else {
             if (referido.estaPreenchido() && referendo.estaPreenchido()) {
-                int calculado = referendo.valorAtual().valorOuNull() - referido.valorAtual().valorOuNull();
-                return new ResultadoCalculo(valorRelativo, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "ValorRelativo recalculado = Referendo - Referido",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSubtracao(valorRelativo, referendo.valorAtual().valorOuNull(),
+                        referido.valorAtual().valorOuNull(),
+                        "ValorRelativo recalculado = Referendo - Referido");
             }
             if (valorRelativo.estaPreenchido() && referendo.estaPreenchido()) {
-                int calculado = referendo.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull();
-                return new ResultadoCalculo(referido, new NumeroInteiro(calculado), descreverRelacao(),
-                        EstadoConsistencia.CONSISTENTE, "Referido recalculado = Referendo - ValorRelativo",
-                        OrigemAcao.ORIGEM_SISTEMA);
+                return resultadoDaSubtracao(referido, referendo.valorAtual().valorOuNull(),
+                        valorRelativo.valorAtual().valorOuNull(),
+                        "Referido recalculado = Referendo - ValorRelativo");
             }
         }
 
@@ -227,29 +218,58 @@ public final class RelacaoEstruturalComparacao {
                     "erro.papel.valorForaDoDominio", "feedback.papel.valorForaDoDominio",
                     "correcao.papel.valorForaDoDominio"));
         }
-        ResultadoCalculo esperado = calcularValorAusente(referido, valorRelativo, referendo);
-        if (!esperado.temValorCalculavel() || esperado.getPapelCalculado() != papelAlvo) {
+        // Pré-condição verificada diretamente (não pelo resultado de
+        // calcularValorAusente): desde a guarda de estouro, esse método também
+        // devolve NAO_RESOLVIVEL quando a conta não é representável, o que não
+        // é violação de contrato do chamador e não deve virar a mesma exceção.
+        if (!papelAlvo.ehIncognita() || contarIncognitas(referido, valorRelativo, referendo) != 1) {
             throw new IllegalStateException(
                     "papelAlvo precisa ser exatamente o único papel incógnito entre os três — mesma "
-                            + "pré-condição de calcularValorAusente (estado: " + esperado.getEstadoConsistencia() + ")");
+                            + "pré-condição de calcularValorAusente");
+        }
+        ResultadoCalculo esperado = calcularValorAusente(referido, valorRelativo, referendo);
+        if (!esperado.temValorCalculavel()) {
+            throw new ArithmeticException(
+                    "O valor correto para o papelAlvo não é representável como inteiro; "
+                            + "não há contra o que diagnosticar a proposta.");
         }
         int correto = esperado.getValorCalculado().valorOuNull();
         int proposto = valorProposto.valorOuNull();
         if (proposto == correto) {
             return java.util.Optional.empty();
         }
-        int invertido = papelAlvo == referendo
-                ? referido.valorAtual().valorOuNull() - valorRelativo.valorAtual().valorOuNull()
-                : papelAlvo == referido
-                        ? referendo.valorAtual().valorOuNull() + valorRelativo.valorAtual().valorOuNull()
-                        : referendo.valorAtual().valorOuNull() + referido.valorAtual().valorOuNull();
-        if (proposto == invertido) {
+        Integer invertido = valorDaOperacaoInvertida(referido, valorRelativo, referendo, papelAlvo);
+        if (invertido != null && proposto == invertido.intValue()) {
             return java.util.Optional.of(new DiagnosticoErroPapel(TipoErroPapel.OPERACAO_INVERTIDA,
                     "erro.papel.operacaoInvertida", "feedback.papel.operacaoInvertida",
                     "correcao.papel.operacaoInvertida"));
         }
         return java.util.Optional.of(new DiagnosticoErroPapel(TipoErroPapel.VALOR_INCORRETO,
                 "erro.papel.valorIncorreto", "feedback.papel.valorIncorreto", "correcao.papel.valorIncorreto"));
+    }
+
+    /**
+     * Valor que a operação inversa da correta produziria, ou null quando essa
+     * conta não é representável como int — nesse caso o padrão "operação
+     * invertida" simplesmente não pode ser reconhecido, e o diagnóstico cai no
+     * genérico VALOR_INCORRETO em vez de comparar contra um número estourado.
+     */
+    private Integer valorDaOperacaoInvertida(PapelQuantitativo referido, PapelQuantitativo valorRelativo,
+            PapelQuantitativo referendo, PapelQuantitativo papelAlvo) {
+        try {
+            if (papelAlvo == referendo) {
+                return Integer.valueOf(Math.subtractExact(
+                        referido.valorAtual().valorOuNull(), valorRelativo.valorAtual().valorOuNull()));
+            }
+            if (papelAlvo == referido) {
+                return Integer.valueOf(Math.addExact(
+                        referendo.valorAtual().valorOuNull(), valorRelativo.valorAtual().valorOuNull()));
+            }
+            return Integer.valueOf(Math.addExact(
+                    referendo.valorAtual().valorOuNull(), referido.valorAtual().valorOuNull()));
+        } catch (ArithmeticException estouro) {
+            return null;
+        }
     }
 
     /**
@@ -267,6 +287,50 @@ public final class RelacaoEstruturalComparacao {
                             + (resultado == null ? "resultado nulo" : resultado.getEstadoConsistencia()) + ")");
         }
         return resultado.getPapelCalculado().posicionar(resultado.getValorCalculado(), resultado.getOrigem(), contexto);
+    }
+
+    /**
+     * Soma protegida contra estouro de int. Antes desta guarda (2026-08-06), o
+     * cálculo devolvia silenciosamente um número errado — 2000000000 +
+     * 2000000000 dava -294967296, reportado como CONSISTENTE. Um valor não
+     * representável não é erro do estudante nem violação de contrato do
+     * chamador: é um estado legítimo a comunicar, então vira
+     * NAO_RESOLVIVEL_NESTE_ESTADO, o mesmo estado que calcularValorAusente já
+     * usa quando não há uma incógnita única a resolver.
+     */
+    private ResultadoCalculo resultadoDaSoma(PapelQuantitativo alvo, int a, int b, String explicacao) {
+        try {
+            return new ResultadoCalculo(alvo, new NumeroInteiro(Math.addExact(a, b)), descreverRelacao(),
+                    EstadoConsistencia.CONSISTENTE, explicacao, OrigemAcao.ORIGEM_SISTEMA);
+        } catch (ArithmeticException estouro) {
+            return resultadoNaoRepresentavel();
+        }
+    }
+
+    /** Subtração protegida contra estouro de int — ver resultadoDaSoma. */
+    private ResultadoCalculo resultadoDaSubtracao(PapelQuantitativo alvo, int a, int b, String explicacao) {
+        try {
+            return new ResultadoCalculo(alvo, new NumeroInteiro(Math.subtractExact(a, b)), descreverRelacao(),
+                    EstadoConsistencia.CONSISTENTE, explicacao, OrigemAcao.ORIGEM_SISTEMA);
+        } catch (ArithmeticException estouro) {
+            return resultadoNaoRepresentavel();
+        }
+    }
+
+    private ResultadoCalculo resultadoNaoRepresentavel() {
+        return new ResultadoCalculo(null, null, descreverRelacao(),
+                EstadoConsistencia.NAO_RESOLVIVEL_NESTE_ESTADO,
+                "O valor resultante ultrapassa o intervalo representável de um número inteiro; "
+                        + "nenhum valor é calculado, em vez de devolver um resultado estourado.",
+                OrigemAcao.ORIGEM_SISTEMA);
+    }
+
+    private static int contarIncognitas(PapelQuantitativo a, PapelQuantitativo b, PapelQuantitativo c) {
+        int incognitas = 0;
+        if (a.ehIncognita()) incognitas++;
+        if (b.ehIncognita()) incognitas++;
+        if (c.ehIncognita()) incognitas++;
+        return incognitas;
     }
 
     private static void exigirNaoNulo(PapelQuantitativo papel, String nomeParametro) {

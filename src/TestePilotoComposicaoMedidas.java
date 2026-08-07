@@ -223,6 +223,31 @@ public class TestePilotoComposicaoMedidas {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo parte1O = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2O = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoO = PapelQuantitativo.todo(publicador);
+        parte1O.posicionar(new NumeroNatural(2000000000));
+        parte2O.posicionar(new NumeroNatural(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(parte1O, parte2O, todoO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(parte1O, parte2O, todoO, parte1O).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo parte1O2 = PapelQuantitativo.parte1(publicador);
+        PapelQuantitativo parte2O2 = PapelQuantitativo.parte2(publicador);
+        PapelQuantitativo todoO2 = PapelQuantitativo.todo(publicador);
+        parte1O2.posicionar(new NumeroNatural(2000000000));
+        parte2O2.posicionar(new NumeroNatural(2000000000));
+        todoO2.posicionar(new NumeroNatural(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(parte1O2, parte2O2, todoO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO PASSARAM.");
     }
 

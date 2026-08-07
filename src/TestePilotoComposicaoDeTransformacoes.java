@@ -238,6 +238,31 @@ public class TestePilotoComposicaoDeTransformacoes {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
+        PapelQuantitativo t1O = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2O = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfO = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1O.posicionar(new NumeroInteiro(2000000000));
+        t2O.posicionar(new NumeroInteiro(2000000000));
+        ResultadoCalculo resO = relacao.calcularValorAusente(t1O, t2O, tfO);
+        checar("2e9 + 2e9 não é representável -> NAO_RESOLVIVEL_NESTE_ESTADO (antes dava -294967296/CONSISTENTE)",
+                resO.getEstadoConsistencia().name(), "NAO_RESOLVIVEL_NESTE_ESTADO");
+        checar("não há valor calculado quando estoura", String.valueOf(resO.temValorCalculavel()), "false");
+        checar("recalcularParaConsistencia também protege",
+                relacao.recalcularParaConsistencia(t1O, t2O, tfO, t1O).getEstadoConsistencia().name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        PapelQuantitativo t1O2 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo t2O2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo tfO2 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        t1O2.posicionar(new NumeroInteiro(2000000000));
+        t2O2.posicionar(new NumeroInteiro(2000000000));
+        tfO2.posicionar(new NumeroInteiro(1));
+        checar("verificarConsistencia com soma não representável -> NAO_RESOLVIVEL_NESTE_ESTADO",
+                relacao.verificarConsistencia(t1O2, t2O2, tfO2).name(),
+                "NAO_RESOLVIVEL_NESTE_ESTADO");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE COMPOSIÇÃO DE TRANSFORMAÇÕES PASSARAM.");
     }
 
