@@ -1,5 +1,24 @@
 # Changelog — GERARD Semantic Model and Skills v2
 
+## 2.6 — 2026-08-07
+
+### gerard-consistencia-estado: regra 5 (eixo dos inteiros) confirmada
+
+- Investigação só leitura, item 2 do levantamento de pendências
+  (`LEVANTAMENTO_PENDENCIAS_2026-08-07.md`) — pedida explicitamente pela
+  usuária.
+- O gate que impede a incógnita de se resolver visualmente antes do
+  protocolo normal foi localizado em `Main.java:11612-11674`
+  (`sincronizarNumeroRelativoComGraficoSeNecessario`), não em
+  `ScaffoldingGraficoInteiros`/`LayoutPainelEixoInteiros`/
+  `PoliticaPreenchimentoIncognita` como a formulação original sugeria.
+- Escopo mais preciso: o gate só se aplica quando o item movido pelo
+  eixo é a própria incógnita ainda pendente de confirmação — não é um
+  bloqueio geral do eixo. O mesmo mecanismo (`incognitaAguardandoConfirmacaoDeValor`/
+  `confirmarValorIncognitaAceito`) já protege `EIXO_VERTICAL` e
+  `ARRASTE` da mesma forma.
+- Nenhum código de produção muda por este registro — só documentação.
+
 ## 2.5 — 2026-08-07
 
 ### Nova skill: gerard-handlers-de-interacao (direção, não implementada)
