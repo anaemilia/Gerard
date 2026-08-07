@@ -16,9 +16,9 @@ Descreve como pendência a ausência de `RelacaoEstruturalComparacao`, mas essa 
 - **Trabalho**: investigação só leitura, escopo já delimitado (poucos pontos de chamada conhecidos).
 - **Risco**: nenhum (não implica mudança de código, só atualizar o status da skill).
 
-## 3. Log de consistência automática
+## 3. Log de consistência automática — CONCLUÍDO (commit pendente de mensagem final)
 
-`TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md`: o recálculo automático de consistência entre representações (`aplicarEstadoCompartilhadoEmTodasAsRepresentacoes`, 17+ pontos de chamada) não gera nenhuma linha de log de produção, em nenhuma das 3 categorias de Medidas.
+`TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md`: o recálculo automático de consistência entre representações (`aplicarEstadoCompartilhadoEmTodasAsRepresentacoes`, 17+ pontos de chamada) não gerava nenhuma linha de log de produção, em nenhuma das 3 categorias de Medidas. Implementado: `EstadoSemanticoCompartilhado.Snapshot` expõe `getIndiceResolvidoAutomaticamente()`; `Main.java` só lê e registra (origem SISTEMA). Ver `RELATORIO_LOG_CONSISTENCIA_AUTOMATICA_IMPLEMENTACAO_2026-08-07.md` — inclui uma correção de rota arquitetural feita durante a implementação (primeira versão colocava a detecção em `Main.java`, corrigida para expor o fato no domínio).
 
 - **Trabalho**: mecanismo único e já mapeado (funil de poucos métodos), mas mexe em código de produção usado pela coleta de dados de pesquisa — exige compilação e harnesses antes/depois.
 - **Risco**: baixo a médio — escopo contido, mas é produção.

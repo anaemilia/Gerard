@@ -55,14 +55,17 @@ public final class EstadoSemanticoCompartilhado {
         private final int indiceAlterado;
         private final Origem origem;
         private final long versao;
+        private final int indiceResolvidoAutomaticamente;
 
         private Snapshot(TipoSituacaoAditiva tipo, ValorNumerico[] valores,
-                int indiceAlterado, Origem origem, long versao) {
+                int indiceAlterado, Origem origem, long versao,
+                int indiceResolvidoAutomaticamente) {
             this.tipo = tipo;
             this.valores = valores;
             this.indiceAlterado = indiceAlterado;
             this.origem = origem;
             this.versao = versao;
+            this.indiceResolvidoAutomaticamente = indiceResolvidoAutomaticamente;
         }
 
         public TipoSituacaoAditiva getTipo() { return tipo; }
@@ -88,6 +91,22 @@ public final class EstadoSemanticoCompartilhado {
             ValorNumerico valor = getValorNumerico(indice);
             return valor == null ? DominioNumerico.NATURAIS : valor.getDominio();
         }
+
+        /**
+         * Índice do papel que a relação estrutural (piloto) preencheu ou
+         * recalculou automaticamente durante a chamada de atualizar() que
+         * produziu este snapshot — -1 se nenhum papel foi resolvido
+         * automaticamente desta vez. Nunca é o papel que o próprio usuário
+         * acabou de alterar (ver EstadoSemanticoCompartilhado.definirSePermitido).
+         * Fonte única desse fato: quem resolve a relação é quem sabe se
+         * resolveu algo, e é aqui que essa informação deve ser lida — não
+         * reconstruída externamente por diff de estado "antes"/"depois" (ver
+         * TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md e
+         * gerard-knowledge-locality-principle).
+         */
+        public int getIndiceResolvidoAutomaticamente() {
+            return indiceResolvidoAutomaticamente;
+        }
     }
 
     private TipoSituacaoAditiva tipo;
@@ -95,6 +114,7 @@ public final class EstadoSemanticoCompartilhado {
     private int indiceAlterado = -1;
     private Origem origem = Origem.INICIALIZACAO;
     private long versao = 0L;
+    private int indiceResolvidoAutomaticamente = -1;
 
     public EstadoSemanticoCompartilhado() {
         limpar(null);
@@ -150,6 +170,7 @@ public final class EstadoSemanticoCompartilhado {
         }
         indiceAlterado = novoIndiceAlterado;
         origem = novaOrigem == null ? Origem.PROTOCOLO : novaOrigem;
+        indiceResolvidoAutomaticamente = -1;
         resolverRelacaoAditiva(indiceIncognitaProtegida,
                 permitirPreenchimentoIncognita);
         versao++;
@@ -159,7 +180,7 @@ public final class EstadoSemanticoCompartilhado {
     public synchronized Snapshot snapshot() {
         return new Snapshot(tipo,
                 new ValorNumerico[] { valores[0], valores[1], valores[2] },
-                indiceAlterado, origem, versao);
+                indiceAlterado, origem, versao, indiceResolvidoAutomaticamente);
     }
 
     private void resolverRelacaoAditiva(int indiceIncognitaProtegida,
@@ -531,6 +552,19 @@ public final class EstadoSemanticoCompartilhado {
         }
     }
 
+    /**
+     * Único ponto de escrita usado pela resolução automática da relação
+     * aditiva (preenchimento do papel ausente e recálculo de consistência —
+     * ver resolverRelacaoAditiva e as duas rotas ricas do piloto). Nunca é
+     * chamado para o valor que o próprio usuário acabou de fornecer — esse é
+     * escrito direto no laço de atualizar(), antes de resolverRelacaoAditiva
+     * rodar. Por isso, uma mudança de valor aqui é, por construção, uma
+     * resolução automática do sistema; registra o índice para
+     * indiceResolvidoAutomaticamente cobrir os dois casos que interessam ao
+     * log de produção — primeiro preenchimento (null→valor) e recálculo de
+     * consistência (valor→outro valor) — sem precisar saber qual dos dois
+     * caminhos chamou.
+     */
     private void definirSePermitido(int indice, int valor,
             int indiceIncognitaProtegida,
             boolean permitirPreenchimentoIncognita) {
@@ -538,7 +572,12 @@ public final class EstadoSemanticoCompartilhado {
                 && !permitirPreenchimentoIncognita) {
             return;
         }
+        Integer valorAntes = valores[indice] == null ? null : valores[indice].valorOuNull();
         definir(indice, valor);
+        Integer valorDepois = valores[indice] == null ? null : valores[indice].valorOuNull();
+        if (valorDepois != null && !valorDepois.equals(valorAntes)) {
+            indiceResolvidoAutomaticamente = indice;
+        }
     }
     private void definir(int indice, int valor) {
         try {

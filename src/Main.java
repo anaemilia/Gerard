@@ -7386,11 +7386,13 @@ public class Main extends JFrame {
                 }
             }
             int indicePapelAlterado = converterIndiceRealParaPapel(indiceAlteradoReal);
-            return estadoSemanticoCompartilhado.atualizar(
+            EstadoSemanticoCompartilhado.Snapshot snapshot = estadoSemanticoCompartilhado.atualizar(
                     tipoSituacaoSelecionada, valores, conhecidos,
                     indicePapelAlterado, origem,
                     obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
                     incognitaPreenchidaPeloProtocoloMouseTexto());
+            registrarLogConsistenciaAutomaticaSeHouve(snapshot, origem);
+            return snapshot;
         }
 
         private void atualizarIndicesEstadoCompartilhado(int indiceAlteradoReal) {
@@ -7485,11 +7487,50 @@ public class Main extends JFrame {
 
             int indiceAlteradoSemantico = mapeamento.paraIndiceSemantico(
                     indiceAlteradoVisual);
-            return estadoSemanticoCompartilhado.atualizar(
+            EstadoSemanticoCompartilhado.Snapshot snapshot = estadoSemanticoCompartilhado.atualizar(
                     tipoSituacaoSelecionada, valores, conhecidos,
                     indiceAlteradoSemantico, origem,
                     obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
                     incognitaPreenchidaPeloProtocoloMouseTexto());
+            registrarLogConsistenciaAutomaticaSeHouve(snapshot, origem);
+            return snapshot;
+        }
+
+        /**
+         * Traduz para o log de produção (origem SISTEMA) o fato que
+         * EstadoSemanticoCompartilhado já determina internamente: qual papel,
+         * se algum, foi resolvido/recalculado automaticamente na chamada de
+         * atualizar() que gerou este snapshot
+         * (Snapshot.getIndiceResolvidoAutomaticamente() — ver
+         * EstadoSemanticoCompartilhado.definirSePermitido). Main não decide
+         * nem recalcula nada aqui, só lê o fato já exposto pelo domínio — a
+         * detecção (comparar o valor antes/depois da escrita) vive inteira
+         * dentro do estado compartilhado, mais perto de onde a relação
+         * estrutural é de fato resolvida (gerard-knowledge-locality-principle,
+         * localidade relacional). Ver TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md.
+         */
+        private void registrarLogConsistenciaAutomaticaSeHouve(
+                EstadoSemanticoCompartilhado.Snapshot snapshot,
+                EstadoSemanticoCompartilhado.Origem origem) {
+            if (snapshot == null) {
+                return;
+            }
+            int indiceResolvido = snapshot.getIndiceResolvidoAutomaticamente();
+            if (indiceResolvido < 0) {
+                return;
+            }
+            registrarLogComputador(
+                    "Recomputo automático de consistência entre representações",
+                    "Manutenção de consistência entre representações (REFERENCE.md §4.8)",
+                    "Papel semântico índice " + indiceResolvido,
+                    "Preencher ou recalcular automaticamente um papel a partir dos demais,"
+                            + " mantendo a relação aditiva consistente entre as representações",
+                    "Cálculo determinístico via RelacaoEstrutural*.calcularValorAusente/"
+                            + "recalcularParaConsistencia (pacote piloto), delegado por"
+                            + " EstadoSemanticoCompartilhado.resolverRelacaoAditiva",
+                    "CONSISTENCIA_AUTOMATICA",
+                    "origem=" + origem + "; papelResolvido=" + indiceResolvido
+                            + "; valor=" + snapshot.valorOuZero(indiceResolvido));
         }
 
         private void aplicarEstadoCompartilhadoEmTodasAsRepresentacoes(

@@ -1,7 +1,7 @@
 # Lacuna registrada — manutenção automática de consistência não gera log em produção
 
-Status: **registrada como lacuna, não como bug.** Sem decisão sobre se deve
-ser corrigida, nem como. Não autorizada a começar.
+Status: **resolvida (2026-08-07).** Ver "Implementação" ao final —
+`RELATORIO_LOG_CONSISTENCIA_AUTOMATICA_IMPLEMENTACAO_2026-08-07.md`.
 
 ---
 
@@ -48,3 +48,24 @@ produção, nem com origem `SISTEMA` nem com nenhuma outra.
 Esta lacuna **não está autorizada a ser corrigida agora**. Existe só como
 registro. Nenhuma decisão foi tomada sobre se deve gerar log, com que
 granularidade, ou por qual mecanismo.
+
+## Implementação (2026-08-07)
+
+Pedida explicitamente. `EstadoSemanticoCompartilhado.Snapshot` passou a
+expor `getIndiceResolvidoAutomaticamente()` — o domínio expõe o fato de
+que resolveu algo; `Main.java` só lê esse fato e chama
+`registrarLogComputador` (origem `ORIGEM_SISTEMA`, evento
+`CONSISTENCIA_AUTOMATICA`). Cobre os dois casos descritos no achado
+original: primeiro preenchimento e recálculo de consistência ("azul").
+Detalhes completos, incluindo uma correção de rota (primeira tentativa
+colocava a detecção em `Main.java` por diff — rejeitada por violar
+localidade relacional, corrigida para expor o fato no domínio) e a
+verificação (compilação completa, suíte comparativa de 40 cenários, 7
+harnesses do piloto, suíte temporária dedicada de 10 checagens):
+`RELATORIO_LOG_CONSISTENCIA_AUTOMATICA_IMPLEMENTACAO_2026-08-07.md`.
+
+Caveat conhecido, não resolvido aqui: um ponto de chamada específico
+(controle de barras da Comparação, arraste contínuo) pode gerar uma linha
+de log por passo do arrasto quando o valor dependente muda a cada passo —
+throttling de log durante gesto contínuo é uma decisão de política
+separada, não tomada nesta tarefa.
