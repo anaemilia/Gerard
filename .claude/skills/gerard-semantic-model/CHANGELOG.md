@@ -1,5 +1,47 @@
 # Changelog — GERARD Semantic Model and Skills v2
 
+## 2.7 — 2026-08-07
+
+### Evento FEEDBACK_EXIBIDO + arquitetura envelope/payload — implementados
+
+- Item 6 do levantamento de pendências (`LEVANTAMENTO_PENDENCIAS_2026-08-07.md`).
+  Escopo confirmado pela usuária: "tudo de uma vez, incluindo produção" —
+  tanto a reestruturação do piloto quanto a ligação ao log real.
+- `EventoEnvelope` (novo, `gerard.dominio.campoaditivo.evento`) — núcleo
+  fixo (event_id, action_id, tipo versionado, origem da ação, timestamp)
+  descrito em REFERENCE.md §4.8 (Seção 19.1 da Revisão 5).
+- `TipoEventoPapel` ganhou `FEEDBACK_EXIBIDO` e `chaveVersionada()`
+  (sufixo `.v1`, "type-based versioning" do CloudEvents).
+- `ModalidadeEntregaScaffolding` (novo enum) — VISUAL, SONORA, HAPTICA,
+  MANIPULATIVA, GUIADA_POR_MOVIMENTO; `ehPassiva()`/`ehInterativa()`
+  determinam o critério de confirmação do evento ("renderizado" vs.
+  "affordance ativada").
+- `EventoPapelQuantitativo` recomposto para conter um `EventoEnvelope` +
+  campos de payload — todos os getters públicos originais preservados,
+  `paraMapa()` só ganhou chaves novas (nenhuma removida/renomeada).
+  Novo factory `feedbackExibido(...)`.
+- Produção: `Main.registrarFeedbackExibido(estiloScaffolding, modalidade,
+  detalhesExtra)` traduz o mesmo vocabulário para uma linha real no log
+  (`registrarLogComputador`), sem instanciar a classe do piloto em
+  `Main.java` — "o domínio não grava logs diretamente"
+  (gerard-semantic-event-logging). Ligado a 5 pontos reais: AG_EMLQ
+  (`confirmarValorIncognitaAceito`), AG_EME
+  (`mostrarDicaOperacaoIncognita`), AG_EMCME mensagem
+  (`mostrarAvisoLimiteTentativasAtingido`), AG_EMCME material concreto
+  (`registrarTentativaIncognita`, no bloqueio por limite) e AG_EMS
+  (`configurarFeedbackConclusaoModelagem`).
+- Verificado: compilação completa (436 arquivos, 0 erros), os 3 harnesses
+  do piloto/comparativo (todos passando), e uma execução real sob Xvfb
+  que exercitou os 5 pontos de disparo (4 deles atrás de `JOptionPane`
+  modais, dispensados via Robot) e confirmou as 5 linhas
+  `FEEDBACK_EXIBIDO` no TSV real de produção, cada uma exatamente uma
+  vez, com `estilo`/`modalidade`/`criterio` corretos — ver
+  `RELATORIO_FEEDBACK_EXIBIDO_2026-08-07.md`.
+- REFERENCE.md §4.8 atualizado: as três afirmações "decisão-alvo, não
+  implementação" (arquitetura de evento, versionamento de esquema,
+  evento FEEDBACK_EXIBIDO) substituídas por notas de implementação
+  datadas de 2026-08-07.
+
 ## 2.6 — 2026-08-07
 
 ### gerard-consistencia-estado: regra 5 (eixo dos inteiros) confirmada

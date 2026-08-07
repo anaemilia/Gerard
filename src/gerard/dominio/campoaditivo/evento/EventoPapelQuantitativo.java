@@ -2,35 +2,37 @@ package gerard.dominio.campoaditivo.evento;
 
 import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
+import gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding;
 import gerard.dominio.campoaditivo.OrigemAcao;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Evento semântico do ciclo de vida de um PapelQuantitativo — representa o
- * SIGNIFICADO de uma tentativa de posicionamento, nunca um evento técnico
- * de interface. Carrega o suficiente para religar o evento à tentativa de
- * resolução específica em que ocorreu (id_acao, contexto) e para nunca
- * confundir uma inferência do sistema com uma ação do estudante
- * (origem_da_acao) — ver relatório técnico, seções "Origem das ações" e
- * "Contexto dos eventos semânticos".
+ * SIGNIFICADO de uma tentativa de posicionamento ou apresentação de
+ * apoio pedagógico, nunca um evento técnico de interface. Compõe um
+ * {@link EventoEnvelope} (núcleo fixo — event_id, action_id, tipo
+ * versionado, origem da ação, timestamp) com os campos de payload
+ * (variáveis por tipo de evento) — arquitetura decidida em
+ * {@code REFERENCE.md §4.8}, implementada aqui em 2026-08-07. Antes desta
+ * data os campos do envelope viviam soltos nesta classe; a separação
+ * interna não muda o formato de {@link #paraMapa()}, para não quebrar
+ * nenhum consumidor existente do mapa.
  */
 public final class EventoPapelQuantitativo implements EventoDominio {
 
+    private final EventoEnvelope envelope;
     private final TipoEventoPapel tipo;
-    private final String idAcao;
-    private final String actionId; // correlaciona tentativas da mesma ação (REFERENCE.md §4.8); distinto de idAcao (que é, na prática, o event_id de cada evento individual — ver nota abaixo)
-    private final OrigemAcao origemAcao;
     private final ContextoAcao contexto;
     private final String papelSemantico;
     private final String estadoAnterior;
     private final String estadoPosterior;
     private final String valorProposto;
     private final ResultadoAcao resultado;
-    private final DiagnosticoErroPapel diagnostico; // null quando resultado == ACEITO
-    private final long timestampEpocaMillis;
+    private final DiagnosticoErroPapel diagnostico; // null quando resultado == ACEITO ou tipo == FEEDBACK_EXIBIDO
+    private final String estiloScaffolding; // ex.: "AG_EMLQ" — só para FEEDBACK_EXIBIDO
+    private final ModalidadeEntregaScaffolding modalidadeEntrega; // idem
 
     /**
      * @param actionId correlaciona esta e outras tentativas da mesma ação
@@ -39,28 +41,14 @@ public final class EventoPapelQuantitativo implements EventoDominio {
      *        evento não participa desse fluxo (ex.: os dois eventos
      *        publicados por posicionar(...), que são um conceito
      *        ortogonal — validade de domínio, não a sequência de
-     *        tentativas rejeitadas de uma resposta). Não confundir com
-     *        idAcao: hoje idAcao já identifica CADA evento individual (é,
-     *        na prática, o event_id da Seção 4.8 — a renomeação está
-     *        registrada como recomendação ainda não aplicada); actionId é
-     *        o campo novo, que correlaciona vários eventos entre si.
+     *        tentativas rejeitadas de uma resposta).
      */
     public EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
                                     String papelSemantico, String estadoAnterior, String estadoPosterior,
                                     String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
                                     String actionId) {
-        this.tipo = tipo;
-        this.idAcao = UUID.randomUUID().toString();
-        this.actionId = actionId;
-        this.origemAcao = origemAcao;
-        this.contexto = contexto == null ? ContextoAcao.NAO_INFORMADO : contexto;
-        this.papelSemantico = papelSemantico;
-        this.estadoAnterior = estadoAnterior;
-        this.estadoPosterior = estadoPosterior;
-        this.valorProposto = valorProposto;
-        this.resultado = resultado;
-        this.diagnostico = diagnostico;
-        this.timestampEpocaMillis = System.currentTimeMillis();
+        this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
+                valorProposto, resultado, diagnostico, actionId, null, null);
     }
 
     /** Compatibilidade: eventos que não participam do fluxo de tentativas (ver actionId). */
@@ -68,31 +56,76 @@ public final class EventoPapelQuantitativo implements EventoDominio {
                                     String papelSemantico, String estadoAnterior, String estadoPosterior,
                                     String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico) {
         this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
-                valorProposto, resultado, diagnostico, null);
+                valorProposto, resultado, diagnostico, null, null, null);
+    }
+
+    private EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
+                                     String papelSemantico, String estadoAnterior, String estadoPosterior,
+                                     String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
+                                     String actionId, String estiloScaffolding,
+                                     ModalidadeEntregaScaffolding modalidadeEntrega) {
+        this.envelope = new EventoEnvelope(actionId, tipo.chaveVersionada(), origemAcao);
+        this.tipo = tipo;
+        this.contexto = contexto == null ? ContextoAcao.NAO_INFORMADO : contexto;
+        this.papelSemantico = papelSemantico;
+        this.estadoAnterior = estadoAnterior;
+        this.estadoPosterior = estadoPosterior;
+        this.valorProposto = valorProposto;
+        this.resultado = resultado;
+        this.diagnostico = diagnostico;
+        this.estiloScaffolding = estiloScaffolding;
+        this.modalidadeEntrega = modalidadeEntrega;
+    }
+
+    /**
+     * Evento FEEDBACK_EXIBIDO (REFERENCE.md §4.8) — um elemento do
+     * repertório de Scaffolding foi apresentado. Quem chama decide, pela
+     * modalidade, se já satisfez o critério de confirmação
+     * ("renderizado" para VISUAL/SONORA, "affordance ativada" para
+     * HAPTICA/MANIPULATIVA/GUIADA_POR_MOVIMENTO —
+     * {@link ModalidadeEntregaScaffolding}) antes de publicar — este
+     * método não verifica isso, só nomeia e carrega o fato.
+     *
+     * @param estiloScaffolding código do repertório concreto (ex.:
+     *        "AG_EMLQ" — ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md)
+     */
+    public static EventoPapelQuantitativo feedbackExibido(OrigemAcao origemAcao, ContextoAcao contexto,
+                                    String papelSemantico, String estiloScaffolding,
+                                    ModalidadeEntregaScaffolding modalidadeEntrega, String actionId) {
+        return new EventoPapelQuantitativo(TipoEventoPapel.FEEDBACK_EXIBIDO, origemAcao, contexto,
+                papelSemantico, null, null, null, null, null, actionId,
+                estiloScaffolding, modalidadeEntrega);
     }
 
     @Override
     public String getTipo() { return tipo.name(); }
 
     @Override
-    public long getTimestampEpocaMillis() { return timestampEpocaMillis; }
+    public long getTimestampEpocaMillis() { return envelope.getTimestampEpocaMillis(); }
 
-    public String getIdAcao() { return idAcao; }
-    public String getActionId() { return actionId; }
-    public OrigemAcao getOrigemAcao() { return origemAcao; }
+    /** Tipo semântico com sufixo de versão — ver {@link EventoEnvelope#getTipoVersionado()}. */
+    public String getTipoVersionado() { return envelope.getTipoVersionado(); }
+
+    public EventoEnvelope getEnvelope() { return envelope; }
+    public String getIdAcao() { return envelope.getEventId(); }
+    public String getActionId() { return envelope.getActionId(); }
+    public OrigemAcao getOrigemAcao() { return envelope.getOrigemAcao(); }
     public ContextoAcao getContexto() { return contexto; }
     public String getPapelSemantico() { return papelSemantico; }
     public ResultadoAcao getResultado() { return resultado; }
     public DiagnosticoErroPapel getDiagnostico() { return diagnostico; }
+    public String getEstiloScaffolding() { return estiloScaffolding; }
+    public ModalidadeEntregaScaffolding getModalidadeEntrega() { return modalidadeEntrega; }
     public boolean isAceito() { return resultado == ResultadoAcao.ACEITO; }
 
     @Override
     public Map<String, Object> paraMapa() {
         Map<String, Object> mapa = new LinkedHashMap<>();
-        mapa.put("id_acao", idAcao);
-        mapa.put("action_id", actionId);
+        mapa.put("id_acao", envelope.getEventId());
+        mapa.put("action_id", envelope.getActionId());
         mapa.put("tipo", getTipo());
-        mapa.put("origem_da_acao", origemAcao == null ? null : origemAcao.name());
+        mapa.put("tipo_versionado", envelope.getTipoVersionado());
+        mapa.put("origem_da_acao", envelope.getOrigemAcao() == null ? null : envelope.getOrigemAcao().name());
         mapa.put("id_sessao", contexto.getIdSessao());
         mapa.put("id_usuario_local", contexto.getIdUsuarioLocal());
         mapa.put("id_tentativa", contexto.getIdTentativa());
@@ -111,7 +144,9 @@ public final class EventoPapelQuantitativo implements EventoDominio {
         } else {
             mapa.put("tipo_erro", null);
         }
-        mapa.put("timestamp_epoca_millis", timestampEpocaMillis);
+        mapa.put("estilo_scaffolding", estiloScaffolding);
+        mapa.put("modalidade_entrega", modalidadeEntrega == null ? null : modalidadeEntrega.name());
+        mapa.put("timestamp_epoca_millis", envelope.getTimestampEpocaMillis());
         return mapa;
     }
 

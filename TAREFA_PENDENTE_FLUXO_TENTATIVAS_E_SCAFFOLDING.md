@@ -5,9 +5,11 @@ Status: **mecanismo de tentativas implementado (2026-08-07)** — piloto
 (`RELATORIO_FLUXO_TENTATIVAS_PRODUCAO_2026-08-07.md`). Conteúdo
 pedagógico da tela de ajuda: **primeiro rascunho implementado
 (2026-08-07)** — ver "Conteúdo da tela de ajuda" abaixo; não é validação
-pedagógica definitiva. O repertório local de Scaffolding (2 eixos) e a
-lógica de seleção dentro dele **continuam não implementados, não
-decididos**.
+pedagógica definitiva. Evento `FEEDBACK_EXIBIDO` (arquitetura
+envelope/payload + ligação ao log real de produção): **implementado
+(2026-08-07)** — ver "Evento `FEEDBACK_EXIBIDO` ligado ao log real de
+produção" abaixo. `AG_AC`/`AG_AE` (automatização de passos)
+**continuam não implementados, não decididos**.
 
 ---
 
@@ -118,6 +120,31 @@ documenta um bug de staleness encontrado e corrigido na chave de cache de
 `garantirTentativasIncognitaAtual` (não tinha o id da situação-problema,
 só o nome do papel). `AG_EMCME` está, com isso, implementado por
 completo (mensagem + material concreto).
+
+**Evento `FEEDBACK_EXIBIDO` ligado ao log real de produção (2026-08-07).**
+Escopo confirmado pela usuária: "tudo de uma vez, incluindo produção".
+Implementado nas duas pontas:
+
+- Piloto: `EventoEnvelope` (novo), `TipoEventoPapel.FEEDBACK_EXIBIDO` +
+  `chaveVersionada()`, `ModalidadeEntregaScaffolding` (novo enum, os 2
+  eixos deste repertório: passiva/interativa → critério "renderizado"/
+  "affordance ativada"), `EventoPapelQuantitativo` recomposto para conter
+  o envelope + payload (getters públicos e `paraMapa()` preservados,
+  só chaves novas).
+- Produção: `Main.registrarFeedbackExibido(estiloScaffolding, modalidade,
+  detalhesExtra)` — mesmo padrão desta sessão inteira, Main traduz o fato
+  para uma linha real no log sem instanciar a classe do piloto. Ligado a
+  todos os 5 códigos deste repertório que já tinham implementação real:
+  `AG_EMLQ` (`confirmarValorIncognitaAceito`), `AG_EME`
+  (`mostrarDicaOperacaoIncognita`), `AG_EMCME` mensagem
+  (`mostrarAvisoLimiteTentativasAtingido`), `AG_EMCME` material concreto
+  (`registrarTentativaIncognita`, no bloqueio) e `AG_EMS`
+  (`configurarFeedbackConclusaoModelagem`). `AG_AC`/`AG_AE` continuam só
+  descritos, sem gatilho — nada a ligar ainda.
+- Verificado sob Xvfb, com a aplicação real: os 5 pontos de disparo
+  produzem exatamente uma linha `FEEDBACK_EXIBIDO` cada, com
+  `estilo`/`modalidade`/`criterio` corretos, sem duplicação. Ver
+  `RELATORIO_FEEDBACK_EXIBIDO_2026-08-07.md`.
 
 ## Nota de atualização (2026-08-06) — vocabulário criado depois deste registro
 

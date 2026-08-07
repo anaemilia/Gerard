@@ -277,9 +277,13 @@ diagnóstico factual (quando houver rejeição), modalidade de interação
 Scaffolding utilizado, quando houver (parágrafo sobre os dois eixos de
 Scaffolding, acima).
 
-Esta é uma decisão de arquitetura-alvo, não uma implementação —
-`EventoPapelQuantitativo` continua como está até uma decisão explícita de
-implementar esta reestruturação.
+Implementado em 2026-08-07: `EventoEnvelope` (núcleo fixo) e
+`EventoPapelQuantitativo` (composição do envelope + payload) — ver
+`TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md` e
+`RELATORIO_FEEDBACK_EXIBIDO_2026-08-07.md`. A reestruturação preservou
+todos os getters públicos originais e o formato de `paraMapa()` (só
+ganhou chaves novas, nenhuma foi removida ou renomeada) — nenhum
+consumidor existente do mapa quebrou.
 
 Versionamento de esquema: versão embutida no campo "tipo" do envelope
 (sufixo `.vN`, ex.: `papel_quantitativo.posicionado.v1`), seguindo a
@@ -288,9 +292,9 @@ CloudEvents já referenciada na decisão de arquitetura de evento —
 consumidores podem rotear versões diferentes do mesmo tipo de evento para
 tratamentos diferentes. Não há campo de versão separado.
 
-Esta é uma decisão de formato-alvo, não uma implementação —
-`EventoPapelQuantitativo` continua como está até uma decisão explícita de
-implementar a reestruturação envelope + payload (decisão anterior).
+Implementado em 2026-08-07 junto com a reestruturação envelope +
+payload (decisão anterior) — `TipoEventoPapel.chaveVersionada()` gera o
+sufixo `.v1` a partir do próprio enum.
 
 Evento `FEEDBACK_EXIBIDO`: especificado, com critério de confirmação que
 depende da modalidade de entrega do Scaffolding (parágrafo sobre
@@ -317,8 +321,16 @@ entendeu ou prestou atenção ao feedback — isso continua não registrado,
 consistente com a proibição já existente de declarar interpretações sobre
 o participante a partir de um evento isolado (Seção 4.10).
 
-Esta é uma decisão de especificação-alvo, não uma implementação — nenhum
-evento `FEEDBACK_EXIBIDO` existe ainda no código.
+Implementado em 2026-08-07: `TipoEventoPapel.FEEDBACK_EXIBIDO` e
+`ModalidadeEntregaScaffolding` (piloto), publicado tanto no piloto
+(`EventoPapelQuantitativo.feedbackExibido(...)`) quanto no log real de
+produção — `Main.registrarFeedbackExibido(...)` traduz o mesmo
+vocabulário (estiloScaffolding, modalidade, critério de confirmação)
+para uma linha real no log, sem instanciar a classe do piloto em
+`Main.java` (o domínio não grava logs diretamente — mesmo padrão de
+todo o resto desta seção). Ligado a 5 pontos reais de disparo:
+AG_EMLQ, AG_EME, AG_EMCME (mensagem e material concreto) e AG_EMS —
+ver `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md`.
 
 ### 4.8.1 Mobilização do invariante operatório: sugestão do sistema e atribuição do pesquisador
 

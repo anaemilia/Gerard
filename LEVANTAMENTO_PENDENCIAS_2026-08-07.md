@@ -37,9 +37,9 @@ Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que co
 - **Trabalho**: exige critério pedagógico novo (dois eixos de decisão) antes de qualquer código — mais decisão de design do que implementação mecânica.
 - **Risco**: médio — decisão ainda não definida, pode exigir iteração.
 
-## 6. Evento `FEEDBACK_EXIBIDO` + arquitetura envelope/payload de eventos
+## 6. Evento `FEEDBACK_EXIBIDO` + arquitetura envelope/payload de eventos — CONCLUÍDO
 
-`gerard-semantic-event-logging`: arquitetura de eventos com envelope (contexto: sessão, tentativa, situação, representação) + payload, e o evento específico `FEEDBACK_EXIBIDO`, documentados mas não implementados.
+`gerard-semantic-event-logging`: arquitetura de eventos com envelope (event_id, action_id, tipo versionado, origem, timestamp) + payload, e o evento específico `FEEDBACK_EXIBIDO`, antes documentados mas não implementados. Escopo confirmado pela usuária: "tudo de uma vez, incluindo produção". Implementado: `EventoEnvelope` (novo), `ModalidadeEntregaScaffolding` (novo enum, 2 eixos), `EventoPapelQuantitativo` recomposto (envelope + payload, getters/`paraMapa()` preservados), e `Main.registrarFeedbackExibido(...)` ligado a 5 pontos reais de disparo (AG_EMLQ, AG_EME, AG_EMCME mensagem e material concreto, AG_EMS) — mesmo padrão de todo o resto da sessão: Main traduz o fato para o log real sem instanciar a classe do piloto. Verificado sob Xvfb com a aplicação real: as 5 linhas `FEEDBACK_EXIBIDO` aparecem no TSV de produção, cada uma exatamente uma vez, conteúdo correto. Ver `RELATORIO_FEEDBACK_EXIBIDO_2026-08-07.md`.
 
 - **Trabalho**: mudança estrutural no sistema de log de eventos, usado pela coleta de dados de pesquisa — toca vários pontos de disparo de evento.
 - **Risco**: médio a alto — muda a forma como eventos são registrados, não só adiciona um evento novo isolado.

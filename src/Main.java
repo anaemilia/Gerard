@@ -958,6 +958,9 @@ public class Main extends JFrame {
                             setComponentZOrder(seloConclusaoModelagem, 0);
                             seloConclusaoModelagem.mostrarAoLadoDireitoDoDiagrama(
                                     areaDiagrama, areaPermitida, getWidth(), getHeight());
+                            registrarFeedbackExibido("AG_EMS",
+                                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                                    "selo de conclusão da modelagem, após o atraso padrão");
                             repaint();
                         }
                     });
@@ -5911,6 +5914,17 @@ public class Main extends JFrame {
                                 + "futura, não tomada aqui — ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md",
                         "LIMITE_TENTATIVAS_ATINGIDO",
                         "papel=" + papelAlvo + "; action_id=" + tentativasIncognitaAtual.getActionIdAtual());
+                // AG_EMCME (material concreto): é exatamente neste instante
+                // que deveExibirDiagramaComplementar() passa a devolver
+                // true — a modalidade é MANIPULATIVA (interativa), então o
+                // critério de confirmação é "affordance ativada" (o
+                // diagrama complementar passou a estar disponível para o
+                // participante operar), não "renderizado": a próxima
+                // repaint() é quem efetivamente desenha, mas a
+                // disponibilidade já existe a partir daqui.
+                registrarFeedbackExibido("AG_EMCME (material concreto)",
+                        gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.MANIPULATIVA,
+                        "diagrama complementar passou a estar disponível");
             }
             return limiteAtingidoAgora;
         }
@@ -5934,6 +5948,50 @@ public class Main extends JFrame {
             String mensagem = localizacao.formatar("ui.notice.attemptLimitReached", nomePapel);
             JOptionPane.showMessageDialog(this, mensagem,
                     localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
+            registrarFeedbackExibido("AG_EMCME (mensagem)",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "aviso do limite de tentativas, com dica de revisar a relação entre quantidades");
+        }
+
+        /**
+         * Traduz o evento FEEDBACK_EXIBIDO (REFERENCE.md §4.8,
+         * TipoEventoPapel.FEEDBACK_EXIBIDO) para o log real de produção —
+         * chamado no exato instante em que o critério de confirmação da
+         * modalidade já foi satisfeito: "renderizado" para modalidades
+         * passivas (VISUAL/SONORA), logo depois do componente ser de fato
+         * mostrado; "affordance ativada" para interativas
+         * (HAPTICA/MANIPULATIVA/GUIADA_POR_MOVIMENTO), no instante em que o
+         * mecanismo de interação passa a estar disponível para o
+         * participante operar — nunca quando ele de fato opera (isso é uma
+         * ação própria dele, registrada separadamente). O evento nunca
+         * afirma que o participante percebeu, entendeu ou prestou atenção
+         * ao apoio (Seção 4.10).
+         *
+         * Não instancia gerard.dominio.campoaditivo.evento.EventoPapelQuantitativo
+         * — essa classe continua isolada no pacote piloto por design (ver
+         * seu javadoc, "não é referenciado por Main.java"); aqui só se usa
+         * o mesmo vocabulário (estiloScaffolding, modalidade) para gerar uma
+         * linha real no log de produção, o mesmo padrão já usado em toda
+         * esta sessão (Main traduz o fato, nunca importa a classe do
+         * piloto).
+         */
+        private void registrarFeedbackExibido(String estiloScaffolding,
+                gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding modalidade,
+                String detalhesExtra) {
+            String criterio = modalidade.ehPassiva()
+                    ? "renderizado (modalidade passiva)"
+                    : "affordance ativada (modalidade interativa)";
+            registrarLogComputador(
+                    "Exibir apoio pedagógico (Scaffolding)",
+                    "Repertório de Scaffolding (REFERENCE.md §4.8)",
+                    estiloScaffolding,
+                    "Apresentar apoio pedagógico ao participante",
+                    "Evento não afirma que o participante percebeu, entendeu ou "
+                            + "prestou atenção ao apoio — só que ele foi apresentado.",
+                    "FEEDBACK_EXIBIDO",
+                    "estilo=" + estiloScaffolding + "; modalidade=" + modalidade
+                            + "; criterio=" + criterio
+                            + (detalhesExtra == null || detalhesExtra.length() == 0 ? "" : "; " + detalhesExtra));
         }
 
         /**
@@ -6013,6 +6071,9 @@ public class Main extends JFrame {
             int opcao = JOptionPane.showConfirmDialog(
                     this, pergunta, localizacao.texto("ui.dialog.confirm"),
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            registrarFeedbackExibido("AG_EMLQ",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "pergunta de confirmação de valor divergente");
             if (opcao == JOptionPane.YES_OPTION) {
                 mostrarDicaOperacaoIncognita();
             }
@@ -6072,6 +6133,9 @@ public class Main extends JFrame {
             String mensagem = localizacao.formatar("ui.hint.chooseOperation", nomePapel);
             JOptionPane.showMessageDialog(this, mensagem,
                     localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
+            registrarFeedbackExibido("AG_EME",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "dica genérica de escolher soma ou subtração");
         }
 
         private void verificarConclusaoModelagem() {
