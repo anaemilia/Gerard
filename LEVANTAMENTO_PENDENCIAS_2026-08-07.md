@@ -2,16 +2,16 @@
 
 Ordenado da mais simples para a mais complexa (esforço/risco estimado, não urgência). Nenhum item abaixo está autorizado a começar — levantamento apenas.
 
-## 1. Fechar `TAREFA_PENDENTE_COMPARACAO_MEDIDAS.md` (desatualizado)
+## 1. Fechar `TAREFA_PENDENTE_COMPARACAO_MEDIDAS.md` (desatualizado) — CONCLUÍDO (commit `53e38a8`)
 
 Descreve como pendência a ausência de `RelacaoEstruturalComparacao`, mas essa classe já existe (`src/gerard/dominio/campoaditivo/RelacaoEstruturalComparacao.java`) e a Fase B2 completa (concluída em 07/08) já resolveu isso de fato.
 
 - **Trabalho**: editar um documento, marcar como resolvido. Nenhum código muda.
 - **Risco**: nenhum.
 
-## 2. Confirmar o gate do eixo dos inteiros
+## 2. Confirmar o gate do eixo dos inteiros — CONCLUÍDO (commit `a33fd8a`)
 
-`gerard-consistencia-estado` (item 5) registra como "não confirmado" se a consistência bidirecional eixo↔referendo só entra em vigor depois que a incógnita foi concluída pelo protocolo normal. Falta checar os pontos de chamada `EIXO_X`/`EIXO_VERTICAL` em `Main.java` e/ou `PoliticaPreenchimentoIncognita`.
+`gerard-consistencia-estado` (item 5) registrava como "não confirmado" se a consistência bidirecional eixo↔referendo só entra em vigor depois que a incógnita foi concluída pelo protocolo normal. Confirmado: o gate vive em `Main.java:11612-11674` (`sincronizarNumeroRelativoComGraficoSeNecessario`), com escopo mais preciso que a formulação original — só bloqueia propagação quando o item movido pelo eixo é a própria incógnita, pendente de confirmação; o mesmo mecanismo protege `EIXO_VERTICAL` e `ARRASTE`.
 
 - **Trabalho**: investigação só leitura, escopo já delimitado (poucos pontos de chamada conhecidos).
 - **Risco**: nenhum (não implica mudança de código, só atualizar o status da skill).
