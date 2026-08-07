@@ -21,6 +21,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
 
     private final TipoEventoPapel tipo;
     private final String idAcao;
+    private final String actionId; // correlaciona tentativas da mesma ação (REFERENCE.md §4.8); distinto de idAcao (que é, na prática, o event_id de cada evento individual — ver nota abaixo)
     private final OrigemAcao origemAcao;
     private final ContextoAcao contexto;
     private final String papelSemantico;
@@ -31,11 +32,26 @@ public final class EventoPapelQuantitativo implements EventoDominio {
     private final DiagnosticoErroPapel diagnostico; // null quando resultado == ACEITO
     private final long timestampEpocaMillis;
 
+    /**
+     * @param actionId correlaciona esta e outras tentativas da mesma ação
+     *        (REFERENCE.md §4.8, cardinalidade ação:evento, Alternativa B —
+     *        ver PapelQuantitativo.registrarTentativa). Nulo quando o
+     *        evento não participa desse fluxo (ex.: os dois eventos
+     *        publicados por posicionar(...), que são um conceito
+     *        ortogonal — validade de domínio, não a sequência de
+     *        tentativas rejeitadas de uma resposta). Não confundir com
+     *        idAcao: hoje idAcao já identifica CADA evento individual (é,
+     *        na prática, o event_id da Seção 4.8 — a renomeação está
+     *        registrada como recomendação ainda não aplicada); actionId é
+     *        o campo novo, que correlaciona vários eventos entre si.
+     */
     public EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
                                     String papelSemantico, String estadoAnterior, String estadoPosterior,
-                                    String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico) {
+                                    String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
+                                    String actionId) {
         this.tipo = tipo;
         this.idAcao = UUID.randomUUID().toString();
+        this.actionId = actionId;
         this.origemAcao = origemAcao;
         this.contexto = contexto == null ? ContextoAcao.NAO_INFORMADO : contexto;
         this.papelSemantico = papelSemantico;
@@ -47,6 +63,14 @@ public final class EventoPapelQuantitativo implements EventoDominio {
         this.timestampEpocaMillis = System.currentTimeMillis();
     }
 
+    /** Compatibilidade: eventos que não participam do fluxo de tentativas (ver actionId). */
+    public EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
+                                    String papelSemantico, String estadoAnterior, String estadoPosterior,
+                                    String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico) {
+        this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
+                valorProposto, resultado, diagnostico, null);
+    }
+
     @Override
     public String getTipo() { return tipo.name(); }
 
@@ -54,6 +78,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
     public long getTimestampEpocaMillis() { return timestampEpocaMillis; }
 
     public String getIdAcao() { return idAcao; }
+    public String getActionId() { return actionId; }
     public OrigemAcao getOrigemAcao() { return origemAcao; }
     public ContextoAcao getContexto() { return contexto; }
     public String getPapelSemantico() { return papelSemantico; }
@@ -65,6 +90,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
     public Map<String, Object> paraMapa() {
         Map<String, Object> mapa = new LinkedHashMap<>();
         mapa.put("id_acao", idAcao);
+        mapa.put("action_id", actionId);
         mapa.put("tipo", getTipo());
         mapa.put("origem_da_acao", origemAcao == null ? null : origemAcao.name());
         mapa.put("id_sessao", contexto.getIdSessao());

@@ -56,6 +56,27 @@ public final class PapelQuantitativo {
 
     private ValorNumerico valorAtual;
 
+    // ---- estado do fluxo de tentativas (REFERENCE.md §4.8, cardinalidade
+    // ação:evento, Alternativa B) — conhecimento do próprio papel, não de
+    // quem chama. Ortogonal a valorAtual: registrarTentativa(...) nunca
+    // altera o valor armazenado, só contabiliza o resultado de uma
+    // avaliação de correção já feita por quem enxerga a relação completa
+    // (RelacaoEstruturalX.diagnosticarValorProposto) — PapelQuantitativo
+    // sozinho não tem essa informação (ver posicionar(), que só valida
+    // domínio, não correção).
+    private String actionIdAtual;
+    private int tentativasRejeitadasConsecutivas;
+    private boolean bloqueadoPorLimiteTentativas;
+
+    /**
+     * Limite fixo de tentativas rejeitadas consecutivas antes da ação se
+     * encerrar automaticamente e o papel ficar bloqueado
+     * (estaBloqueadoPorLimiteTentativas()) até restaurar() ser chamado —
+     * REFERENCE.md §4.8. Fixo em 3, para não repetir a mesma ajuda mais de
+     * três vezes ao participante.
+     */
+    public static final int LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS = 3;
+
     public PapelQuantitativo(String chave, String nomeConceitual, DominioNumerico dominio,
                               DescritorRepresentacaoPapel descritorRepresentacao,
                               PublicadorEventoDominio publicador) {
@@ -167,6 +188,102 @@ public final class PapelQuantitativo {
                 estadoAnterior, descreverEstadoAtual(), formatarValorProposto(valorProposto),
                 ResultadoAcao.REJEITADO, diagnostico));
         return Optional.of(diagnostico);
+    }
+
+    // ---- fluxo de tentativas (REFERENCE.md §4.8) ----
+
+    public boolean estaBloqueadoPorLimiteTentativas() { return bloqueadoPorLimiteTentativas; }
+    public int getTentativasRejeitadasConsecutivas() { return tentativasRejeitadasConsecutivas; }
+    public String getActionIdAtual() { return actionIdAtual; }
+
+    /**
+     * Aciona "restaurar" (REFERENCE.md §4.8): encerra o bloqueio, se houver,
+     * e zera a contagem — a próxima tentativa rejeitada abre uma ação nova
+     * (novo action_id). Não altera valorAtual nem publica evento: acionar
+     * "restaurar" não é, em si, uma tentativa de posicionamento.
+     */
+    public void restaurar() {
+        actionIdAtual = null;
+        tentativasRejeitadasConsecutivas = 0;
+        bloqueadoPorLimiteTentativas = false;
+    }
+
+    /**
+     * Registra o resultado de uma tentativa de resposta para este papel,
+     * quando quem chama já determinou separadamente se o valor proposto
+     * está correto — tipicamente o resultado de
+     * RelacaoEstruturalX.diagnosticarValorProposto(...), que é quem de fato
+     * sabe avaliar correção (precisa dos três papéis da relação;
+     * PapelQuantitativo sozinho só sabe validade de domínio, ver
+     * posicionar()). Distinto de posicionar(): aquele valida e armazena um
+     * valor; este só contabiliza o resultado de uma avaliação de correção
+     * já feita — nunca altera valorAtual. Se a tentativa foi correta, quem
+     * chama ainda precisa chamar posicionar(...) separadamente para de fato
+     * armazenar o valor; este método só encerra a ação em contagem.
+     *
+     * Implementa a cardinalidade ação:evento da REFERENCE.md §4.8
+     * (Alternativa B): a primeira tentativa rejeitada de uma sequência abre
+     * uma ação nova (novo action_id); tentativas seguintes, ainda
+     * rejeitadas, correlacionam ao mesmo action_id; ao atingir
+     * LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS, a ação se encerra e o
+     * papel fica bloqueado (estaBloqueadoPorLimiteTentativas()) até
+     * restaurar() ser chamado — quem chama deve, então, mostrar alguma
+     * ajuda ao participante (conteúdo concreto ainda não decidido, ver
+     * TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md — pendência
+     * separada, não resolvida por este método). Uma tentativa correta zera
+     * a contagem e encerra a ação, sem bloqueio.
+     *
+     * Só conta tentativas do participante (origem == ORIGEM_USUARIO) — um
+     * recálculo do sistema não é uma "tentativa" do participante e não
+     * deve consumir nem alterar esta contagem; chamadas com outra origem
+     * não fazem nada e devolvem false.
+     *
+     * Se o papel já está bloqueado, a tentativa não é avaliada nem contada
+     * de novo — só publica um evento REJEITADO com diagnóstico
+     * BLOQUEADO_AGUARDANDO_RESTAURACAO, para preservar o registro de que o
+     * participante tentou de novo enquanto bloqueado, sem inflar a
+     * contagem além do limite.
+     *
+     * @param diagnostico o diagnóstico de correção já calculado por quem
+     *        chama; {@link Optional#empty()} significa correto — mesma
+     *        convenção de diagnosticarValorProposto
+     * @return true se esta chamada fez o limite ser atingido agora
+     */
+    public boolean registrarTentativa(Optional<DiagnosticoErroPapel> diagnostico, OrigemAcao origem,
+            ContextoAcao contexto, ValorNumerico valorProposto) {
+        if (origem != OrigemAcao.ORIGEM_USUARIO) {
+            return false;
+        }
+        String estado = descreverEstadoAtual();
+        if (bloqueadoPorLimiteTentativas) {
+            DiagnosticoErroPapel bloqueio = new DiagnosticoErroPapel(
+                    TipoErroPapel.BLOQUEADO_AGUARDANDO_RESTAURACAO,
+                    "erro.papel.bloqueadoAguardandoRestauracao", null,
+                    "correcao.papel.acionarRestaurar");
+            publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, origem, contexto, chave,
+                    estado, estado, formatarValorProposto(valorProposto),
+                    ResultadoAcao.REJEITADO, bloqueio, actionIdAtual));
+            return false;
+        }
+        boolean correto = diagnostico == null || !diagnostico.isPresent();
+        if (correto) {
+            actionIdAtual = null;
+            tentativasRejeitadasConsecutivas = 0;
+            return false;
+        }
+        if (actionIdAtual == null) {
+            actionIdAtual = java.util.UUID.randomUUID().toString();
+            tentativasRejeitadasConsecutivas = 0;
+        }
+        tentativasRejeitadasConsecutivas++;
+        boolean atingiuLimiteAgora = tentativasRejeitadasConsecutivas >= LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS;
+        if (atingiuLimiteAgora) {
+            bloqueadoPorLimiteTentativas = true;
+        }
+        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, origem, contexto, chave,
+                estado, estado, formatarValorProposto(valorProposto),
+                ResultadoAcao.REJEITADO, diagnostico.get(), actionIdAtual));
+        return atingiuLimiteAgora;
     }
 
     private String descreverEstadoAtual() {

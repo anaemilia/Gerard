@@ -24,5 +24,15 @@ public enum TipoErroPapel {
      */
     OPERACAO_INVERTIDA,
     /** O valor proposto está no domínio aceito, não bate com o correto, e não reconhece o padrão de OPERACAO_INVERTIDA. */
-    VALOR_INCORRETO
+    VALOR_INCORRETO,
+    /**
+     * A tentativa foi recusada sem avaliar o valor em si: o item já atingiu
+     * o limite de tentativas rejeitadas consecutivas
+     * (PapelQuantitativo.LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS) e está
+     * bloqueado até o participante acionar "restaurar" — ver
+     * REFERENCE.md §4.8 (cardinalidade ação:evento, Alternativa B).
+     * Distinto dos outros três tipos, que sempre avaliam o valor proposto
+     * contra o domínio/relação correta.
+     */
+    BLOQUEADO_AGUARDANDO_RESTAURACAO
 }
