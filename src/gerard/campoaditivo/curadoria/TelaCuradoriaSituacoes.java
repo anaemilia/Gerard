@@ -88,8 +88,53 @@ public class TelaCuradoriaSituacoes extends JPanel {
         this.modelo = new ModeloTabelaSituacoes(this.repositorio.listarTodas());
         this.tabela = new JTable(modelo);
         this.status = new JLabel(" ");
+        instalarGuardaDeLimiteDeDigitosNaColunaValidada();
         construirInterface();
         atualizarStatus();
+    }
+
+    /**
+     * Reverte a marcação "validada" de uma linha, na tabela, sempre que
+     * algum campo numérico curado exceder LIMITE_MAGNITUDE_VALOR_CURADO —
+     * cobre tanto o clique direto na coluna "validada" quanto
+     * validarSelecionadas() (ação em lote), já que os dois passam pelo mesmo
+     * ModeloTabelaSituacoes.setValueAt. É o mesmo limite aplicado no
+     * diálogo de edição detalhada (ver validarAntesDeSalvarCuradoriaDetalhada) —
+     * este listener existe porque a tabela permite marcar "validada" sem
+     * nunca abrir esse diálogo.
+     *
+     * A checagem em si (valor != true, ou excedentes vazios) já impede
+     * reentrância infinita: reverter para FALSE dispara outro evento, mas
+     * nessa segunda passada a condição "validada == true" não vale mais.
+     */
+    private void instalarGuardaDeLimiteDeDigitosNaColunaValidada() {
+        modelo.addTableModelListener(evento -> {
+            if (evento.getColumn() != 2 || evento.getType() != TableModelEvent.UPDATE) {
+                return;
+            }
+            int primeiraLinha = Math.max(0, evento.getFirstRow());
+            int ultimaLinha = Math.min(modelo.getRowCount() - 1, evento.getLastRow());
+            for (int linha = primeiraLinha; linha <= ultimaLinha; linha++) {
+                LinhaSituacao l = modelo.getLinha(linha);
+                if (l == null || !Boolean.TRUE.equals(l.validada)) {
+                    continue;
+                }
+                List<String> valoresExcedentes = ValidadorTraducaoCurada.localizarValoresAcimaDoLimiteDeDigitos(l);
+                if (!valoresExcedentes.isEmpty()) {
+                    l.validada = Boolean.FALSE;
+                    modelo.fireTableCellUpdated(linha, 2);
+                    JOptionPane.showMessageDialog(this,
+                            "Esta situação não pode ser marcada como validada: campos com mais de "
+                            + ValidadorTraducaoCurada.LIMITE_MAGNITUDE_VALOR_CURADO + " (2 dígitos) — "
+                            + juntarMensagens(valoresExcedentes)
+                            + "\n\nReduza os valores para validar, ou revise a situação na curadoria detalhada.",
+                            "Valor curado acima do limite", JOptionPane.WARNING_MESSAGE);
+                    RegistroErrosCuradoria.registrar("VALOR_CURADO_ACIMA_DO_LIMITE",
+                            l.id, l.situacaoGrupoId,
+                            "Campos acima do limite: " + valoresExcedentes, "VALIDACAO_REVERTIDA");
+                }
+            }
+        });
     }
 
     private void construirInterface() {
@@ -1257,6 +1302,21 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     linha.id, linha.situacaoGrupoId,
                     "Campos com ?: " + papeisComInterrogacao, "VOLTAR_E_CORRIGIR");
             return false;
+        }
+        if (Boolean.TRUE.equals(linha.validada)) {
+            List<String> valoresExcedentes = ValidadorTraducaoCurada.localizarValoresAcimaDoLimiteDeDigitos(linha);
+            if (!valoresExcedentes.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogo,
+                        "Estes campos passam de " + ValidadorTraducaoCurada.LIMITE_MAGNITUDE_VALOR_CURADO
+                        + " (2 dígitos), o limite para uma situação validada: "
+                        + juntarMensagens(valoresExcedentes)
+                        + "\n\nReduza os valores ou desmarque \"Validada\" para salvar como rascunho.",
+                        "Valor curado acima do limite", JOptionPane.WARNING_MESSAGE);
+                RegistroErrosCuradoria.registrar("VALOR_CURADO_ACIMA_DO_LIMITE",
+                        linha.id, linha.situacaoGrupoId,
+                        "Campos acima do limite: " + valoresExcedentes, "VOLTAR_E_CORRIGIR");
+                return false;
+            }
         }
         ResolvedorIncognitaCurada.Resultado resolucaoIncognita =
                 resolverIncognitaCurada(linha);

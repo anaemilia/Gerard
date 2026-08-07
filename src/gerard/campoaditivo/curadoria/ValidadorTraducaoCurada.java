@@ -135,6 +135,51 @@ public final class ValidadorTraducaoCurada {
         return ausentes;
     }
 
+    /**
+     * Maior magnitude permitida para um valor numérico curado (2 dígitos —
+     * ver decisão de 2026-08-06, motivada pela guarda de estouro de int nas
+     * classes RelacaoEstrutural*: nenhuma situação curada precisa chegar
+     * perto do limite de representação de int, e os enunciados reais do
+     * catálogo (situacoes_vergnaud.tsv) vão de 0 a 80, com um único
+     * outlier de 3 dígitos — que precisou ser revisado por causa deste
+     * limite). Curadoria é o ponto de entrada dos dados; é mais barato
+     * recusar aqui do que descobrir o problema em produção.
+     */
+    public static final int LIMITE_MAGNITUDE_VALOR_CURADO = 99;
+
+    /**
+     * Verifica, para cada campo numérico curado da situação (que não seja o
+     * próprio termo desconhecido — "?" não é um número a checar aqui, ver
+     * papeisComInterrogacaoDigitada em TelaCuradoriaSituacoes), se a
+     * magnitude excede LIMITE_MAGNITUDE_VALOR_CURADO. Retorna os rótulos dos
+     * campos que excedem, na mesma ordem/nomenclatura de
+     * localizarValoresNumericosAusentes.
+     */
+    public static List<String> localizarValoresAcimaDoLimiteDeDigitos(TelaCuradoriaSituacoes.LinhaSituacao linha) {
+        List<String> excedentes = new ArrayList<String>();
+        adicionarSeExcedeLimite(excedentes, "estado inicial", linha.estadoInicial);
+        adicionarSeExcedeLimite(excedentes, "transformação", linha.transformacao);
+        adicionarSeExcedeLimite(excedentes, "estado final", linha.estadoFinal);
+        adicionarSeExcedeLimite(excedentes, "quantidade 1", linha.quantidade1);
+        adicionarSeExcedeLimite(excedentes, "quantidade 2", linha.quantidade2);
+        adicionarSeExcedeLimite(excedentes, "resultado", linha.resultado);
+        adicionarSeExcedeLimite(excedentes, "referido", linha.referido);
+        adicionarSeExcedeLimite(excedentes, "referendo", linha.referendo);
+        adicionarSeExcedeLimite(excedentes, "valor relativo", linha.valorRelativo);
+        return excedentes;
+    }
+
+    private static void adicionarSeExcedeLimite(List<String> excedentes, String rotulo, String valor) {
+        if (valor == null) return;
+        String bruto = valor.trim();
+        if (bruto.isEmpty() || SimboloDesconhecido.eh(bruto)) return;
+        BigDecimal numero = converterNumero(bruto);
+        if (numero == null) return;
+        if (numero.compareTo(new BigDecimal(LIMITE_MAGNITUDE_VALOR_CURADO)) > 0) {
+            excedentes.add(rotulo + ": " + bruto);
+        }
+    }
+
     /** Retorna o valor curado sem sinal explícito (+/-) na frente. */
     public static String valorSemSinal(String valor) {
         if (valor == null) return "";
