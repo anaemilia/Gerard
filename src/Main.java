@@ -1049,6 +1049,10 @@ public class Main extends JFrame {
         private static final int LARGURA_SEPARADOR_ATALHO = 32;
         private static final int LARGURA_BOTAO_PROXIMO_PASSO = 54;
         private static final int ALTURA_BOTAO_PROXIMO_PASSO = 54;
+        /** Botão de sorteio (Medidas/Relações), colado ao lado de cada grupo — mesmo tamanho dos botões de ícone do cabeçalho (criarBotaoIconeCabecalho). */
+        private static final int LARGURA_BOTAO_SORTEIO = 34;
+        /** Espaço entre o último ícone de um grupo (ou o botão de sorteio) e o próximo elemento — fora da caixa delimitadora do grupo (areaGrupoMedidas/Relacoes), pra não parecer uma 4ª opção de resposta do quiz. */
+        private static final int GAP_BOTAO_SORTEIO = 16;
 
         /**
          * Faixa de atalhos de categoria, entre o cabeçalho e a área do
@@ -1085,6 +1089,21 @@ public class Main extends JFrame {
             botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao());
             add(botaoAtalhoComparacao);
 
+            // Botão de sorteio do grupo Medidas, colado ao lado dos 3 ícones
+            // acima (mas fora da caixa delimitadora deles — ver
+            // areaGrupoMedidas — pra não parecer uma 4ª opção de resposta do
+            // quiz de adivinhação). Movido para cá em 2026-08-07, a pedido
+            // da usuária, de dentro do cabeçalho (criarBotoesCabecalhoEmbutidos)
+            // — ver sortearSituacaoMedidas.
+            botaoFerramentaSortearMedidas = criarBotaoIconeCabecalho(criarIconeFerramentaSortear());
+            botaoFerramentaSortearMedidas.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    sortearSituacaoMedidas();
+                }
+            });
+            botaoFerramentaSortearMedidas.setToolTipText(localizacao.texto("ui.tooltip.random.measures"));
+            add(botaoFerramentaSortearMedidas);
+
             separadorAtalhoCategoria = criarSeparadorAtalhoCategoria();
             add(separadorAtalhoCategoria);
 
@@ -1109,6 +1128,17 @@ public class Main extends JFrame {
             botaoAtalhoComposicaoRelacoes = criarBotaoAtalhoCategoria(
                     TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes());
             add(botaoAtalhoComposicaoRelacoes);
+
+            // Botão de sorteio do grupo Relações — ver o comentário análogo
+            // acima de botaoFerramentaSortearMedidas.
+            botaoFerramentaSortearRelacoes = criarBotaoIconeCabecalho(criarIconeFerramentaSortear());
+            botaoFerramentaSortearRelacoes.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    sortearSituacaoRelacoes();
+                }
+            });
+            botaoFerramentaSortearRelacoes.setToolTipText(localizacao.texto("ui.tooltip.random.relations"));
+            add(botaoFerramentaSortearRelacoes);
 
             botaoAtalhoProximoPasso = new JButton(criarIconeInterrogacaoAtalho());
             botaoAtalhoProximoPasso.setFocusable(false);
@@ -1202,8 +1232,9 @@ public class Main extends JFrame {
             }
             int gapEntreIcones = 24;
             int gapAntesBotao = 32;
-            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 4
-                    + gapEntreIcones * 2 + LARGURA_SEPARADOR_ATALHO
+            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 5
+                    + LARGURA_SEPARADOR_ATALHO
+                    + GAP_BOTAO_SORTEIO * 3 + LARGURA_BOTAO_SORTEIO * 2
                     + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
             int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
             int x = Math.max(18, (larguraTela - larguraTotal) / 2);
@@ -1214,7 +1245,14 @@ public class Main extends JFrame {
             botaoAtalhoTransformacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
+            x += LARGURA_ICONE_CATEGORIA;
+
+            // Botão "Sortear Medidas" — fora da caixa delimitadora do grupo
+            // (areaGrupoMedidas, calculada abaixo só com os 3 ícones), colado
+            // logo depois dela.
+            x += GAP_BOTAO_SORTEIO;
+            botaoFerramentaSortearMedidas.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
+            x += LARGURA_BOTAO_SORTEIO + GAP_BOTAO_SORTEIO;
 
             separadorAtalhoCategoria.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_SEPARADOR_ATALHO, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_SEPARADOR_ATALHO + gapEntreIcones;
@@ -1224,7 +1262,12 @@ public class Main extends JFrame {
             botaoAtalhoTransformacaoRelacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoComposicaoRelacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
+            x += LARGURA_ICONE_CATEGORIA;
+
+            // Botão "Sortear Relações" — mesmo padrão do de Medidas acima.
+            x += GAP_BOTAO_SORTEIO;
+            botaoFerramentaSortearRelacoes.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
+            x += LARGURA_BOTAO_SORTEIO + gapAntesBotao;
 
             xCentroGrupoMedidas = (botaoAtalhoComposicao.getX() + botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) / 2;
             xCentroGrupoRelacoes = (botaoAtalhoComposicaoTransformacoes.getX() + botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) / 2;
@@ -1668,13 +1711,14 @@ public class Main extends JFrame {
             caixaIndicadorAgenteMonitor.setOpaque(true);
             caixaIndicadorAgenteMonitor.setBackground(COR_SUPERFICIE);
             caixaIndicadorAgenteMonitor.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
-            // Ao lado dos dois botões de Sortear, Medidas e Relações (ver
-            // criarBotoesCabecalhoEmbutidos, bounds 58,8,34,34 e
-            // 100,8,34,34) — deslocada de 100 pra 142 em 2026-08-07 pela
-            // entrada do segundo botão de sorteio. Alargada de 78 pra 94px —
-            // os ícones de robô (22px) precisam de mais espaço que os
-            // círculos antigos (14px) — ver IconeRoboAgente.
-            caixaIndicadorAgenteMonitor.setBounds(142, 8, 94, 34);
+            // Ao lado do botão Comparar categorias (ver
+            // criarBotoesCabecalhoEmbutidos, bounds 16,8,34,34). Os botões
+            // de Sortear que ficavam entre os dois (58,8 e 100,8) se
+            // mudaram em 2026-08-07 pra dentro do painel de ícones de
+            // categoria — ver criarBotoesCabecalhoEmbutidos. Alargada de 78
+            // pra 94px — os ícones de robô (22px) precisam de mais espaço
+            // que os círculos antigos (14px) — ver IconeRoboAgente.
+            caixaIndicadorAgenteMonitor.setBounds(58, 8, 94, 34);
             indicadorAgenteMonitor.setBounds(8, 6, 22, 22);
             indicadorAgenteZDP.setBounds(36, 6, 22, 22);
             indicadorAgenteModelador.setBounds(64, 6, 22, 22);
@@ -3044,19 +3088,17 @@ public class Main extends JFrame {
         }
 
         /**
-         * Botões de ícone embutidos no cabeçalho da aba Diagramar (decisão da
+         * Botão de ícone embutido no cabeçalho da aba Diagramar (decisão da
          * usuária, 2026-07-28): "Comparar categorias" (mesma função do item
          * de menu Arquivo > Comparar categorias — reaproveita
-         * ConfiguradorOpcaoComparacaoCategorias/abrirTelaComparacaoCategorias)
-         * e, à direita dele, dois botões de sorteio — "Sortear Medidas" e
-         * "Sortear Relações" (divididos em 2026-08-07, a pedido da usuária,
-         * do antigo botão único "Sortear", que sorteava entre as 6
-         * categorias de uma vez; ver sortearSituacaoMedidas/Relacoes). Antes
-         * o Sortear ficava numa JToolBar separada, acima da JMenuBar/abas,
-         * visível em todas as abas; agora ficam só na aba Diagramar,
-         * seguidos do LED do Agente Monitor (indicadorAgenteMonitor.setBounds,
-         * ver criarIndicadorAgenteMonitor — bounds deslocados em 34+8px pela
-         * entrada do segundo botão de sorteio).
+         * ConfiguradorOpcaoComparacaoCategorias/abrirTelaComparacaoCategorias),
+         * seguido do LED do Agente Monitor (indicadorAgenteMonitor.setBounds,
+         * ver criarIndicadorAgenteMonitor). Os dois botões de Sortear
+         * (Medidas/Relações) que ficavam aqui, ao lado deste, se mudaram em
+         * 2026-08-07 para dentro do próprio painel de ícones de categoria
+         * (criarPainelAtalhoCategoria/reposicionarPainelAtalhoCategoria) —
+         * a pedido da usuária, cada botão de sorteio agora fica colado no
+         * grupo que ele sorteia, em vez dos dois juntos aqui no topo.
          */
         private void criarBotoesCabecalhoEmbutidos() {
             if (botaoCompararCategorias == null) {
@@ -3075,34 +3117,6 @@ public class Main extends JFrame {
             // ConfiguradorOpcaoComparacaoCategorias.configurar zera o tooltip
             // (opcao.setToolTipText(null)) — precisa ser setado depois dele.
             botaoCompararCategorias.setToolTipText(localizacao.texto("ui.menu.category.compare.tooltip"));
-
-            if (botaoFerramentaSortearMedidas == null) {
-                botaoFerramentaSortearMedidas = criarBotaoIconeCabecalho(criarIconeFerramentaSortear('M'));
-                botaoFerramentaSortearMedidas.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        sortearSituacaoMedidas();
-                    }
-                });
-                botaoFerramentaSortearMedidas.setBounds(58, 8, 34, 34);
-                add(botaoFerramentaSortearMedidas);
-                setComponentZOrder(botaoFerramentaSortearMedidas, 0);
-            }
-            botaoFerramentaSortearMedidas.setToolTipText(localizacao.texto("ui.tooltip.random.measures"));
-            botaoFerramentaSortearMedidas.setEnabled(abaGerardAtiva);
-
-            if (botaoFerramentaSortearRelacoes == null) {
-                botaoFerramentaSortearRelacoes = criarBotaoIconeCabecalho(criarIconeFerramentaSortear('R'));
-                botaoFerramentaSortearRelacoes.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        sortearSituacaoRelacoes();
-                    }
-                });
-                botaoFerramentaSortearRelacoes.setBounds(100, 8, 34, 34);
-                add(botaoFerramentaSortearRelacoes);
-                setComponentZOrder(botaoFerramentaSortearRelacoes, 0);
-            }
-            botaoFerramentaSortearRelacoes.setToolTipText(localizacao.texto("ui.tooltip.random.relations"));
-            botaoFerramentaSortearRelacoes.setEnabled(abaGerardAtiva);
         }
 
         /**
@@ -3161,13 +3175,15 @@ public class Main extends JFrame {
 
         /**
          * Dado simples (face "3"), mesmo traço fino neutro dos ícones de
-         * categoria — ver prepararTracoIconeCategoria. Recebe uma letra de
-         * distintivo ('M'/'R') desenhada num círculo no canto inferior
-         * direito, para diferenciar visualmente os dois botões de sorteio
-         * (Medidas/Relações, divididos em 2026-08-07) sem inventar um novo
-         * glifo — o dado continua sendo o símbolo de "sortear".
+         * categoria — ver prepararTracoIconeCategoria. Ícone compartilhado
+         * pelos dois botões de sorteio (Medidas/Relações, divididos em
+         * 2026-08-07); desde que cada um passou a ficar colado no seu
+         * próprio grupo de ícones (criarPainelAtalhoCategoria), a posição e
+         * o rótulo "Medidas"/"Relações" logo acima já diferenciam os dois —
+         * não precisa mais de um distintivo de letra no próprio ícone (tinha
+         * quando os dois ainda ficavam juntos no cabeçalho).
          */
-        private Icon criarIconeFerramentaSortear(final char letraDistintivo) {
+        private Icon criarIconeFerramentaSortear() {
             final int tamanho = 26;
             return new Icon() {
                 public int getIconWidth() { return tamanho; }
@@ -3181,26 +3197,6 @@ public class Main extends JFrame {
                         desenharPontoIconeFerramentaSortear(g2, x + 8, y + 8, raioPonto);
                         desenharPontoIconeFerramentaSortear(g2, x + tamanho / 2, y + tamanho / 2, raioPonto);
                         desenharPontoIconeFerramentaSortear(g2, x + tamanho - 8, y + tamanho - 8, raioPonto);
-
-                        int raioDistintivo = 7;
-                        int cxDistintivo = x + tamanho - 2;
-                        int cyDistintivo = y + tamanho - 2;
-                        g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-                        g2.fill(new java.awt.geom.Ellipse2D.Float(
-                                cxDistintivo - raioDistintivo, cyDistintivo - raioDistintivo,
-                                raioDistintivo * 2, raioDistintivo * 2));
-                        g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(
-                                cxDistintivo - raioDistintivo, cyDistintivo - raioDistintivo,
-                                raioDistintivo * 2, raioDistintivo * 2));
-                        Font fonteAnterior = g2.getFont();
-                        g2.setFont(fonteAnterior.deriveFont(Font.BOLD, 9f));
-                        FontMetrics fm = g2.getFontMetrics();
-                        String texto = String.valueOf(letraDistintivo);
-                        int txtLargura = fm.stringWidth(texto);
-                        g2.drawString(texto, cxDistintivo - txtLargura / 2f,
-                                cyDistintivo + fm.getAscent() / 2f - 1);
-                        g2.setFont(fonteAnterior);
                     } finally {
                         g2.dispose();
                     }
@@ -5126,6 +5122,23 @@ public class Main extends JFrame {
                 botaoRestaurarDiagrama.setToolTipText(descricao);
                 botaoRestaurarDiagrama.getAccessibleContext().setAccessibleName(descricao);
                 botaoRestaurarDiagrama.getAccessibleContext().setAccessibleDescription(descricao);
+            }
+            // Diferente dos 6 ícones de resposta do quiz (cujo tip é
+            // recalculado a cada mouseEntered — ver criarBotaoAtalhoCategoria),
+            // estes dois usam o tooltip padrão do Swing (setToolTipText),
+            // por isso precisam ser atualizados aqui, junto com os outros
+            // botões desta lista, quando o idioma muda.
+            if (botaoFerramentaSortearMedidas != null) {
+                String descricao = localizacao.texto("ui.tooltip.random.measures");
+                botaoFerramentaSortearMedidas.setToolTipText(descricao);
+                botaoFerramentaSortearMedidas.getAccessibleContext().setAccessibleName(descricao);
+                botaoFerramentaSortearMedidas.getAccessibleContext().setAccessibleDescription(descricao);
+            }
+            if (botaoFerramentaSortearRelacoes != null) {
+                String descricao = localizacao.texto("ui.tooltip.random.relations");
+                botaoFerramentaSortearRelacoes.setToolTipText(descricao);
+                botaoFerramentaSortearRelacoes.getAccessibleContext().setAccessibleName(descricao);
+                botaoFerramentaSortearRelacoes.getAccessibleContext().setAccessibleDescription(descricao);
             }
             atualizarTextosBotoesAjudaContextual();
             fecharMenuAjudaContextual();
