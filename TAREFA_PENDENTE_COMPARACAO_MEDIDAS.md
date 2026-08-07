@@ -1,6 +1,6 @@
 # Tarefa pendente — Comparação de Medidas no pacote piloto
 
-Status: **registrada, não autorizada a começar.** Retomar somente quando pedido explicitamente.
+Status: **encerrada (2026-08-07).** Ver seção "Encerramento" ao final.
 
 ---
 
@@ -156,3 +156,13 @@ Mesmo processo já estabelecido nesta sessão para qualquer mudança de código:
 ## Autorização
 
 Esta tarefa **não está autorizada a começar agora**. Existe só como registro, para ser retomada quando pedido explicitamente.
+
+## Encerramento (2026-08-07)
+
+Tudo o que faltava na seção "O que falta" já existe:
+
+- `RelacaoEstruturalComparacao` (`src/gerard/dominio/campoaditivo/RelacaoEstruturalComparacao.java`), com fábrica de papéis (Referido/Referendo/Valor Relativo) e harness próprio (`TestePilotoComparacaoMedidas.java`) — criada na Fase A (commit `c69fde4`, 2026-08-06), registrada em `CHANGELOG.md` v2.4.
+- A decisão de modelagem que este arquivo deixava em aberto ("reimplementa, delega, ou migra `EstadoSemanticoCompartilhado`?") foi resolvida na Fase B2 completa (2026-08-07, ver `RELATORIO_MIGRACAO_B2_MAIN_PILOTO_2026-08-07.md`): `EstadoSemanticoCompartilhado.resolverRelacaoAditiva()` passou a delegar 100% da lógica de relação aditiva — para Comparação e as demais categorias alcançáveis pela UI — às classes `RelacaoEstrutural*` do piloto, incluindo `calcularValorAusente` e `recalcularParaConsistencia`. O contrato mais pobre descrito acima (sem `EstadoConsistencia` tipado, sem eventos, sem `DiagnosticoErroPapel`) não existe mais nesse caminho.
+- A pergunta sobre `PapelQuantitativo` duplicado permanece verdadeira como registro histórico (as duas classes continuam distintas), mas deixou de ser um bloqueio: a Fase B2 completa não exigiu unificá-las.
+
+Nenhuma ação adicional pendente neste item.
