@@ -58,6 +58,48 @@ A lógica de seleção do estilo/ajuda apropriado dentro do repertório de
 Scaffolding de cada objeto — ainda não decidida, não é resolvida por este
 registro.
 
+## Repertório concreto de Scaffolding — registrado em 2026-08-07
+
+A usuária forneceu o repertório concreto (6 itens, prefixo `AG_`) que
+preenche a lacuna deixada em aberto por `REFERENCE.md §4.8` ("A seleção de
+qual elemento do repertório usar em cada situação é uma decisão separada e
+ainda em aberto"). Classificação nos dois eixos já normatizados
+(`REFERENCE.md §4.8`: tipo funcional × modalidade de entrega):
+
+| Código | Ação | Tipo funcional | Modalidade de entrega | Status |
+|---|---|---|---|---|
+| `AG_EMS` | Exibir mensagem de sucesso | — (ausência de erro, não é reparo) | Visual | **Já implementado** — `SequenciadorFeedbackConclusao` |
+| `AG_EMLQ` | Exibir mensagem de questionamento | Metacognitivo | Visual | **Já implementado** — `ScaffoldingQuestionamento.criarPerguntaConfirmacao`, disparado a cada rejeição (`ui.question.valueMismatch`) |
+| `AG_EME` | Exibir mensagem explicativa | Conceitual | Visual | **Parcialmente implementado** — `mostrarDicaOperacaoIncognita`/`ui.hint.chooseOperation`, hoje só uma frase mínima ("escolha soma ou subtração") |
+| `AG_EMCME` | Exibir material concreto + mensagem explicativa sobre o uso do material | Procedimental | Manipulativa + Visual | **Parcial** — a parte de mensagem existe (`mostrarAvisoLimiteTentativasAtingido`/`ui.notice.attemptLimitReached`, estendida em 2026-08-07 com uma dica); **a parte de destacar/mostrar material concreto não existe** |
+| `AG_AC` | Automatizar a contagem | Procedimental | Guiada por movimento / manipulativa | **Não implementado — só descrito**, por decisão explícita da usuária ("deixe apenas a descrição, depois pensamos sobre como operacionalizar") |
+| `AG_AE` | Automatizar passos da modelagem do problema | Estratégico | Guiada por movimento | **Não implementado — só descrito**, mesma decisão acima |
+
+Ordem confirmada pela usuária (2026-08-07): `AG_EMS` não é um degrau da
+escalada de erro — é o estado padrão/ausência de erro, já coberto pelo
+mecanismo de sucesso existente. A escalada de erro dentro do fluxo de N=3
+tentativas é `AG_EMLQ` → `AG_EME` → `AG_EMCME` → (`AG_AC`/`AG_AE`, fora do
+fluxo de N=3, sem gatilho definido ainda).
+
+**`AG_AC`/`AG_AE` — regra explícita**: qualquer operacionalização futura
+desses dois itens tem que seguir o padrão arquitetural já estabelecido
+nas skills do projeto (`gerard-domain-model-first`,
+`gerard-knowledge-locality-principle`, `gerard-handlers-de-interacao` se
+envolver reestruturar despacho de mouse, `gerard-semantic-event-logging`
+para o evento correspondente) — não uma automação ad hoc dentro de
+`Main.java`. Isso, somado à regra de segurança de
+`gerard-scaffolding-interacao` ("em hipótese alguma a interface pode
+automatizar passos cuja ordem não tenha vindo de autorização explícita do
+pesquisador"), significa que a implementação de `AG_AC`/`AG_AE` exige uma
+decisão de modelagem própria, apresentada e aprovada antes de qualquer
+diff — não decidida aqui.
+
+**Ainda em aberto, não implementado nesta rodada**: destacar/mostrar
+material concreto como parte de `AG_EMCME` na 3ª tentativa — a mensagem já
+existe (item 4 do levantamento de pendências), mas o comportamento visual
+de destacar o material concreto (quadradinhos) ainda não foi construído
+nem desenhado. Decisão de design pendente antes de implementar.
+
 ## Nota de atualização (2026-08-06) — vocabulário criado depois deste registro
 
 Decisões posteriores a este registro, hoje em `REFERENCE.md §4.8`, dão

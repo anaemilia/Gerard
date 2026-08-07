@@ -30,9 +30,9 @@ Conteúdo pedagógico não escrito, parte do fluxo de tentativas já implementad
 - **Trabalho**: majoritariamente redação de conteúdo, dentro de um mecanismo que já existe. Baixo risco técnico, mas exige definição pedagógica (não é só código).
 - **Risco**: baixo tecnicamente; depende de decisão de conteúdo.
 
-## 5. Lógica de seleção de repertório de scaffolding (dois eixos)
+## 5. Lógica de seleção de repertório de scaffolding (dois eixos) — REPERTÓRIO REGISTRADO, PARCIALMENTE IMPLEMENTADO
 
-Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio (dos 3 tipos já implementados) oferecer, em que combinação, ao longo das tentativas.
+Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que combinação, ao longo das tentativas. A usuária forneceu o repertório concreto (6 códigos `AG_*`) e a ordem de escalada — registrado em `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md`. Dos 6: `AG_EMS`/`AG_EMLQ` já implementados; `AG_EME` parcialmente; `AG_EMCME` parcial (falta destacar material concreto); `AG_AC`/`AG_AE` (automação) só descritos, por decisão explícita — não implementados, sinalizados para seguir o padrão arquitetural das skills quando operacionalizados.
 
 - **Trabalho**: exige critério pedagógico novo (dois eixos de decisão) antes de qualquer código — mais decisão de design do que implementação mecânica.
 - **Risco**: médio — decisão ainda não definida, pode exigir iteração.
