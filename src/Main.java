@@ -1087,31 +1087,26 @@ public class Main extends JFrame {
             separadorAtalhoCategoria = criarSeparadorAtalhoCategoria();
             add(separadorAtalhoCategoria);
 
-            // Categoria tecnicamente completa (20 situações curadas,
-            // RenderizadorComposicaoTransformacoes). Desde a migração para
-            // JMenuBar (2026-07-28, ver criarMenuCategoria), o item
-            // correspondente no menu "Categoria > Transformações compostas"
-            // também está habilitado, por consistência com este atalho —
-            // só as outras duas categorias desse grupo (sem ícone de
-            // atalho, sem confirmação visual) seguem "Em construção" ali.
+            // Categoria completa (20 situações curadas,
+            // RenderizadorComposicaoTransformacoes), reincluída no sorteio/
+            // quiz em 2026-08-07 (ver CATEGORIAS_SORTEIO_LIVRE) — o atalho
+            // volta a usar a descrição padrão do diagrama (mesmo padrão dos
+            // 3 ícones de Medidas), no lugar do aviso "temporariamente
+            // desabilitada" que fazia sentido só enquanto o sorteio era
+            // restrito ao grupo Medidas.
             botaoAtalhoComposicaoTransformacoes = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, criarIconeCategoriaComposicaoTransformacoes(),
-                    "ui.hint.categoryDisabled.tooltip");
+                    TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, criarIconeCategoriaComposicaoTransformacoes());
             add(botaoAtalhoComposicaoTransformacoes);
             // Mesma situação da anterior: categoria completa (8 situações
             // curadas, renderizador próprio — RenderizadorTransformacaoRelacao).
-            // Desde a migração para JMenuBar, o grupo "Relações" do menu
-            // "Categoria" está inteiro habilitado (ver criarMenuCategoria).
             botaoAtalhoTransformacaoRelacao = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, criarIconeCategoriaTransformacaoRelacao(),
-                    "ui.hint.categoryDisabled.tooltip");
+                    TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, criarIconeCategoriaTransformacaoRelacao());
             add(botaoAtalhoTransformacaoRelacao);
-            // Irmã de TRANSFORMACAO_RELACAO no mesmo grupo "Relações" do
-            // menu (completa em código — RenderizadorComposicaoRelacoes, 8
-            // situações curadas; grupo inteiro habilitado no menu).
+            // Irmã de TRANSFORMACAO_RELACAO no mesmo grupo "Relações"
+            // (completa em código — RenderizadorComposicaoRelacoes, 8
+            // situações curadas).
             botaoAtalhoComposicaoRelacoes = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes(),
-                    "ui.hint.categoryDisabled.tooltip");
+                    TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes());
             add(botaoAtalhoComposicaoRelacoes);
 
             botaoAtalhoProximoPasso = new JButton(criarIconeInterrogacaoAtalho());
@@ -1303,12 +1298,13 @@ public class Main extends JFrame {
 
         /**
          * @param chaveAnotacaoPersonalizada se não-nula, substitui a descrição
-         * padrão do diagrama ("diag.desc.*") no tip de mouse-over — usado
-         * pelos 3 ícones do grupo "Relações", sempre desabilitados desde que
-         * o sorteio ficou restrito ao grupo "Medidas" (ver
-         * atualizarHabilitacaoIconesAtalhoCategoria): mostrar a descrição do
-         * diagrama seria menos útil ali do que avisar que a categoria está
-         * temporariamente desabilitada.
+         * padrão do diagrama ("diag.desc.*") no tip de mouse-over. Sem
+         * chamador hoje (2026-08-07): usava
+         * "ui.hint.categoryDisabled.tooltip" nos 3 ícones do grupo
+         * "Relações" enquanto eles ficavam sempre desabilitados (sorteio
+         * restrito a "Medidas", decisão de 2026-07-28, revertida — ver
+         * CATEGORIAS_SORTEIO_LIVRE); mantido como mecanismo genérico caso
+         * outro atalho precise de um aviso equivalente no futuro.
          */
         private JButton criarBotaoAtalhoCategoria(final TipoSituacaoAditiva tipo, Icon icone,
                 final String chaveAnotacaoPersonalizada) {
