@@ -112,6 +112,7 @@ public class TesteMonkeySemiGuiado {
         while (System.currentTimeMillis() < fim) {
             iteracao++;
             try {
+                talvezTrocarCategoria(robot, tela, random, log, iteracao);
                 executarIteracao(robot, tela, random, log, iteracao);
                 // Digitar um valor aleatorio na incognita agora pode abrir a
                 // pergunta de confirmacao "Tem certeza que esse e o valor
@@ -209,11 +210,12 @@ public class TesteMonkeySemiGuiado {
      * e selecionada via tela.menuCategoria (JMenu real, Arquivo > Categoria)
      * chamando doClick() diretamente nos itens — mais robusto que dirigir o
      * Robot por cima de um menu nativo do SO, que e sensivel a timing/tema.
-     * Ainda restringe as opcoes ao grupo "Medidas" (indice 0 dentro de
-     * menuCategoria): os outros itens de Categoria podem estar habilitados
-     * ou "Em construcao" dependendo do estado do app, e a intencao aqui e
-     * so garantir QUALQUER categoria valida para destravar o teste, nao
-     * exercitar as demais.
+     * Ate 2026-08-07 restringia as opcoes ao grupo "Medidas" (indice 0). A
+     * partir desta data usa todasOpcoesDeCategoriaHabilitadas — cobre todos
+     * os grupos (Medidas e Relacoes; os dois itens "Em construcao" do grupo
+     * Transformacoes ficam de fora naturalmente, por estarem desabilitados)
+     * a pedido da usuaria, para que o teste monkey exercite Relacoes tambem,
+     * nao so a categoria sorteada uma unica vez no inicio.
      */
     private static void garantirCategoriaSelecionada(Robot robot, final Main.TelaGerard tela,
             Random random, PrintWriter log) throws Exception {
@@ -229,41 +231,86 @@ public class TesteMonkeySemiGuiado {
 
         log.println("Categoria ainda nao selecionada — selecionando via menuCategoria (JMenu).");
 
-        final JMenuItem[] opcaoEscolhida = new JMenuItem[1];
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                if (tela.menuCategoria == null || tela.menuCategoria.getItemCount() == 0) {
-                    return;
-                }
-                JMenuItem grupoMedidas = tela.menuCategoria.getItem(0);
-                if (!(grupoMedidas instanceof JMenu)) {
-                    return;
-                }
-                JMenu menuMedidas = (JMenu) grupoMedidas;
-                List<JMenuItem> opcoes = new ArrayList<JMenuItem>();
-                for (int i = 0; i < menuMedidas.getItemCount(); i++) {
-                    JMenuItem item = menuMedidas.getItem(i);
-                    if (item != null && item.isEnabled()) {
-                        opcoes.add(item);
-                    }
-                }
-                if (!opcoes.isEmpty()) {
-                    opcaoEscolhida[0] = opcoes.get(random.nextInt(opcoes.size()));
-                }
-            }
-        });
-        if (opcaoEscolhida[0] == null) {
-            log.println("Nenhuma opcao habilitada em menuCategoria > Medidas — abortando selecao de categoria.");
+        List<JMenuItem> opcoes = todasOpcoesDeCategoriaHabilitadas(tela);
+        if (opcoes.isEmpty()) {
+            log.println("Nenhuma opcao habilitada em menuCategoria — abortando selecao de categoria.");
             return;
         }
-        final String textoEscolhido = opcaoEscolhida[0].getText();
+        final JMenuItem opcaoEscolhida = opcoes.get(random.nextInt(opcoes.size()));
+        final String textoEscolhido = opcaoEscolhida.getText();
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                opcaoEscolhida[0].doClick();
+                opcaoEscolhida.doClick();
             }
         });
         log.println("Categoria inicial selecionada: " + textoEscolhido);
         Thread.sleep(800);
+    }
+
+    /**
+     * Todos os JMenuItem folha, de todos os subgrupos de tela.menuCategoria
+     * (Medidas, Transformacoes, Relacoes...), que estao habilitados agora.
+     * Generico de proposito — nao assume quais grupos existem nem quantos,
+     * so que cada grupo e um JMenu com itens folha dentro. Usado tanto para
+     * a selecao inicial de categoria (garantirCategoriaSelecionada) quanto
+     * para trocas de categoria no meio do teste (talvezTrocarCategoria) —
+     * um unico lugar define "categoria valida para o teste", em vez de
+     * duplicar o filtro em dois pontos.
+     */
+    private static List<JMenuItem> todasOpcoesDeCategoriaHabilitadas(final Main.TelaGerard tela) throws Exception {
+        final List<JMenuItem> opcoes = new ArrayList<JMenuItem>();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                if (tela.menuCategoria == null) {
+                    return;
+                }
+                for (int g = 0; g < tela.menuCategoria.getItemCount(); g++) {
+                    JMenuItem grupo = tela.menuCategoria.getItem(g);
+                    if (!(grupo instanceof JMenu)) {
+                        continue;
+                    }
+                    JMenu subMenu = (JMenu) grupo;
+                    for (int i = 0; i < subMenu.getItemCount(); i++) {
+                        JMenuItem item = subMenu.getItem(i);
+                        if (item != null && item.isEnabled()) {
+                            opcoes.add(item);
+                        }
+                    }
+                }
+            }
+        });
+        return opcoes;
+    }
+
+    /**
+     * Com baixa probabilidade a cada iteracao, troca a categoria atual por
+     * outra sorteada entre TODAS as opcoes habilitadas (nao so a categoria
+     * escolhida no inicio) — sem isto, uma rodada cuja selecao inicial caisse
+     * em "Medidas" nunca exercitaria "Relacoes" (e vice-versa) durante todo o
+     * teste, deixando a cobertura incompleta mesmo com Relacoes habilitada.
+     * Troca via doClick() no JMenuItem real, o mesmo caminho que
+     * selecionarCategoria usa para um clique humano — cancela qualquer
+     * adivinhacao pendente e comeca uma nova atividade na categoria
+     * escolhida.
+     */
+    private static void talvezTrocarCategoria(Robot robot, final Main.TelaGerard tela, Random random,
+            PrintWriter log, int iteracao) throws Exception {
+        if (random.nextDouble() >= 0.08) {
+            return;
+        }
+        List<JMenuItem> opcoes = todasOpcoesDeCategoriaHabilitadas(tela);
+        if (opcoes.isEmpty()) {
+            return;
+        }
+        final JMenuItem escolhida = opcoes.get(random.nextInt(opcoes.size()));
+        final String texto = escolhida.getText();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                escolhida.doClick();
+            }
+        });
+        log.println("[iter " + iteracao + "] trocar categoria -> " + texto);
+        Thread.sleep(500);
     }
 
     /**
