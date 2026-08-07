@@ -35,6 +35,9 @@ public final class SeletorRepresentacaoComplementar {
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.BARRAS_COMPARACAO;
         }
+        if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            return TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
+        }
         return TipoRepresentacaoComplementar.GENERICA;
     }
 }

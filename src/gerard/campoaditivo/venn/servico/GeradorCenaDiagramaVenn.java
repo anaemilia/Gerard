@@ -3,6 +3,7 @@ package gerard.campoaditivo.venn.servico;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.NormalizadorRotulosSemanticosDiagrama;
+import gerard.campoaditivo.transformacao.composicao.LayoutComposicaoTransformacoes;
 import gerard.campoaditivo.transformacao.processo.LayoutProcessoTransformacao;
 import gerard.campoaditivo.venn.modelo.CenaDiagramaVenn;
 import gerard.campoaditivo.venn.modelo.ConectorDiagramaVenn;
@@ -15,6 +16,8 @@ import java.util.List;
 public class GeradorCenaDiagramaVenn {
     private final LayoutProcessoTransformacao layoutProcessoTransformacao =
             new LayoutProcessoTransformacao();
+    private final LayoutComposicaoTransformacoes layoutComposicaoTransformacoes =
+            new LayoutComposicaoTransformacoes();
     private final NormalizadorRotulosSemanticosDiagrama normalizadorRotulos =
             new NormalizadorRotulosSemanticosDiagrama();
 
@@ -100,12 +103,15 @@ public class GeradorCenaDiagramaVenn {
                         loc.texto("ui.comparisonBars.relative"), valor(valores, 1), false));
                 break;
             case COMPOSICAO_TRANSFORMACOES:
-                nos.add(new NoDiagramaVenn(ax + 25, ay + 90, 110, 110, definicao.getRotulo1(), valor(valores, 0), false));
-                nos.add(new NoDiagramaVenn(ax + 25, ay + h - 160, 110, 110, definicao.getRotulo2(), valor(valores, 1), false));
-                nos.add(new NoDiagramaVenn(ax + w - 190, ay + h/2 - 95, 165, 165, definicao.getRotulo3(), valor(valores, 2), false));
-                conectores.add(seta(ax + 145, ay + 145, ax + w - 198, ay + h/2 - 30));
-                conectores.add(seta(ax + 145, ay + h - 105, ax + w - 198, ay + h/2 + 30));
-                break;
+                // Antes (até 2026-08-07): três círculos com duas setas
+                // convergindo, mesmo layout de COMPOSICAO_RELACOES abaixo.
+                // Substituído pelo mesmo mecanismo visual e interativo já
+                // usado em TRANSFORMACAO_MEDIDAS (funil com quadradinhos
+                // arrastáveis + controle de sinal), estendido para três
+                // funis independentes num único canal — ver
+                // TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md e
+                // RELATORIO_PROCESSO_COMPOSICAO_TRANSFORMACOES_2026-08-07.md.
+                return layoutComposicaoTransformacoes.criarCena(area, definicao, valores);
             case TRANSFORMACAO_RELACAO:
                 nos.add(new NoDiagramaVenn(ax + 25, ay + h/2 - 60, 110, 110, definicao.getRotulo1(), valor(valores, 0), false));
                 nos.add(new NoDiagramaVenn(ax + w/2 - 55, ay + h/2 - 55, 110, 110, definicao.getRotulo2(), valor(valores, 1), false));

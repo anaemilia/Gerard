@@ -515,6 +515,23 @@ public class Main extends JFrame {
         final SincronizadorUnidadesProcessoTransformacao
                 sincronizadorUnidadesProcessoTransformacao =
                 new SincronizadorUnidadesProcessoTransformacao();
+        // Composição de Transformações (2026-08-07) — mesma família visual
+        // do Processo de Transformação acima, mas com três funis
+        // independentes (Transformação 1, 2 e Final) num único canal, sem
+        // caixas de estado. Ver gerard.campoaditivo.transformacao.composicao
+        // e RELATORIO_PROCESSO_COMPOSICAO_TRANSFORMACOES_2026-08-07.md.
+        final gerard.campoaditivo.transformacao.composicao.RenderizadorComposicaoTransformacoesProcesso
+                renderizadorComposicaoTransformacoesProcesso =
+                new gerard.campoaditivo.transformacao.composicao.RenderizadorComposicaoTransformacoesProcesso();
+        final gerard.campoaditivo.transformacao.composicao.ControleSinalComposicaoTransformacoes
+                controleSinalComposicaoTransformacoes =
+                new gerard.campoaditivo.transformacao.composicao.ControleSinalComposicaoTransformacoes();
+        final gerard.campoaditivo.transformacao.composicao.LayoutUnidadesComposicaoTransformacoes
+                layoutUnidadesComposicaoTransformacoes =
+                new gerard.campoaditivo.transformacao.composicao.LayoutUnidadesComposicaoTransformacoes();
+        final gerard.campoaditivo.transformacao.composicao.SincronizadorUnidadesComposicaoTransformacoes
+                sincronizadorUnidadesComposicaoTransformacoes =
+                new gerard.campoaditivo.transformacao.composicao.SincronizadorUnidadesComposicaoTransformacoes();
         final ConversorTextoParaInteiroSemantico conversorTextoParaInteiroSemantico =
                 new ConversorTextoParaInteiroSemantico();
         final ServicoQuantidadeContextual servicoQuantidadeContextual =
@@ -4732,11 +4749,16 @@ public class Main extends JFrame {
             int[] valores = obterValoresSincronizadosParaDiagramaVenn();
             EstadoSemanticoCompartilhado.Snapshot snapshotTabuleiro =
                     estadoSemanticoCompartilhado.snapshot();
-            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso =
-                    ehProcessoTransformacaoMedidas()
-                    ? sincronizadorUnidadesProcessoTransformacao
-                            .criarPlano(snapshotTabuleiro, situacaoProblemaAtual)
-                    : null;
+            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso;
+            if (ehProcessoTransformacaoMedidas()) {
+                planoUnidadesProcesso = sincronizadorUnidadesProcessoTransformacao
+                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
+            } else if (ehComposicaoTransformacoesProcesso()) {
+                planoUnidadesProcesso = sincronizadorUnidadesComposicaoTransformacoes
+                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
+            } else {
+                planoUnidadesProcesso = null;
+            }
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
             TipoSituacaoAditiva tipoVenn = usaCenaVergnaudComposta() ? TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS : tipoSituacaoSelecionada;
             cenaDiagramaVennAtual = geradorCenaDiagramaVenn.gerar(tipoVenn, ultimaAreaDiagramaVenn, definicaoDiagramaAtual, valores);
@@ -7038,9 +7060,8 @@ public class Main extends JFrame {
                                 agrupamentoLimiteQuantidadeQuestionado);
                 Rectangle areaControle = ehAgrupamentoTransformacaoComSinal(
                         representacaoLimite.obterAgrupamento())
-                        ? controleSinalProcessoTransformacao.obterAreaAdicionar(
-                                circulosVenn,
-                                obterEstadoVisualProcessoTransformacao())
+                        ? obterAreaControleSinalAdicionar(
+                                representacaoLimite.obterAgrupamento())
                         : controleAdicionarQuadradinhoVenn.obterArea(
                                 representacaoLimite,
                                 obterAreaDiagramaAditivo());
@@ -7336,11 +7357,16 @@ public class Main extends JFrame {
                 // conclusão da modelagem não é antecipada).
                 valores[2] = valores[0];
             }
-            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso =
-                    ehProcessoTransformacaoMedidas()
-                    ? sincronizadorUnidadesProcessoTransformacao
-                            .criarPlano(snapshotTabuleiro, situacaoProblemaAtual)
-                    : null;
+            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso;
+            if (ehProcessoTransformacaoMedidas()) {
+                planoUnidadesProcesso = sincronizadorUnidadesProcessoTransformacao
+                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
+            } else if (ehComposicaoTransformacoesProcesso()) {
+                planoUnidadesProcesso = sincronizadorUnidadesComposicaoTransformacoes
+                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
+            } else {
+                planoUnidadesProcesso = null;
+            }
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
             TipoSituacaoAditiva tipoVenn = usaCenaVergnaudComposta() ? TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS : tipoSituacaoSelecionada;
             String assinatura = criarAssinaturaDiagramaVenn(tipoVenn, areaAtual, valores);
@@ -7367,6 +7393,7 @@ public class Main extends JFrame {
                         no.isExibirQuadradinhos()
                 );
                 circulo.formaRetangular = ehProcessoTransformacaoMedidas()
+                        || ehComposicaoTransformacoesProcesso()
                         || ((tipoVenn == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
                                 || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS)
                                 && !usaCenaVergnaudComposta());
@@ -7528,12 +7555,12 @@ public class Main extends JFrame {
                     CirculoVenn no = circulosVenn.get(indiceVisual);
                     if (no.exibirQuadradinhos) {
                         int quantidade = contarQuadradinhosNoCirculo(no);
-                        if (ehProcessoTransformacaoMedidas()
+                        if ((ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso())
                                 && planoUnidadesProcessoAtual != null) {
                             quantidade = planoUnidadesProcessoAtual
                                     .converterUnidadesParaValor(quantidade);
                         }
-                        if (ehProcessoTransformacaoMedidas()
+                        if ((ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso())
                                 && politicaSinalTransformacaoComplementar
                                         .permiteValorAssinado(tipoSituacaoSelecionada, indiceSemantico)) {
                             Integer valorAnterior = anterior != null
@@ -8026,6 +8053,14 @@ public class Main extends JFrame {
                     tipoSituacaoSelecionada,
                     usaCenaVergnaudComposta())
                     == TipoRepresentacaoComplementar.PROCESSO_TRANSFORMACAO;
+        }
+
+        /** Composição de Transformações (2026-08-07) — três funis, um canal. */
+        private boolean ehComposicaoTransformacoesProcesso() {
+            return seletorRepresentacaoComplementar.selecionar(
+                    tipoSituacaoSelecionada,
+                    usaCenaVergnaudComposta())
+                    == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
         }
 
         private int obterXDivisorDiagramas() {
@@ -8787,6 +8822,20 @@ public class Main extends JFrame {
                 return;
             }
 
+            if (ehComposicaoTransformacoesProcesso()
+                    && circulo.formaRetangular && circulo.exibirQuadradinhos) {
+                java.util.List<Rectangle> posicoes =
+                        layoutUnidadesComposicaoTransformacoes.calcular(
+                                circulosVenn,
+                                circulosVenn.indexOf(circulo),
+                                quantidade);
+                for (Rectangle posicao : posicoes) {
+                    quadradinhosVenn.add(new QuadradinhoVenn(
+                            posicao.x, posicao.y, posicao.width, origem));
+                }
+                return;
+            }
+
             if (ehGraficoBarrasComparacao() && circulo.formaRetangular && circulo.exibirQuadradinhos) {
                 // Os quadradinhos ficam compactados de baixo para cima. A
                 // distância padrão não depende da quantidade momentânea da
@@ -8848,12 +8897,16 @@ public class Main extends JFrame {
             boolean composicaoMedidas = ehDiagramaVennComposicaoMedidas();
             boolean comparacaoMedidas = ehGraficoBarrasComparacao();
             boolean processoTransformacao = ehProcessoTransformacaoMedidas();
+            boolean composicaoTransformacoesProcesso = ehComposicaoTransformacoesProcesso();
 
             desenharCard(g2, area.x, area.y, area.width, area.height, 18);
             reposicionarBotaoAjudaComplementar(area);
 
             if (processoTransformacao) {
                 renderizadorProcessoTransformacao.desenharCabecalho(
+                        g2, area, localizacao);
+            } else if (composicaoTransformacoesProcesso) {
+                renderizadorComposicaoTransformacoesProcesso.desenharCabecalho(
                         g2, area, localizacao);
             } else if (!comparacaoMedidas) {
                 String chaveTituloDiagrama = composicaoMedidas
@@ -8880,11 +8933,21 @@ public class Main extends JFrame {
                     ? EstadoProcessoTransformacao.aPartir(
                             estadoSemanticoCompartilhado.snapshot())
                     : null;
+            gerard.campoaditivo.transformacao.composicao.EstadoComposicaoTransformacoes
+                    estadoComposicaoTransformacoes = composicaoTransformacoesProcesso
+                    ? gerard.campoaditivo.transformacao.composicao.EstadoComposicaoTransformacoes.aPartir(
+                            estadoSemanticoCompartilhado.snapshot())
+                    : null;
             for (int i = 0; i < circulosVenn.size(); i++) {
                 if (processoTransformacao) {
                     renderizadorProcessoTransformacao.desenharZona(
                             g2, circulosVenn.get(i), i,
                             estadoProcesso, localizacao,
+                            planoUnidadesProcessoAtual);
+                } else if (composicaoTransformacoesProcesso) {
+                    renderizadorComposicaoTransformacoesProcesso.desenharZona(
+                            g2, circulosVenn.get(i), i,
+                            estadoComposicaoTransformacoes, localizacao,
                             planoUnidadesProcessoAtual);
                 } else {
                     desenharCirculoVenn(g2, circulosVenn.get(i),
@@ -8895,6 +8958,10 @@ public class Main extends JFrame {
                 renderizadorProcessoTransformacao.desenharEstrutura(
                         g2, circulosVenn, estadoProcesso,
                         planoUnidadesProcessoAtual);
+            } else if (composicaoTransformacoesProcesso) {
+                renderizadorComposicaoTransformacoesProcesso.desenharEstrutura(
+                        g2, circulosVenn, estadoComposicaoTransformacoes,
+                        planoUnidadesProcessoAtual, localizacao);
             }
 
             atualizarQuadradinhosCorrespondentesComparacao(comparacaoMedidas);
@@ -9041,7 +9108,7 @@ public class Main extends JFrame {
                     circulosVenn,
                     obterMapeamentoPapeisComplementaresAtual(),
                     tipoSituacaoSelecionada,
-                    ehProcessoTransformacaoMedidas(),
+                    ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso(),
                     estadoSemanticoCompartilhado.snapshot(),
                     indiceAlteradoVisual,
                     quantidadeProposta,
@@ -9056,7 +9123,7 @@ public class Main extends JFrame {
                     circulosVenn,
                     obterMapeamentoPapeisComplementaresAtual(),
                     tipoSituacaoSelecionada,
-                    ehProcessoTransformacaoMedidas(),
+                    ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso(),
                     this::obterLimiteSemanticoCuradoDoAgrupamento);
         }
 
@@ -9068,6 +9135,76 @@ public class Main extends JFrame {
         private EstadoProcessoTransformacao obterEstadoVisualProcessoTransformacao() {
             return EstadoProcessoTransformacao.aPartir(
                     estadoSemanticoCompartilhado.snapshot());
+        }
+
+        private gerard.campoaditivo.transformacao.composicao.EstadoComposicaoTransformacoes
+                obterEstadoVisualComposicaoTransformacoes() {
+            return gerard.campoaditivo.transformacao.composicao.EstadoComposicaoTransformacoes.aPartir(
+                    estadoSemanticoCompartilhado.snapshot());
+        }
+
+        /**
+         * Ponto único de despacho entre o widget de Transformação de Medidas
+         * (um funil implícito) e o de Composição de Transformações (três
+         * funis, indexados por agrupamento) para os controles de sinal
+         * +/- — evita duplicar a ramificação em cada um dos pontos de
+         * desenho/hit-test abaixo. Ver
+         * RELATORIO_PROCESSO_COMPOSICAO_TRANSFORMACOES_2026-08-07.md.
+         */
+        private Rectangle obterAreaControleSinalAdicionar(CirculoVenn agrupamento) {
+            if (ehComposicaoTransformacoesProcesso()) {
+                return controleSinalComposicaoTransformacoes.obterAreaAdicionar(
+                        circulosVenn, obterEstadoVisualComposicaoTransformacoes(),
+                        circulosVenn.indexOf(agrupamento));
+            }
+            return controleSinalProcessoTransformacao.obterAreaAdicionar(
+                    circulosVenn, obterEstadoVisualProcessoTransformacao());
+        }
+
+        private boolean controleSinalContemAdicionar(CirculoVenn agrupamento, int x, int y) {
+            if (ehComposicaoTransformacoesProcesso()) {
+                return controleSinalComposicaoTransformacoes.contemAdicionar(
+                        circulosVenn, obterEstadoVisualComposicaoTransformacoes(),
+                        circulosVenn.indexOf(agrupamento), x, y);
+            }
+            return controleSinalProcessoTransformacao.contemAdicionar(
+                    circulosVenn, obterEstadoVisualProcessoTransformacao(), x, y);
+        }
+
+        private boolean controleSinalContemRemover(CirculoVenn agrupamento, int x, int y) {
+            if (ehComposicaoTransformacoesProcesso()) {
+                return controleSinalComposicaoTransformacoes.contemRemover(
+                        circulosVenn, obterEstadoVisualComposicaoTransformacoes(),
+                        circulosVenn.indexOf(agrupamento), x, y);
+            }
+            return controleSinalProcessoTransformacao.contemRemover(
+                    circulosVenn, obterEstadoVisualProcessoTransformacao(), x, y);
+        }
+
+        private void desenharControleSinalAdicionar(Graphics2D g2,
+                CirculoVenn agrupamento, boolean focado, boolean habilitado) {
+            if (ehComposicaoTransformacoesProcesso()) {
+                controleSinalComposicaoTransformacoes.desenharAdicionar(
+                        g2, circulosVenn, obterEstadoVisualComposicaoTransformacoes(),
+                        circulosVenn.indexOf(agrupamento), focado, habilitado);
+                return;
+            }
+            controleSinalProcessoTransformacao.desenharAdicionar(
+                    g2, circulosVenn, obterEstadoVisualProcessoTransformacao(),
+                    focado, habilitado);
+        }
+
+        private void desenharControleSinalRemover(Graphics2D g2,
+                CirculoVenn agrupamento, boolean focado, boolean habilitado) {
+            if (ehComposicaoTransformacoesProcesso()) {
+                controleSinalComposicaoTransformacoes.desenharRemover(
+                        g2, circulosVenn, obterEstadoVisualComposicaoTransformacoes(),
+                        circulosVenn.indexOf(agrupamento), focado, habilitado);
+                return;
+            }
+            controleSinalProcessoTransformacao.desenharRemover(
+                    g2, circulosVenn, obterEstadoVisualProcessoTransformacao(),
+                    focado, habilitado);
         }
 
         private void desenharControlesAdicionarQuadradinhoVenn(Graphics2D g2, Rectangle area) {
@@ -9088,10 +9225,8 @@ public class Main extends JFrame {
                         == agrupamentoAdicionarQuadradinhoFocado;
                 if (ehAgrupamentoTransformacaoComSinal(
                         representacao.obterAgrupamento())) {
-                    controleSinalProcessoTransformacao.desenharAdicionar(
-                            g2, circulosVenn,
-                            obterEstadoVisualProcessoTransformacao(),
-                            focado, habilitado);
+                    desenharControleSinalAdicionar(g2,
+                            representacao.obterAgrupamento(), focado, habilitado);
                 } else {
                     controleAdicionarQuadradinhoVenn.desenhar(
                             g2, representacao, area, focado, habilitado);
@@ -9111,9 +9246,8 @@ public class Main extends JFrame {
                 RepresentacaoComUnidadesAdicionaveis representacao = representacoes.get(i);
                 boolean contem = ehAgrupamentoTransformacaoComSinal(
                         representacao.obterAgrupamento())
-                        ? controleSinalProcessoTransformacao.contemAdicionar(
-                                circulosVenn,
-                                obterEstadoVisualProcessoTransformacao(), x, y)
+                        ? controleSinalContemAdicionar(
+                                representacao.obterAgrupamento(), x, y)
                         : controleAdicionarQuadradinhoVenn.contem(
                                 representacao, area, x, y);
                 if (contem) {
@@ -9141,10 +9275,8 @@ public class Main extends JFrame {
                         == agrupamentoRemoverQuadradinhoFocado;
                 if (ehAgrupamentoTransformacaoComSinal(
                         representacao.obterAgrupamento())) {
-                    controleSinalProcessoTransformacao.desenharRemover(
-                            g2, circulosVenn,
-                            obterEstadoVisualProcessoTransformacao(),
-                            focado, habilitado);
+                    desenharControleSinalRemover(g2,
+                            representacao.obterAgrupamento(), focado, habilitado);
                 } else {
                     controleRemoverQuadradinhoVenn.desenhar(
                             g2, representacao, area, focado, habilitado);
@@ -9171,9 +9303,8 @@ public class Main extends JFrame {
                 RepresentacaoComUnidadesRemoviveis representacao = representacoes.get(i);
                 boolean contem = ehAgrupamentoTransformacaoComSinal(
                         representacao.obterAgrupamento())
-                        ? controleSinalProcessoTransformacao.contemRemover(
-                                circulosVenn,
-                                obterEstadoVisualProcessoTransformacao(), x, y)
+                        ? controleSinalContemRemover(
+                                representacao.obterAgrupamento(), x, y)
                         : controleRemoverQuadradinhoVenn.contem(
                                 representacao, area, x, y);
                 if (contem) {
@@ -9184,7 +9315,8 @@ public class Main extends JFrame {
         }
 
         private boolean ehAgrupamentoTransformacaoComSinal(CirculoVenn agrupamento) {
-            if (!ehProcessoTransformacaoMedidas() || agrupamento == null) {
+            if (!(ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso())
+                    || agrupamento == null) {
                 return false;
             }
             int indiceAgrupamento = circulosVenn.indexOf(agrupamento);
@@ -9241,7 +9373,8 @@ public class Main extends JFrame {
                         quantidade = ehAgrupamentoTransformacaoComSinal(no)
                                 ? valorAssinadoProposto
                                 : Math.abs(valorAssinadoProposto);
-                    } else if (ehProcessoTransformacaoMedidas()
+                    } else if ((ehProcessoTransformacaoMedidas()
+                                    || ehComposicaoTransformacoesProcesso())
                             && politicaSinalTransformacaoComplementar
                                     .permiteValorAssinado(tipoSituacaoSelecionada, indiceSemantico)) {
                         Integer valorAnterior = anterior != null
