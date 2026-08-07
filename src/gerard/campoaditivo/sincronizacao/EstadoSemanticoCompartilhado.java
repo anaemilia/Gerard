@@ -169,25 +169,25 @@ public final class EstadoSemanticoCompartilhado {
         }
         if (indiceAlterado == 0) {
             if (conhecido(0) && conhecido(1)) {
-                definirSePermitido(2, valor(0) + valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             } else if (conhecido(0) && conhecido(2)) {
-                definirSePermitido(1, valor(2) - valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             }
             return;
         }
         if (indiceAlterado == 1) {
             if (conhecido(0) && conhecido(1)) {
-                definirSePermitido(2, valor(0) + valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             } else if (conhecido(1) && conhecido(2)) {
-                definirSePermitido(0, valor(2) - valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             }
             return;
         }
         if (indiceAlterado == 2) {
             if (conhecido(0) && conhecido(2)) {
-                definirSePermitido(1, valor(2) - valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             } else if (conhecido(1) && conhecido(2)) {
-                definirSePermitido(0, valor(2) - valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+                definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
             }
             return;
         }
@@ -204,11 +204,11 @@ public final class EstadoSemanticoCompartilhado {
             return;
         }
         if (indiceFaltante == 0 && conhecido(1) && conhecido(2)) {
-            definirSePermitido(0, valor(2) - valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+            definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
         } else if (indiceFaltante == 1 && conhecido(0) && conhecido(2)) {
-            definirSePermitido(1, valor(2) - valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+            definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
         } else if (indiceFaltante == 2 && conhecido(0) && conhecido(1)) {
-            definirSePermitido(2, valor(0) + valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+            definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
         }
     }
 
@@ -361,6 +361,44 @@ public final class EstadoSemanticoCompartilhado {
         return valor == null ? 0 : valor.intValue();
     }
 
+
+    /**
+     * Soma protegida contra estouro de int (2026-08-06). Antes desta guarda,
+     * 2000000000 + 2000000000 escrevia -294967296 no estado compartilhado e
+     * as representações eram sincronizadas com esse número errado. Quando a
+     * conta não é representável, nada é escrito — o valor anterior/ausente é
+     * preservado, exatamente o mesmo tratamento que definir(...) já dava a um
+     * valor inválido para o domínio do papel.
+     *
+     * O caminho da arquitetura rica (resolverViaRelacaoEstruturalRica) já está
+     * protegido desde a guarda equivalente nas classes RelacaoEstrutural*:
+     * calcularValorAusente devolve NAO_RESOLVIVEL_NESTE_ESTADO ao estourar, e
+     * temValorCalculavel() falso impede a escrita. Esta guarda cobre o
+     * algoritmo genérico abaixo — o de preenchimento automático de
+     * consistência, que roda quando os três já estão preenchidos.
+     */
+    private void definirSomaSePermitido(int indice, int a, int b,
+            int indiceIncognitaProtegida,
+            boolean permitirPreenchimentoIncognita) {
+        try {
+            definirSePermitido(indice, Math.addExact(a, b),
+                    indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+        } catch (ArithmeticException estouro) {
+            // Não representável: preserva o estado anterior sem publicar lixo.
+        }
+    }
+
+    /** Subtração protegida contra estouro de int — ver definirSomaSePermitido. */
+    private void definirSubtracaoSePermitido(int indice, int a, int b,
+            int indiceIncognitaProtegida,
+            boolean permitirPreenchimentoIncognita) {
+        try {
+            definirSePermitido(indice, Math.subtractExact(a, b),
+                    indiceIncognitaProtegida, permitirPreenchimentoIncognita);
+        } catch (ArithmeticException estouro) {
+            // Não representável: preserva o estado anterior sem publicar lixo.
+        }
+    }
 
     private void definirSePermitido(int indice, int valor,
             int indiceIncognitaProtegida,
