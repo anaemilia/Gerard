@@ -539,7 +539,8 @@ public class Main extends JFrame {
         // função do item de menu Comparar categorias. Ver
         // criarBotoesCabecalhoEmbutidos.
         JButton botaoCompararCategorias;
-        JButton botaoFerramentaSortear;
+        JButton botaoFerramentaSortearMedidas;
+        JButton botaoFerramentaSortearRelacoes;
         boolean abaGerardAtiva = true;
         IndicadorAgenteMonitor indicadorAgenteMonitor;
         gerard.pesquisador.IndicadorPulsoAgente indicadorAgenteZDP;
@@ -1667,11 +1668,13 @@ public class Main extends JFrame {
             caixaIndicadorAgenteMonitor.setOpaque(true);
             caixaIndicadorAgenteMonitor.setBackground(COR_SUPERFICIE);
             caixaIndicadorAgenteMonitor.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
-            // Ao lado do botão Sortear (ver criarBotoesCabecalhoEmbutidos,
-            // bounds 58,8,34,34). Alargada de 78 pra 94px — os ícones de
-            // robô (22px) precisam de mais espaço que os círculos antigos
-            // (14px) — ver IconeRoboAgente.
-            caixaIndicadorAgenteMonitor.setBounds(100, 8, 94, 34);
+            // Ao lado dos dois botões de Sortear, Medidas e Relações (ver
+            // criarBotoesCabecalhoEmbutidos, bounds 58,8,34,34 e
+            // 100,8,34,34) — deslocada de 100 pra 142 em 2026-08-07 pela
+            // entrada do segundo botão de sorteio. Alargada de 78 pra 94px —
+            // os ícones de robô (22px) precisam de mais espaço que os
+            // círculos antigos (14px) — ver IconeRoboAgente.
+            caixaIndicadorAgenteMonitor.setBounds(142, 8, 94, 34);
             indicadorAgenteMonitor.setBounds(8, 6, 22, 22);
             indicadorAgenteZDP.setBounds(36, 6, 22, 22);
             indicadorAgenteModelador.setBounds(64, 6, 22, 22);
@@ -3045,11 +3048,15 @@ public class Main extends JFrame {
          * usuária, 2026-07-28): "Comparar categorias" (mesma função do item
          * de menu Arquivo > Comparar categorias — reaproveita
          * ConfiguradorOpcaoComparacaoCategorias/abrirTelaComparacaoCategorias)
-         * e, à direita dele, "Sortear" — antes o Sortear ficava numa JToolBar
-         * separada, acima da JMenuBar/abas, visível em todas as abas; agora
-         * os dois ficam só na aba Diagramar, seguidos do LED do Agente
-         * Monitor (indicadorAgenteMonitor.setBounds, ver
-         * criarIndicadorAgenteMonitor).
+         * e, à direita dele, dois botões de sorteio — "Sortear Medidas" e
+         * "Sortear Relações" (divididos em 2026-08-07, a pedido da usuária,
+         * do antigo botão único "Sortear", que sorteava entre as 6
+         * categorias de uma vez; ver sortearSituacaoMedidas/Relacoes). Antes
+         * o Sortear ficava numa JToolBar separada, acima da JMenuBar/abas,
+         * visível em todas as abas; agora ficam só na aba Diagramar,
+         * seguidos do LED do Agente Monitor (indicadorAgenteMonitor.setBounds,
+         * ver criarIndicadorAgenteMonitor — bounds deslocados em 34+8px pela
+         * entrada do segundo botão de sorteio).
          */
         private void criarBotoesCabecalhoEmbutidos() {
             if (botaoCompararCategorias == null) {
@@ -3069,19 +3076,33 @@ public class Main extends JFrame {
             // (opcao.setToolTipText(null)) — precisa ser setado depois dele.
             botaoCompararCategorias.setToolTipText(localizacao.texto("ui.menu.category.compare.tooltip"));
 
-            if (botaoFerramentaSortear == null) {
-                botaoFerramentaSortear = criarBotaoIconeCabecalho(criarIconeFerramentaSortear());
-                botaoFerramentaSortear.addActionListener(new ActionListener() {
+            if (botaoFerramentaSortearMedidas == null) {
+                botaoFerramentaSortearMedidas = criarBotaoIconeCabecalho(criarIconeFerramentaSortear('M'));
+                botaoFerramentaSortearMedidas.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        sortearNovaSituacao();
+                        sortearSituacaoMedidas();
                     }
                 });
-                botaoFerramentaSortear.setBounds(58, 8, 34, 34);
-                add(botaoFerramentaSortear);
-                setComponentZOrder(botaoFerramentaSortear, 0);
+                botaoFerramentaSortearMedidas.setBounds(58, 8, 34, 34);
+                add(botaoFerramentaSortearMedidas);
+                setComponentZOrder(botaoFerramentaSortearMedidas, 0);
             }
-            botaoFerramentaSortear.setToolTipText(localizacao.texto("ui.tooltip.random"));
-            botaoFerramentaSortear.setEnabled(abaGerardAtiva);
+            botaoFerramentaSortearMedidas.setToolTipText(localizacao.texto("ui.tooltip.random.measures"));
+            botaoFerramentaSortearMedidas.setEnabled(abaGerardAtiva);
+
+            if (botaoFerramentaSortearRelacoes == null) {
+                botaoFerramentaSortearRelacoes = criarBotaoIconeCabecalho(criarIconeFerramentaSortear('R'));
+                botaoFerramentaSortearRelacoes.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        sortearSituacaoRelacoes();
+                    }
+                });
+                botaoFerramentaSortearRelacoes.setBounds(100, 8, 34, 34);
+                add(botaoFerramentaSortearRelacoes);
+                setComponentZOrder(botaoFerramentaSortearRelacoes, 0);
+            }
+            botaoFerramentaSortearRelacoes.setToolTipText(localizacao.texto("ui.tooltip.random.relations"));
+            botaoFerramentaSortearRelacoes.setEnabled(abaGerardAtiva);
         }
 
         /**
@@ -3138,8 +3159,15 @@ public class Main extends JFrame {
             };
         }
 
-        /** Dado simples (face "3"), mesmo traço fino neutro dos ícones de categoria — ver prepararTracoIconeCategoria. */
-        private Icon criarIconeFerramentaSortear() {
+        /**
+         * Dado simples (face "3"), mesmo traço fino neutro dos ícones de
+         * categoria — ver prepararTracoIconeCategoria. Recebe uma letra de
+         * distintivo ('M'/'R') desenhada num círculo no canto inferior
+         * direito, para diferenciar visualmente os dois botões de sorteio
+         * (Medidas/Relações, divididos em 2026-08-07) sem inventar um novo
+         * glifo — o dado continua sendo o símbolo de "sortear".
+         */
+        private Icon criarIconeFerramentaSortear(final char letraDistintivo) {
             final int tamanho = 26;
             return new Icon() {
                 public int getIconWidth() { return tamanho; }
@@ -3153,6 +3181,26 @@ public class Main extends JFrame {
                         desenharPontoIconeFerramentaSortear(g2, x + 8, y + 8, raioPonto);
                         desenharPontoIconeFerramentaSortear(g2, x + tamanho / 2, y + tamanho / 2, raioPonto);
                         desenharPontoIconeFerramentaSortear(g2, x + tamanho - 8, y + tamanho - 8, raioPonto);
+
+                        int raioDistintivo = 7;
+                        int cxDistintivo = x + tamanho - 2;
+                        int cyDistintivo = y + tamanho - 2;
+                        g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
+                        g2.fill(new java.awt.geom.Ellipse2D.Float(
+                                cxDistintivo - raioDistintivo, cyDistintivo - raioDistintivo,
+                                raioDistintivo * 2, raioDistintivo * 2));
+                        g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
+                        g2.draw(new java.awt.geom.Ellipse2D.Float(
+                                cxDistintivo - raioDistintivo, cyDistintivo - raioDistintivo,
+                                raioDistintivo * 2, raioDistintivo * 2));
+                        Font fonteAnterior = g2.getFont();
+                        g2.setFont(fonteAnterior.deriveFont(Font.BOLD, 9f));
+                        FontMetrics fm = g2.getFontMetrics();
+                        String texto = String.valueOf(letraDistintivo);
+                        int txtLargura = fm.stringWidth(texto);
+                        g2.drawString(texto, cxDistintivo - txtLargura / 2f,
+                                cyDistintivo + fm.getAscent() / 2f - 1);
+                        g2.setFont(fonteAnterior);
                     } finally {
                         g2.dispose();
                     }
@@ -3292,29 +3340,50 @@ public class Main extends JFrame {
         }
 
         /**
-         * Categorias que entram no sorteio de "Nova situação-problema"
-         * quando nenhuma categoria específica foi fixada pelo menu Categoria.
-         * Reincluído o grupo "Relações" (COMPOSICAO_TRANSFORMACOES,
-         * TRANSFORMACAO_RELACAO, COMPOSICAO_RELACOES) em 2026-08-07 — a
-         * restrição a só "Medidas" (decisão de 2026-07-28) foi revertida
-         * pela usuária depois que a arquitetura rica passou a cobrir as três
-         * por igual (dados curados, renderizador próprio e resolução
-         * numérica delegada ao piloto, mesmo nível das categorias de
-         * Medidas — ver Fase B2 completa, RELATORIO_MIGRACAO_B2_MAIN_PILOTO_2026-08-07.md).
-         * Os ícones de atalho correspondentes voltam a participar do quiz de
-         * adivinhação — ver atualizarHabilitacaoIconesAtalhoCategoria.
-         * COMPOSICAO_TRANSFORMACAO_MEDIDAS e TRANSFORMACAO_COMPOSTA_DOIS_PASSOS
-         * continuam de fora por serem "Em construção" em todo lugar —
-         * nenhum caminho de UI as alcança, e isto não muda com esta decisão.
+         * Categorias do grupo "Medidas" que entram no sorteio restrito a
+         * este grupo (botaoFerramentaSortearMedidas) — mesmos 3 tipos que já
+         * formavam a metade "Medidas" de CATEGORIAS_SORTEIO_LIVRE.
          */
-        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE = {
+        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_MEDIDAS = {
                 TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                 TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS
+        };
+
+        /**
+         * Categorias do grupo "Relações" que entram no sorteio restrito a
+         * este grupo (botaoFerramentaSortearRelacoes) — mesmos 3 tipos que
+         * já formavam a metade "Relações" de CATEGORIAS_SORTEIO_LIVRE
+         * (inclui COMPOSICAO_TRANSFORMACOES, que vive no grupo de menu
+         * "Transformações" mas sempre esteve agrupado com Relações nos
+         * ícones de atalho — ver criarPainelAtalhoCategoria).
+         */
+        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_RELACOES = {
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 TipoSituacaoAditiva.COMPOSICAO_RELACOES
         };
+
+        /**
+         * União das duas listas acima — mantida só para o item de menu
+         * Arquivo > Nova situação-problema (itemNovaSituacao), que continua
+         * sorteando entre as 6 categorias (comportamento inalterado desde
+         * 2026-08-07). Os dois botões de ícone do cabeçalho
+         * (botaoFerramentaSortearMedidas/Relacoes, divididos em 2026-08-07
+         * a pedido da usuária) usam as listas restritas acima, não esta.
+         * COMPOSICAO_TRANSFORMACAO_MEDIDAS e TRANSFORMACAO_COMPOSTA_DOIS_PASSOS
+         * continuam de fora por serem "Em construção" em todo lugar —
+         * nenhum caminho de UI as alcança.
+         */
+        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE =
+                concatenarTipos(CATEGORIAS_SORTEIO_MEDIDAS, CATEGORIAS_SORTEIO_RELACOES);
+
+        private static TipoSituacaoAditiva[] concatenarTipos(TipoSituacaoAditiva[] a, TipoSituacaoAditiva[] b) {
+            TipoSituacaoAditiva[] resultado = new TipoSituacaoAditiva[a.length + b.length];
+            System.arraycopy(a, 0, resultado, 0, a.length);
+            System.arraycopy(b, 0, resultado, a.length, b.length);
+            return resultado;
+        }
 
         private final java.util.Random sorteioCategoriaLivre = new java.util.Random();
 
@@ -3323,18 +3392,47 @@ public class Main extends JFrame {
          * 2026-07-28: fica habilitada desde o início, sem exigir que uma
          * categoria já tenha sido escolhida antes pelo menu Categoria. Cada
          * clique sorteia também a categoria (dentro de
-         * CATEGORIAS_SORTEIO_LIVRE), não só a situação dentro da categoria
-         * já fixada — diferente de selecionarCategoria(tipo), que fixa uma
-         * categoria específica escolhida manualmente.
+         * CATEGORIAS_SORTEIO_LIVRE, as 6 categorias), não só a situação
+         * dentro da categoria já fixada — diferente de
+         * selecionarCategoria(tipo), que fixa uma categoria específica
+         * escolhida manualmente.
          */
         private void sortearNovaSituacao() {
-            TipoSituacaoAditiva tipoSorteado = CATEGORIAS_SORTEIO_LIVRE[
-                    sorteioCategoriaLivre.nextInt(CATEGORIAS_SORTEIO_LIVRE.length)];
+            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_LIVRE, "Item de menu Nova situação-problema");
+        }
+
+        /**
+         * Botão de ícone "Sortear Medidas" do cabeçalho — sorteia só entre
+         * as 3 categorias de Medidas (CATEGORIAS_SORTEIO_MEDIDAS). Dividido
+         * do antigo botão único "Sortear" em 2026-08-07, a pedido da
+         * usuária, para permitir treinar um grupo por vez em vez de sempre
+         * sortear entre as 6 categorias.
+         */
+        private void sortearSituacaoMedidas() {
+            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_MEDIDAS, "Ícone Sortear Medidas");
+        }
+
+        /**
+         * Botão de ícone "Sortear Relações" do cabeçalho — sorteia só entre
+         * as 3 categorias de Relações (CATEGORIAS_SORTEIO_RELACOES). Ver
+         * sortearSituacaoMedidas.
+         */
+        private void sortearSituacaoRelacoes() {
+            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_RELACOES, "Ícone Sortear Relações");
+        }
+
+        /**
+         * Corpo comum aos 3 pontos de entrada de sorteio acima — só o
+         * grupo de categorias candidatas e a descrição do elemento clicado
+         * (para o log de interação) mudam entre eles.
+         */
+        private void sortearDentroDoGrupo(TipoSituacaoAditiva[] grupo, String descricaoElemento) {
+            TipoSituacaoAditiva tipoSorteado = grupo[sorteioCategoriaLivre.nextInt(grupo.length)];
             registrarLogUsuario(
                     "Sortear uma nova situação-problema, incluindo a categoria",
                     "-",
                     "Menu/barra de legendas",
-                    "Item de menu Nova situação-problema",
+                    descricaoElemento,
                     "Representar a estrutura escolhida para o problema",
                     "OBJ8",
                     "O sistema sorteia a categoria entre as disponíveis quando o sujeito pede uma nova situação sem fixar uma categoria específica.",
@@ -3941,8 +4039,11 @@ public class Main extends JFrame {
             if (itemNovaSituacao != null) {
                 itemNovaSituacao.setEnabled(abaGerardAtiva);
             }
-            if (botaoFerramentaSortear != null) {
-                botaoFerramentaSortear.setEnabled(abaGerardAtiva);
+            if (botaoFerramentaSortearMedidas != null) {
+                botaoFerramentaSortearMedidas.setEnabled(abaGerardAtiva);
+            }
+            if (botaoFerramentaSortearRelacoes != null) {
+                botaoFerramentaSortearRelacoes.setEnabled(abaGerardAtiva);
             }
         }
 
