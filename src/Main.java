@@ -1232,9 +1232,9 @@ public class Main extends JFrame {
             }
             int gapEntreIcones = 24;
             int gapAntesBotao = 32;
-            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 5
+            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 4
                     + LARGURA_SEPARADOR_ATALHO
-                    + GAP_BOTAO_SORTEIO * 3 + LARGURA_BOTAO_SORTEIO * 2
+                    + GAP_BOTAO_SORTEIO * 4 + LARGURA_BOTAO_SORTEIO * 2
                     + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
             int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
             int x = Math.max(18, (larguraTela - larguraTotal) / 2);
@@ -1247,27 +1247,31 @@ public class Main extends JFrame {
             botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA;
 
-            // Botão "Sortear Medidas" — fora da caixa delimitadora do grupo
-            // (areaGrupoMedidas, calculada abaixo só com os 3 ícones), colado
-            // logo depois dela.
+            // Os dois botões de sorteio ficam colados um de cada lado do
+            // separador central, em vez de um "no meio" (entre o grupo e o
+            // separador) e o outro "na ponta" (sozinho depois do último
+            // ícone, com um vão grande até o botão de próximo passo) — essa
+            // segunda posição para Relações parecia solta/desalinhada
+            // (relatado pela usuária, 2026-08-07). Espelhados assim, os dois
+            // ficam visualmente simétricos em torno do separador, e nenhum
+            // fica pendurado sozinho na borda do painel.
             x += GAP_BOTAO_SORTEIO;
             botaoFerramentaSortearMedidas.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
             x += LARGURA_BOTAO_SORTEIO + GAP_BOTAO_SORTEIO;
 
             separadorAtalhoCategoria.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_SEPARADOR_ATALHO, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_SEPARADOR_ATALHO + gapEntreIcones;
+            x += LARGURA_SEPARADOR_ATALHO;
+
+            x += GAP_BOTAO_SORTEIO;
+            botaoFerramentaSortearRelacoes.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
+            x += LARGURA_BOTAO_SORTEIO + GAP_BOTAO_SORTEIO;
 
             botaoAtalhoComposicaoTransformacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoTransformacaoRelacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
             x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
             botaoAtalhoComposicaoRelacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA;
-
-            // Botão "Sortear Relações" — mesmo padrão do de Medidas acima.
-            x += GAP_BOTAO_SORTEIO;
-            botaoFerramentaSortearRelacoes.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
-            x += LARGURA_BOTAO_SORTEIO + gapAntesBotao;
+            x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
 
             xCentroGrupoMedidas = (botaoAtalhoComposicao.getX() + botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) / 2;
             xCentroGrupoRelacoes = (botaoAtalhoComposicaoTransformacoes.getX() + botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) / 2;
