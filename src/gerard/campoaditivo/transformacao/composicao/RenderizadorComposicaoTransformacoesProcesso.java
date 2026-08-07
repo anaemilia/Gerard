@@ -231,14 +231,11 @@ public final class RenderizadorComposicaoTransformacoesProcesso {
             g2.setColor(cor);
             g2.drawString(etapa, centroX - fm.stringWidth(etapa) / 2, y);
         }
-
-        String papel = zonaProcesso.rotulo == null ? "" : zonaProcesso.rotulo;
-        g2.setColor(TEXTO_SECUNDARIO);
-        g2.setFont(new Font("Arial", Font.BOLD, 12));
-        FontMetrics fmPapel = g2.getFontMetrics();
-        int yPapel = tipo == TipoProcessoTransformacao.RETIRADA
-                ? y + 22 : geo.getCanal().y + geo.getCanal().height + 30;
-        g2.drawString(papel, centroX - fmPapel.stringWidth(papel) / 2, yPapel);
+        // O rótulo do papel (Transformação 1/2/Final) já é desenhado por
+        // desenharZona, junto à base do próprio funil — repeti-lo aqui,
+        // abaixo do canal, era redundante e ficava visualmente distante
+        // do funil a que pertence (removido em 2026-08-07, a pedido da
+        // usuária).
     }
 
     private void desenharValor(Graphics2D g2, CirculoVenn zona, String texto,
