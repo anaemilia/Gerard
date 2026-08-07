@@ -5840,9 +5840,23 @@ public class Main extends JFrame {
          * estadoSemanticoCompartilhado. Ver PapelQuantitativo.registrarTentativa
          * — REFERENCE.md §4.8.
          */
+        /**
+         * A chave inclui o id da situação-problema atual, não só o nome do
+         * papel (2026-08-07) — corrige uma lacuna encontrada ao implementar
+         * a visibilidade do diagrama complementar ligada a
+         * estaBloqueadoPorLimiteTentativas(): duas situações-problema
+         * diferentes podem ter incógnitas com o mesmo nome de papel (ex.:
+         * "papel.todo" em duas situações de Composição distintas). Sem o id
+         * da situação na chave, uma situação nova herdava o bloqueio de
+         * tentativas da situação anterior — a primeira tentativa real do
+         * participante na situação nova já nascia bloqueada, sem nunca ter
+         * sido avaliada. Mesmo bug seria latente mesmo sem a mudança de
+         * visibilidade do diagrama, só não tinha efeito visível ainda.
+         */
         private void garantirTentativasIncognitaAtual(String papelAtual) {
             String chave = papelAtual == null || papelAtual.trim().length() == 0
                     ? "papel.valor" : papelAtual.trim();
+            chave = chave + "@" + (situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getId());
             if (tentativasIncognitaAtual == null
                     || !chave.equals(papelDaTentativaAtual)) {
                 tentativasIncognitaAtual = new gerard.dominio.campoaditivo.PapelQuantitativo(
@@ -7902,10 +7916,24 @@ public class Main extends JFrame {
             return new Rectangle[] {areaVergnaud, areaVenn};
         }
 
+        /**
+         * O material concreto (diagrama complementar — quadradinhos, barras,
+         * processo) só aparece na última opção da escalada de Scaffolding
+         * (3ª tentativa rejeitada consecutiva da incógnita atual — AG_EMCME),
+         * não durante a modelagem normal (decisão de 2026-08-07, item 5 do
+         * levantamento de pendências — TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md).
+         * Antes disso o diagrama complementar sempre aparecia junto com o de
+         * Vergnaud. `tentativasIncognitaAtual` é null antes da primeira
+         * tentativa rejeitada de uma situação-problema — tratado como "não
+         * bloqueado", igual a uma instância recém-criada.
+         */
         private boolean deveExibirDiagramaComplementar() {
+            boolean escaladaNoLimite = tentativasIncognitaAtual != null
+                    && tentativasIncognitaAtual.estaBloqueadoPorLimiteTentativas();
             return seletorRepresentacaoComplementar.deveExibir(
                     categoriaSelecionadaParaAtividade,
-                    tipoSituacaoSelecionada);
+                    tipoSituacaoSelecionada,
+                    escaladaNoLimite);
         }
 
         private boolean ehProcessoTransformacaoMedidas() {

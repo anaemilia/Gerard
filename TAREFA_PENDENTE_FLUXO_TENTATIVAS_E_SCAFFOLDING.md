@@ -94,11 +94,20 @@ pesquisador"), significa que a implementação de `AG_AC`/`AG_AE` exige uma
 decisão de modelagem própria, apresentada e aprovada antes de qualquer
 diff — não decidida aqui.
 
-**Ainda em aberto, não implementado nesta rodada**: destacar/mostrar
-material concreto como parte de `AG_EMCME` na 3ª tentativa — a mensagem já
-existe (item 4 do levantamento de pendências), mas o comportamento visual
-de destacar o material concreto (quadradinhos) ainda não foi construído
-nem desenhado. Decisão de design pendente antes de implementar.
+**`AG_EMCME` — material concreto implementado (2026-08-07).** A usuária
+esclareceu que "material concreto" é o diagrama complementar que já existe
+ao lado do diagrama de Vergnaud (quadradinhos/Venn, barras da Comparação,
+processo da Transformação) — hoje sempre visível, deve passar a aparecer
+só na última opção da escalada (3ª rejeição). Implementado:
+`SeletorRepresentacaoComplementar.deveExibir` ganhou um parâmetro
+`escaladaDeAjudaNoLimite`, computado em `Main.deveExibirDiagramaComplementar()`
+a partir de `tentativasIncognitaAtual.estaBloqueadoPorLimiteTentativas()`
+— sem estado novo, some de novo automaticamente ao "Restaurar". Ver
+`RELATORIO_VISIBILIDADE_DIAGRAMA_COMPLEMENTAR_2026-08-07.md`, que também
+documenta um bug de staleness encontrado e corrigido na chave de cache de
+`garantirTentativasIncognitaAtual` (não tinha o id da situação-problema,
+só o nome do papel). `AG_EMCME` está, com isso, implementado por
+completo (mensagem + material concreto).
 
 ## Nota de atualização (2026-08-06) — vocabulário criado depois deste registro
 
