@@ -3297,19 +3297,27 @@ public class Main extends JFrame {
 
         /**
          * Categorias que entram no sorteio de "Nova situação-problema"
-         * quando nenhuma categoria específica foi fixada pelo menu Categoria
-         * — restrito ao grupo "Medidas" (decisão da usuária, 2026-07-28).
-         * Antes incluía também o grupo "Relações" (COMPOSICAO_TRANSFORMACOES,
-         * TRANSFORMACAO_RELACAO, COMPOSICAO_RELACOES) — continuam habilitadas
-         * no menu Categoria e nos ícones de atalho, só não entram mais nesse
-         * sorteio. COMPOSICAO_TRANSFORMACAO_MEDIDAS e
-         * TRANSFORMACAO_COMPOSTA_DOIS_PASSOS continuam de fora por serem "Em
-         * construção" em todo lugar.
+         * quando nenhuma categoria específica foi fixada pelo menu Categoria.
+         * Reincluído o grupo "Relações" (COMPOSICAO_TRANSFORMACOES,
+         * TRANSFORMACAO_RELACAO, COMPOSICAO_RELACOES) em 2026-08-07 — a
+         * restrição a só "Medidas" (decisão de 2026-07-28) foi revertida
+         * pela usuária depois que a arquitetura rica passou a cobrir as três
+         * por igual (dados curados, renderizador próprio e resolução
+         * numérica delegada ao piloto, mesmo nível das categorias de
+         * Medidas — ver Fase B2 completa, RELATORIO_MIGRACAO_B2_MAIN_PILOTO_2026-08-07.md).
+         * Os ícones de atalho correspondentes voltam a participar do quiz de
+         * adivinhação — ver atualizarHabilitacaoIconesAtalhoCategoria.
+         * COMPOSICAO_TRANSFORMACAO_MEDIDAS e TRANSFORMACAO_COMPOSTA_DOIS_PASSOS
+         * continuam de fora por serem "Em construção" em todo lugar —
+         * nenhum caminho de UI as alcança, e isto não muda com esta decisão.
          */
         private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE = {
                 TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                 TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES
         };
 
         private final java.util.Random sorteioCategoriaLivre = new java.util.Random();
@@ -3388,14 +3396,16 @@ public class Main extends JFrame {
             if (botaoAtalhoComposicao != null) botaoAtalhoComposicao.setEnabled(habilitar);
             if (botaoAtalhoTransformacao != null) botaoAtalhoTransformacao.setEnabled(habilitar);
             if (botaoAtalhoComparacao != null) botaoAtalhoComparacao.setEnabled(habilitar);
-            // Os 3 ícones do grupo "Relações" ficam sempre desabilitados,
-            // mas visíveis (decisão da usuária, 2026-07-28) — desde que o
-            // sorteio ficou restrito ao grupo "Medidas" (ver
-            // CATEGORIAS_SORTEIO_LIVRE), eles nunca são a resposta certa da
-            // adivinhação, então habilitá-los seria enganoso.
-            if (botaoAtalhoComposicaoTransformacoes != null) botaoAtalhoComposicaoTransformacoes.setEnabled(false);
-            if (botaoAtalhoTransformacaoRelacao != null) botaoAtalhoTransformacaoRelacao.setEnabled(false);
-            if (botaoAtalhoComposicaoRelacoes != null) botaoAtalhoComposicaoRelacoes.setEnabled(false);
+            // Os 3 ícones do grupo "Relações" voltaram a participar do quiz
+            // de adivinhação em 2026-08-07 — reincluídas em
+            // CATEGORIAS_SORTEIO_LIVRE, então voltam a ser respostas certas
+            // possíveis, mesmo critério de habilitação das categorias de
+            // Medidas. Antes (decisão de 2026-07-28) ficavam sempre
+            // desabilitadas porque o sorteio era restrito a "Medidas" e
+            // habilitá-las seria enganoso — essa restrição foi revertida.
+            if (botaoAtalhoComposicaoTransformacoes != null) botaoAtalhoComposicaoTransformacoes.setEnabled(habilitar);
+            if (botaoAtalhoTransformacaoRelacao != null) botaoAtalhoTransformacaoRelacao.setEnabled(habilitar);
+            if (botaoAtalhoComposicaoRelacoes != null) botaoAtalhoComposicaoRelacoes.setEnabled(habilitar);
         }
 
         /**
