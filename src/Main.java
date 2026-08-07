@@ -5902,14 +5902,18 @@ public class Main extends JFrame {
         }
 
         /**
-         * Aviso mínimo quando o limite de tentativas rejeitadas é atingido
-         * (REFERENCE.md §4.8). Conteúdo pedagógico específico ("qual ajuda
-         * concreta mostrar") é uma decisão futura, ainda não tomada — ver
-         * TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md. Por instrução
-         * explícita da usuária (2026-08-07), o mecanismo foi implementado
-         * mesmo sem esse conteúdo decidido: este método é só o aviso
-         * operacional mínimo (usar "Restaurar"), sem inventar orientação
-         * pedagógica nova.
+         * Aviso quando o limite de tentativas rejeitadas é atingido
+         * (REFERENCE.md §4.8). O mecanismo (contagem, bloqueio, action_id)
+         * foi implementado em 2026-08-07 sem conteúdo pedagógico decidido —
+         * ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md. Em
+         * 2026-08-07 (mesmo dia, pedido em seguida) a mensagem
+         * (ui.notice.attemptLimitReached, mensagens_*.properties) ganhou uma
+         * dica curta — revisar a relação entre as quantidades já conhecidas,
+         * sem revelar o valor — seguindo a categoria "mensagem informativa"
+         * de gerard-scaffolding-interacao (texto curto, sem mecanismo
+         * estrutural dedicado). Este é um primeiro rascunho de conteúdo, não
+         * uma validação pedagógica definitiva; a lógica de seleção do
+         * repertório de Scaffolding em dois eixos continua não decidida.
          */
         private void mostrarAvisoLimiteTentativasAtingido() {
             String nomePapel = localizacao.texto(obterPapelIncognitaAtual());

@@ -2,8 +2,10 @@
 
 Status: **mecanismo de tentativas implementado (2026-08-07)** — piloto
 (`RELATORIO_...PapelQuantitativo...md`, commit `032e12e`) e produção
-(`RELATORIO_FLUXO_TENTATIVAS_PRODUCAO_2026-08-07.md`). Ver "O que já foi
-implementado" abaixo. O repertório local de Scaffolding (2 eixos) e a
+(`RELATORIO_FLUXO_TENTATIVAS_PRODUCAO_2026-08-07.md`). Conteúdo
+pedagógico da tela de ajuda: **primeiro rascunho implementado
+(2026-08-07)** — ver "Conteúdo da tela de ajuda" abaixo; não é validação
+pedagógica definitiva. O repertório local de Scaffolding (2 eixos) e a
 lógica de seleção dentro dele **continuam não implementados, não
 decididos**.
 
@@ -19,11 +21,18 @@ decididos**.
   cada rejeição real da incógnita; ao atingir 3, mostra um aviso mínimo
   (`mostrarAvisoLimiteTentativasAtingido`) e bloqueia novas tentativas
   até um dos dois botões "Restaurar" existentes ser acionado.
-- **Não implementado**: a "tela de ajuda" descrita abaixo tem conteúdo
-  pedagógico específico ainda não decidido — o aviso atual é só um
-  placeholder operacional ("você tentou várias vezes, use Restaurar"),
-  por instrução explícita da usuária ("implementar mesmo sem padrão").
-  Decidir o conteúdo real é a próxima peça desta tarefa, ainda pendente.
+- **Conteúdo da tela de ajuda — primeiro rascunho (2026-08-07)**: a
+  mensagem (`ui.notice.attemptLimitReached`, `mensagens_{pt,en,es,fr}.properties`)
+  ganhou uma dica curta — revisar a relação entre as quantidades já
+  conhecidas, sem revelar o valor da incógnita — mantendo o aviso
+  operacional ("use Restaurar") que já existia. Segue a categoria
+  "mensagem informativa" de `gerard-scaffolding-interacao` (string
+  localizada avulsa, sem mecanismo estrutural dedicado — não existe um
+  padrão de classe pré-estabelecido para isso, como a skill já avisa).
+  **Isto não é uma validação pedagógica definitiva** — é um rascunho
+  razoável dentro do estilo já usado pelo projeto (curto, não revela a
+  resposta), para não deixar o mecanismo (já implementado) sem nenhum
+  conteúdo. Revisão/ajuste do texto é esperada.
 
 ## O fluxo-alvo
 

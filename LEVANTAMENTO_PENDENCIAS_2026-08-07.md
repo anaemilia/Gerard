@@ -23,9 +23,9 @@ Descreve como pendência a ausência de `RelacaoEstruturalComparacao`, mas essa 
 - **Trabalho**: mecanismo único e já mapeado (funil de poucos métodos), mas mexe em código de produção usado pela coleta de dados de pesquisa — exige compilação e harnesses antes/depois.
 - **Risco**: baixo a médio — escopo contido, mas é produção.
 
-## 4. Conteúdo da "tela de ajuda" (fluxo de tentativas N=3)
+## 4. Conteúdo da "tela de ajuda" (fluxo de tentativas N=3) — RASCUNHO IMPLEMENTADO
 
-Conteúdo pedagógico ainda não escrito, parte do fluxo de tentativas já implementado (N=3) em piloto e produção.
+Conteúdo pedagógico não escrito, parte do fluxo de tentativas já implementado (N=3) em piloto e produção. Implementado um primeiro rascunho: dica curta (revisar a relação entre quantidades conhecidas, sem revelar a resposta) adicionada a `ui.notice.attemptLimitReached` nos 4 idiomas, seguindo a categoria "mensagem informativa" já documentada em `gerard-scaffolding-interacao`. **Não é validação pedagógica definitiva** — sujeito a revisão da usuária.
 
 - **Trabalho**: majoritariamente redação de conteúdo, dentro de um mecanismo que já existe. Baixo risco técnico, mas exige definição pedagógica (não é só código).
 - **Risco**: baixo tecnicamente; depende de decisão de conteúdo.
