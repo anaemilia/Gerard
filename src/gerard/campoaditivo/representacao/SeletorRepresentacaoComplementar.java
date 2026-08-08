@@ -21,7 +21,27 @@ public final class SeletorRepresentacaoComplementar {
     public boolean deveExibir(boolean categoriaSelecionada,
                               TipoSituacaoAditiva tipo,
                               boolean escaladaDeAjudaNoLimite) {
-        return categoriaSelecionada && tipo != null && escaladaDeAjudaNoLimite;
+        return categoriaSelecionada && tipo != null && escaladaDeAjudaNoLimite
+                && possuiRepresentacaoDefinida(tipo);
+    }
+
+    /**
+     * Verdadeiro quando a categoria já tem uma representação complementar
+     * própria (não o fallback {@link TipoRepresentacaoComplementar#GENERICA}
+     * — círculos vazios ligados por setas, sem quadradinhos nem qualquer
+     * conteúdo manipulável). As categorias "Relações"
+     * (TRANSFORMACAO_RELACAO, COMPOSICAO_RELACOES) ainda caem nesse
+     * fallback e, a pedido da usuária (2026-08-08), deixam de exibir
+     * qualquer diagrama complementar até que uma representação própria
+     * seja desenhada — ver
+     * TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md. O diagrama
+     * de Vergnaud ocupa a largura toda nesse caso (mesmo mecanismo já
+     * usado quando a categoria selecionada ainda não tem diagrama
+     * complementar por outro motivo — ver
+     * Main.obterAreasDiagramasProporcionais()).
+     */
+    private boolean possuiRepresentacaoDefinida(TipoSituacaoAditiva tipo) {
+        return selecionar(tipo, false) != TipoRepresentacaoComplementar.GENERICA;
     }
 
     public TipoRepresentacaoComplementar selecionar(TipoSituacaoAditiva tipo,
