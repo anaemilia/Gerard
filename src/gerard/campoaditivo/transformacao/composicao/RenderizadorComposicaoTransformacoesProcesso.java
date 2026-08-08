@@ -129,9 +129,14 @@ public final class RenderizadorComposicaoTransformacoesProcesso {
         }
     }
 
+    // Mesmos valores de ControleSinalComposicaoTransformacoes (TAMANHO,
+    // ESPACO_FUNIL, ESPACO_CONTROLES) — repetidos aqui porque o rótulo do
+    // valor precisa alinhar exatamente à mesma coluna x dos controles de
+    // sinal, não apenas aproximar a posição.
     private static final int ESPACO_FUNIL_CONTROLES = 7;
     private static final int TAMANHO_CONTROLE_SINAL = 20;
-    private static final int ESPACO_APOS_CONTROLES = 12;
+    private static final int ESPACO_ENTRE_CONTROLES = 5;
+    private static final int ESPACO_ABAIXO_DOS_CONTROLES = 10;
 
     private void desenharValorTransformacaoAoLadoDoFunil(Graphics2D g2,
             GeometriaComposicaoTransformacoes geo,
@@ -167,9 +172,17 @@ public final class RenderizadorComposicaoTransformacoesProcesso {
         FontMetrics fm = g2.getFontMetrics();
         int largura = fm.stringWidth(texto) + 16;
         int altura = 26;
-        int x = ancora.x + ancora.width + ESPACO_FUNIL_CONTROLES
-                + TAMANHO_CONTROLE_SINAL + ESPACO_APOS_CONTROLES;
-        int y = ancora.y + (ancora.height - altura) / 2;
+        // Mesma coluna x dos controles de sinal (+/-) — ver
+        // ControleSinalComposicaoTransformacoes.obterAreas: os círculos
+        // começam em "ancora.x + ancora.width + ESPACO_FUNIL" (mesmo valor
+        // de ESPACO_FUNIL_CONTROLES aqui). O rótulo fica abaixo dos dois
+        // círculos, não numa terceira coluna à direita — a pedido da
+        // usuária, 2026-08-08 — evitando também que a caixa do último
+        // funil (Transformação Final) seja cortada pela borda do painel
+        // quando os três funis dividem um canal estreito.
+        int x = ancora.x + ancora.width + ESPACO_FUNIL_CONTROLES;
+        int y = ancora.y + 2 + TAMANHO_CONTROLE_SINAL + ESPACO_ENTRE_CONTROLES
+                + TAMANHO_CONTROLE_SINAL + ESPACO_ABAIXO_DOS_CONTROLES;
         g2.setColor(new Color(0xFC, 0xFB, 0xF8, 232));
         g2.fillRoundRect(x, y, largura, altura, 12, 12);
         g2.setColor(borda);
