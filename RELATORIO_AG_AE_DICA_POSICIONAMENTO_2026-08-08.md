@@ -107,6 +107,62 @@ se apoia inteiramente em mecanismos já existentes (nenhum reimplementado):
    ...FEEDBACK_EXIBIDO	estilo=AG_AE; modalidade=VISUAL; criterio=renderizado (modalidade passiva); dica de posicionamento sob demanda; papel=papel.parte1; action_id=c9335e2d-953d-4177-8b05-ee8b6b0fa650...
    ```
 
+## Adendo (2026-08-08) — auditoria contra as skills e correção de localidade
+
+A pedido da usuária, depois da entrega acima: conferência explícita da
+implementação contra `gerard-domain-model-first` e
+`gerard-knowledge-locality-principle` (releitura dos dois `SKILL.md`, não
+por memória de sessão).
+
+**Achado**: a primeira versão colocava regra semântica dentro de
+`Main.java`/`TelaGerard` — "papel resolvido ou não" duplicava
+`papeisCompativeis` inline, e a correlação de `action_id` vivia num
+`Map<String,String>` solto na tela. Ambos violam "Nenhuma regra semântica
+pode existir apenas na interface" (`gerard-domain-model-first`) e
+"localidade pedagógica: decidir nível de scaffolding... pertence a
+skills ou serviços especializados, não a controllers"
+(`gerard-knowledge-locality-principle`).
+
+**Correção**:
+
+- `AvaliadorConclusaoModelagem` (já existente, `gerard.campoaditivo.
+  conclusao` — antes não instanciado em nenhum lugar) ganhou dois métodos
+  públicos: `papelResolvido(papel, posicionamentos)` e
+  `obterProximoPapelNaoResolvido(papeisEsperados, posicionamentos,
+  papelExcluido)`. Reaproveitam os mesmos `compativeis`/`papelValido`
+  privados que já decidem a conclusão da modelagem inteira — zero
+  duplicação da regra de compatibilidade de papéis.
+- Novo `gerard.Scaffolding.automatizacao.ScaffoldingAutomatizacaoPassos`
+  — única responsabilidade: correlação ação:evento (`obterOuIniciarAcao`/
+  `encerrarAcao`/`temAcaoAberta`/`limpar`), mesmo padrão de nome e pacote
+  das demais classes `Scaffolding*` do projeto (`ScaffoldingQuestionamento`,
+  `ScaffoldingAjudaContextual` etc.).
+- `Main.java` ficou só com orquestração e leitura de estado vivo da UI
+  (`obterFraseParaDicaPosicionamento`, que lê `elementosTexto`/
+  `itensArrastaveis` — permanece em `Main.java` de propósito: é
+  responsabilidade de **representação**, não de domínio, segundo a
+  própria skill) — `papelPosicionamentoResolvido` e o `Map` de ações
+  foram removidos inteiramente.
+
+**Verificação da refatoração**: recompilação completa (446 arquivos, 0
+erros), os 3 harnesses existentes sem regressão, e um segundo teste real
+sob Xvfb (`TesteTemporarioAGAERefatorado.java`, deletado após a
+verificação, nunca commitado) repetindo os mesmos passos do teste
+anterior contra a aplicação real — 10 checks, todos passaram,
+confirmando que o comportamento observável (inclusive a correlação de
+`action_id` entre dois cliques) não mudou.
+
+**Demais skills conferidas nesta rodada** (releitura completa, não só
+grep pontual): `gerard-scaffolding-interacao` (seção 4 estava
+desatualizada — corrigida, ver commit `5e9ff6d`), `gerard-consistencia-
+estado` (nenhuma violação — AG_AE não escreve em
+`EstadoSemanticoCompartilhado`), `gerard-log-acao-instrumental`
+(`registrarAcaoGranular("SELECIONAR", ...)` usa um dos seis valores de
+Shneiderman e segue exatamente o mesmo formato de chamada já usado em
+`criarOpcaoAjudaContextual` — nenhum campo inventado). `gerard-semantic-
+event-logging` já havia sido conferida na entrega original (campo
+`action_id` é explicitamente previsto no "contexto mínimo do evento").
+
 ## Observação de escopo
 
 Não implementado aqui (deliberadamente, fora do que foi autorizado até

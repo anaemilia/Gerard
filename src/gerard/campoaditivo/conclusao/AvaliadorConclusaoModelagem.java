@@ -95,6 +95,48 @@ public final class AvaliadorConclusaoModelagem {
                 == FaseConclusaoModelagem.CONCLUIDA;
     }
 
+    /**
+     * AG_AE (dica de posicionamento) — verdadeiro quando o papel indicado
+     * já está corretamente posicionado no diagrama: mesmo critério de
+     * "atendido" usado por {@link #avaliar}, aplicado a um único papel em
+     * vez do conjunto inteiro. Não duplica a comparação de papéis — reusa
+     * {@link #compativeis}, a mesma que decide a conclusão da modelagem
+     * inteira.
+     */
+    public boolean papelResolvido(String papel,
+            List<EstadoPosicionamentoModelagem> posicionamentos) {
+        if (!papelValido(papel) || posicionamentos == null) {
+            return true;
+        }
+        for (EstadoPosicionamentoModelagem estado : posicionamentos) {
+            if (estado != null && compativeis(papel, estado.getPapelAlvo())) {
+                return estado.isNoDiagrama()
+                        && compativeis(estado.getPapelItem(), estado.getPapelAlvo());
+            }
+        }
+        return true;
+    }
+
+    /**
+     * AG_AE (dica de posicionamento) — primeiro papel esperado, em ordem
+     * canônica, que ainda não está resolvido (ver {@link #papelResolvido}) e
+     * que não seja {@code papelExcluido} (a incógnita atual — a dica nunca
+     * aponta para ela; ver gerard-consistencia-estado). null quando todos
+     * os papéis restantes (fora o excluído) já estão resolvidos.
+     */
+    public String obterProximoPapelNaoResolvido(Collection<String> papeisEsperados,
+            List<EstadoPosicionamentoModelagem> posicionamentos, String papelExcluido) {
+        for (String papel : normalizarPapeis(papeisEsperados)) {
+            if (papel.equals(papelExcluido)) {
+                continue;
+            }
+            if (!papelResolvido(papel, posicionamentos)) {
+                return papel;
+            }
+        }
+        return null;
+    }
+
     private int encontrarEsperadoNaoAtendido(List<String> esperados,
             boolean[] atendidos, String papelAlvo) {
         for (int i = 0; i < esperados.size(); i++) {

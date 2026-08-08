@@ -28,6 +28,7 @@ import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
 import gerard.campoaditivo.conclusao.AtualizacaoConclusaoModelagem;
+import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.ControladorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.EstadoPosicionamentoModelagem;
 import gerard.campoaditivo.conclusao.PoliticaPreenchimentoIncognita;
@@ -85,6 +86,7 @@ import gerard.Scaffolding.proximidade.EstadoRealceAlvo;
 import gerard.Scaffolding.proximidade.EstiloRealceAlvo;
 import gerard.estilointeracao.EstiloInteracao;
 import gerard.Scaffolding.proximidade.ScaffoldingProximidade;
+import gerard.Scaffolding.automatizacao.ScaffoldingAutomatizacaoPassos;
 import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.Scaffolding.venn.ControleAdicionarQuadradinhoVenn;
@@ -883,12 +885,17 @@ public class Main extends JFrame {
         boolean mostrarDicaPosicionamentoPersistente = false;
         String papelDicaPosicionamentoAtual = null;
         ElementoVergnaud elementoDicaPosicionamentoPersistente = null;
-        // Correlação ação:evento (REFERENCE.md §4.8, Alternativa B, 1:N):
-        // um actionId por papel enquanto a ação de "pedir dica para esse
-        // papel" continua aberta (o papel ainda não foi resolvido);
-        // removido do mapa assim que o papel é resolvido, fechando a ação.
-        final java.util.Map<String, String> acaoDicaPosicionamentoPorPapel =
-                new java.util.HashMap<String, String>();
+        // Correlação ação:evento (REFERENCE.md §4.8, Alternativa B, 1:N) e
+        // "qual o próximo papel resolvido/não resolvido" são regras
+        // semânticas, não de interface (gerard-domain-model-first,
+        // gerard-knowledge-locality-principle) — vivem em
+        // AvaliadorConclusaoModelagem (já existente, reaproveitado) e
+        // ScaffoldingAutomatizacaoPassos (política pedagógica dedicada),
+        // não como um Map solto aqui.
+        final AvaliadorConclusaoModelagem avaliadorConclusaoModelagem =
+                new AvaliadorConclusaoModelagem();
+        final ScaffoldingAutomatizacaoPassos scaffoldingAutomatizacaoPassos =
+                new ScaffoldingAutomatizacaoPassos();
         JButton botaoVerDicaPosicionamento;
         ItemTextoArrastavel itemGraficoInteiros = null;
         ElementoVergnaud numeroRelativoGraficoInteiros = null;
@@ -5760,30 +5767,6 @@ public class Main extends JFrame {
         }
 
         /**
-         * AG_AE — verdadeiro quando o papel indicado já está corretamente
-         * posicionado no diagrama: mesmo critério de "atendido" usado por
-         * AvaliadorConclusaoModelagem (papeisCompativeis nos dois sentidos +
-         * item efetivamente no diagrama), aplicado a um único papel em vez
-         * do conjunto inteiro — não duplica a lógica de compatibilidade,
-         * reaproveita scaffoldingQuestionamento.papeisCompativeis.
-         */
-        private boolean papelPosicionamentoResolvido(String papel) {
-            if (papel == null) {
-                return true;
-            }
-            for (EstadoPosicionamentoModelagem estado : capturarPosicionamentosConclusao()) {
-                if (papel.equals(estado.getPapelAlvo())) {
-                    return estado.isNoDiagrama()
-                            && (scaffoldingQuestionamento.papeisCompativeis(
-                                    estado.getPapelItem(), estado.getPapelAlvo())
-                            || scaffoldingQuestionamento.papeisCompativeis(
-                                    estado.getPapelAlvo(), estado.getPapelItem()));
-                }
-            }
-            return true;
-        }
-
-        /**
          * AG_AE — próximo papel-dado ainda não resolvido, em ordem canônica
          * (mesma ordem de elementosVergnaud/capturarPapeisEsperadosConclusao)
          * — nunca a incógnita atual (a dica indica onde uma frase-dado
@@ -5791,19 +5774,28 @@ public class Main extends JFrame {
          * gerard-consistencia-estado). null quando não há mais nenhum papel
          * pendente para dica (todos os papéis-dado já resolvidos, ou só
          * resta a incógnita).
+         *
+         * "Resolvido ou não" é regra semântica, não de interface
+         * (gerard-domain-model-first) — delega a
+         * AvaliadorConclusaoModelagem.obterProximoPapelNaoResolvido, a
+         * mesma classe (e o mesmo critério de compatibilidade de papéis)
+         * que já decide a conclusão da modelagem inteira; esta função só
+         * acrescenta o filtro de representação — só ofereça dica quando
+         * houver, de fato, uma frase para mostrar, senão o botão "Ver
+         * dica" apareceria visível e, ao clicar, nada aconteceria
+         * (situação digitada livremente, sem curadoria, ou papel sem
+         * token semântico próprio) — e isso É uma questão de
+         * representação/interface, não de domínio.
          */
         private String obterProximoPapelNaoResolvidoParaDica() {
             String papelIncognita = obterPapelIncognitaAtual();
+            java.util.List<EstadoPosicionamentoModelagem> posicionamentos =
+                    capturarPosicionamentosConclusao();
             for (String papel : capturarPapeisEsperadosConclusao()) {
                 if (papel.equals(papelIncognita)) {
                     continue;
                 }
-                // Só oferece dica para papéis onde há, de fato, uma frase
-                // para mostrar — sem isso o botão "Ver dica" apareceria
-                // visível e, ao clicar, nada aconteceria (situação digitada
-                // livremente, sem curadoria, ou papel sem token semântico
-                // próprio).
-                if (!papelPosicionamentoResolvido(papel)
+                if (!avaliadorConclusaoModelagem.papelResolvido(papel, posicionamentos)
                         && obterFraseParaDicaPosicionamento(papel) != null) {
                     return papel;
                 }
@@ -5853,35 +5845,6 @@ public class Main extends JFrame {
         }
 
         /**
-         * AG_AE — actionId aberto para a ação de "pedir dica para este
-         * papel" (REFERENCE.md §4.8, cardinalidade ação:evento, Alternativa
-         * B): reaproveita o mesmo actionId enquanto o papel continuar não
-         * resolvido (cada nova exibição da mesma dica é um evento
-         * correlacionado à mesma ação); gera um novo só na primeira vez.
-         */
-        private String obterOuIniciarAcaoDicaPosicionamento(String papel) {
-            String existente = acaoDicaPosicionamentoPorPapel.get(papel);
-            if (existente != null) {
-                return existente;
-            }
-            String novo = java.util.UUID.randomUUID().toString();
-            acaoDicaPosicionamentoPorPapel.put(papel, novo);
-            return novo;
-        }
-
-        /**
-         * AG_AE — encerra a ação de dica aberta para o papel indicado (ele
-         * foi resolvido, ou o diagrama foi reconstruído): próxima dica para
-         * esse mesmo papel, se algum dia voltar a ficar pendente, abre uma
-         * ação nova.
-         */
-        private void encerrarAcaoDicaPosicionamento(String papel) {
-            if (papel != null) {
-                acaoDicaPosicionamentoPorPapel.remove(papel);
-            }
-        }
-
-        /**
          * AG_AE — chamado sempre que elementosVergnaud é limpo para um novo
          * diagrama: nenhuma dica exibida (nem ação aberta) deve sobreviver
          * à troca de situação-problema, senão a âncora ficaria apontando
@@ -5891,7 +5854,7 @@ public class Main extends JFrame {
             mostrarDicaPosicionamentoPersistente = false;
             elementoDicaPosicionamentoPersistente = null;
             papelDicaPosicionamentoAtual = null;
-            acaoDicaPosicionamentoPorPapel.clear();
+            scaffoldingAutomatizacaoPassos.limpar();
         }
 
         /**
@@ -5920,7 +5883,7 @@ public class Main extends JFrame {
             elementoDicaPosicionamentoPersistente = elementosVergnaud.get(indice);
             papelDicaPosicionamentoAtual = papel;
             mostrarDicaPosicionamentoPersistente = true;
-            String actionId = obterOuIniciarAcaoDicaPosicionamento(papel);
+            String actionId = scaffoldingAutomatizacaoPassos.obterOuIniciarAcao(papel);
             registrarFeedbackExibido("AG_AE",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
                     "dica de posicionamento sob demanda; papel=" + papel,
@@ -7311,9 +7274,10 @@ public class Main extends JFrame {
                     && elementosVergnaud.contains(elementoDicaPosicionamentoPersistente)
                     && papelDicaPosicionamentoAtual != null
                     && fraseDicaPosicionamento != null
-                    && !papelPosicionamentoResolvido(papelDicaPosicionamentoAtual);
+                    && !avaliadorConclusaoModelagem.papelResolvido(
+                            papelDicaPosicionamentoAtual, capturarPosicionamentosConclusao());
             if (mostrarDicaPosicionamentoPersistente && !usarDicaPosicionamentoPersistente) {
-                encerrarAcaoDicaPosicionamento(papelDicaPosicionamentoAtual);
+                scaffoldingAutomatizacaoPassos.encerrarAcao(papelDicaPosicionamentoAtual);
                 mostrarDicaPosicionamentoPersistente = false;
                 elementoDicaPosicionamentoPersistente = null;
                 papelDicaPosicionamentoAtual = null;
