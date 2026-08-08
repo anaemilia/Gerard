@@ -30,9 +30,9 @@ Conteúdo pedagógico não escrito, parte do fluxo de tentativas já implementad
 - **Trabalho**: majoritariamente redação de conteúdo, dentro de um mecanismo que já existe. Baixo risco técnico, mas exige definição pedagógica (não é só código).
 - **Risco**: baixo tecnicamente; depende de decisão de conteúdo.
 
-## 5. Lógica de seleção de repertório de scaffolding (dois eixos) — REPERTÓRIO REGISTRADO, 4 DE 6 IMPLEMENTADOS
+## 5. Lógica de seleção de repertório de scaffolding (dois eixos) — REPERTÓRIO REGISTRADO, 6 DE 6 RESOLVIDOS (2026-08-08)
 
-Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que combinação, ao longo das tentativas. A usuária forneceu o repertório concreto (6 códigos `AG_*`) e a ordem de escalada — registrado em `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md`. Dos 6: `AG_EMS`/`AG_EMLQ` já implementados; `AG_EME` parcialmente; `AG_EMCME` **implementado por completo (2026-08-07)** — o diagrama complementar (material concreto) agora só aparece na 3ª rejeição, com bug de staleness corrigido de brinde (`RELATORIO_VISIBILIDADE_DIAGRAMA_COMPLEMENTAR_2026-08-07.md`). **Temporariamente reativado sempre-visível para testes** (`Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true`, a pedido da usuária) — a regra de escalada continua implementada por baixo, só o resultado final está sobrescrito enquanto ela testa interação/consistência; `AG_AC`/`AG_AE` (automação) só descritos, por decisão explícita — não implementados, sinalizados para seguir o padrão arquitetural das skills quando operacionalizados.
+Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que combinação, ao longo das tentativas. A usuária forneceu o repertório concreto (6 códigos `AG_*`) e a ordem de escalada — registrado em `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md`. Dos 6: `AG_EMS`/`AG_EMLQ` já implementados; `AG_EME` parcialmente; `AG_EMCME` **implementado por completo (2026-08-07)** — o diagrama complementar (material concreto) agora só aparece na 3ª rejeição, com bug de staleness corrigido de brinde (`RELATORIO_VISIBILIDADE_DIAGRAMA_COMPLEMENTAR_2026-08-07.md`). **Temporariamente reativado sempre-visível para testes** (`Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true`, a pedido da usuária) — a regra de escalada continua implementada por baixo, só o resultado final está sobrescrito enquanto ela testa interação/consistência. `AG_AE` **implementado (2026-08-08)** — dica de posicionamento sob demanda, ver item 7 abaixo. `AG_AC` **reconhecido como já coberto pelo mecanismo existente (2026-08-08)** — a usuária esclareceu que só faz sentido incorporado ao material concreto (quadradinhos), e que o mecanismo já existente de adicionar/remover um quadradinho por vez já é essa automação; nenhum código novo foi necessário, só a correção da documentação (`TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md`, `gerard-scaffolding-interacao/SKILL.md`).
 
 - **Trabalho**: exige critério pedagógico novo (dois eixos de decisão) antes de qualquer código — mais decisão de design do que implementação mecânica.
 - **Risco**: médio — decisão ainda não definida, pode exigir iteração.
@@ -49,7 +49,31 @@ Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que co
 `gerard-scaffolding-interacao`: quarto tipo de apoio pedagógico. Implementado no escopo definido pela própria usuária, em duas rodadas de perguntas de autorização (gatilho sob demanda via botão "Ver dica"; um papel-dado por vez, progressivo; nunca a incógnita) — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`. Durante a revisão do plano, a usuária corrigiu a proposta inicial ("evento avulso, sem limite") para seguir a cardinalidade ação:evento 1:N já adotada em `REFERENCE.md §4.8` — cada dica repetida do mesmo papel pendente correlaciona ao mesmo `action_id`, confirmado no TSV real de produção.
 
 - **Trabalho**: implementado — `papelPosicionamentoResolvido`/`obterProximoPapelNaoResolvidoParaDica`/`obterFraseParaDicaPosicionamento` em `Main.java`, correlação de ação via `acaoDicaPosicionamentoPorPapel`, renderização como 3ª variante de `desenharAnotacaoMouseOver`, botão "Ver dica", i18n (pt/en/es/fr).
-- **Escopo**: só papéis-dado da etapa de posicionamento de frases (nunca a incógnita, nunca a etapa numérica dos funis) — extensões futuras (AG_AC, dica na incógnita) seguem o mesmo padrão de autorização explícita antes do código.
+- **Escopo**: só papéis-dado da etapa de posicionamento de frases (nunca a incógnita, nunca a etapa numérica dos funis) — extensões futuras (dica na incógnita) seguem o mesmo padrão de autorização explícita antes do código.
+
+## 8. Automatizar a contagem (AG_AC) — RESOLVIDO SEM CÓDIGO NOVO (2026-08-08)
+
+Ao perguntar sobre os próximos passos, a usuária esclareceu que `AG_AC`
+"está sendo feita na contagem dos quadradinhos que fica ao lado dos
+diagramas" e "só faz sentido quando incorporada ao material concreto —
+sozinha não tem sentido de existir". Em rodadas de perguntas de
+confirmação (mesmo processo do item 7), confirmou que o apoio à contagem
+deve ficar sempre ativo junto dos quadradinhos, sem gatilho separado, e
+que a aparência/funcionamento deve continuar exatamente como está —
+porque o mecanismo já existente de adicionar/remover um quadradinho por
+vez (manipulativo, um de cada vez) já É essa automação.
+
+- **Trabalho**: nenhum código mudou. Auditoria de localidade do
+  conhecimento (`gerard-domain-model-first`,
+  `gerard-knowledge-locality-principle`) sobre o mecanismo existente
+  (`ControleAdicionarQuadradinhoVenn`/`ControleRemoverQuadradinhoVenn`,
+  `Main.java: adicionarQuadradinhoAoAgrupamentoInterno`/
+  `removerQuadradinhoDoAgrupamentoInterno`) não encontrou violação —
+  segue a mesma convenção já usada por todo o resto dos elementos do
+  diagrama. Atualizada a documentação:
+  `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md` e
+  `gerard-scaffolding-interacao/SKILL.md` (seção 3, "Material concreto").
+- **Risco**: nenhum — só correção de status desatualizado.
 
 ---
 

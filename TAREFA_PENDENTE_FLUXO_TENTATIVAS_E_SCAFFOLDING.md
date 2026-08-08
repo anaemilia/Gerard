@@ -11,8 +11,12 @@ envelope/payload + ligação ao log real de produção): **implementado
 produção" abaixo. `AG_AE` (automatizar passos da modelagem — dica de
 posicionamento de frases, sob demanda, um papel por vez): **implementado
 (2026-08-08)** — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`.
-`AG_AC` (automatizar a contagem) **continua não implementado, não
-decidido**.
+`AG_AC` (automatizar a contagem): **coberto pelo mecanismo já existente,
+confirmado pela usuária (2026-08-08)** — não é uma affordance separada,
+só faz sentido incorporada ao material concreto (quadradinhos); o próprio
+mecanismo de adicionar/remover um quadradinho por vez já é essa
+automação. Nenhum código mudou. Ver "`AG_AC` — nota de atualização
+(2026-08-08)" abaixo.
 
 ---
 
@@ -77,7 +81,7 @@ ainda em aberto"). Classificação nos dois eixos já normatizados
 | `AG_EMLQ` | Exibir mensagem de questionamento | Metacognitivo | Visual | **Já implementado** — `ScaffoldingQuestionamento.criarPerguntaConfirmacao`, disparado a cada rejeição (`ui.question.valueMismatch`) |
 | `AG_EME` | Exibir mensagem explicativa | Conceitual | Visual | **Parcialmente implementado** — `mostrarDicaOperacaoIncognita`/`ui.hint.chooseOperation`, hoje só uma frase mínima ("escolha soma ou subtração") |
 | `AG_EMCME` | Exibir material concreto + mensagem explicativa sobre o uso do material | Procedimental | Manipulativa + Visual | **Parcial** — a parte de mensagem existe (`mostrarAvisoLimiteTentativasAtingido`/`ui.notice.attemptLimitReached`, estendida em 2026-08-07 com uma dica); **a parte de destacar/mostrar material concreto não existe** |
-| `AG_AC` | Automatizar a contagem | Procedimental | Guiada por movimento / manipulativa | **Não implementado — só descrito**, por decisão explícita da usuária ("deixe apenas a descrição, depois pensamos sobre como operacionalizar") |
+| `AG_AC` | Automatizar a contagem | Procedimental | Guiada por movimento / manipulativa | **Coberto pelo mecanismo já existente (confirmado 2026-08-08)** — o material concreto (quadradinhos) já implementa isso: adicionar/remover uma unidade por vez é, em si, a automação manipulativa da contagem. Não é uma affordance separada — só faz sentido incorporada ao material concreto. |
 | `AG_AE` | Automatizar passos da modelagem do problema | Estratégico | Guiada por movimento/Visual | **Implementado (2026-08-08)** — dica de posicionamento de frases sob demanda (botão "Ver dica"), um papel-dado por vez, progressivo; nunca a incógnita. Ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`. |
 
 Ordem confirmada pela usuária (2026-08-07): `AG_EMS` não é um degrau da
@@ -85,22 +89,50 @@ escalada de erro — é o estado padrão/ausência de erro, já coberto pelo
 mecanismo de sucesso existente. A escalada de erro dentro do fluxo de N=3
 tentativas é `AG_EMLQ` → `AG_EME` → `AG_EMCME`; `AG_AE` fica fora desse
 fluxo (gatilho é o botão "Ver dica", não a escalada de tentativas
-rejeitadas); `AG_AC` continua sem gatilho definido.
+rejeitadas); `AG_AC` não tem gatilho próprio — ver nota abaixo.
 
-**`AG_AC` — regra explícita, ainda em aberto**: qualquer operacionalização
-futura desse item tem que seguir o padrão arquitetural já estabelecido
-nas skills do projeto (`gerard-domain-model-first`,
-`gerard-knowledge-locality-principle`, `gerard-handlers-de-interacao` se
-envolver reestruturar despacho de mouse, `gerard-semantic-event-logging`
-para o evento correspondente) — não uma automação ad hoc dentro de
-`Main.java`. Isso, somado à regra de segurança de
-`gerard-scaffolding-interacao` ("em hipótese alguma a interface pode
-automatizar passos cuja ordem não tenha vindo de autorização explícita do
-pesquisador"), significa que a implementação de `AG_AC` exige uma decisão
-de modelagem própria, apresentada e aprovada antes de qualquer diff — não
-decidida aqui. `AG_AE` seguiu exatamente esse mesmo processo (duas
-rodadas de perguntas de autorização, plano apresentado e corrigido pela
-usuária antes do código) — ver relatório acima.
+**`AG_AC` — regra explícita (histórico, superada pela nota de 2026-08-08
+abaixo)**: qualquer operacionalização futura desse item tem que seguir o
+padrão arquitetural já estabelecido nas skills do projeto
+(`gerard-domain-model-first`, `gerard-knowledge-locality-principle`,
+`gerard-handlers-de-interacao` se envolver reestruturar despacho de
+mouse, `gerard-semantic-event-logging` para o evento correspondente) —
+não uma automação ad hoc dentro de `Main.java`. Isso, somado à regra de
+segurança de `gerard-scaffolding-interacao` ("em hipótese alguma a
+interface pode automatizar passos cuja ordem não tenha vindo de
+autorização explícita do pesquisador"), significava que a implementação
+de `AG_AC` exigiria uma decisão de modelagem própria, apresentada e
+aprovada antes de qualquer diff. `AG_AE` seguiu exatamente esse mesmo
+processo (duas rodadas de perguntas de autorização, plano apresentado e
+corrigido pela usuária antes do código) — ver relatório acima.
+
+**`AG_AC` — nota de atualização (2026-08-08): já coberto, sem código
+novo.** Ao perguntar sobre os próximos passos, a usuária esclareceu que
+`AG_AC` "está sendo feita na contagem dos quadradinhos que fica ao lado
+dos diagramas" e que "só faz sentido quando incorporada ao material
+concreto — sozinha não tem sentido de existir". Em rodadas de perguntas
+de confirmação (mesmo processo usado para `AG_AE`), a usuária confirmou:
+(1) o apoio à contagem deve estar sempre ativo quando os quadradinhos
+aparecem, sem gatilho separado; (2) a aparência/funcionamento dos
+quadradinhos deve continuar exatamente como está hoje; (3) o mecanismo
+atual de adicionar/remover um quadradinho de cada vez (manipulativo, um
+por vez) já É a automação da contagem — não falta nenhum mecanismo novo.
+Auditoria de localidade do conhecimento contra as skills
+(`gerard-domain-model-first`, `gerard-knowledge-locality-principle`)
+confirma que o fluxo existente já respeita a separação de camadas:
+`ControleAdicionarQuadradinhoVenn`/`ControleRemoverQuadradinhoVenn` são
+puramente geometria/desenho (Representação); `Main.java:
+adicionarQuadradinhoAoAgrupamentoInterno`/
+`removerQuadradinhoDoAgrupamentoInterno` traduzem o clique em comando e
+delegam a sincronização a
+`sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar` e o
+registro a `registrarAcaoGranular` (verbo `QUANTIFICAR`, já existente);
+`CirculoVenn`/`QuadradinhoVenn` seguem o mesmo padrão leve de
+autodesenho já usado por todo o resto dos elementos do diagrama
+(`ElementoVergnaud`, `ConectorVergnaud`) — não uma exceção a corrigir.
+Nenhum código mudou por esta nota; só a classificação de `AG_AC` na
+tabela acima e em `gerard-scaffolding-interacao/SKILL.md` (seção 3,
+"Material concreto").
 
 **Ativação temporária só para testes (2026-08-07)**: a pedido da usuária,
 `Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true` faz o
@@ -148,8 +180,15 @@ Implementado nas duas pontas:
   (`configurarFeedbackConclusaoModelagem`). Na época (2026-08-07),
   `AG_AC`/`AG_AE` continuavam só descritos, sem gatilho — nada a ligar
   ainda. `AG_AE` ganhou gatilho e ligação real em 2026-08-08 (ver
-  `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`); `AG_AC` continua
-  sem gatilho.
+  `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`); `AG_AC`, também
+  em 2026-08-08, foi reconhecido como já coberto pelo mecanismo existente
+  de quadradinhos — não é uma affordance própria, então não há um
+  "gatilho de AG_AC" a ligar a `FEEDBACK_EXIBIDO`: a ação de
+  adicionar/remover quadradinho já é registrada por
+  `registrarAcaoGranular` (verbo `QUANTIFICAR`), que é o mecanismo certo
+  para uma ação instrumental direta, distinto de `FEEDBACK_EXIBIDO`
+  (reservado a apoios pedagógicos exibidos ao participante). Ver nota de
+  atualização (2026-08-08) acima.
 - Verificado sob Xvfb, com a aplicação real: os 5 pontos de disparo
   produzem exatamente uma linha `FEEDBACK_EXIBIDO` cada, com
   `estilo`/`modalidade`/`criterio` corretos, sem duplicação. Ver

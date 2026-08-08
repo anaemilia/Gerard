@@ -1,6 +1,6 @@
 ---
 name: gerard-scaffolding-interacao
-description: Taxonomia aberta dos tipos de scaffolding do Gérard — (1) estilo de interação (protocolo de mouse: arrastar, proximidade, atração magnética; cores de significado), (2) mensagens (informativa e questionamento), (3) material concreto (quadradinhos), (4) automatização de passos (AG_AE implementado em 2026-08-08; AG_AC ainda não). Use sempre que for criar, revisar ou discutir feedback de erro/acerto, protocolos de arraste/posicionamento, ou qualquer dica/scaffold oferecido ao usuário no Gérard. Lista extensível — podem surgir novos tipos. A maior parte deste domínio já é comportamento validado (ver "Status de verificação"); tratar como referência de convenções estabelecidas, não como espaço livre para redesenhar.
+description: Taxonomia aberta dos tipos de scaffolding do Gérard — (1) estilo de interação (protocolo de mouse: arrastar, proximidade, atração magnética; cores de significado), (2) mensagens (informativa e questionamento), (3) material concreto (quadradinhos — mecanismo já existente de adicionar/remover uma unidade por vez cobre AG_AC/automatização da contagem, confirmado pela usuária em 2026-08-08), (4) automatização de passos (AG_AE implementado em 2026-08-08). Use sempre que for criar, revisar ou discutir feedback de erro/acerto, protocolos de arraste/posicionamento, ou qualquer dica/scaffold oferecido ao usuário no Gérard. Lista extensível — podem surgir novos tipos. A maior parte deste domínio já é comportamento validado (ver "Status de verificação"); tratar como referência de convenções estabelecidas, não como espaço livre para redesenhar.
 ---
 
 # Categorização de scaffolding — Gérard
@@ -15,8 +15,8 @@ O scaffolding do Gérard é um conjunto aberto de tipos de apoio pedagógico. Po
 
 1. Estilo de interação (protocolo de mouse + cores de significado do feedback)
 2. Mensagens (informativa e questionamento)
-3. Material concreto (quadradinhos arrastáveis e manipuláveis)
-4. Automatização de passos (AG_AE implementado em 2026-08-08, AG_AC ainda não — ver seção 4)
+3. Material concreto (quadradinhos arrastáveis e manipuláveis — ver seção 3 sobre AG_AC)
+4. Automatização de passos (AG_AE implementado em 2026-08-08 — ver seção 4)
 
 **Fora do escopo**: a paleta neutra/tokens visuais e a consistência entre Windows e mobile — isso pertence à skill de identidade visual. Esta skill decide *o que* uma cor significa (ex.: erro=vermelho); a de identidade visual decide *o tom exato* dessa cor e sua aplicação cross-platform.
 
@@ -56,21 +56,23 @@ Ao criar uma nova mensagem informativa, não presuma que existe um padrão de cl
 
 Preferir textos curtos; evitar linguagem natural extensa como mecanismo primário de feedback — o feedback adaptativo do Gérard é baseado em pequenas mensagens, tips, cores, posicionamento e estilo de interação, não em diálogo em linguagem natural.
 
-## 3. Material concreto
+## 3. Material concreto — cobre AG_AC (confirmado 2026-08-08)
 
 Quadradinhos arrastáveis e manipuláveis — representação concreta que pode ser removida em versões simplificadas (ex.: versão mobile, que mantém só a modelagem/representação formal).
 
-## 4. Automatização de passos — PARCIALMENTE IMPLEMENTADO (2026-08-08)
+**AG_AC (automatizar a contagem)** não é um item separado da seção 4 — a usuária esclareceu (2026-08-08) que só faz sentido existir incorporado a este material concreto, nunca como affordance isolada. O mecanismo já existente de adicionar/remover quadradinhos um de cada vez (`ControleAdicionarQuadradinhoVenn`/`ControleRemoverQuadradinhoVenn`, `Main.java: adicionarQuadradinhoAoAgrupamentoInterno`/`removerQuadradinhoDoAgrupamentoInterno`) já é essa automação: cada clique corresponde a exatamente uma unidade, manipulativo e progressivo — a classificação de AG_AC como "Guiada por movimento/manipulativa" em `TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md` descreve esse comportamento já existente, não um mecanismo novo a construir. Confirmado pela usuária: a aparência/funcionamento dos quadradinhos permanece exatamente como está hoje — nenhuma mudança de código foi autorizada nem é necessária.
+
+Revisão de localidade do conhecimento feita em 2026-08-08 (`gerard-domain-model-first`/`gerard-knowledge-locality-principle`): o fluxo de adicionar/remover quadradinho é interação+representação (`Main.java` traduz o clique em comando, delega a sincronização a `sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar` e o registro a `registrarAcaoGranular`); `CirculoVenn`/`QuadradinhoVenn` seguem o mesmo padrão leve de autodesenho já usado por todo o resto dos elementos do diagrama (`ElementoVergnaud`, `ConectorVergnaud`) — consistente com a convenção já estabelecida no projeto, não uma exceção a corrigir.
+
+## 4. Automatização de passos — IMPLEMENTADO (2026-08-08)
 
 Tipo de scaffolding antes só planejado. O rótulo de legenda não utilizado (`pesq.d3.scaffold.type.automation`, `mensagens_pt.properties:562`, visualização D3 do pesquisador) continua sem código próprio — é um item separado.
 
 **AG_AE (automatizar passos da modelagem) — implementado**: dica de posicionamento sob demanda (botão "Ver dica"), um papel-dado por vez, progressivo, nunca a incógnita — escopo definido pela usuária em duas rodadas de perguntas de autorização, exatamente conforme o princípio abaixo. Ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`. Implementação em `Main.java`/`TelaGerard`: `obterProximoPapelNaoResolvidoParaDica`, `obterFraseParaDicaPosicionamento`, `mostrarProximaDicaPosicionamento`.
 
-**AG_AC (automatizar a contagem) — ainda não implementado**, continua sem desenho pedagógico aprovado.
-
 Princípio já definido, documentado na literatura da área, e que vale para a interface do Gérard como um todo (não só para scaffolding): em hipótese alguma a interface pode automatizar passos cuja ordem não tenha vindo de autorização explícita do pesquisador.
 
-Ao trabalhar em qualquer extensão futura deste tipo de scaffolding (incluindo AG_AC, ou ampliar o escopo de AG_AE), tratar como requisito a ser desenhado sob orientação direta do usuário sobre como cada automação deve ser autorizada — não como comportamento já validado.
+Ao trabalhar em qualquer extensão futura deste tipo de scaffolding (ex.: ampliar o escopo de AG_AE), tratar como requisito a ser desenhado sob orientação direta do usuário sobre como cada automação deve ser autorizada — não como comportamento já validado. (AG_AC não pertence mais a esta seção — ver seção 3.)
 
 ## Este conjunto pode crescer
 
