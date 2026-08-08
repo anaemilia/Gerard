@@ -1,6 +1,17 @@
 # Tarefa pendente — arquitetura rica integral + princípio da localidade do conhecimento em EstadoSemanticoCompartilhado
 
-Status: **Fase A concluída (commit `c69fde4`, 2026-08-06). Fase B: investigação concluída, opção B1 implementada e depois estendida aos 3 tipos "Relações" alcançáveis pela UI (2026-08-06). Fase B2, passo 2 (catálogo das 8 origens) concluída. Fase B2 literal (migração de fato) permanece em aberto — a conversa pivotou para frentes adjacentes, já implementadas e commitadas: extração do desenho de estilo de interação (`EstiloInteracao`), recálculo do alvo da incógnita ("estado modificado"), e enriquecimento de `TipoErroPapel`/`DiagnosticoErroPapel` no piloto (passo 1 do plano de 3 passos combinado em 2026-08-06 à noite) — ver "Desdobramentos 2026-08-06 (tarde)" e "Desdobramentos 2026-08-06 (noite)".**
+Status: **ENCERRADA (2026-08-07).** Fase A concluída (commit `c69fde4`,
+2026-08-06). Fase B2 completa concluída (2026-08-07, ver seção "Fase B2
+completa: concluída" ao final): `resolverRelacaoAditiva` delega 100% da
+lógica de relação aditiva ao pacote piloto (`gerard.dominio.campoaditivo`)
+para os **6 tipos** de `TipoSituacaoAditiva` alcançáveis pela UI — as 3
+categorias de Medidas (Composição, Transformação, Comparação) e as 3 de
+Relações (Composição de Transformações, Transformação de Relação,
+Composição de Relações), não só as 3 de Medidas mencionadas na decisão
+original da seção abaixo. Esta linha de status estava desatualizada —
+corrigida em 2026-08-08 (a seção "Fase B2 completa: concluída" já
+registrava o encerramento desde 2026-08-07; só o resumo do topo não
+tinha sido atualizado).
 
 ---
 
