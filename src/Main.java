@@ -875,6 +875,21 @@ public class Main extends JFrame {
         boolean mostrarQuestionamentoPersistente = false;
         String textoQuestionamentoPersistente = "";
         ItemTextoArrastavel itemQuestionadoPersistente = null;
+        // AG_AE (automatização de passos, item 7 do levantamento de
+        // 2026-08-07) — dica de posicionamento sob demanda, um papel por
+        // vez: mesmo padrão de anotação persistente de
+        // itemQuestionadoPersistente acima, mas ancorada num
+        // ElementoVergnaud (o alvo correto), não num ItemTextoArrastavel.
+        boolean mostrarDicaPosicionamentoPersistente = false;
+        String papelDicaPosicionamentoAtual = null;
+        ElementoVergnaud elementoDicaPosicionamentoPersistente = null;
+        // Correlação ação:evento (REFERENCE.md §4.8, Alternativa B, 1:N):
+        // um actionId por papel enquanto a ação de "pedir dica para esse
+        // papel" continua aberta (o papel ainda não foi resolvido);
+        // removido do mapa assim que o papel é resolvido, fechando a ação.
+        final java.util.Map<String, String> acaoDicaPosicionamentoPorPapel =
+                new java.util.HashMap<String, String>();
+        JButton botaoVerDicaPosicionamento;
         ItemTextoArrastavel itemGraficoInteiros = null;
         ElementoVergnaud numeroRelativoGraficoInteiros = null;
         boolean sincronizacaoEstadoFinalHabilitada = false;
@@ -2434,6 +2449,66 @@ public class Main extends JFrame {
             add(botaoAjudaVergnaud);
             add(botaoAjudaComplementar);
             atualizarTextosBotoesAjudaContextual();
+            criarBotaoVerDicaPosicionamento();
+        }
+
+        /**
+         * AG_AE — botão "Ver dica" (sob demanda, item 7 do levantamento de
+         * 2026-08-07): mesmo padrão visual dos botões de ajuda contextual
+         * acima, mas com texto (não só ícone) por ser uma affordance nova,
+         * ainda não reconhecível por forma. Fica oculto sempre que não há
+         * papel-dado pendente de posicionar (ver
+         * reposicionarBotaoVerDicaPosicionamento).
+         */
+        private void criarBotaoVerDicaPosicionamento() {
+            final JButton botao = new JButton();
+            botao.setFocusable(true);
+            botao.setFocusPainted(true);
+            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            botao.setFont(new Font("Arial", Font.PLAIN, 12));
+            botao.setMargin(new Insets(2, 8, 2, 8));
+            botao.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mostrarProximaDicaPosicionamento();
+                }
+            });
+            botaoVerDicaPosicionamento = botao;
+            add(botao);
+            atualizarTextoBotaoVerDicaPosicionamento();
+        }
+
+        private void atualizarTextoBotaoVerDicaPosicionamento() {
+            if (botaoVerDicaPosicionamento == null) {
+                return;
+            }
+            String texto = localizacao.texto("ui.hint.stepPlacement.button");
+            botaoVerDicaPosicionamento.setText(texto);
+            botaoVerDicaPosicionamento.getAccessibleContext().setAccessibleName(texto);
+            botaoVerDicaPosicionamento.setSize(botaoVerDicaPosicionamento.getPreferredSize());
+        }
+
+        /**
+         * Visível só quando a categoria está selecionada, a modelagem
+         * linguística está em curso (há elementos no diagrama) e ainda
+         * existe ao menos um papel-dado não resolvido — a mesma condição
+         * de obterProximoPapelNaoResolvidoParaDica(), sem gerar o evento
+         * (só decide visibilidade, não conta como exibição de dica).
+         */
+        private void reposicionarBotaoVerDicaPosicionamento(Rectangle area) {
+            if (botaoVerDicaPosicionamento == null || area == null) {
+                return;
+            }
+            boolean exibir = categoriaSelecionadaParaAtividade
+                    && !elementosVergnaud.isEmpty()
+                    && obterProximoPapelNaoResolvidoParaDica() != null;
+            botaoVerDicaPosicionamento.setVisible(exibir);
+            botaoVerDicaPosicionamento.setEnabled(exibir);
+            if (exibir) {
+                Dimension tamanho = botaoVerDicaPosicionamento.getPreferredSize();
+                botaoVerDicaPosicionamento.setBounds(
+                        area.x + area.width - 38 - tamanho.width - 6,
+                        area.y + 10, tamanho.width, 26);
+            }
         }
 
         private JButton criarBotaoAjudaContextual(final ScaffoldingAjudaContextual.Area area) {
@@ -4508,6 +4583,7 @@ public class Main extends JFrame {
             marcadoresFixosTexto.clear();
             elementosTexto.clear();
             elementosVergnaud.clear();
+            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             circulosVenn.clear();
             quadradinhosVenn.clear();
@@ -5170,6 +5246,7 @@ public class Main extends JFrame {
                 botaoFerramentaSortearRelacoes.getAccessibleContext().setAccessibleDescription(descricao);
             }
             atualizarTextosBotoesAjudaContextual();
+            atualizarTextoBotaoVerDicaPosicionamento();
             fecharMenuAjudaContextual();
         }
 
@@ -5497,6 +5574,7 @@ public class Main extends JFrame {
             marcadoresFixosTexto.clear();
             elementosTexto.clear();
             elementosVergnaud.clear();
+            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             circulosVenn.clear();
             quadradinhosVenn.clear();
@@ -5679,6 +5757,183 @@ public class Main extends JFrame {
                 }
             }
             return estados;
+        }
+
+        /**
+         * AG_AE — verdadeiro quando o papel indicado já está corretamente
+         * posicionado no diagrama: mesmo critério de "atendido" usado por
+         * AvaliadorConclusaoModelagem (papeisCompativeis nos dois sentidos +
+         * item efetivamente no diagrama), aplicado a um único papel em vez
+         * do conjunto inteiro — não duplica a lógica de compatibilidade,
+         * reaproveita scaffoldingQuestionamento.papeisCompativeis.
+         */
+        private boolean papelPosicionamentoResolvido(String papel) {
+            if (papel == null) {
+                return true;
+            }
+            for (EstadoPosicionamentoModelagem estado : capturarPosicionamentosConclusao()) {
+                if (papel.equals(estado.getPapelAlvo())) {
+                    return estado.isNoDiagrama()
+                            && (scaffoldingQuestionamento.papeisCompativeis(
+                                    estado.getPapelItem(), estado.getPapelAlvo())
+                            || scaffoldingQuestionamento.papeisCompativeis(
+                                    estado.getPapelAlvo(), estado.getPapelItem()));
+                }
+            }
+            return true;
+        }
+
+        /**
+         * AG_AE — próximo papel-dado ainda não resolvido, em ordem canônica
+         * (mesma ordem de elementosVergnaud/capturarPapeisEsperadosConclusao)
+         * — nunca a incógnita atual (a dica indica onde uma frase-dado
+         * pertence; o valor da incógnita nunca é antecipado, ver
+         * gerard-consistencia-estado). null quando não há mais nenhum papel
+         * pendente para dica (todos os papéis-dado já resolvidos, ou só
+         * resta a incógnita).
+         */
+        private String obterProximoPapelNaoResolvidoParaDica() {
+            String papelIncognita = obterPapelIncognitaAtual();
+            for (String papel : capturarPapeisEsperadosConclusao()) {
+                if (papel.equals(papelIncognita)) {
+                    continue;
+                }
+                // Só oferece dica para papéis onde há, de fato, uma frase
+                // para mostrar — sem isso o botão "Ver dica" apareceria
+                // visível e, ao clicar, nada aconteceria (situação digitada
+                // livremente, sem curadoria, ou papel sem token semântico
+                // próprio).
+                if (!papelPosicionamentoResolvido(papel)
+                        && obterFraseParaDicaPosicionamento(papel) != null) {
+                    return papel;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * AG_AE — texto exato do trecho do enunciado vinculado ao papel
+         * indicado (a mesma frase/token que o participante vê e arrasta do
+         * texto para o diagrama) — não reconstrói o texto a partir da
+         * curadoria numérica, só localiza o elemento de texto já existente
+         * cujo vínculo semântico é esse papel. null se não houver (situação
+         * digitada livremente, sem curadoria, ou papel sem token próprio).
+         */
+        private String obterFraseParaDicaPosicionamento(String papel) {
+            if (papel == null) {
+                return null;
+            }
+            // Fonte primária: elementosTexto — os pedaços do enunciado
+            // ainda não arrastados para o diagrama (é isso que o
+            // participante precisa localizar e mover). Só considera
+            // elementos com vínculo semântico explícito (não usa o
+            // fallback posicional de obterChavePapelExataDoElemento, que
+            // arriscaria apontar uma palavra qualquer do texto como se
+            // fosse a frase do papel).
+            for (ElementoTextoMovel elemento : elementosTexto) {
+                if (elemento == null || !elemento.possuiVinculoSemantico()
+                        || elemento.representaIncognitaOriginal()) {
+                    continue;
+                }
+                if (papel.equals(elemento.chavePapelSemantico)
+                        && elemento.valor != null && elemento.valor.trim().length() > 0) {
+                    return elemento.valor;
+                }
+            }
+            // Fallback: o item já foi arrastado (para o lugar certo ou
+            // errado) — ainda mostra a dica com o texto que ele carrega.
+            for (ItemTextoArrastavel item : itensArrastaveis) {
+                if (item != null && !item.representaIncognitaOriginal()
+                        && papel.equals(obterChavePapelExataDoItem(item))
+                        && item.valor != null && item.valor.trim().length() > 0) {
+                    return item.valor;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * AG_AE — actionId aberto para a ação de "pedir dica para este
+         * papel" (REFERENCE.md §4.8, cardinalidade ação:evento, Alternativa
+         * B): reaproveita o mesmo actionId enquanto o papel continuar não
+         * resolvido (cada nova exibição da mesma dica é um evento
+         * correlacionado à mesma ação); gera um novo só na primeira vez.
+         */
+        private String obterOuIniciarAcaoDicaPosicionamento(String papel) {
+            String existente = acaoDicaPosicionamentoPorPapel.get(papel);
+            if (existente != null) {
+                return existente;
+            }
+            String novo = java.util.UUID.randomUUID().toString();
+            acaoDicaPosicionamentoPorPapel.put(papel, novo);
+            return novo;
+        }
+
+        /**
+         * AG_AE — encerra a ação de dica aberta para o papel indicado (ele
+         * foi resolvido, ou o diagrama foi reconstruído): próxima dica para
+         * esse mesmo papel, se algum dia voltar a ficar pendente, abre uma
+         * ação nova.
+         */
+        private void encerrarAcaoDicaPosicionamento(String papel) {
+            if (papel != null) {
+                acaoDicaPosicionamentoPorPapel.remove(papel);
+            }
+        }
+
+        /**
+         * AG_AE — chamado sempre que elementosVergnaud é limpo para um novo
+         * diagrama: nenhuma dica exibida (nem ação aberta) deve sobreviver
+         * à troca de situação-problema, senão a âncora ficaria apontando
+         * para um ElementoVergnaud de uma modelagem anterior.
+         */
+        private void limparEstadoDicaPosicionamento() {
+            mostrarDicaPosicionamentoPersistente = false;
+            elementoDicaPosicionamentoPersistente = null;
+            papelDicaPosicionamentoAtual = null;
+            acaoDicaPosicionamentoPorPapel.clear();
+        }
+
+        /**
+         * AG_AE — botão "Ver dica" (sob demanda): revela, um papel por vez
+         * e em ordem progressiva, qual frase pertence a cada papel-dado
+         * ainda não posicionado corretamente. Nunca indica a incógnita.
+         * Cada exibição vira um evento FEEDBACK_EXIBIDO real, correlacionado
+         * por action_id enquanto o mesmo papel continuar pendente.
+         */
+        private void mostrarProximaDicaPosicionamento() {
+            String papel = obterProximoPapelNaoResolvidoParaDica();
+            if (papel == null) {
+                mostrarDicaPosicionamentoPersistente = false;
+                elementoDicaPosicionamentoPersistente = null;
+                papelDicaPosicionamentoAtual = null;
+                return;
+            }
+            int indice = obterIndiceElementoVergnaudPorPapel(papel);
+            if (indice < 0 || indice >= elementosVergnaud.size()) {
+                return;
+            }
+            String frase = obterFraseParaDicaPosicionamento(papel);
+            if (frase == null) {
+                return;
+            }
+            elementoDicaPosicionamentoPersistente = elementosVergnaud.get(indice);
+            papelDicaPosicionamentoAtual = papel;
+            mostrarDicaPosicionamentoPersistente = true;
+            String actionId = obterOuIniciarAcaoDicaPosicionamento(papel);
+            registrarFeedbackExibido("AG_AE",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "dica de posicionamento sob demanda; papel=" + papel,
+                    actionId);
+            registrarAcaoGranular(
+                    "SELECIONAR",
+                    "Ver dica de posicionamento",
+                    "Diagrama de Vergnaud",
+                    "MODELAGEM_LINGUISTICA",
+                    localizacao.texto("ui.hint.stepPlacement.button"),
+                    "papel=" + papel + "; action_id=" + actionId,
+                    "O participante solicitou a dica de posicionamento (AG_AE).");
+            repaint();
         }
 
         /**
@@ -6000,6 +6255,26 @@ public class Main extends JFrame {
         private void registrarFeedbackExibido(String estiloScaffolding,
                 gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding modalidade,
                 String detalhesExtra) {
+            registrarFeedbackExibido(estiloScaffolding, modalidade, detalhesExtra, null);
+        }
+
+        /**
+         * Variante com correlação explícita de ação (REFERENCE.md §4.8,
+         * cardinalidade ação:evento, Alternativa B — 1:N): quando
+         * {@code actionId} não é nulo, várias exibições de FEEDBACK_EXIBIDO
+         * que pertencem à mesma ação pedagógica (ex.: pedir a mesma dica de
+         * posicionamento mais de uma vez, enquanto o papel continua não
+         * resolvido) carregam o mesmo `action_id` no log — não são eventos
+         * avulsos e desconectados, são o mesmo padrão já adotado para
+         * tentativas rejeitadas, aplicado aqui à automatização de passos
+         * (AG_AE). Os 5 pontos de disparo pré-existentes (AG_EMS/EME/EMLQ/
+         * EMCME) continuam usando a variante de 3 argumentos — cada um é,
+         * por natureza, um evento único (não uma série correlacionada) —
+         * então nenhum deles muda de comportamento.
+         */
+        private void registrarFeedbackExibido(String estiloScaffolding,
+                gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding modalidade,
+                String detalhesExtra, String actionId) {
             String criterio = modalidade.ehPassiva()
                     ? "renderizado (modalidade passiva)"
                     : "affordance ativada (modalidade interativa)";
@@ -6013,7 +6288,8 @@ public class Main extends JFrame {
                     "FEEDBACK_EXIBIDO",
                     "estilo=" + estiloScaffolding + "; modalidade=" + modalidade
                             + "; criterio=" + criterio
-                            + (detalhesExtra == null || detalhesExtra.length() == 0 ? "" : "; " + detalhesExtra));
+                            + (detalhesExtra == null || detalhesExtra.length() == 0 ? "" : "; " + detalhesExtra)
+                            + (actionId == null || actionId.length() == 0 ? "" : "; action_id=" + actionId));
         }
 
         /**
@@ -6680,6 +6956,7 @@ public class Main extends JFrame {
             Rectangle limiteVergnaud = obterAreaVisivelDiagramasVergnaud();
             reposicionarBotaoRestaurarDiagrama(limiteVergnaud);
             reposicionarBotaoAjudaVergnaud(limiteVergnaud);
+            reposicionarBotaoVerDicaPosicionamento(limiteVergnaud);
             if (!deveExibirDiagramaComplementar() && botaoAjudaComplementar != null) {
                 botaoAjudaComplementar.setVisible(false);
             }
@@ -7017,8 +7294,33 @@ public class Main extends JFrame {
                     && textoLimiteQuantidadeQuestionado != null
                     && textoLimiteQuantidadeQuestionado.trim().length() > 0;
 
+            // AG_AE — mesma família de anotação persistente das duas acima,
+            // mas com uma checagem extra: se o papel foi resolvido (ou o
+            // diagrama mudou) desde a última exibição, a dica se auto-fecha
+            // aqui, no próximo repaint, em vez de exigir um gancho em cada
+            // ponto onde um item pode ser solto sobre um elemento —
+            // fechar aqui também encerra a ação correlacionada (mesmo
+            // action_id) do §4.8.
+            String fraseDicaPosicionamento = mostrarDicaPosicionamentoPersistente
+                    && papelDicaPosicionamentoAtual != null
+                    ? obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual) : null;
+            boolean usarDicaPosicionamentoPersistente = !usarQuestionamentoPersistente
+                    && !usarLimiteQuantidadePersistente
+                    && mostrarDicaPosicionamentoPersistente
+                    && elementoDicaPosicionamentoPersistente != null
+                    && elementosVergnaud.contains(elementoDicaPosicionamentoPersistente)
+                    && papelDicaPosicionamentoAtual != null
+                    && fraseDicaPosicionamento != null
+                    && !papelPosicionamentoResolvido(papelDicaPosicionamentoAtual);
+            if (mostrarDicaPosicionamentoPersistente && !usarDicaPosicionamentoPersistente) {
+                encerrarAcaoDicaPosicionamento(papelDicaPosicionamentoAtual);
+                mostrarDicaPosicionamentoPersistente = false;
+                elementoDicaPosicionamentoPersistente = null;
+                papelDicaPosicionamentoAtual = null;
+            }
+
             if (!usarQuestionamentoPersistente && !usarLimiteQuantidadePersistente
-                    && !mostrarAnotacaoMouseOver) {
+                    && !usarDicaPosicionamentoPersistente && !mostrarAnotacaoMouseOver) {
                 return;
             }
 
@@ -7026,7 +7328,9 @@ public class Main extends JFrame {
                     ? textoQuestionamentoPersistente
                     : (usarLimiteQuantidadePersistente
                             ? textoLimiteQuantidadeQuestionado
-                            : textoAnotacaoMouseOver);
+                            : (usarDicaPosicionamentoPersistente
+                                    ? localizacao.formatar("ui.hint.stepPlacement", fraseDicaPosicionamento)
+                                    : textoAnotacaoMouseOver));
 
             if (mensagem == null || mensagem.length() == 0) {
                 return;
@@ -7067,6 +7371,11 @@ public class Main extends JFrame {
                                 obterAreaDiagramaAditivo());
                 baseX = areaControle.x + areaControle.width;
                 baseY = Math.max(50, areaControle.y + areaControle.height / 2);
+            } else if (usarDicaPosicionamentoPersistente) {
+                baseX = elementoDicaPosicionamentoPersistente.x
+                        + elementoDicaPosicionamentoPersistente.largura;
+                baseY = Math.max(50, elementoDicaPosicionamentoPersistente.y
+                        + elementoDicaPosicionamentoPersistente.altura / 2);
             }
 
             int x = baseX + 14;
@@ -8157,6 +8466,7 @@ public class Main extends JFrame {
         private void inicializarDiagramaVergnaud() {
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
             elementosVergnaud.clear();
+            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             desabilitarSincronizacaoEstadoFinal();
 

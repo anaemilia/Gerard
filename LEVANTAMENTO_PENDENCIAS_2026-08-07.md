@@ -44,12 +44,12 @@ Parte do fluxo de tentativas N=3 ainda em aberto: qual apoio oferecer, em que co
 - **Trabalho**: mudança estrutural no sistema de log de eventos, usado pela coleta de dados de pesquisa — toca vários pontos de disparo de evento.
 - **Risco**: médio a alto — muda a forma como eventos são registrados, não só adiciona um evento novo isolado.
 
-## 7. Automatização de passos (scaffolding tipo 4)
+## 7. Automatização de passos (scaffolding tipo 4) — CONCLUÍDO (2026-08-08, AG_AE)
 
-`gerard-scaffolding-interacao`: quarto tipo de apoio pedagógico, hoje só um rótulo de legenda não usado existe; nenhum código implementa. A própria skill exige que, "em hipótese alguma", a ordem de automação seja decidida sem autorização explícita do pesquisador — ou seja, o desenho pedagógico completo (o que automatizar, quando, sob que autorização) ainda precisa ser feito do zero, orientado diretamente pela usuária.
+`gerard-scaffolding-interacao`: quarto tipo de apoio pedagógico. Implementado no escopo definido pela própria usuária, em duas rodadas de perguntas de autorização (gatilho sob demanda via botão "Ver dica"; um papel-dado por vez, progressivo; nunca a incógnita) — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`. Durante a revisão do plano, a usuária corrigiu a proposta inicial ("evento avulso, sem limite") para seguir a cardinalidade ação:evento 1:N já adotada em `REFERENCE.md §4.8` — cada dica repetida do mesmo papel pendente correlaciona ao mesmo `action_id`, confirmado no TSV real de produção.
 
-- **Trabalho**: maior item da lista — novo tipo de scaffolding, sem desenho pedagógico prévio, exige definição passo a passo com a usuária antes de qualquer linha de código.
-- **Risco**: alto — nada está decidido ainda, nem o comportamento, só o rótulo.
+- **Trabalho**: implementado — `papelPosicionamentoResolvido`/`obterProximoPapelNaoResolvidoParaDica`/`obterFraseParaDicaPosicionamento` em `Main.java`, correlação de ação via `acaoDicaPosicionamentoPorPapel`, renderização como 3ª variante de `desenharAnotacaoMouseOver`, botão "Ver dica", i18n (pt/en/es/fr).
+- **Escopo**: só papéis-dado da etapa de posicionamento de frases (nunca a incógnita, nunca a etapa numérica dos funis) — extensões futuras (AG_AC, dica na incógnita) seguem o mesmo padrão de autorização explícita antes do código.
 
 ---
 

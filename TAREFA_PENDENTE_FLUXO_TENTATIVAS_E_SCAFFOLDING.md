@@ -8,8 +8,11 @@ pedagógico da tela de ajuda: **primeiro rascunho implementado
 pedagógica definitiva. Evento `FEEDBACK_EXIBIDO` (arquitetura
 envelope/payload + ligação ao log real de produção): **implementado
 (2026-08-07)** — ver "Evento `FEEDBACK_EXIBIDO` ligado ao log real de
-produção" abaixo. `AG_AC`/`AG_AE` (automatização de passos)
-**continuam não implementados, não decididos**.
+produção" abaixo. `AG_AE` (automatizar passos da modelagem — dica de
+posicionamento de frases, sob demanda, um papel por vez): **implementado
+(2026-08-08)** — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`.
+`AG_AC` (automatizar a contagem) **continua não implementado, não
+decidido**.
 
 ---
 
@@ -75,16 +78,17 @@ ainda em aberto"). Classificação nos dois eixos já normatizados
 | `AG_EME` | Exibir mensagem explicativa | Conceitual | Visual | **Parcialmente implementado** — `mostrarDicaOperacaoIncognita`/`ui.hint.chooseOperation`, hoje só uma frase mínima ("escolha soma ou subtração") |
 | `AG_EMCME` | Exibir material concreto + mensagem explicativa sobre o uso do material | Procedimental | Manipulativa + Visual | **Parcial** — a parte de mensagem existe (`mostrarAvisoLimiteTentativasAtingido`/`ui.notice.attemptLimitReached`, estendida em 2026-08-07 com uma dica); **a parte de destacar/mostrar material concreto não existe** |
 | `AG_AC` | Automatizar a contagem | Procedimental | Guiada por movimento / manipulativa | **Não implementado — só descrito**, por decisão explícita da usuária ("deixe apenas a descrição, depois pensamos sobre como operacionalizar") |
-| `AG_AE` | Automatizar passos da modelagem do problema | Estratégico | Guiada por movimento | **Não implementado — só descrito**, mesma decisão acima |
+| `AG_AE` | Automatizar passos da modelagem do problema | Estratégico | Guiada por movimento/Visual | **Implementado (2026-08-08)** — dica de posicionamento de frases sob demanda (botão "Ver dica"), um papel-dado por vez, progressivo; nunca a incógnita. Ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`. |
 
 Ordem confirmada pela usuária (2026-08-07): `AG_EMS` não é um degrau da
 escalada de erro — é o estado padrão/ausência de erro, já coberto pelo
 mecanismo de sucesso existente. A escalada de erro dentro do fluxo de N=3
-tentativas é `AG_EMLQ` → `AG_EME` → `AG_EMCME` → (`AG_AC`/`AG_AE`, fora do
-fluxo de N=3, sem gatilho definido ainda).
+tentativas é `AG_EMLQ` → `AG_EME` → `AG_EMCME`; `AG_AE` fica fora desse
+fluxo (gatilho é o botão "Ver dica", não a escalada de tentativas
+rejeitadas); `AG_AC` continua sem gatilho definido.
 
-**`AG_AC`/`AG_AE` — regra explícita**: qualquer operacionalização futura
-desses dois itens tem que seguir o padrão arquitetural já estabelecido
+**`AG_AC` — regra explícita, ainda em aberto**: qualquer operacionalização
+futura desse item tem que seguir o padrão arquitetural já estabelecido
 nas skills do projeto (`gerard-domain-model-first`,
 `gerard-knowledge-locality-principle`, `gerard-handlers-de-interacao` se
 envolver reestruturar despacho de mouse, `gerard-semantic-event-logging`
@@ -92,9 +96,11 @@ para o evento correspondente) — não uma automação ad hoc dentro de
 `Main.java`. Isso, somado à regra de segurança de
 `gerard-scaffolding-interacao` ("em hipótese alguma a interface pode
 automatizar passos cuja ordem não tenha vindo de autorização explícita do
-pesquisador"), significa que a implementação de `AG_AC`/`AG_AE` exige uma
-decisão de modelagem própria, apresentada e aprovada antes de qualquer
-diff — não decidida aqui.
+pesquisador"), significa que a implementação de `AG_AC` exige uma decisão
+de modelagem própria, apresentada e aprovada antes de qualquer diff — não
+decidida aqui. `AG_AE` seguiu exatamente esse mesmo processo (duas
+rodadas de perguntas de autorização, plano apresentado e corrigido pela
+usuária antes do código) — ver relatório acima.
 
 **Ativação temporária só para testes (2026-08-07)**: a pedido da usuária,
 `Main.EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true` faz o
@@ -139,8 +145,11 @@ Implementado nas duas pontas:
   (`mostrarDicaOperacaoIncognita`), `AG_EMCME` mensagem
   (`mostrarAvisoLimiteTentativasAtingido`), `AG_EMCME` material concreto
   (`registrarTentativaIncognita`, no bloqueio) e `AG_EMS`
-  (`configurarFeedbackConclusaoModelagem`). `AG_AC`/`AG_AE` continuam só
-  descritos, sem gatilho — nada a ligar ainda.
+  (`configurarFeedbackConclusaoModelagem`). Na época (2026-08-07),
+  `AG_AC`/`AG_AE` continuavam só descritos, sem gatilho — nada a ligar
+  ainda. `AG_AE` ganhou gatilho e ligação real em 2026-08-08 (ver
+  `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`); `AG_AC` continua
+  sem gatilho.
 - Verificado sob Xvfb, com a aplicação real: os 5 pontos de disparo
   produzem exatamente uma linha `FEEDBACK_EXIBIDO` cada, com
   `estilo`/`modalidade`/`criterio` corretos, sem duplicação. Ver
