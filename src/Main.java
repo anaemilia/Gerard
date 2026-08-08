@@ -1924,7 +1924,7 @@ public class Main extends JFrame {
 
             representacoes.add(localizacao.texto("ui.bug.representation.vergnaud"));
 
-            if (deveExibirDiagramaComplementar()) {
+            if (deveExibirDiagramaComplementar() && !ehRepresentacaoComplementarGenerica()) {
                 if (ehDiagramaVennComposicaoMedidas()) {
                     representacoes.add(localizacao.texto("ui.collections.title"));
                 } else if (ehGraficoBarrasComparacao()) {
@@ -8337,6 +8337,29 @@ public class Main extends JFrame {
                     == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
         }
 
+        /**
+         * Verdadeiro quando a categoria selecionada ainda cai no fallback
+         * {@link TipoRepresentacaoComplementar#GENERICA} — círculos vazios
+         * ligados por setas, sem quadradinhos nem qualquer conteúdo
+         * manipulável. Hoje é o caso de TRANSFORMACAO_RELACAO e
+         * COMPOSICAO_RELACOES (nunca tiveram representação complementar
+         * própria — ver TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md).
+         *
+         * Usado só para suprimir o CONTEÚDO do painel complementar (o que é
+         * desenhado dentro dele e os controles de clique). NÃO deve ser
+         * combinado com {@link #deveExibirDiagramaComplementar()} nem com
+         * {@link #obterAreasDiagramasProporcionais()} — o diagrama de
+         * Vergnaud deve manter a mesma posição/tamanho de sempre, com ou
+         * sem representação própria do lado (a pedido explícito da usuária,
+         * 2026-08-08: "não mexa no diagrama de Vergnaud").
+         */
+        private boolean ehRepresentacaoComplementarGenerica() {
+            return seletorRepresentacaoComplementar.selecionar(
+                    tipoSituacaoSelecionada,
+                    usaCenaVergnaudComposta())
+                    == TipoRepresentacaoComplementar.GENERICA;
+        }
+
         private int obterXDivisorDiagramas() {
             Rectangle areaVergnaud = obterAreaVisivelDiagramasVergnaud();
             return areaVergnaud.x + areaVergnaud.width + (ESPACO_BASE_ENTRE_DIAGRAMAS / 2);
@@ -9173,9 +9196,28 @@ public class Main extends JFrame {
             boolean comparacaoMedidas = ehGraficoBarrasComparacao();
             boolean processoTransformacao = ehProcessoTransformacaoMedidas();
             boolean composicaoTransformacoesProcesso = ehComposicaoTransformacoesProcesso();
+            /*
+             * TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES caem no fallback
+             * GENERICA (círculos vazios + setas, sem nenhum conteúdo
+             * manipulável) — a pedido da usuária (2026-08-08), o painel
+             * complementar deixa de desenhar qualquer coisa para esses
+             * tipos, mas SEM alterar `deveExibirDiagramaComplementar()`
+             * nem a área reservada para este painel: o diagrama de
+             * Vergnaud deve continuar na mesma posição de sempre (ver
+             * TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md).
+             * O estado (sincronizarDiagramaVennComRepresentacoes) continua
+             * sendo recalculado normalmente abaixo, só o desenho/controles
+             * são suprimidos.
+             */
+            boolean representacaoGenerica = ehRepresentacaoComplementarGenerica();
 
-            desenharCard(g2, area.x, area.y, area.width, area.height, 18);
-            reposicionarBotaoAjudaComplementar(area);
+            if (!representacaoGenerica) {
+                desenharCard(g2, area.x, area.y, area.width, area.height, 18);
+                reposicionarBotaoAjudaComplementar(area);
+            } else if (botaoAjudaComplementar != null) {
+                botaoAjudaComplementar.setVisible(false);
+                botaoAjudaComplementar.setEnabled(false);
+            }
 
             if (processoTransformacao) {
                 renderizadorProcessoTransformacao.desenharCabecalho(
@@ -9183,7 +9225,7 @@ public class Main extends JFrame {
             } else if (composicaoTransformacoesProcesso) {
                 renderizadorComposicaoTransformacoesProcesso.desenharCabecalho(
                         g2, area, localizacao);
-            } else if (!comparacaoMedidas) {
+            } else if (!comparacaoMedidas && !representacaoGenerica) {
                 String chaveTituloDiagrama = composicaoMedidas
                         ? "ui.collections.title"
                         : "ui.vann.title";
@@ -9197,7 +9239,7 @@ public class Main extends JFrame {
                 sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
             }
 
-            if (cenaDiagramaVennAtual != null) {
+            if (!representacaoGenerica && cenaDiagramaVennAtual != null) {
                 for (ConectorDiagramaVenn conector : cenaDiagramaVennAtual.getConectores()) {
                     desenharSetaVenn(g2, conector.getX1(), conector.getY1(), conector.getX2(), conector.getY2());
                 }
@@ -9224,7 +9266,7 @@ public class Main extends JFrame {
                             g2, circulosVenn.get(i), i,
                             estadoComposicaoTransformacoes, localizacao,
                             planoUnidadesProcessoAtual);
-                } else {
+                } else if (!representacaoGenerica) {
                     desenharCirculoVenn(g2, circulosVenn.get(i),
                             composicaoMedidas, comparacaoMedidas);
                 }
@@ -9239,22 +9281,24 @@ public class Main extends JFrame {
                         planoUnidadesProcessoAtual, localizacao);
             }
 
-            atualizarQuadradinhosCorrespondentesComparacao(comparacaoMedidas);
-            for (int i = 0; i < quadradinhosVenn.size(); i++) {
-                QuadradinhoVenn quadradinho = quadradinhosVenn.get(i);
-                if (quadradinho != quadradinhoVennSelecionado) {
-                    desenharQuadradinhoVenn(g2, quadradinho, composicaoMedidas, comparacaoMedidas);
+            if (!representacaoGenerica) {
+                atualizarQuadradinhosCorrespondentesComparacao(comparacaoMedidas);
+                for (int i = 0; i < quadradinhosVenn.size(); i++) {
+                    QuadradinhoVenn quadradinho = quadradinhosVenn.get(i);
+                    if (quadradinho != quadradinhoVennSelecionado) {
+                        desenharQuadradinhoVenn(g2, quadradinho, composicaoMedidas, comparacaoMedidas);
+                    }
                 }
-            }
 
-            if (composicaoMedidas) {
-                desenharContagensComposicaoMedidasVenn(g2, area);
-            } else if (comparacaoMedidas) {
-                desenharResumoComparacaoMedidas(g2, area);
-            }
+                if (composicaoMedidas) {
+                    desenharContagensComposicaoMedidasVenn(g2, area);
+                } else if (comparacaoMedidas) {
+                    desenharResumoComparacaoMedidas(g2, area);
+                }
 
-            desenharControlesAdicionarQuadradinhoVenn(g2, area);
-            desenharControlesRemoverQuadradinhoVenn(g2, area);
+                desenharControlesAdicionarQuadradinhoVenn(g2, area);
+                desenharControlesRemoverQuadradinhoVenn(g2, area);
+            }
         }
 
         private java.util.List<RepresentacaoComUnidadesAdicionaveis>
@@ -9511,7 +9555,7 @@ public class Main extends JFrame {
 
         private RepresentacaoComUnidadesAdicionaveis
                 encontrarRepresentacaoPeloControleAdicionarQuadradinho(int x, int y) {
-            if (!deveExibirDiagramaComplementar()) {
+            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarGenerica()) {
                 return null;
             }
             Rectangle area = obterAreaDiagramaAditivo();
@@ -9568,7 +9612,7 @@ public class Main extends JFrame {
 
         private RepresentacaoComUnidadesRemoviveis
                 encontrarRepresentacaoPeloControleRemoverQuadradinho(int x, int y) {
-            if (!deveExibirDiagramaComplementar()) {
+            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarGenerica()) {
                 return null;
             }
             Rectangle area = obterAreaDiagramaAditivo();

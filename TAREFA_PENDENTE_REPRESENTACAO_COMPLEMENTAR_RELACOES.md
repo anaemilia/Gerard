@@ -22,31 +22,58 @@ de Vergnaud, ocupando metade da tela sem nenhuma função. A usuária pediu:
 "tire esse diagrama do lado do diagrama de Vergnaud. Por enquanto deixe
 sem nada e gere uma pendência na documentação."
 
-## O que foi feito (2026-08-08)
+## O que foi feito (2026-08-08, corrigido no mesmo dia)
 
-`SeletorRepresentacaoComplementar.deveExibir(...)` passou a checar também
-`possuiRepresentacaoDefinida(tipo)` — verdadeiro só quando `selecionar(tipo,
-false)` não é `GENERICA`. Como isso reaproveita o mesmo mecanismo já
-existente de "esconder o diagrama complementar e dar a largura toda ao
-diagrama de Vergnaud" (usado sempre que `deveExibirDiagramaComplementar()`
-é falso, por qualquer motivo — ver `Main.obterAreasDiagramasProporcionais()`),
-nenhuma mudança de layout foi necessária: o diagrama de Vergnaud já
-assume a largura toda automaticamente quando não há diagrama complementar
-a mostrar.
+Primeira tentativa (revertida): `SeletorRepresentacaoComplementar.deveExibir(...)`
+passou a checar também `possuiRepresentacaoDefinida(tipo)`, o que fazia
+`Main.deveExibirDiagramaComplementar()` retornar `false` para as categorias
+de Relações e, por consequência, `Main.obterAreasDiagramasProporcionais()`
+dava a largura toda ao diagrama de Vergnaud. A usuária corrigiu: **"o de
+Vergnaud ocupa a largura toda. Não, deixe-o na mesma posição. Não mexa
+no diagrama de Vergnaud."** — ela só queria o conteúdo do painel ao lado
+removido, não o Vergnaud redimensionado.
 
-Escopo da mudança: só a decisão de exibir ou não. Nenhuma representação
-nova foi desenhada — nem foi pedido. `TipoRepresentacaoComplementar.GENERICA`
-e o código de desenho do diagrama genérico continuam existindo (podem
-voltar a ser usados por outra categoria no futuro, ou substituídos por
-uma representação própria para Relações).
+Correção aplicada: revertido `SeletorRepresentacaoComplementar.deveExibir(...)`
+para a forma original (sem checar `GENERICA`) — `deveExibirDiagramaComplementar()`
+e a área do diagrama de Vergnaud voltam a ser calculados exatamente como
+antes, para todas as categorias, sem exceção. A supressão do conteúdo do
+fallback `GENERICA` foi movida para um ponto mais estreito, só de
+desenho/interação, em `Main.java`:
 
-Verificado sob Xvfb: `deveExibirDiagramaComplementar()` retorna `false`
-para `TRANSFORMACAO_RELACAO`/`COMPOSICAO_RELACOES` (diagrama de Vergnaud
-em largura total, nada ao lado) e continua `true` para as 4 categorias com
-representação própria (`TRANSFORMACAO_MEDIDAS`, `COMPOSICAO_MEDIDAS`,
-`COMPARACAO_MEDIDAS`, `COMPOSICAO_TRANSFORMACOES`) — sem regressão nos
-widgets já existentes (processo de transformação, coleções, barras, funil
-de composição de transformações).
+- Novo método `ehRepresentacaoComplementarGenerica()` (mesmo padrão de
+  `ehProcessoTransformacaoMedidas()`/`ehComposicaoTransformacoesProcesso()`).
+- `desenharDiagramaVenn(Graphics2D)`: quando `ehRepresentacaoComplementarGenerica()`
+  é verdadeiro, pula o card, o título, as setas, os círculos, os
+  quadradinhos e os controles +/-, e esconde explicitamente
+  `botaoAjudaComplementar` — mas SEM alterar o gate do topo
+  (`deveExibirDiagramaComplementar()`), que continua controlando só se o
+  método roda ou não. `sincronizarDiagramaVennComRepresentacoes(...)`
+  continua rodando normalmente (mantém o estado sincronizado, só a pintura
+  é suprimida).
+- `encontrarRepresentacaoPeloControleAdicionarQuadradinho`/
+  `encontrarRepresentacaoPeloControleRemoverQuadradinho`: também retornam
+  `null` quando `ehRepresentacaoComplementarGenerica()`, evitando cliques
+  em áreas de controle que não são mais desenhadas.
+- `obterRepresentacoesAtuaisParaRelatoBug()`: não lista mais "Diagrama de
+  Venn" como representação disponível para as categorias de Relações.
+
+Escopo da mudança: só o que é desenhado/clicável no painel complementar.
+Nenhuma representação nova foi desenhada — nem foi pedido.
+`TipoRepresentacaoComplementar.GENERICA` e o código de desenho do diagrama
+genérico continuam existindo (podem voltar a ser usados por outra
+categoria no futuro, ou substituídos por uma representação própria para
+Relações).
+
+Verificado sob Xvfb + reflection: `obterAreaVisivelDiagramasVergnaud()`
+devolve exatamente o mesmo `Rectangle` (`x=15,y=345,width=615,height=339`
+na resolução testada) para `COMPOSICAO_RELACOES`, `TRANSFORMACAO_RELACAO`,
+`TRANSFORMACAO_MEDIDAS`, `COMPOSICAO_MEDIDAS`, `COMPARACAO_MEDIDAS` e
+`COMPOSICAO_TRANSFORMACOES` — o diagrama de Vergnaud não muda de posição
+nem de tamanho em nenhum caso. `botaoAjudaComplementar` fica invisível só
+para as duas categorias de Relações, visível nas outras 4. Capturas de
+tela confirmam: painel direito em branco para Composição de relações,
+widgets (barras de comparação, funil de composição de transformações etc.)
+intactos nas demais categorias — sem regressão.
 
 ## O que falta (não decidido, não autorizado)
 
@@ -61,6 +88,11 @@ de scaffolding neste projeto (perguntas de confirmação com a usuária
 antes de codificar — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`
 como exemplo do processo).
 
-## Arquivo alterado
+## Arquivos alterados
 
 - `src/gerard/campoaditivo/representacao/SeletorRepresentacaoComplementar.java`
+  (revertido para a forma original)
+- `src/Main.java` (`ehRepresentacaoComplementarGenerica()`,
+  `desenharDiagramaVenn`, `encontrarRepresentacaoPeloControleAdicionarQuadradinho`,
+  `encontrarRepresentacaoPeloControleRemoverQuadradinho`,
+  `obterRepresentacoesAtuaisParaRelatoBug`)
