@@ -546,6 +546,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
         harmonizarTermoDesconhecidoComValores(linha);
         final boolean composicaoTransformacoes =
                 tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES;
+        final boolean composicaoRelacoes =
+                tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_RELACOES;
+        final boolean transformacaoRelacao =
+                tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO;
         final JTextField campoEstadoInicial = campoTexto(linha.estadoInicial);
         final JTextField campoTransformacao = campoTexto(linha.transformacao);
         final JTextField campoEstadoFinal = campoTexto(linha.estadoFinal);
@@ -592,6 +596,40 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         PapelSinalCuradoria.VALOR_RELATIVO,
                         ModoPersistenciaSinalCuradoria.METADADO_SEPARADO,
                         campoValorRelativo, linha.sinalValorRelativo);
+        // Categorias de relações (números relativos): os papéis não têm
+        // metadado de sinal próprio no modelo, assim como já ocorria em
+        // Composição de transformações — mesmo tratamento (sinal embutido no
+        // valor, seletor sempre visível para a categoria).
+        final PainelValorComSinalCuradoria painelSinalRelacaoInicial =
+                transformacaoRelacao
+                ? controladorSinais.registrar(
+                        PapelSinalCuradoria.RELACAO_INICIAL,
+                        ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
+                        campoEstadoInicial, "") : null;
+        final PainelValorComSinalCuradoria painelSinalRelacaoFinal =
+                transformacaoRelacao
+                ? controladorSinais.registrar(
+                        PapelSinalCuradoria.RELACAO_FINAL,
+                        ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
+                        campoEstadoFinal, "") : null;
+        final PainelValorComSinalCuradoria painelSinalRelacao1 =
+                composicaoRelacoes
+                ? controladorSinais.registrar(
+                        PapelSinalCuradoria.RELACAO_1,
+                        ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
+                        campoQuantidade1, "") : null;
+        final PainelValorComSinalCuradoria painelSinalRelacao2 =
+                composicaoRelacoes
+                ? controladorSinais.registrar(
+                        PapelSinalCuradoria.RELACAO_2,
+                        ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
+                        campoQuantidade2, "") : null;
+        final PainelValorComSinalCuradoria painelSinalRelacaoResultante =
+                composicaoRelacoes
+                ? controladorSinais.registrar(
+                        PapelSinalCuradoria.RELACAO_RESULTANTE,
+                        ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
+                        campoResultado, "") : null;
         final JComboBox<String> campoTermoDesconhecido = comboTermoDesconhecido(tipoSemantico, linha.termoDesconhecido);
         final AvisoTermoDesconhecidoVazio avisoTermoDesconhecido =
                 new AvisoTermoDesconhecidoVazio(
@@ -672,13 +710,13 @@ public class TelaCuradoriaSituacoes extends JPanel {
             y = adicionarCampo(formulario, gbc, y, "transformacao_2", campoQuantidade2);
             y = adicionarCampo(formulario, gbc, y, "estado_final", campoResultado);
         } else if (tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-            y = adicionarCampo(formulario, gbc, y, "relacao_inicial", campoEstadoInicial);
+            y = adicionarCampo(formulario, gbc, y, "relacao_inicial", painelSinalRelacaoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
-            y = adicionarCampo(formulario, gbc, y, "relacao_final", campoEstadoFinal);
+            y = adicionarCampo(formulario, gbc, y, "relacao_final", painelSinalRelacaoFinal);
         } else if (tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            y = adicionarCampo(formulario, gbc, y, "relacao_1", campoQuantidade1);
-            y = adicionarCampo(formulario, gbc, y, "relacao_2", campoQuantidade2);
-            y = adicionarCampo(formulario, gbc, y, "relacao_resultante", campoResultado);
+            y = adicionarCampo(formulario, gbc, y, "relacao_1", painelSinalRelacao1);
+            y = adicionarCampo(formulario, gbc, y, "relacao_2", painelSinalRelacao2);
+            y = adicionarCampo(formulario, gbc, y, "relacao_resultante", painelSinalRelacaoResultante);
         }
         y = adicionarCampo(formulario, gbc, y, "termo_desconhecido", campoTermoDesconhecido);
         gbc.gridx = 1;
@@ -744,21 +782,25 @@ public class TelaCuradoriaSituacoes extends JPanel {
             configurarCampoHerdado(campoPersonagem1, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoPersonagem2, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoPersonagem3, dicaHerdado, semanticaHerdada);
-            configurarCampoHerdado(campoEstadoInicial, dicaHerdado, semanticaHerdada);
-            configurarCampoHerdado(campoEstadoFinal, dicaHerdado, semanticaHerdada);
+            if (painelSinalRelacaoInicial == null) {
+                configurarCampoHerdado(campoEstadoInicial, dicaHerdado, semanticaHerdada);
+            }
+            if (painelSinalRelacaoFinal == null) {
+                configurarCampoHerdado(campoEstadoFinal, dicaHerdado, semanticaHerdada);
+            }
             configurarCampoHerdado(campoReferido, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferendo, dicaHerdado, semanticaHerdada);
             controladorSinais.definirSemanticaHerdada(semanticaHerdada, dicaHerdado);
             if (painelSinalTransformacao == null) {
                 configurarCampoHerdado(campoTransformacao, dicaHerdado, semanticaHerdada);
             }
-            if (painelSinalTransformacao1 == null) {
+            if (painelSinalTransformacao1 == null && painelSinalRelacao1 == null) {
                 configurarCampoHerdado(campoQuantidade1, dicaHerdado, semanticaHerdada);
             }
-            if (painelSinalTransformacao2 == null) {
+            if (painelSinalTransformacao2 == null && painelSinalRelacao2 == null) {
                 configurarCampoHerdado(campoQuantidade2, dicaHerdado, semanticaHerdada);
             }
-            if (painelSinalTransformacaoResultante == null) {
+            if (painelSinalTransformacaoResultante == null && painelSinalRelacaoResultante == null) {
                 configurarCampoHerdado(campoResultado, dicaHerdado, semanticaHerdada);
             }
             if (painelSinalValorRelativo == null) {
@@ -1822,22 +1864,32 @@ public class TelaCuradoriaSituacoes extends JPanel {
             linha.personagem1 = UnicodeTexto.normalizarNfc(campoPersonagem1.getText().trim());
             linha.personagem2 = UnicodeTexto.normalizarNfc(campoPersonagem2.getText().trim());
             linha.personagem3 = UnicodeTexto.normalizarNfc(campoPersonagem3.getText().trim());
-            linha.estadoInicial = campoEstadoInicial.getText().trim();
+            linha.estadoInicial = controladorSinais.obterValorParaPersistencia(
+                    PapelSinalCuradoria.RELACAO_INICIAL,
+                    campoEstadoInicial.getText());
             linha.transformacao = controladorSinais.obterValorParaPersistencia(
                     PapelSinalCuradoria.TRANSFORMACAO,
                     campoTransformacao.getText());
             linha.sinalTransformacao = controladorSinais.obterSinalCanonico(
                     PapelSinalCuradoria.TRANSFORMACAO);
-            linha.estadoFinal = campoEstadoFinal.getText().trim();
+            linha.estadoFinal = controladorSinais.obterValorParaPersistencia(
+                    PapelSinalCuradoria.RELACAO_FINAL,
+                    campoEstadoFinal.getText());
             linha.quantidade1 = controladorSinais.obterValorParaPersistencia(
-                    PapelSinalCuradoria.TRANSFORMACAO_1,
-                    campoQuantidade1.getText());
+                    PapelSinalCuradoria.RELACAO_1,
+                    controladorSinais.obterValorParaPersistencia(
+                            PapelSinalCuradoria.TRANSFORMACAO_1,
+                            campoQuantidade1.getText()));
             linha.quantidade2 = controladorSinais.obterValorParaPersistencia(
-                    PapelSinalCuradoria.TRANSFORMACAO_2,
-                    campoQuantidade2.getText());
+                    PapelSinalCuradoria.RELACAO_2,
+                    controladorSinais.obterValorParaPersistencia(
+                            PapelSinalCuradoria.TRANSFORMACAO_2,
+                            campoQuantidade2.getText()));
             linha.resultado = controladorSinais.obterValorParaPersistencia(
-                    PapelSinalCuradoria.TRANSFORMACAO_RESULTANTE,
-                    campoResultado.getText());
+                    PapelSinalCuradoria.RELACAO_RESULTANTE,
+                    controladorSinais.obterValorParaPersistencia(
+                            PapelSinalCuradoria.TRANSFORMACAO_RESULTANTE,
+                            campoResultado.getText()));
             linha.referido = campoReferido.getText().trim();
             linha.referendo = campoReferendo.getText().trim();
             linha.valorRelativo = controladorSinais.obterValorParaPersistencia(
