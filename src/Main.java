@@ -4631,6 +4631,7 @@ public class Main extends JFrame {
             if (botaoAjudaTexto != null) botaoAjudaTexto.setVisible(false);
             if (botaoAjudaVergnaud != null) botaoAjudaVergnaud.setVisible(false);
             if (botaoAjudaComplementar != null) botaoAjudaComplementar.setVisible(false);
+            if (botaoVerDicaPosicionamento != null) botaoVerDicaPosicionamento.setVisible(false);
             if (menuAjudaContextualAtivo != null) {
                 menuAjudaContextualAtivo.setVisible(false);
                 menuAjudaContextualAtivo = null;
