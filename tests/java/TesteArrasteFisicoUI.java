@@ -52,7 +52,7 @@ public class TesteArrasteFisicoUI {
                             "O elemento não deve teleportar exatamente ao cursor.");
                     exigir(Point.distance(visual.x, visual.y, alvoX, alvoY) <= 26.5,
                             "O atraso visual ultrapassou o limite discreto.");
-                    exigir(tela.itemSelecionado != null,
+                    exigir(tela.handlerItemTextoArrastavel.estaAtivo(),
                             "O numeral não foi convertido em item durante o arraste.");
                     renderizar(tela);
 
@@ -62,7 +62,7 @@ public class TesteArrasteFisicoUI {
                             "A mola não terminou na soltura.");
                     exigir(!tela.marcadorOrigemArraste.estaAtivo(),
                             "O buraco de origem não foi removido na soltura.");
-                    exigir(tela.itemSelecionado == null,
+                    exigir(!tela.handlerItemTextoArrastavel.estaAtivo(),
                             "O item permaneceu selecionado após a soltura.");
 
                     System.out.println("TesteArrasteFisicoUI: OK");

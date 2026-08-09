@@ -147,6 +147,7 @@ import gerard.campoaditivo.diagrama.elementos.FragmentoAnotacao;
 import gerard.campoaditivo.diagrama.elementos.MarcadorTexto;
 import gerard.interacao.arraste.SessaoArrasteTextoParaDiagrama;
 import gerard.interacao.arraste.ControladorLimiarArrasteEstrutural;
+import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
 import gerard.interacao.texto.PoliticaElementoMatematicoTexto;
 import gerard.interacao.texto.PoliticaUnicidadeElementoMatematicoTexto;
@@ -832,16 +833,15 @@ public class Main extends JFrame {
         int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
-        ItemTextoArrastavel itemSelecionado = null;
+        final HandlerInteracaoItemTextoArrastavel handlerItemTextoArrastavel =
+                new HandlerInteracaoItemTextoArrastavel();
         int ultimoDispatchIndexMouseReleased = 0;
         // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
         // ver mouseReleased: um release na MESMA posicao do pickup nao e
         // um arrasto real (é um clique parado — inclusive cada clique de
         // um duplo-clique sobre o item, usado pra abrir o dialogo de
-        // edicao), so mouseDragged move itemSelecionado.x/y. Distingue
+        // edicao), so o handler move as coordenadas do item. Distingue
         // "soltura real do usuario" de "clique sem deslocamento".
-        int xDoItemNoPickup = Integer.MIN_VALUE;
-        int yDoItemNoPickup = Integer.MIN_VALUE;
         ItemTextoArrastavel itemFocado = null;
         ElementoTextoMovel elementoTextoSelecionado = null;
         ElementoTextoMovel elementoTextoFocado = null;
@@ -4604,7 +4604,7 @@ public class Main extends JFrame {
             quadradinhosVenn.clear();
             quadradinhosCorrespondentesComparacao.clear();
 
-            itemSelecionado = null;
+            handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
             elementoTextoSelecionado = null;
             elementoTextoFocado = null;
@@ -4707,7 +4707,7 @@ public class Main extends JFrame {
             itensArrastaveis.clear();
             marcadoresFixosTexto.clear();
             elementosTexto.clear();
-            itemSelecionado = null;
+            handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
             elementoTextoSelecionado = null;
             elementoTextoFocado = null;
@@ -5511,7 +5511,7 @@ public class Main extends JFrame {
 
         private void restaurarElementosForaDoDiagrama() {
             restaurarTentativasIncognitaAtual();
-            itemSelecionado = null;
+            handlerItemTextoArrastavel.cancelar();
             elementoTextoSelecionado = null;
             quadradinhoVennSelecionado = null;
             elementoVergnaudSelecionado = null;
@@ -5573,7 +5573,7 @@ public class Main extends JFrame {
             cancelarEfeitosArraste();
             reiniciarConclusaoModelagem();
             controladorEstadoAtividade.registrar(AcaoAtividade.RESTAURAR);
-            itemSelecionado = null;
+            handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
             itemGraficoInteiros = null;
             numeroRelativoGraficoInteiros = null;
@@ -7051,12 +7051,13 @@ public class Main extends JFrame {
         private void desenharElementos(Graphics2D g2) {
             for (int i = 0; i < itensArrastaveis.size(); i++) {
                 ItemTextoArrastavel item = itensArrastaveis.get(i);
-                if (item != itemSelecionado) {
+                if (item != handlerItemTextoArrastavel.obterItemAtivo()) {
                     item.desenhar(g2);
                 }
             }
 
-            if (itemFocado != null && itemFocado != itemSelecionado) {
+            if (itemFocado != null
+                    && itemFocado != handlerItemTextoArrastavel.obterItemAtivo()) {
                 g2.setColor(COR_TEXTO_SECUNDARIO);
                 g2.setStroke(new BasicStroke(1.0f));
                 g2.drawRect(itemFocado.x - 3, itemFocado.y - 3,
@@ -7106,8 +7107,9 @@ public class Main extends JFrame {
                 });
             }
 
-            if (itemSelecionado != null) {
-                final ItemTextoArrastavel item = itemSelecionado;
+            if (handlerItemTextoArrastavel.estaAtivo()) {
+                final ItemTextoArrastavel item =
+                        handlerItemTextoArrastavel.obterItemAtivo();
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(item.x - 4, item.y - 4,
@@ -7128,7 +7130,8 @@ public class Main extends JFrame {
 
             final ItemTextoArrastavel proxyEmFeedback =
                     scaffoldingFeedbackProxyPosicionamento.obterProxyEmFeedback();
-            if (proxyEmFeedback != null && proxyEmFeedback != itemSelecionado) {
+            if (proxyEmFeedback != null
+                    && proxyEmFeedback != handlerItemTextoArrastavel.obterItemAtivo()) {
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(proxyEmFeedback.x - 4, proxyEmFeedback.y - 4,
@@ -7216,8 +7219,9 @@ public class Main extends JFrame {
         }
 
         private void desenharFeedbackExplicitoProximidade(Graphics2D g2) {
-            if (itemSelecionado != null) {
-                desenharIndicacaoEstiloDuranteArraste(g2, itemSelecionado);
+            if (handlerItemTextoArrastavel.estaAtivo()) {
+                desenharIndicacaoEstiloDuranteArraste(g2,
+                        handlerItemTextoArrastavel.obterItemAtivo());
             }
         }
 
@@ -9214,7 +9218,10 @@ public class Main extends JFrame {
             }
 
             boolean precisaReconstruirEstruturaVenn = cenaDiagramaVennAtual == null || ultimaAreaDiagramaVenn == null || !ultimaAreaDiagramaVenn.equals(area);
-            if (precisaReconstruirEstruturaVenn || (quadradinhoVennSelecionado == null && itemSelecionado == null && elementoTextoSelecionado == null)) {
+            if (precisaReconstruirEstruturaVenn
+                    || (quadradinhoVennSelecionado == null
+                    && !handlerItemTextoArrastavel.estaAtivo()
+                    && elementoTextoSelecionado == null)) {
                 sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
             }
 
@@ -10791,7 +10798,7 @@ public class Main extends JFrame {
             );
 
             itensArrastaveis.add(novo);
-            itemSelecionado = novo;
+            handlerItemTextoArrastavel.iniciar(novo, mouseX, mouseY);
             itemFocado = novo;
             elementoTextoSelecionado = null;
 
@@ -10855,7 +10862,7 @@ public class Main extends JFrame {
         }
 
         private boolean existePickupAtivo() {
-            return itemSelecionado != null
+            return handlerItemTextoArrastavel.estaAtivo()
                     || elementoTextoSelecionado != null
                     || quadradinhoVennSelecionado != null
                     || elementoVergnaudSelecionado != null
@@ -11031,7 +11038,7 @@ public class Main extends JFrame {
             int y = e.getY();
 
             cancelarEfeitosArraste();
-            itemSelecionado = null;
+            handlerItemTextoArrastavel.cancelar();
             elementoVergnaudSelecionado = null;
             conectorVergnaudSelecionado = null;
             elementoTextoSelecionado = null;
@@ -11253,7 +11260,7 @@ public class Main extends JFrame {
                 agenteMonitor.perceberAcao();
                 conectorVereditoModelador.registrarAcaoNeutra(
                         loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, "SELECIONAR");
-                itemSelecionado = novo;
+                handlerItemTextoArrastavel.iniciar(novo, x, y);
                 itemFocado = novo;
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento semântico do enunciado",
                         "Texto do problema", "Marcador textual",
@@ -11325,15 +11332,13 @@ public class Main extends JFrame {
                 return;
             }
 
-            itemSelecionado = encontrarItemArrastavel(x, y);
+            ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
 
-            if (itemSelecionado != null) {
+            if (handlerItemTextoArrastavel.iniciar(itemEncontrado, x, y)) {
+                ItemTextoArrastavel itemSelecionado =
+                        handlerItemTextoArrastavel.obterItemAtivo();
                 scaffoldingFeedbackMultissensorialErro.pararTremor();
                 itemFocado = itemSelecionado;
-                deslocamentoX = x - itemSelecionado.x;
-                deslocamentoY = y - itemSelecionado.y;
-                xDoItemNoPickup = itemSelecionado.x;
-                yDoItemNoPickup = itemSelecionado.y;
                 iniciarRastreamentoGranular(x, y, itemSelecionado.valor, "Item arrastável", true);
                 registrarAcaoGranular("SELECIONAR", "Selecionar item arrastável", "Área de trabalho", "Item arrastável", "Escolher valor para posicionamento", "valor=" + itemSelecionado.valor, "Item selecionado.");
                 iniciarFantasmaItem(itemSelecionado);
@@ -11394,7 +11399,8 @@ public class Main extends JFrame {
             int x = e.getX();
             int y = e.getY();
 
-            if (itemSelecionado != null || elementoVergnaudSelecionado != null) {
+            if (handlerItemTextoArrastavel.estaAtivo()
+                    || elementoVergnaudSelecionado != null) {
                 suspenderConclusaoDuranteManipulacao();
             }
             atualizarRastreamentoGranular(x, y);
@@ -11479,12 +11485,12 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (itemSelecionado != null) {
-                itemSelecionado.x = x - deslocamentoX;
-                itemSelecionado.y = y - deslocamentoY;
-                atualizarRealceAlvoProximidade(itemSelecionado);
-                atualizarQuestionamentoPersistenteDuranteMovimento(itemSelecionado);
-                atualizarGraficoInteirosDuranteMovimento(itemSelecionado);
+            ItemTextoArrastavel itemMovido =
+                    handlerItemTextoArrastavel.moverPara(x, y);
+            if (itemMovido != null) {
+                atualizarRealceAlvoProximidade(itemMovido);
+                atualizarQuestionamentoPersistenteDuranteMovimento(itemMovido);
+                atualizarGraficoInteirosDuranteMovimento(itemMovido);
                 repaint();
                 return;
             }
@@ -11571,7 +11577,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            ItemTextoArrastavel itemSolto = itemSelecionado;
+            HandlerInteracaoItemTextoArrastavel.ResultadoSoltura solturaItem =
+                    handlerItemTextoArrastavel.concluir();
+            ItemTextoArrastavel itemSolto = solturaItem.getItem();
             // Causa raiz confirmada na rodada 4 (2026-07-31, ver
             // despacho_mouse_released.log): um release na MESMA posicao do
             // pickup — sem mouseDragged real no meio — nao e um novo
@@ -11587,13 +11595,12 @@ public class Main extends JFrame {
             // (canonica) quando o item REALMENTE se moveu do pickup ate a
             // soltura; senao, e reavaliacao de consistencia (reativa —
             // preserva debounce/idempotencia como defesa, nao os remove).
-            boolean itemRealmenteMoveu = itemSolto != null
-                    && (itemSolto.x != xDoItemNoPickup || itemSolto.y != yDoItemNoPickup);
-            if (itemSelecionado != null) {
-                ElementoVergnaud alvo = obterAlvoCorretoParaItem(itemSelecionado);
-                boolean proximo = alvo != null && itemEstaProximoDoElemento(itemSelecionado, alvo);
+            boolean itemRealmenteMoveu = solturaItem.houveMovimento();
+            if (itemSolto != null) {
+                ElementoVergnaud alvo = obterAlvoCorretoParaItem(itemSolto);
+                boolean proximo = alvo != null && itemEstaProximoDoElemento(itemSolto, alvo);
                 if (alvo != null && scaffoldingProximidade.deveCentralizarAoSoltar(modoFeedbackTeste, proximo)) {
-                    centralizarItemNoElemento(itemSelecionado, alvo);
+                    centralizarItemNoElemento(itemSolto, alvo);
                 }
             }
 
@@ -11615,7 +11622,6 @@ public class Main extends JFrame {
             boolean posicionamentoIncorreto = resultadoPosicionamento.isAplicavel()
                     && !resultadoPosicionamento.isCorreto();
             finalizarProxyTextoSolto(itemSolto, !posicionamentoIncorreto);
-            itemSelecionado = null;
             limparRealceAlvoProximidade();
             quadradinhoVennSelecionado = null;
             elementoVergnaudSelecionado = null;
@@ -13555,8 +13561,10 @@ public class Main extends JFrame {
                         }
                     } else {
                         quadradinhoVennFocado = null;
-                        ItemTextoArrastavel item = encontrarItemArrastavel(e.getX(), e.getY());
-                        if (item != null && item.estaNoDiagrama()) {
+                        ItemTextoArrastavel item =
+                                handlerItemTextoArrastavel.identificarFoco(
+                                        encontrarItemArrastavel(e.getX(), e.getY()));
+                        if (item != null) {
                             itemFocado = item;
                             mostrarAnotacaoMouseOver = true;
                             if (mostrarQuestionamentoPersistente && item == itemQuestionadoPersistente) {
@@ -14040,7 +14048,7 @@ public class Main extends JFrame {
                     ItemTextoArrastavel itemRemovido = itemFocado;
                     itensArrastaveis.remove(itemFocado);
                     itemFocado = null;
-                    itemSelecionado = null;
+                    handlerItemTextoArrastavel.cancelar();
                     mostrarAnotacaoMouseOver = false;
                     atualizarRepresentacoesReativasAposAlteracaoDoItem(itemRemovido);
                     verificarConclusaoModelagem();
