@@ -2,15 +2,87 @@
 <project name="GerardNetBeans_Venn_Transformacao" default="default" basedir=".">
     <description>Builds, tests, runs and packages the Gerard project documentation.</description>
 
-    <!--
-      PDF padrão já versionado no projeto. Para atualizar em uma versão consistente:
-      ant -Ddocumentacao.pdf=/caminho/novo.pdf -Dversao.nome=minha-versao versao-consistente
-    -->
+    <property name="src.dir" location="src"/>
+    <property name="build.dir" location="build"/>
+    <property name="build.classes.dir" location="${build.dir}/classes"/>
+    <property name="dist.dir" location="dist"/>
+    <property name="dist.lib.dir" location="${dist.dir}/lib"/>
+    <property name="dist.jar"
+              location="${dist.dir}/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar"/>
+    <property name="main.class" value="Main"/>
+    <property name="javac.source" value="8"/>
+    <property name="javac.target" value="8"/>
+
     <property name="documentacao.dir" location="documentacao"/>
-    <property name="documentacao.destino" location="${documentacao.dir}/ANALISE_COMPLEXIDADE_GERARD.pdf"/>
+    <property name="documentacao.destino"
+              location="${documentacao.dir}/ANALISE_COMPLEXIDADE_GERARD.pdf"/>
     <property name="documentacao.pdf" location="${documentacao.destino}"/>
     <property name="versao.nome" value="versao-consistente"/>
 
+    <path id="classpath.compilacao">
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
+
+    <target name="default" depends="jar"
+            description="Compila e empacota o Gerard."/>
+
+    <target name="clean" description="Remove os artefatos gerados pelo build.">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.lib.dir}"/>
+    </target>
+
+    <target name="copy-resources" depends="init">
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludes="**/*.java"/>
+        </copy>
+    </target>
+
+    <target name="compile" depends="init,copy-resources"
+            description="Compila as fontes de producao.">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
+               encoding="UTF-8"
+               source="${javac.source}" target="${javac.target}"
+               includeantruntime="false">
+            <classpath refid="classpath.compilacao"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile"
+            description="Gera o JAR executavel e copia suas dependencias.">
+        <copy todir="${dist.lib.dir}" overwrite="true">
+            <fileset dir="lib" includes="*.jar"/>
+        </copy>
+        <jar destfile="${dist.jar}" basedir="${build.classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Class-Path"
+                           value="lib/weka-stable-3.8.6.jar lib/bounce-0.18.jar"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="compile"
+            description="Executa o Gerard a partir das classes compiladas.">
+        <java classname="${main.class}" fork="true">
+            <classpath>
+                <pathelement location="${build.classes.dir}"/>
+                <path refid="classpath.compilacao"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!--
+      PDF padrão já versionado no projeto. Para atualizar em uma versão
+      consistente:
+      ant -Ddocumentacao.pdf=/caminho/novo.pdf
+          -Dversao.nome=minha-versao versao-consistente
+    -->
     <target name="validar-documentacao">
         <available file="${documentacao.pdf}" property="documentacao.existe"/>
         <fail unless="documentacao.existe"
@@ -21,14 +93,16 @@
         </condition>
     </target>
 
-    <target name="copiar-pdf-documentacao" depends="validar-documentacao" unless="documentacao.origem.eh.destino">
+    <target name="copiar-pdf-documentacao" depends="validar-documentacao"
+            unless="documentacao.origem.eh.destino">
         <copy file="${documentacao.pdf}"
               tofile="${documentacao.destino}"
               overwrite="true"
               preservelastmodified="true"/>
     </target>
 
-    <target name="atualizar-documentacao" depends="validar-documentacao,copiar-pdf-documentacao"
+    <target name="atualizar-documentacao"
+            depends="validar-documentacao,copiar-pdf-documentacao"
             description="Atualiza o PDF e registra a versão consistente.">
         <checksum file="${documentacao.destino}"
                   algorithm="SHA-256"
@@ -44,47 +118,22 @@
     </target>
 
     <target name="copiar-documentacao-dist" depends="validar-documentacao">
-        <mkdir dir="dist/documentacao"/>
-        <copy todir="dist/documentacao" overwrite="true">
+        <mkdir dir="${dist.dir}/documentacao"/>
+        <copy todir="${dist.dir}/documentacao" overwrite="true">
             <fileset dir="${documentacao.dir}"/>
         </copy>
     </target>
 
-    <target name="versao-consistente" depends="validar-regressao-artigo,atualizar-documentacao,clean,jar,copiar-documentacao-dist"
-            description="Atualiza documentação, compila e empacota uma versão consistente.">
-        <echo message="Versão consistente gerada com documentação em dist/documentacao."/>
-    </target>
-
-    <import file="nbproject/build-impl.xml"/>
-
-    <!--
-      Sobrescreve os alvos simplificados importados do NetBeans para que as
-      dependências locais sejam usadas de forma portátil em Windows e Linux.
-      O build-impl.xml é gerado/ignorado e, portanto, não deve carregar esta
-      correção.
-    -->
-    <target name="compile" depends="-init,-copy-resources">
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
-               source="${javac.source}" target="${javac.target}"
-               includeantruntime="false">
-            <classpath>
-                <fileset dir="lib" includes="*.jar"/>
-            </classpath>
-        </javac>
-    </target>
-
-    <target name="run" depends="compile">
-        <java classname="${main.class}" fork="true">
-            <classpath>
-                <pathelement location="${build.classes.dir}"/>
-                <fileset dir="lib" includes="*.jar"/>
-            </classpath>
-        </java>
-    </target>
-
     <target name="validar-regressao-artigo">
-        <exec executable="python3" failonerror="true" dir="${documentacao.dir}/artigo_codesign">
+        <exec executable="python3" failonerror="true"
+              dir="${documentacao.dir}/artigo_codesign">
             <arg value="scripts/validar_regressao_artigo.py"/>
         </exec>
+    </target>
+
+    <target name="versao-consistente"
+            depends="validar-regressao-artigo,atualizar-documentacao,clean,jar,copiar-documentacao-dist"
+            description="Atualiza documentação, compila e empacota uma versão consistente.">
+        <echo message="Versão consistente gerada com documentação em dist/documentacao."/>
     </target>
 </project>
