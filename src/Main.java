@@ -3392,7 +3392,7 @@ public class Main extends JFrame {
         }
 
         private JMenuItem criarItemCategoria(final TipoSituacaoAditiva tipo) {
-            JMenuItem item = new JMenuItem(tipo.getRotuloBotao());
+            JMenuItem item = new JMenuItem(localizacao.rotuloBotaoTipo(tipo));
             estilizarItemMenuPopup(item);
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -3403,7 +3403,7 @@ public class Main extends JFrame {
         }
 
         private JMenuItem criarItemCategoriaEmConstrucao(TipoSituacaoAditiva tipo) {
-            JMenuItem item = new JMenuItem(tipo.getRotuloBotao());
+            JMenuItem item = new JMenuItem(localizacao.rotuloBotaoTipo(tipo));
             estilizarItemMenuPopup(item);
             item.setEnabled(false);
             item.setToolTipText(localizacao.texto("ui.menu.underConstruction"));
@@ -3421,7 +3421,7 @@ public class Main extends JFrame {
                     "Selecionar a legenda correspondente à operação",
                     "-",
                     "Menu/barra de legendas",
-                    "Botão " + tipo.getRotuloBotao(),
+                    "Botão " + localizacao.rotuloBotaoTipo(tipo),
                     "Representar a estrutura escolhida para o problema",
                     "OBJ8",
                     "O sujeito deve selecionar a legenda adequada ao tipo de problema.",
@@ -3681,7 +3681,7 @@ public class Main extends JFrame {
                     "Adivinhar a categoria da situação-problema sorteada",
                     "C",
                     "Faixa de ícones de categoria",
-                    "Ícone " + tipo.getRotuloBotao(),
+                    "Ícone " + localizacao.rotuloBotaoTipo(tipo),
                     "Representar a estrutura escolhida para o problema",
                     "OBJ8",
                     "O sujeito identifica corretamente a categoria oculta da situação sorteada.",
@@ -3718,7 +3718,7 @@ public class Main extends JFrame {
                     "Adivinhar a categoria da situação-problema sorteada",
                     "E",
                     "Faixa de ícones de categoria",
-                    "Ícone " + tipo.getRotuloBotao(),
+                    "Ícone " + localizacao.rotuloBotaoTipo(tipo),
                     "Representar a estrutura escolhida para o problema",
                     "OBJ8",
                     "O sujeito escolhe uma categoria diferente da categoria oculta da situação sorteada.",
@@ -3918,7 +3918,7 @@ public class Main extends JFrame {
             cabecalho.setOpaque(false);
             cabecalho.setAlignmentX(Component.LEFT_ALIGNMENT);
             cabecalho.add(new JLabel(icone));
-            JLabel rotulo = new JLabel(tipo.getRotuloBotao());
+            JLabel rotulo = new JLabel(localizacao.rotuloBotaoTipo(tipo));
             rotulo.setFont(new Font("Arial", Font.BOLD, 14));
             rotulo.setForeground(COR_TEXTO);
             cabecalho.add(rotulo);
@@ -5460,7 +5460,7 @@ public class Main extends JFrame {
             // em vez do texto genérico de aviso — decisão da usuária,
             // 2026-07-28.
             if (textoProblemaEhMensagemSistema && categoriaSorteioOculta != null) {
-                g2.drawString(categoriaSorteioOculta.getRotuloBotao(), margemX, y);
+                g2.drawString(localizacao.rotuloBotaoTipo(categoriaSorteioOculta), margemX, y);
                 y += fm.getHeight() + 6;
                 java.util.List<String> linhasAcao = quebrarTextoAnotacao(
                         localizacao.texto("ui.problem.noCuratedProblem.tenteNovamente"), fm, larguraMaxima);

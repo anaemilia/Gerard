@@ -101,17 +101,14 @@ public class ServicoLocalizacao {
         if (tipo == null) {
             return texto("tipo.transformacao_medidas");
         }
-        switch (tipo) {
-            case COMPOSICAO_MEDIDAS: return texto("tipo.composicao_medidas");
-            case TRANSFORMACAO_MEDIDAS: return texto("tipo.transformacao_medidas");
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS: return texto("tipo.composicao_transformacao_medidas");
-            case COMPARACAO_MEDIDAS: return texto("tipo.comparacao_medidas");
-            case COMPOSICAO_TRANSFORMACOES: return texto("tipo.composicao_transformacoes");
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS: return texto("tipo.transformacao_composta_dois_passos");
-            case TRANSFORMACAO_RELACAO: return texto("tipo.transformacao_relacao");
-            case COMPOSICAO_RELACOES: return texto("tipo.composicao_relacoes");
-            default: return texto("tipo.transformacao_medidas");
-        }
+        return texto(tipo.getChaveDescricao());
+    }
+
+    public String rotuloBotaoTipo(TipoSituacaoAditiva tipo) {
+        TipoSituacaoAditiva tipoEfetivo = tipo == null
+                ? TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
+                : tipo;
+        return tipoEfetivo.getSigla() + " - " + descricaoTipo(tipoEfetivo);
     }
 
     public String relacao(String codigo) {
