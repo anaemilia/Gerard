@@ -4,12 +4,12 @@ import gerard.semantica.numero.DominioNumerico;
 import gerard.semantica.numero.ValorNumerico;
 
 /** Papel quantitativo com universo numérico explicitamente declarado. */
-public final class PapelQuantitativo implements PapelSemantico {
+public final class DescritorPapelQuantitativo implements PapelSemantico {
     private final String chave;
     private final String nomeConceitual;
     private final DominioNumerico dominio;
 
-    public PapelQuantitativo(String chave, String nomeConceitual,
+    public DescritorPapelQuantitativo(String chave, String nomeConceitual,
                              DominioNumerico dominio) {
         this.chave = chave == null ? "" : chave.trim();
         this.nomeConceitual = nomeConceitual == null ? "" : nomeConceitual.trim();

@@ -2,7 +2,7 @@ package gerard.semantica.categoria;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.semantica.papel.CatalogoPapeisSemanticos;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -70,14 +70,14 @@ public final class CatalogoEsquemasCategoriasAditivas {
 
     private void registrar(TipoSituacaoAditiva tipo, String nome,
                            ComponenteCategoria raiz,
-                           java.util.List<PapelQuantitativo> compartilhados) {
+                           java.util.List<DescritorPapelQuantitativo> compartilhados) {
         esquemas.put(tipo, new EsquemaCategoriaAditiva(
                 tipo, nome, raiz, Collections.unmodifiableList(compartilhados)));
     }
 
-    private java.util.List<PapelQuantitativo> lista(String... chaves) {
-        java.util.List<PapelQuantitativo> resultado =
-                new java.util.ArrayList<PapelQuantitativo>();
+    private java.util.List<DescritorPapelQuantitativo> lista(String... chaves) {
+        java.util.List<DescritorPapelQuantitativo> resultado =
+                new java.util.ArrayList<DescritorPapelQuantitativo>();
         for (String chave : chaves) {
             resultado.add(papeis.obter(chave));
         }

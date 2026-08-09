@@ -1,15 +1,15 @@
 package gerard.semantica.elemento;
 
 import gerard.semantica.numero.ValorNumerico;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 
 public final class ElementoNumerico implements ElementoSemantico {
     private final String id;
-    private final PapelQuantitativo papel;
+    private final DescritorPapelQuantitativo papel;
     private final ValorNumerico valor;
     private final String trechoOriginal;
 
-    public ElementoNumerico(String id, PapelQuantitativo papel,
+    public ElementoNumerico(String id, DescritorPapelQuantitativo papel,
                             ValorNumerico valor, String trechoOriginal) {
         if (papel == null || valor == null || !papel.aceita(valor)) {
             throw new IllegalArgumentException("Valor incompatível com o papel semântico.");
@@ -22,7 +22,7 @@ public final class ElementoNumerico implements ElementoSemantico {
 
     public String getId() { return id; }
     public TipoElementoSemantico getTipo() { return TipoElementoSemantico.NUMERICO; }
-    public PapelQuantitativo getPapel() { return papel; }
+    public DescritorPapelQuantitativo getPapel() { return papel; }
     public ValorNumerico getValor() { return valor; }
     public String getTrechoOriginal() { return trechoOriginal; }
 }

@@ -1,17 +1,17 @@
 package gerard.semantica.quantidade;
 
 import gerard.semantica.numero.DominioNumerico;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import java.math.BigDecimal;
 
 /** Valor, grandeza, unidade e papel reunidos em um único objeto semântico. */
 public final class QuantidadeSemantica {
     private final BigDecimal valor;
     private final PerfilQuantidadeSituacao perfil;
-    private final PapelQuantitativo papel;
+    private final DescritorPapelQuantitativo papel;
 
     public QuantidadeSemantica(BigDecimal valor,
-            PerfilQuantidadeSituacao perfil, PapelQuantitativo papel) {
+            PerfilQuantidadeSituacao perfil, DescritorPapelQuantitativo papel) {
         if (valor == null) {
             throw new IllegalArgumentException("Valor quantitativo ausente.");
         }
@@ -32,7 +32,7 @@ public final class QuantidadeSemantica {
 
     public BigDecimal getValor() { return valor; }
     public PerfilQuantidadeSituacao getPerfil() { return perfil; }
-    public PapelQuantitativo getPapel() { return papel; }
+    public DescritorPapelQuantitativo getPapel() { return papel; }
     public boolean ehMonetaria() {
         return perfil.getTipo() == TipoGrandezaQuantitativa.MONETARIA;
     }

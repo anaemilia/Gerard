@@ -13,7 +13,7 @@ import gerard.semantica.entidade.Personagem;
 import gerard.semantica.numero.FabricaValoresNumericos;
 import gerard.semantica.numero.ValorNumerico;
 import gerard.semantica.papel.CatalogoPapeisSemanticos;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import gerard.semantica.pista.LexicoPistasAditivas;
 import gerard.semantica.pista.OcorrenciaPista;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public final class FabricaInstanciaSemanticaAditiva {
         List<EntidadeSemantica> entidades = criarPersonagens(situacao);
         List<ElementoSemantico> elementos = new ArrayList<ElementoSemantico>();
         int contador = 1;
-        for (PapelQuantitativo papel : esquema.obterPapeis()) {
+        for (DescritorPapelQuantitativo papel : esquema.obterPapeis()) {
             String bruto = valorBrutoDoPapel(situacao, papel.getChave());
             boolean desconhecido = papelEhDesconhecido(situacao, papel.getChave())
                     || "?".equals(bruto);
