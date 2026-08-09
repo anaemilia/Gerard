@@ -14,7 +14,7 @@ correto. Para isso, veja a recomendação de testes JUnit no relatório de
 análise de código.
 """
 from pathlib import Path
-import re, shutil, subprocess, sys
+import os, re, shutil, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
 def check(cond,msg):
@@ -32,13 +32,53 @@ def properties(rel):
         mapa[chave.strip()]=valor.strip()
     return mapa
 
+def localizar_ant():
+    """Retorna (comando, origem) para um Ant instalado ou embarcado em IDE."""
+    ant=shutil.which('ant') or shutil.which('ant.bat')
+    if ant:
+        return [ant], 'PATH'
+
+    ant_home=os.environ.get('ANT_HOME')
+    if ant_home:
+        for nome in ('ant.bat','ant'):
+            executavel=Path(ant_home)/'bin'/nome
+            if executavel.is_file():
+                return [str(executavel)], 'ANT_HOME'
+
+    java=shutil.which('java')
+    if not java:
+        return None, None
+
+    raizes=[]
+    for variavel in ('ProgramFiles','ProgramFiles(x86)','LOCALAPPDATA'):
+        valor=os.environ.get(variavel)
+        if valor:
+            raizes.append(Path(valor))
+
+    padroes=(
+        'JetBrains/*/plugins/gradle-plugin/lib/ant/ant-launcher.jar',
+        'JetBrains/Toolbox/apps/**/plugins/gradle-plugin/lib/ant/ant-launcher.jar',
+        'Programs/JetBrains/*/plugins/gradle-plugin/lib/ant/ant-launcher.jar',
+    )
+    for raiz in raizes:
+        for padrao in padroes:
+            for launcher in sorted(raiz.glob(padrao),reverse=True):
+                diretorio_ant=launcher.parent
+                if (diretorio_ant/'ant.jar').is_file():
+                    return ([java,'-cp',str(diretorio_ant/'*'),
+                             'org.apache.tools.ant.launch.Launcher'],
+                            f'Ant embarcado: {diretorio_ant}')
+    return None, None
+
 print('== Compilação ==')
-ant=shutil.which('ant') or shutil.which('ant.bat')
-if ant:
-    r=subprocess.run([ant,'clean','jar'],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+comando_ant,origem_ant=localizar_ant()
+if comando_ant:
+    print(f'Ant localizado via {origem_ant}')
+    r=subprocess.run(comando_ant+['-noinput','clean','jar'],cwd=ROOT,text=True,
+                     stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     print(r.stdout); check(r.returncode==0,'ant clean jar')
 else:
-    check(False,'ant clean jar (Ant não encontrado no PATH)')
+    check(False,'ant clean jar (Ant não encontrado no PATH, ANT_HOME ou IDE)')
 check((ROOT/'dist/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar').exists(),'JAR gerado')
 
 print('== Internacionalização ==')
@@ -461,7 +501,7 @@ check('abstract class SincronizadorElementosSemanticosTextoAbstrato' in base_tex
       'herança centraliza a propagação do snapshot ao texto')
 check('extends SincronizadorElementosSemanticosTextoAbstrato' in impl_texto,
       'formatação aditiva é selecionada polimorficamente')
-check('sincronizarElementosSemanticosDoTexto(snapshot)' in main,
+check('sincronizarElementosSemanticosDoTexto(estado)' in main,
       'atualização de qualquer representação também atualiza o enunciado')
 check('!item.estaNoDiagrama()' in main,
       'sincronização textual não sobrescreve itens já posicionados nos diagramas')
