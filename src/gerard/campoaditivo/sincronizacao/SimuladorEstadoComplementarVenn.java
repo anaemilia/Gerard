@@ -4,6 +4,8 @@ import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.transformacao.processo.PoliticaSinalTransformacaoComplementar;
 import gerard.campoaditivo.venn.mapeamento.MapeamentoPapeisRepresentacaoComplementar;
+import gerard.campoaditivo.sincronizacao.representacoes.CapturadorValoresRepresentacaoComplementar;
+import gerard.campoaditivo.sincronizacao.representacoes.ValoresCapturadosRepresentacaoComplementar;
 
 import java.util.List;
 import java.util.function.Function;
@@ -24,10 +26,12 @@ import java.util.function.ToIntFunction;
 public final class SimuladorEstadoComplementarVenn {
 
     private final PoliticaSinalTransformacaoComplementar politicaSinal;
+    private final CapturadorValoresRepresentacaoComplementar capturador;
 
     public SimuladorEstadoComplementarVenn(
             PoliticaSinalTransformacaoComplementar politicaSinal) {
         this.politicaSinal = politicaSinal;
+        this.capturador = new CapturadorValoresRepresentacaoComplementar(politicaSinal);
     }
 
     public EstadoSemanticoCompartilhado.Snapshot simular(
@@ -44,53 +48,18 @@ public final class SimuladorEstadoComplementarVenn {
             return null;
         }
 
-        Integer[] valores = new Integer[] { null, null, null };
-        boolean[] conhecidos = new boolean[] { false, false, false };
-
-        for (int indiceVisual = 0;
-                indiceVisual < 3 && indiceVisual < circulosVenn.size();
-                indiceVisual++) {
-            int indiceSemantico = mapeamento.paraIndiceSemantico(indiceVisual);
-            if (indiceSemantico < 0) {
-                continue;
-            }
-            CirculoVenn no = circulosVenn.get(indiceVisual);
-            if (no.exibirQuadradinhos) {
-                int quantidade = indiceVisual == indiceAlteradoVisual
-                        ? quantidadeProposta
-                        : contadorQuadradinhos.applyAsInt(no);
-                if (processoTransformacao
-                        && politicaSinal.permiteValorAssinado(tipo, indiceSemantico)) {
-                    Integer valorAnterior = anterior != null
-                            && anterior.isConhecido(indiceSemantico)
-                            ? Integer.valueOf(anterior.valorOuZero(indiceSemantico))
-                            : null;
-                    quantidade = politicaSinal.aplicarSinal(
-                            quantidade, no.valorReferencia, valorAnterior);
-                }
-                valores[indiceSemantico] = Integer.valueOf(quantidade);
-                conhecidos[indiceSemantico] = Math.abs(quantidade) > 0
-                        || indiceVisual == indiceAlteradoVisual
-                        || (anterior != null
-                            && anterior.isConhecido(indiceSemantico));
-            } else {
-                Integer editado = conversorTexto.apply(no.textoEditavel);
-                if (editado != null) {
-                    valores[indiceSemantico] = editado;
-                    conhecidos[indiceSemantico] = true;
-                } else if (no.valorReferencia != 0
-                        || (anterior != null
-                            && anterior.isConhecido(indiceSemantico))) {
-                    valores[indiceSemantico] = Integer.valueOf(no.valorReferencia);
-                    conhecidos[indiceSemantico] = true;
-                }
-            }
-        }
+        ValoresCapturadosRepresentacaoComplementar captura = capturador.capturar(
+                circulosVenn, mapeamento, tipo, processoTransformacao, anterior,
+                indiceAlteradoVisual, false,
+                (indice, no) -> indice.intValue() == indiceAlteradoVisual
+                        ? Integer.valueOf(quantidadeProposta)
+                        : Integer.valueOf(contadorQuadradinhos.applyAsInt(no)),
+                conversorTexto);
 
         EstadoSemanticoCompartilhado simulacao = new EstadoSemanticoCompartilhado();
         return simulacao.atualizar(
-                tipo, valores, conhecidos,
-                mapeamento.paraIndiceSemantico(indiceAlteradoVisual),
+                tipo, captura.getValores(), captura.getConhecidos(),
+                captura.getIndiceAlteradoSemantico(),
                 EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
     }
 

@@ -104,6 +104,8 @@ import gerard.campoaditivo.sincronizacao.representacoes.EstadoPrimeiroPosicionam
 import gerard.campoaditivo.sincronizacao.representacoes.PoliticaInteracaoRepresentacoes;
 import gerard.campoaditivo.sincronizacao.representacoes.CoordenadorSincronizacaoRepresentacoes;
 import gerard.campoaditivo.sincronizacao.representacoes.DestinoSincronizacaoRepresentacoes;
+import gerard.campoaditivo.sincronizacao.representacoes.CapturadorValoresRepresentacaoComplementar;
+import gerard.campoaditivo.sincronizacao.representacoes.ValoresCapturadosRepresentacaoComplementar;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackMultissensorialErro;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackProxyPosicionamento;
 import gerard.Scaffolding.feedbackerro.ControladorAnotacaoTemporaria;
@@ -513,6 +515,10 @@ public class Main extends JFrame {
                 new LayoutUnidadesProcessoTransformacao();
         final PoliticaSinalTransformacaoComplementar politicaSinalTransformacaoComplementar =
                 new PoliticaSinalTransformacaoComplementar();
+        final CapturadorValoresRepresentacaoComplementar
+                capturadorValoresRepresentacaoComplementar =
+                new CapturadorValoresRepresentacaoComplementar(
+                        politicaSinalTransformacaoComplementar);
         final gerard.campoaditivo.sincronizacao.SimuladorEstadoComplementarVenn
                 simuladorEstadoComplementarVenn =
                 new gerard.campoaditivo.sincronizacao.SimuladorEstadoComplementarVenn(
@@ -7794,69 +7800,30 @@ public class Main extends JFrame {
 
         private EstadoSemanticoCompartilhado.Snapshot capturarEstadoCompartilhadoDoDiagramaComplementar(
                 int indiceAlteradoVisual, EstadoSemanticoCompartilhado.Origem origem) {
-            Integer[] valores = new Integer[] { null, null, null };
-            boolean[] conhecidos = new boolean[] { false, false, false };
             EstadoSemanticoCompartilhado.Snapshot anterior =
                     estadoSemanticoCompartilhado.snapshot();
             MapeamentoPapeisRepresentacaoComplementar mapeamento =
                     obterMapeamentoPapeisComplementaresAtual();
-
-            if (circulosVenn != null) {
-                for (int indiceVisual = 0;
-                        indiceVisual < 3 && indiceVisual < circulosVenn.size();
-                        indiceVisual++) {
-                    int indiceSemantico = mapeamento.paraIndiceSemantico(
-                            indiceVisual);
-                    if (indiceSemantico < 0) {
-                        continue;
-                    }
-                    CirculoVenn no = circulosVenn.get(indiceVisual);
-                    if (no.exibirQuadradinhos) {
-                        int quantidade = contarQuadradinhosNoCirculo(no);
-                        if ((ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso())
-                                && planoUnidadesProcessoAtual != null) {
-                            quantidade = planoUnidadesProcessoAtual
-                                    .converterUnidadesParaValor(quantidade);
-                        }
-                        if ((ehProcessoTransformacaoMedidas() || ehComposicaoTransformacoesProcesso())
-                                && politicaSinalTransformacaoComplementar
-                                        .permiteValorAssinado(tipoSituacaoSelecionada, indiceSemantico)) {
-                            Integer valorAnterior = anterior != null
-                                    && anterior.isConhecido(indiceSemantico)
-                                    ? Integer.valueOf(anterior.valorOuZero(indiceSemantico))
-                                    : null;
-                            quantidade = politicaSinalTransformacaoComplementar
-                                    .aplicarSinal(quantidade,
-                                            no.valorReferencia, valorAnterior);
-                        }
-                        valores[indiceSemantico] = Integer.valueOf(quantidade);
-                        conhecidos[indiceSemantico] = Math.abs(quantidade) > 0
-                                || indiceVisual == indiceAlteradoVisual
-                                || (anterior != null
-                                    && anterior.isConhecido(indiceSemantico));
-                    } else {
-                        Integer editado = converterTextoParaInteiro(
-                                no.textoEditavel);
-                        if (editado != null) {
-                            valores[indiceSemantico] = editado;
-                            conhecidos[indiceSemantico] = true;
-                        } else if (no.valorReferencia != 0
-                                || indiceVisual == indiceAlteradoVisual
-                                || (anterior != null
-                                    && anterior.isConhecido(indiceSemantico))) {
-                            valores[indiceSemantico] = Integer.valueOf(
-                                    no.valorReferencia);
-                            conhecidos[indiceSemantico] = true;
-                        }
-                    }
-                }
-            }
-
-            int indiceAlteradoSemantico = mapeamento.paraIndiceSemantico(
-                    indiceAlteradoVisual);
+            final boolean processoTransformacao = ehProcessoTransformacaoMedidas()
+                    || ehComposicaoTransformacoesProcesso();
+            ValoresCapturadosRepresentacaoComplementar captura =
+                    capturadorValoresRepresentacaoComplementar.capturar(
+                            circulosVenn, mapeamento, tipoSituacaoSelecionada,
+                            processoTransformacao, anterior, indiceAlteradoVisual,
+                            true,
+                            (indice, agrupamento) -> {
+                                int quantidade = contarQuadradinhosNoCirculo(agrupamento);
+                                if (processoTransformacao
+                                        && planoUnidadesProcessoAtual != null) {
+                                    quantidade = planoUnidadesProcessoAtual
+                                            .converterUnidadesParaValor(quantidade);
+                                }
+                                return Integer.valueOf(quantidade);
+                            },
+                            this::converterTextoParaInteiro);
             EstadoSemanticoCompartilhado.Snapshot snapshot = estadoSemanticoCompartilhado.atualizar(
-                    tipoSituacaoSelecionada, valores, conhecidos,
-                    indiceAlteradoSemantico, origem,
+                    tipoSituacaoSelecionada, captura.getValores(), captura.getConhecidos(),
+                    captura.getIndiceAlteradoSemantico(), origem,
                     obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
                     incognitaPreenchidaPeloProtocoloMouseTexto());
             registrarLogConsistenciaAutomaticaSeHouve(snapshot, origem);
