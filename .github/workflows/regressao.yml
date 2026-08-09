@@ -37,6 +37,10 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Baixar dependencias verificadas
+        shell: bash
+        run: bash scripts/baixar_dependencias.sh
+
       - name: Exibir ferramentas da linha de base
         shell: pwsh
         run: |
