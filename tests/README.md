@@ -15,5 +15,6 @@ compara o estado atual com uma implementação anterior e acusa três
 divergências esperadas nos cenários em que a incógnita protegida não deve ser
 preenchida automaticamente.
 
-Os testes ainda existentes em `scripts/testes` continuam ativos durante a
-migração gradual e serão consolidados numa etapa posterior.
+Todos os testes Java automáticos estão consolidados em `tests/java`.
+`scripts/testes` conserva apenas ferramentas de geração e renderização que
+não representam casos de teste.

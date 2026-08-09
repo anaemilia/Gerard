@@ -47,8 +47,8 @@ O verificador `scripts/verificar_regressao_gerard.py` passou a exigir os seguint
 
 Também foram atualizados:
 
-- `scripts/testes/TesteFeedbackProxyPosicionamento.java`;
-- `scripts/testes/TesteElementosMatematicosImersosTexto.java`;
+- `tests/java/TesteFeedbackProxyPosicionamento.java`;
+- `tests/java/TesteElementosMatematicosImersosTexto.java`;
 - `scripts/testar_feedback_proxy_posicionamento.sh`.
 
 ## Validação automática

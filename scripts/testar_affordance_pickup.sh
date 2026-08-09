@@ -12,7 +12,7 @@ javac -source 8 -target 8 -encoding UTF-8 -d "$TMP" \
   "$BASE/src/gerard/Scaffolding/pickup/FornecedorCursoresPickup.java" \
   "$BASE/src/gerard/Scaffolding/pickup/FornecedorCursoresPickupAbstrato.java" \
   "$BASE/src/gerard/Scaffolding/pickup/FornecedorCursoresPickupSwing.java" \
-  "$BASE/scripts/testes/TesteAffordancePickup.java"
+  "$BASE/tests/java/TesteAffordancePickup.java"
 java -Djava.awt.headless=true -cp "$TMP" TesteAffordancePickup
 
 grep -q 'desenharPickupEmPrimeiroPlano(g2)' "$BASE/src/Main.java"

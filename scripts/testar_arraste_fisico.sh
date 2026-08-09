@@ -14,7 +14,7 @@ javac -source 8 -target 8 -encoding UTF-8 -d "$TMP" \
   "$BASE/src/gerard/Scaffolding/arraste/MarcadorOrigemArraste.java" \
   "$BASE/src/gerard/Scaffolding/arraste/MarcadorOrigemArrasteAbstrato.java" \
   "$BASE/src/gerard/Scaffolding/arraste/MarcadorOrigemArrasteTracejado.java" \
-  "$BASE/scripts/testes/TesteArrasteFisico.java"
+  "$BASE/tests/java/TesteArrasteFisico.java"
 java -Djava.awt.headless=true -cp "$TMP" TesteArrasteFisico
 
 grep -q 'marcadorOrigemArraste.desenhar(g2)' "$BASE/src/Main.java"

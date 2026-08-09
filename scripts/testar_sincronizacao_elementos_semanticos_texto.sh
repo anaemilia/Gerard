@@ -7,7 +7,7 @@ mkdir -p build/testes
 javac -encoding UTF-8 -source 8 -target 8 \
   -cp build/classes \
   -d build/testes \
-  scripts/testes/TesteSincronizacaoElementosSemanticosTexto.java
+  tests/java/TesteSincronizacaoElementosSemanticosTexto.java
 java -Djava.awt.headless=true -cp build/classes:build/testes \
   TesteSincronizacaoElementosSemanticosTexto
 

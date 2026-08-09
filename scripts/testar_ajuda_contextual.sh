@@ -5,7 +5,7 @@ cd "$DIR"
 ant -noinput -q clean jar
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-javac -encoding UTF-8 -cp build/classes -d "$TMP" scripts/testes/TesteAjudaContextual.java
+javac -encoding UTF-8 -cp build/classes -d "$TMP" tests/java/TesteAjudaContextual.java
 java -Djava.awt.headless=true -cp "build/classes:$TMP" TesteAjudaContextual
 python3 - <<'PY2'
 from pathlib import Path

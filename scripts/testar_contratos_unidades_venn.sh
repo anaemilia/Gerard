@@ -14,5 +14,5 @@ javac -encoding UTF-8 -d "$TMP" \
   "$ROOT/src/gerard/campoaditivo/venn/interacao/ResultadoOperacaoUnidade.java" \
   "$ROOT/src/gerard/campoaditivo/venn/interacao/RepresentacaoComUnidadesAbstrata.java" \
   "$ROOT/src/gerard/campoaditivo/venn/interacao/RepresentacaoVennEditavel.java" \
-  "$ROOT/scripts/testes/TesteContratosUnidadesVenn.java"
+  "$ROOT/tests/java/TesteContratosUnidadesVenn.java"
 java -cp "$TMP" TesteContratosUnidadesVenn

@@ -5,7 +5,7 @@ cd "$ROOT"
 ant -noinput -q clean jar >/dev/null
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-javac -encoding UTF-8 -cp build/classes -d "$TMP" scripts/testes/TesteAnaliseAposPosicionamento.java
+javac -encoding UTF-8 -cp build/classes -d "$TMP" tests/java/TesteAnaliseAposPosicionamento.java
 xvfb-run -a java -cp "build/classes:$TMP" TesteAnaliseAposPosicionamento
 python3 - <<'PY2'
 from pathlib import Path
