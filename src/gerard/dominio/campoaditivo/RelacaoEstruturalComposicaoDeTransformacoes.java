@@ -20,7 +20,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * (e só então gerar o evento correspondente) é uma decisão explícita de
  * outra camada, tomada chamando aplicar(...) — nunca automática.
  */
-public final class RelacaoEstruturalComposicaoDeTransformacoes {
+public final class RelacaoEstruturalComposicaoDeTransformacoes implements RelacaoEstruturalAditiva {
 
     private RelacaoEstruturalComposicaoDeTransformacoes() { }
 

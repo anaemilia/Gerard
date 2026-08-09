@@ -31,7 +31,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * KnowledgeLocalityPrinciple que já justificava esta classe antes de ser
  * renomeada continua valendo.
  */
-public final class RelacaoEstruturalComposicao {
+public final class RelacaoEstruturalComposicao implements RelacaoEstruturalAditiva {
 
     private RelacaoEstruturalComposicao() { }
 

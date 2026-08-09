@@ -18,7 +18,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * existe para que um valor calculado pelo sistema nunca seja confundido,
  * no log de pesquisa, com um valor que o estudante digitou.
  */
-public final class RelacaoEstruturalTransformacao {
+public final class RelacaoEstruturalTransformacao implements RelacaoEstruturalAditiva {
 
     private RelacaoEstruturalTransformacao() { }
 
