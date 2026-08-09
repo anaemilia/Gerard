@@ -84,7 +84,10 @@ def main() -> int:
         dependencias_trabalho.append(copia)
 
     fontes = sorted((ROOT / "src").rglob("*.java"))
-    testes = sorted((ROOT / "scripts" / "testes").glob("Teste*.java"))
+    testes = sorted(
+        list((ROOT / "scripts" / "testes").glob("Teste*.java"))
+        + list((ROOT / "tests" / "java").rglob("Teste*.java"))
+    )
     argfile_fontes = criar_argfile("fontes.txt", fontes)
     argfile_testes = criar_argfile("testes.txt", testes)
     classpath_dependencias = os.pathsep.join(str(jar) for jar in dependencias_trabalho)
