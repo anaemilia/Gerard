@@ -270,7 +270,7 @@ check('criarMaoAberta' in pickup_cursor and 'criarMaoFechada' in pickup_cursor
       and 'Cursor.MOVE_CURSOR' in pickup_cursor,
       'pickup usa mão nativa no mouseover e cursor de movimentação no arraste')
 check('desenharPickupEmPrimeiroPlano(g2)' in main
-      and 'item != itemSelecionado' in main
+      and 'item != handlerItemTextoArrastavel.obterItemAtivo()' in main
       and 'quadradinho != quadradinhoVennSelecionado' in main,
       'elemento segurado é retirado da passagem normal e redesenhado em primeiro plano')
 check('definirCursorMaoAberta' in main and 'definirCursorMaoFechada' in main,
@@ -296,6 +296,21 @@ check('marcadorOrigemArraste.desenhar(g2)' in main
       and 'controladorArrasteElastico.atualizarAlvo' in main
       and 'controladorArrasteElastico.concluir' in main,
       'tela integra fantasma, seguimento elástico e soltura exata')
+
+print('== Handler local do item textual arrastável ==')
+handler_item_texto=text('src/gerard/interacao/arraste/HandlerInteracaoItemTextoArrastavel.java')
+check('class HandlerInteracaoItemTextoArrastavel' in handler_item_texto
+      and 'ResultadoSoltura concluir()' in handler_item_texto
+      and 'ItemTextoArrastavel moverPara' in handler_item_texto,
+      'handler encapsula estado e mecânica local do gesto do item textual')
+check('handlerItemTextoArrastavel.iniciar' in main
+      and 'handlerItemTextoArrastavel.moverPara' in main
+      and 'handlerItemTextoArrastavel.concluir' in main,
+      'tela encaminha início, movimento e conclusão ao handler local')
+check('ItemTextoArrastavel itemSelecionado = null' not in main
+      and 'xDoItemNoPickup' not in main
+      and 'yDoItemNoPickup' not in main,
+      'tela não duplica o estado mecânico pertencente ao handler')
 
 print('== Contrato de posicionamento incorreto manipulável ==')
 sessao_proxy=text('src/gerard/interacao/arraste/SessaoArrasteTextoParaDiagrama.java')

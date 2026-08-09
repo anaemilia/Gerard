@@ -529,7 +529,7 @@ public class TesteMonkeyGuiadoPorCasosReais {
      * {@link GestureCoordinateResolver} (que prioriza a posição ATUAL no
      * diagrama sobre a posição original no texto — ver
      * {@link SemanticComponentLocator}); (2) observa
-     * {@code tela.itemSelecionado} depois do mousePressed pra saber se o
+     * handler de item da tela depois do mousePressed para saber se o
      * pickup realmente aconteceu; (3) observa o contador de eventos
      * gravados de {@link AgentAuditService} antes/depois da soltura pra
      * saber se uma avaliação foi de fato despachada; (4) grava CADA
@@ -572,7 +572,10 @@ public class TesteMonkeyGuiadoPorCasosReais {
 
                 final boolean[] itemSelecionadoNoPickup = new boolean[1];
                 SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() { itemSelecionadoNoPickup[0] = tela.itemSelecionado != null; }
+                    public void run() {
+                        itemSelecionadoNoPickup[0] =
+                                tela.handlerItemTextoArrastavel.estaAtivo();
+                    }
                 });
 
                 String valorItem = SemanticComponentLocator.valorDoComponente(tela, resolucao.origem);
@@ -601,7 +604,10 @@ public class TesteMonkeyGuiadoPorCasosReais {
 
                 final boolean[] itemAindaSelecionadoAntesSoltura = new boolean[1];
                 SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() { itemAindaSelecionadoAntesSoltura[0] = tela.itemSelecionado != null; }
+                    public void run() {
+                        itemAindaSelecionadoAntesSoltura[0] =
+                                tela.handlerItemTextoArrastavel.estaAtivo();
+                    }
                 });
 
                 int eventosAntes = servicoAuditoria.getContadorEventosGravados();

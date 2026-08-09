@@ -44,21 +44,24 @@ public class TesteAffordancePickupUI {
                     tela.mousePressed(evento(tela, MouseEvent.MOUSE_PRESSED, mx, my));
                     exigir(tela.getCursor().getType() == Cursor.MOVE_CURSOR,
                             "O pickup ativo deve mudar para o cursor de movimentação.");
-                    exigir(tela.elementoTextoSelecionado != null || tela.itemSelecionado != null,
+                    exigir(tela.elementoTextoSelecionado != null
+                                    || tela.handlerItemTextoArrastavel.estaAtivo(),
                             "Pickup do marcador não iniciou a seleção textual.");
                     tela.mouseDragged(evento(tela, MouseEvent.MOUSE_DRAGGED, mx + 30, my + 230));
                     exigir(tela.getCursor().getType() == Cursor.MOVE_CURSOR,
                             "Durante o arraste, o cursor deve permanecer em movimentação.");
-                    exigir(tela.itemSelecionado != null,
+                    exigir(tela.handlerItemTextoArrastavel.estaAtivo(),
                             "O elemento numérico não foi convertido em item ao sair do texto.");
-                    int xInicial = tela.itemSelecionado.x;
-                    int yInicial = tela.itemSelecionado.y;
+                    int xInicial = tela.handlerItemTextoArrastavel.obterItemAtivo().x;
+                    int yInicial = tela.handlerItemTextoArrastavel.obterItemAtivo().y;
                     tela.mouseDragged(evento(tela, MouseEvent.MOUSE_DRAGGED, mx + 50, my + 250));
-                    exigir(tela.itemSelecionado.x != xInicial || tela.itemSelecionado.y != yInicial,
+                    exigir(tela.handlerItemTextoArrastavel.obterItemAtivo().x != xInicial
+                                    || tela.handlerItemTextoArrastavel.obterItemAtivo().y != yInicial,
                             "O item não se deslocou durante o pickup.");
                     renderizar(tela, new File(System.getProperty("java.io.tmpdir"), "gerard_c113_pickup_item.png"));
                     tela.mouseReleased(evento(tela, MouseEvent.MOUSE_RELEASED, mx + 50, my + 250));
-                    exigir(tela.itemSelecionado == null, "O pickup do item não terminou na soltura.");
+                    exigir(!tela.handlerItemTextoArrastavel.estaAtivo(),
+                            "O pickup do item não terminou na soltura.");
 
                     // As representações complementares (inclusive o mouseover dos
                     // quadradinhos do Venn) ficam bloqueadas até existir o primeiro
