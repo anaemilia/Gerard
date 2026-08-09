@@ -1,6 +1,6 @@
 package gerard.semantica.numero;
 
-import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
+import gerard.semantica.quantidade.ContextoQuantidade;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 
 /**
@@ -18,7 +18,7 @@ public final class ConversorTextoParaInteiroSemantico {
         return servico.converterParaInteiroLegado(texto, null);
     }
 
-    public Integer converter(String texto, SituacaoProblemaAditiva situacao) {
+    public Integer converter(String texto, ContextoQuantidade situacao) {
         return servico.converterParaInteiroLegado(texto, situacao);
     }
 }

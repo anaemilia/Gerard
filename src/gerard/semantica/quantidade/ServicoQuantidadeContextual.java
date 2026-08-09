@@ -1,6 +1,5 @@
 package gerard.semantica.quantidade;
 
-import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -13,7 +12,7 @@ public final class ServicoQuantidadeContextual {
             new ConversorTextoParaQuantidadeSemantica();
 
     public PerfilQuantidadeSituacao resolverPerfil(
-            SituacaoProblemaAditiva situacao) {
+            ContextoQuantidade situacao) {
         return resolvedor.resolver(situacao);
     }
 
@@ -22,7 +21,7 @@ public final class ServicoQuantidadeContextual {
      * dinheiro aceita formas como 25,00, sem truncar centavos não nulos.
      */
     public Integer converterParaInteiroLegado(String texto,
-            SituacaoProblemaAditiva situacao) {
+            ContextoQuantidade situacao) {
         PerfilQuantidadeSituacao perfil = resolverPerfil(situacao);
         BigDecimal decimal = conversor.converterDecimal(texto);
         if (decimal == null || !perfil.getGrandeza().aceitaMagnitude(decimal)) {
@@ -40,7 +39,7 @@ public final class ServicoQuantidadeContextual {
     }
 
     public String formatarInteiroLegado(int valor,
-            SituacaoProblemaAditiva situacao, boolean explicitarSinal) {
+            ContextoQuantidade situacao, boolean explicitarSinal) {
         PerfilQuantidadeSituacao perfil = resolverPerfil(situacao);
         if (perfil.getTipo() == TipoGrandezaQuantitativa.MONETARIA) {
             NumberFormat formato = NumberFormat.getNumberInstance(localeDaSituacao(situacao));
@@ -61,17 +60,17 @@ public final class ServicoQuantidadeContextual {
 
     /** Formata uma quantidade de medida, que não explicita sinal positivo. */
     public String formatarMedidaParaDiagrama(int valor,
-            SituacaoProblemaAditiva situacao) {
+            ContextoQuantidade situacao) {
         return formatarInteiroLegado(valor, situacao, false);
     }
 
     /** Formata um número relativo, explicitando o sinal quando positivo. */
     public String formatarNumeroRelativoParaDiagrama(int valor,
-            SituacaoProblemaAditiva situacao) {
+            ContextoQuantidade situacao) {
         return formatarInteiroLegado(valor, situacao, true);
     }
 
-    private Locale localeDaSituacao(SituacaoProblemaAditiva situacao) {
+    private Locale localeDaSituacao(ContextoQuantidade situacao) {
         String codigo = situacao == null ? "pt-BR" : situacao.getCodigoIdioma();
         if (codigo == null || codigo.trim().length() == 0) {
             return new Locale("pt", "BR");

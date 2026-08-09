@@ -1,6 +1,5 @@
 package gerard.semantica.quantidade;
 
-import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -18,7 +17,7 @@ public final class ResolvedorPerfilQuantidadeSituacao {
             "(?:MOEDA|UNIDADE)\\s*[:=]\\s*(BRL|USD|EUR)",
             Pattern.CASE_INSENSITIVE);
 
-    public PerfilQuantidadeSituacao resolver(SituacaoProblemaAditiva situacao) {
+    public PerfilQuantidadeSituacao resolver(ContextoQuantidade situacao) {
         if (situacao == null) {
             return contagem("", false, "padrao_sem_situacao");
         }
@@ -70,7 +69,7 @@ public final class ResolvedorPerfilQuantidadeSituacao {
     }
 
     private String resolverMoeda(String metadados,
-            SituacaoProblemaAditiva situacao) {
+            ContextoQuantidade situacao) {
         Matcher moeda = META_MOEDA.matcher(metadados == null ? "" : metadados);
         if (moeda.find()) {
             return moeda.group(1).toUpperCase(Locale.ROOT);
