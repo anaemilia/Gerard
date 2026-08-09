@@ -1,0 +1,54 @@
+name: Regressao
+
+on:
+  pull_request:
+    branches:
+      - migracao-nomenclatura-relacao-estrutural
+  push:
+    branches:
+      - migracao-nomenclatura-relacao-estrutural
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regressao-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-e-testes:
+    name: Build e testes no Windows
+    runs-on: windows-2025
+    timeout-minutes: 20
+
+    steps:
+      - name: Obter codigo-fonte
+        uses: actions/checkout@v6
+
+      - name: Configurar Java 8
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Configurar Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Exibir ferramentas da linha de base
+        shell: pwsh
+        run: |
+          java -version
+          javac -version
+          ant -version
+          python --version
+
+      - name: Verificar build e contratos estruturais
+        shell: pwsh
+        run: python scripts\verificar_regressao_gerard.py
+
+      - name: Compilar e executar testes autocontidos
+        shell: pwsh
+        run: python scripts\verificar_linha_base_windows.py
