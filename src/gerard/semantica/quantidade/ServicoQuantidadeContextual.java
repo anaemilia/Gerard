@@ -59,6 +59,18 @@ public final class ServicoQuantidadeContextual {
         return Integer.toString(valor);
     }
 
+    /** Formata uma quantidade de medida, que não explicita sinal positivo. */
+    public String formatarMedidaParaDiagrama(int valor,
+            SituacaoProblemaAditiva situacao) {
+        return formatarInteiroLegado(valor, situacao, false);
+    }
+
+    /** Formata um número relativo, explicitando o sinal quando positivo. */
+    public String formatarNumeroRelativoParaDiagrama(int valor,
+            SituacaoProblemaAditiva situacao) {
+        return formatarInteiroLegado(valor, situacao, true);
+    }
+
     private Locale localeDaSituacao(SituacaoProblemaAditiva situacao) {
         String codigo = situacao == null ? "pt-BR" : situacao.getCodigoIdioma();
         if (codigo == null || codigo.trim().length() == 0) {

@@ -7735,7 +7735,9 @@ public class Main extends JFrame {
             if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
                 ElementoVergnaud numeroRelativo = elementosVergnaud.get(1);
                 if (ehElementoNumeroRelativo(numeroRelativo)) {
-                    String textoRelativo = formatarValorRelativoParaDiagrama(valorRelativo);
+                    String textoRelativo = servicoQuantidadeContextual
+                            .formatarNumeroRelativoParaDiagrama(
+                                    valorRelativo, situacaoProblemaAtual);
                     String base = scaffoldingNumeroRelativo.removerSinal(textoRelativo);
                     String sinal = obterSinalAtual(textoRelativo);
                     ItemTextoArrastavel item = encontrarItemSobreElemento(numeroRelativo);
@@ -7923,9 +7925,9 @@ public class Main extends JFrame {
                     definirValorNoElementoNumeroRelativo(elemento, valor, true);
                 } else {
                     definirValorNoElementoMedida(elemento,
-                            servicoQuantidadeContextual.formatarInteiroLegado(
-                                    Math.max(0, valor),
-                                    situacaoProblemaAtual, false));
+                            servicoQuantidadeContextual.formatarMedidaParaDiagrama(
+                                     Math.max(0, valor),
+                                     situacaoProblemaAtual));
                 }
             }
         }
@@ -7975,7 +7977,9 @@ public class Main extends JFrame {
                 return;
             }
             int valor = snapshot.valorOuZero(1);
-            String texto = formatarValorRelativoParaDiagrama(valor);
+            String texto = servicoQuantidadeContextual
+                    .formatarNumeroRelativoParaDiagrama(
+                            valor, situacaoProblemaAtual);
             registrarEscolhaGraficoInteiros(
                     encontrarItemSobreElemento(relacao), relacao,
                     scaffoldingNumeroRelativo.removerSinal(texto),
@@ -12352,7 +12356,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            String textoRelativo = formatarValorRelativoParaDiagrama(valorRelativo.intValue());
+            String textoRelativo = servicoQuantidadeContextual
+                    .formatarNumeroRelativoParaDiagrama(
+                            valorRelativo.intValue(), situacaoProblemaAtual);
             String base = scaffoldingNumeroRelativo.removerSinal(textoRelativo);
             String sinal = obterSinalAtual(textoRelativo);
             ItemTextoArrastavel item = encontrarItemSobreElemento(numeroRelativo);
@@ -12462,8 +12468,8 @@ public class Main extends JFrame {
                 if (novoFinal != null
                         && politicaValoresAditivos.quantidadeEhNaoNegativa(novoFinal)) {
                     String valorFormatado = servicoQuantidadeContextual
-                            .formatarInteiroLegado(novoFinal.intValue(),
-                                    situacaoProblemaAtual, false);
+                            .formatarMedidaParaDiagrama(novoFinal.intValue(),
+                                    situacaoProblemaAtual);
                     definirValorNoElementoMedida(estadoFinal, valorFormatado);
                     propagarTextoEntrePassosTransformacaoComposta(
                             estadoFinal, valorFormatado);
@@ -12475,8 +12481,8 @@ public class Main extends JFrame {
             if (novoFinal != null
                     && politicaValoresAditivos.quantidadeEhNaoNegativa(novoFinal)) {
                 String valorFormatado = servicoQuantidadeContextual
-                        .formatarInteiroLegado(novoFinal.intValue(),
-                                situacaoProblemaAtual, false);
+                        .formatarMedidaParaDiagrama(novoFinal.intValue(),
+                                situacaoProblemaAtual);
                 definirValorNoElementoMedida(estadoFinal, valorFormatado);
                 propagarTextoEntrePassosTransformacaoComposta(
                         estadoFinal, valorFormatado);
@@ -12517,7 +12523,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            String textoRelativo = formatarValorRelativoParaDiagrama(valorRelativo);
+            String textoRelativo = servicoQuantidadeContextual
+                    .formatarNumeroRelativoParaDiagrama(
+                            valorRelativo, situacaoProblemaAtual);
             ItemTextoArrastavel item = itemPreferencial != null ? itemPreferencial : encontrarItemSobreElemento(numeroRelativo);
 
             if (item != null) {
@@ -12632,11 +12640,6 @@ public class Main extends JFrame {
             } else {
                 elemento.textoEditavel = valor != null ? valor : "";
             }
-        }
-
-        private String formatarValorRelativoParaDiagrama(int valor) {
-            return servicoQuantidadeContextual.formatarInteiroLegado(
-                    valor, situacaoProblemaAtual, true);
         }
 
         private void atualizarGraficoInteirosDuranteMovimento(ItemTextoArrastavel item) {
@@ -13084,7 +13087,9 @@ public class Main extends JFrame {
 
         private void editarValorRelativoNoGraficoComparacao(CirculoVenn circulo) {
             int valorAtual = obterValorRelativoAssinadoComparacao();
-            String texto = solicitarTextoEditavel(formatarValorRelativoParaDiagrama(valorAtual));
+            String texto = solicitarTextoEditavel(servicoQuantidadeContextual
+                    .formatarNumeroRelativoParaDiagrama(
+                            valorAtual, situacaoProblemaAtual));
             if (texto == null) {
                 return;
             }
