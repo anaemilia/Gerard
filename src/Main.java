@@ -131,6 +131,7 @@ import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.pesquisador.tentativa.ItemExplicacaoModelagem;
 import gerard.pesquisador.tentativa.TelaArtefatoExplicativo;
 import gerard.ui.menu.ConfiguradorOpcaoComparacaoCategorias;
+import gerard.ui.vergnaud.SeletorIndicesEstadoCompartilhado;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -810,6 +811,8 @@ public class Main extends JFrame {
                 new SincronizadorElementosSemanticosTextoAditivo();
         final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
                 new CoordenadorSincronizacaoRepresentacoes();
+        final SeletorIndicesEstadoCompartilhado seletorIndicesEstadoCompartilhado =
+                new SeletorIndicesEstadoCompartilhado();
         int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
@@ -7767,28 +7770,21 @@ public class Main extends JFrame {
         }
 
         private void atualizarIndicesEstadoCompartilhado(int indiceAlteradoReal) {
-            if (usaDiagramasComposicaoTransformacaoMedidas()
-                    && elementosVergnaud != null && elementosVergnaud.size() >= 6) {
-                indicesElementosEstadoCompartilhado = new int[] {3, 4, 5};
-                return;
-            }
-            if (usaDiagramasEncadeadosTransformacaoComposta()
-                    && elementosVergnaud != null && elementosVergnaud.size() >= 3) {
-                int indiceBase = indiceAlteradoReal;
-                if (indiceBase < 0 && numeroRelativoGraficoInteiros != null) {
-                    indiceBase = elementosVergnaud.indexOf(numeroRelativoGraficoInteiros);
-                }
-                if (indiceBase < 0) {
-                    indiceBase = indicesElementosEstadoCompartilhado[0];
-                }
-                int inicio = Math.max(0, (indiceBase / 3) * 3);
-                if (inicio + 2 >= elementosVergnaud.size()) {
-                    inicio = 0;
-                }
-                indicesElementosEstadoCompartilhado = new int[] {inicio, inicio + 1, inicio + 2};
-                return;
-            }
-            indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
+            int quantidadeElementos = elementosVergnaud == null
+                    ? 0 : elementosVergnaud.size();
+            int indiceNumeroRelativo = elementosVergnaud == null
+                    || numeroRelativoGraficoInteiros == null
+                    ? -1 : elementosVergnaud.indexOf(numeroRelativoGraficoInteiros);
+            int indiceInicialAtual = indicesElementosEstadoCompartilhado == null
+                    || indicesElementosEstadoCompartilhado.length == 0
+                    ? 0 : indicesElementosEstadoCompartilhado[0];
+            indicesElementosEstadoCompartilhado = seletorIndicesEstadoCompartilhado.selecionar(
+                    usaDiagramasComposicaoTransformacaoMedidas(),
+                    usaDiagramasEncadeadosTransformacaoComposta(),
+                    quantidadeElementos,
+                    indiceAlteradoReal,
+                    indiceNumeroRelativo,
+                    indiceInicialAtual);
         }
 
         private int converterIndiceRealParaPapel(int indiceReal) {
