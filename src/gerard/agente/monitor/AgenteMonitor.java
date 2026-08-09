@@ -279,7 +279,7 @@ public final class AgenteMonitor {
      * domínio da base de conhecimento integrada (R-DOM-COMP-001,
      * R-DOM-TRANS-001, R-DOM-COMP-003 — ver regras_dominio.jsonl). Só cobre
      * composição/transformação/comparação simples: as categorias compostas
-     * (ex. COMPOSICAO_TRANSFORMACAO_MEDIDAS) não têm regra de domínio
+     * sem regra de domínio específica não produzem avaliação automática
      * correspondente na base ainda e devolvem lista vazia — não é erro, é o
      * escopo atual da base.
      */

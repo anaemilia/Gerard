@@ -13,7 +13,7 @@ public class FabricaRenderizadoresDiagramaAditivo {
         renderizadores.put(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, new RenderizadorTransformacaoMedidas());
         renderizadores.put(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, new RenderizadorComparacaoMedidas());
         renderizadores.put(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, new RenderizadorComposicaoTransformacoes());
-        renderizadores.put(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, new RenderizadorTransformacaoMedidas());
+        renderizadores.put(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, new RenderizadorTransformacaoMedidas());
         renderizadores.put(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, new RenderizadorTransformacaoRelacao());
         renderizadores.put(TipoSituacaoAditiva.COMPOSICAO_RELACOES, new RenderizadorComposicaoRelacoes());
     }

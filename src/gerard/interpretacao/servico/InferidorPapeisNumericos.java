@@ -29,17 +29,11 @@ public class InferidorPapeisNumericos {
             case TRANSFORMACAO_MEDIDAS:
                 inferirTransformacaoMedidas(texto, numeros, papeis);
                 break;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                inferirComposicaoTransformacaoMedidas(texto, numeros, papeis);
-                break;
             case COMPARACAO_MEDIDAS:
                 inferirComparacaoMedidas(texto, numeros, papeis);
                 break;
             case COMPOSICAO_TRANSFORMACOES:
                 inferirComposicaoTransformacoes(numeros, papeis);
-                break;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                inferirTransformacaoCompostaDoisPassos(texto, numeros, papeis);
                 break;
             case TRANSFORMACAO_RELACAO:
                 inferirTransformacaoRelacao(numeros, papeis);
@@ -107,26 +101,6 @@ public class InferidorPapeisNumericos {
         }
 
         if (temInterrogacaoTextual(texto) || numeros.size() < 3) {
-            adicionarDesconhecidoSeAusente(papeis, papelIncognita);
-        }
-    }
-
-    private void inferirComposicaoTransformacaoMedidas(String texto, List<NumeroEncontrado> numeros, List<PapelElementoInterpretado> papeis) {
-        String papelIncognita = papelIncognita(texto, CategoriaProblema.COMPOSICAO_TRANSFORMACAO_MEDIDAS, numeros, "papel.estadoFinal");
-
-        adicionarSeExiste(numeros, papeis, 0, "papel.parte1");
-        adicionarSeExiste(numeros, papeis, 1, "papel.parte2");
-        if (numeros.size() >= 3) {
-            adicionarSeExiste(numeros, papeis, 2, "papel.transformacao");
-        }
-        if (numeros.size() >= 4) {
-            adicionarSeExiste(numeros, papeis, 3, "papel.transformacao");
-        }
-        if (numeros.size() >= 5) {
-            adicionarSeExiste(numeros, papeis, 4, "papel.estadoFinal");
-        }
-
-        if (temInterrogacaoTextual(texto) || numeros.size() < 5) {
             adicionarDesconhecidoSeAusente(papeis, papelIncognita);
         }
     }
@@ -314,19 +288,6 @@ public class InferidorPapeisNumericos {
             adicionarSeExiste(numeros, papeis, 2, "papel.transformacaoFinal");
         } else {
             adicionarDesconhecidoSeAusente(papeis, "papel.transformacaoFinal");
-        }
-    }
-
-    private void inferirTransformacaoCompostaDoisPassos(String texto, List<NumeroEncontrado> numeros, List<PapelElementoInterpretado> papeis) {
-        adicionarSeExiste(numeros, papeis, 0, "papel.estadoInicial");
-        adicionarSeExiste(numeros, papeis, 1, "papel.transformacao1");
-        adicionarSeExiste(numeros, papeis, 2, "papel.transformacao2");
-        if (numeros.size() >= 4) {
-            adicionarSeExiste(numeros, papeis, 3, "papel.estadoFinal");
-        }
-
-        if (temInterrogacaoTextual(texto) || numeros.size() < 4) {
-            adicionarDesconhecidoSeAusente(papeis, papelIncognita(texto, CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, numeros, "papel.estadoFinal"));
         }
     }
 

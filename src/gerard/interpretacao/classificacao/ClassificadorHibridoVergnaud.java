@@ -91,7 +91,7 @@ public class ClassificadorHibridoVergnaud implements ClassificadorCategoriaVergn
         }
 
         if (ehComposicaoSeguidaDeTransformacao(texto, r)) {
-            r.categoria = TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS;
+            r.categoria = TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES;
             r.confianca = 0.92;
             return r;
         }
@@ -103,7 +103,7 @@ public class ClassificadorHibridoVergnaud implements ClassificadorCategoriaVergn
         }
 
         if (ehTransformacaoCompostaDoisPassos(texto, r)) {
-            r.categoria = TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
+            r.categoria = TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES;
             r.confianca = 0.94;
             return r;
         }

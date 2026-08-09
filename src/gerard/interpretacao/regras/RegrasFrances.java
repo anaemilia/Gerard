@@ -38,12 +38,12 @@ public class RegrasFrances extends RegrasBase {
         regra("elle reste", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 5);
         regra("est reste", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 4);
 
-        regra("hier", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("aujourd'hui", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("ensuite", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("apres", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("premiere etape", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("deuxieme etape", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
+        regra("hier", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("aujourd'hui", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("ensuite", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("apres", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("premiere etape", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("deuxieme etape", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
 
         regra("transformation totale", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 6);
         regra("premier tour", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);

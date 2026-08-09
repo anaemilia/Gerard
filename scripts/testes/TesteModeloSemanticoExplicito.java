@@ -5,7 +5,6 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
 import gerard.idioma.IdiomaInterface;
 import gerard.semantica.categoria.CatalogoEsquemasCategoriasAditivas;
-import gerard.semantica.categoria.CategoriaComposta;
 import gerard.semantica.categoria.EsquemaCategoriaAditiva;
 import gerard.semantica.contexto.ContextoSituacao;
 import gerard.semantica.contexto.ReferenteContextual;
@@ -35,7 +34,7 @@ public final class TesteModeloSemanticoExplicito {
         testarUniversosNumericos();
         testarPapeisEDominios();
         testarContextoPersonagensEPistas();
-        testarCategoriasComoComposite();
+        testarCategoriasCanonicas();
         testarEstadoCompartilhadoComObjetosNumericos();
         testarAdaptadorDaSituacaoAtual();
         System.out.println("Teste do modelo semântico explícito aprovado: "
@@ -127,7 +126,7 @@ public final class TesteModeloSemanticoExplicito {
                 "palavras-pista devem ser evidências localizadas no texto");
     }
 
-    private static void testarCategoriasComoComposite() {
+    private static void testarCategoriasCanonicas() {
         CatalogoEsquemasCategoriasAditivas catalogo =
                 new CatalogoEsquemasCategoriasAditivas();
         EsquemaCategoriaAditiva transformacao = catalogo.obter(
@@ -140,11 +139,11 @@ public final class TesteModeloSemanticoExplicito {
                 "esquema de transformação deve ser N0 + Z = N0");
 
         EsquemaCategoriaAditiva composta = catalogo.obter(
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS);
-        confirmar(composta.getRaiz() instanceof CategoriaComposta,
-                "transformação de dois passos deve usar Composite");
-        confirmar(composta.obterPapeis().size() == 6,
-                "composite deve manter os papéis dos dois passos");
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
+        confirmar(TipoSituacaoAditiva.values().length == 6,
+                "o domínio deve expor exatamente as seis categorias canônicas");
+        confirmar(composta.obterPapeis().size() == 3,
+                "composição de transformações deve manter seus três papéis canônicos");
     }
 
     private static void testarEstadoCompartilhadoComObjetosNumericos() {

@@ -89,14 +89,14 @@ public final class TesteUnidadeAnaliseABCD {
 
             // ---- Unidade 3: tela aberta, resposta PARCIAL -----------------
             dispararSelecaoCategoria(monitor, zdp, conector, auditService, usuario,
-                    TipoSituacaoAditiva.COMPARACAO_MEDIDAS, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS);
-            List<ItemExplicacaoModelagem> itensU3 = itens("COMPOSICAO_TRANSFORMACAO_MEDIDAS");
-            servico.registrarTelaAberta(usuario, "COMPOSICAO_TRANSFORMACAO_MEDIDAS", itensU3);
+                    TipoSituacaoAditiva.COMPARACAO_MEDIDAS, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
+            List<ItemExplicacaoModelagem> itensU3 = itens("COMPOSICAO_TRANSFORMACOES");
+            servico.registrarTelaAberta(usuario, "COMPOSICAO_TRANSFORMACOES", itensU3);
             Map<String, AnalysisUnitAuditService.RespostaColetada> respostasParciais =
                     new LinkedHashMap<String, AnalysisUnitAuditService.RespostaColetada>();
             respostasParciais.put("papel.categoria",
                     new AnalysisUnitAuditService.RespostaColetada("FACIL", "Motivo declarado pelo usuario."));
-            servico.registrarTelaFechada(usuario, "COMPOSICAO_TRANSFORMACAO_MEDIDAS", itensU3, true, respostasParciais, "");
+            servico.registrarTelaFechada(usuario, "COMPOSICAO_TRANSFORMACOES", itensU3, true, respostasParciais, "");
 
             // ---- Unidade 4: tela aberta, resposta COMPLETA ----------------
             dispararSelecaoCategoria(monitor, zdp, conector, auditService, usuario,
@@ -279,7 +279,7 @@ public final class TesteUnidadeAnaliseABCD {
 
     @SuppressWarnings("unchecked")
     private static void teste5_respostaParcialGeraPartiallyAnswered(List<Map<String, Object>> unidades) {
-        Map<String, Object> u = unidadePorCategoria(unidades, "COMPOSICAO_TRANSFORMACAO_MEDIDAS");
+        Map<String, Object> u = unidadePorCategoria(unidades, "COMPOSICAO_TRANSFORMACOES");
         Map<String, Object> d = u == null ? null : (Map<String, Object>) u.get("D_user_explanations");
         boolean ok = d != null && "partially_answered".equals(d.get("status"));
         relatar(5, "resposta parcial (so o elemento, sem a explicacao geral) gera partially_answered", ok);

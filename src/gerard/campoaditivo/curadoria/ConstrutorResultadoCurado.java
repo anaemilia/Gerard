@@ -255,10 +255,8 @@ public class ConstrutorResultadoCurado {
         switch (tipo) {
             case COMPOSICAO_MEDIDAS: return CategoriaProblema.COMPOSICAO_MEDIDAS;
             case TRANSFORMACAO_MEDIDAS: return CategoriaProblema.TRANSFORMACAO_MEDIDAS;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS: return CategoriaProblema.COMPOSICAO_TRANSFORMACAO_MEDIDAS;
             case COMPARACAO_MEDIDAS: return CategoriaProblema.COMPARACAO_MEDIDAS;
             case COMPOSICAO_TRANSFORMACOES: return CategoriaProblema.COMPOSICAO_TRANSFORMACOES;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS: return CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
             case TRANSFORMACAO_RELACAO: return CategoriaProblema.TRANSFORMACAO_RELACAO;
             case COMPOSICAO_RELACOES: return CategoriaProblema.COMPOSICAO_RELACOES;
             default: return CategoriaProblema.INDEFINIDA;

@@ -70,8 +70,8 @@ public class TesteConsistenciaIncognitaCurada {
                 s(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                         "", "", "", "2", "3", "?", "", "", "", ""),
                 "papel.todo", "todo");
-        verificar(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
-                s(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
+        verificar(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                s(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                         "", "?", "4", "2", "3", "5", "", "", "", ""),
                 "papel.transformacao", "transformação");
         verificar(TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
@@ -82,8 +82,8 @@ public class TesteConsistenciaIncognitaCurada {
                 s(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                         "", "", "", "-2", "+5", "?", "", "", "", ""),
                 "papel.transformacaoFinal", "transformacao_resultante");
-        verificar(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
-                s(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+        verificar(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                s(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                         "20", "", "", "-2", "-5", "?", "", "", "", ""),
                 "papel.estadoFinal", "estado_final");
         verificar(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,

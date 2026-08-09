@@ -642,14 +642,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
         final JTextField campoObservacoes = campoTexto(linha.observacoes);
         // Trechos de texto natural associados a cada papel semântico da
         // categoria (nesta ordem), usados para construir o enunciado a partir
-        // do diagrama preenchido. Toda categoria simples tem exatamente três
-        // papéis (CategoriaSimples em CatalogoEsquemasCategoriasAditivas); as
-        // duas categorias compostas (COMPOSICAO_TRANSFORMACAO_MEDIDAS e
-        // TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) são duas categorias simples
-        // encadeadas, por isso reaproveitam o padrão duas vezes (seis campos).
-        final boolean categoriaComposta =
-                tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS
-                || tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
+        // do diagrama preenchido. As seis categorias canônicas possuem três
+        // papéis em CatalogoEsquemasCategoriasAditivas.
+        final boolean categoriaComposta = false;
         final JTextField campoFragmentoTexto1 = campoTexto(linha.fragmentoTexto1);
         final JTextField campoFragmentoTexto2 = campoTexto(linha.fragmentoTexto2);
         final JTextField campoFragmentoTexto3 = campoTexto(linha.fragmentoTexto3);
@@ -689,13 +684,6 @@ public class TelaCuradoriaSituacoes extends JPanel {
             y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
             y = adicionarCampo(formulario, gbc, y, "estado_final", campoEstadoFinal);
-        } else if (tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS) {
-            y = adicionarCampo(formulario, gbc, y, "parte_1", campoQuantidade1);
-            y = adicionarCampo(formulario, gbc, y, "parte_2", campoQuantidade2);
-            y = adicionarCampo(formulario, gbc, y, "todo", campoResultado);
-            y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);
-            y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
-            y = adicionarCampo(formulario, gbc, y, "estado_final", campoEstadoFinal);
         } else if (tipoSemantico == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             y = adicionarCampo(formulario, gbc, y, "referendo", campoReferendo);
             y = adicionarCampo(formulario, gbc, y, "valor_relativo", painelSinalValorRelativo);
@@ -704,11 +692,6 @@ public class TelaCuradoriaSituacoes extends JPanel {
             y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);
             y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);
             y = adicionarCampo(formulario, gbc, y, "transformacao_resultante", painelSinalTransformacaoResultante);
-        } else if (tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) {
-            y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);
-            y = adicionarCampo(formulario, gbc, y, "transformacao_1", campoQuantidade1);
-            y = adicionarCampo(formulario, gbc, y, "transformacao_2", campoQuantidade2);
-            y = adicionarCampo(formulario, gbc, y, "estado_final", campoResultado);
         } else if (tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             y = adicionarCampo(formulario, gbc, y, "relacao_inicial", painelSinalRelacaoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
@@ -1773,14 +1756,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
             opcoes = new String[] { "", "parte_1", "parte_2", "todo" };
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
             opcoes = new String[] { "", "estado_inicial", "transformação", "estado_final" };
-        } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS) {
-            opcoes = new String[] { "", "parte_1", "parte_2", "todo", "estado_inicial", "transformação", "estado_final" };
         } else if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             opcoes = new String[] { "", "referendo", "valor_relativo", "referido" };
         } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             opcoes = new String[] { "", "transformacao_1", "transformacao_2", "transformacao_resultante" };
-        } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) {
-            opcoes = new String[] { "", "estado_inicial", "transformacao_1", "transformacao_2", "estado_final" };
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             opcoes = new String[] { "", "relacao_inicial", "transformação", "relacao_final" };
         } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
@@ -1926,25 +1905,20 @@ public class TelaCuradoriaSituacoes extends JPanel {
         if (linha == null || linha.tipo == null) return;
         TipoSituacaoAditiva t = linha.tipo;
         if (t != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS
                 && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             linha.transformacao = "";
             linha.sinalTransformacao = "";
         }
         if (t != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                && t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS) {
-            linha.estadoInicial = t == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS ? linha.estadoInicial : "";
+                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            linha.estadoInicial = "";
         }
         if (t != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS
                 && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             linha.estadoFinal = "";
         }
         boolean usaQuantidades = t == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                || t == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS
                 || t == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
-                || t == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS
                 || t == TipoSituacaoAditiva.COMPOSICAO_RELACOES;
         if (!usaQuantidades) {
             linha.quantidade1 = "";
@@ -2378,12 +2352,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     return new Color(37, 99, 235);
                 case COMPARACAO_MEDIDAS:
                     return new Color(147, 51, 234);
-                case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                    return new Color(14, 116, 144);
                 case COMPOSICAO_TRANSFORMACOES:
                     return new Color(194, 65, 12);
-                case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                    return new Color(202, 138, 4);
                 case TRANSFORMACAO_RELACAO:
                     return new Color(190, 18, 60);
                 case COMPOSICAO_RELACOES:

@@ -11,7 +11,7 @@ public class TesteFeedbackMultissensorialPosicionamento {
         int categorias = 0;
 
         for (TipoSituacaoAditiva tipo : TipoSituacaoAditiva.values()) {
-            boolean encadeada = tipo == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
+            boolean encadeada = false;
             int quantidade = encadeada ? 2 : 1;
             int max = encadeada ? 6 : quantidadeElementos(tipo);
             if (max <= 0) continue;
@@ -40,7 +40,6 @@ public class TesteFeedbackMultissensorialPosicionamento {
 
     private static int quantidadeElementos(TipoSituacaoAditiva tipo) {
         switch (tipo) {
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS: return 6;
             case COMPOSICAO_MEDIDAS:
             case TRANSFORMACAO_MEDIDAS:
             case COMPARACAO_MEDIDAS:

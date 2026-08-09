@@ -19,9 +19,8 @@ package gerard.agente.modelador;
  * impede o pesquisador de escolher outro item ou "Inserir nova forma
  * simbólica". Cobre só as categorias cujo catálogo tem fórmulas com
  * vocabulário específico e inequívoco (Composição/Transformação/Comparação
- * de Medidas e o híbrido Composição+Transformação): para as outras quatro
- * categorias (Composição de Transformações, Transformação Composta em Dois
- * Passos, Transformação de uma Relação, Composição de Relações) devolve
+ * de Medidas): para as outras três categorias aditivas (Composição de
+ * Transformações, Transformação de uma Relação, Composição de Relações) devolve
  * null de propósito — o catálogo atual não tem fórmula com vocabulário
  * próprio para elas, e forçar uma analogia com os códigos de "medidas"
  * seria inventar uma correspondência que não está clara.
@@ -44,20 +43,13 @@ public final class SugestorInvarianteOperatorio {
                 if ("papel.transformacao".equals(papel)) return "TRANS_DIFERENCA";
                 if ("papel.estadoInicial".equals(papel)) return "TRANS_INVERSA_ADITIVA";
                 return null;
-            case "COMPOSICAO_TRANSFORMACAO_MEDIDAS":
-                if ("papel.todo".equals(papel) || "papel.parte1".equals(papel) || "papel.parte2".equals(papel)) {
-                    return "COMP_CARDINAL_TODO";
-                }
-                if ("papel.transformacao".equals(papel)) return "TRANS_DIFERENCA";
-                if ("papel.estadoFinal".equals(papel)) return "TRANS_ADITIVA";
-                return null;
             case "COMPARACAO_MEDIDAS":
                 if ("papel.referendo".equals(papel) || "papel.referido".equals(papel)) return "COMPAR_ARTIGO_01";
                 if ("papel.diferenca".equals(papel)) return "COMPAR_RELACAO";
                 return null;
             default:
-                // COMPOSICAO_TRANSFORMACOES, TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
-                // TRANSFORMACAO_RELACAO, COMPOSICAO_RELACOES: sem fórmula própria
+                // COMPOSICAO_TRANSFORMACOES, TRANSFORMACAO_RELACAO e
+                // COMPOSICAO_RELACOES: sem fórmula própria
                 // no catálogo hoje — sem sugestão, de propósito.
                 return null;
         }

@@ -35,19 +35,6 @@ public final class CatalogoEsquemasCategoriasAditivas {
         registrar(TipoSituacaoAditiva.COMPOSICAO_RELACOES, "Composição de relações", compRelacoes,
                 lista("papel.relacao1", "papel.relacao2", "papel.relacaoFinal"));
 
-        CategoriaComposta composicaoTransformacao = new CategoriaComposta(
-                Arrays.<ComponenteCategoria>asList(composicao, transformacao));
-        registrar(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
-                "Composição seguida de transformação", composicaoTransformacao,
-                lista("papel.estadoInicial", "papel.transformacao", "papel.estadoFinal"));
-
-        CategoriaSimples passo1 = simples("papel.estadoInicial", "papel.transformacao1", "papel.estadoIntermediario");
-        CategoriaSimples passo2 = simples("papel.estadoIntermediario", "papel.transformacao2", "papel.estadoFinal");
-        CategoriaComposta doisPassos = new CategoriaComposta(
-                Arrays.<ComponenteCategoria>asList(passo1, passo2));
-        registrar(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
-                "Transformação composta em dois passos", doisPassos,
-                lista("papel.estadoInicial", "papel.transformacao1", "papel.estadoIntermediario"));
     }
 
     public EsquemaCategoriaAditiva obter(TipoSituacaoAditiva tipo) {

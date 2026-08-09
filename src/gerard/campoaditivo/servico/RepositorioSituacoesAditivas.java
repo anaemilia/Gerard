@@ -444,13 +444,13 @@ public class RepositorioSituacoesAditivas {
                 "Lucas tem 12 figurinhas de Pokémon e 25 de Digimon. Quantas figurinhas ele tem ao todo?");
         adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                 "Ricardo saiu para jogar bola de gude. Ao sair de casa ele possuía 2 bolas. Ao voltar, ele tinha 6 bolas. O que aconteceu no jogo?");
-        adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
+        adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 "Vovó possui 2 rosas brancas e 3 amarelas. Deu 1 rosa branca e 1 rosa amarela para sua netinha. Com quantas rosas Vovó ficou?");
         adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
                 "Glaudenice tem R$ 14,00 a menos que Nádia. Nádia tem R$ 27,00. Quantos reais Glaudenice tem?");
         adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 "Em um jogo, Paulo ganhou 8 pontos na primeira rodada e perdeu 3 pontos na segunda. Qual foi a transformação total em sua pontuação?");
-        adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+        adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 "Geisa tinha uma caixa com 25 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?");
         adicionar(IdiomaInterface.PORTUGUES, TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 "Ana tem 5 figurinhas a mais que Bia. Depois Ana ganhou mais 4 figurinhas. Quantas figurinhas a mais Ana passou a ter que Bia?");

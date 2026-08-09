@@ -47,7 +47,7 @@ public class TesteSinalObrigatorioCuradoria {
         ok(!politica.exigeEscolha(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 PapelSinalCuradoria.TRANSFORMACAO_RESULTANTE),
                 "A exigência nova deve se limitar aos metadados de sinal dedicados");
-        ok(!politica.exigeEscolha(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+        ok(!politica.exigeEscolha(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 PapelSinalCuradoria.TRANSFORMACAO_1),
                 "Transformações embutidas no valor permanecem no formato legado");
         ok(!politica.exigeEscolha(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,

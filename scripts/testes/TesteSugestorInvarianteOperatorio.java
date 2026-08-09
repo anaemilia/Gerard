@@ -28,15 +28,8 @@ public final class TesteSugestorInvarianteOperatorio {
         confirmar("COMPAR_RELACAO".equals(sugestor.sugerirCodigo("COMPARACAO_MEDIDAS", "papel.diferenca")),
                 "Comparação de Medidas, incógnita = diferença");
 
-        confirmar("COMP_CARDINAL_TODO".equals(sugestor.sugerirCodigo("COMPOSICAO_TRANSFORMACAO_MEDIDAS", "papel.todo")),
-                "híbrido Composição+Transformação, incógnita = todo");
-        confirmar("TRANS_ADITIVA".equals(sugestor.sugerirCodigo("COMPOSICAO_TRANSFORMACAO_MEDIDAS", "papel.estadoFinal")),
-                "híbrido Composição+Transformação, incógnita = estado final");
-
         confirmar(sugestor.sugerirCodigo("COMPOSICAO_TRANSFORMACOES", "papel.transformacaoFinal") == null,
                 "Composição de Transformações não tem fórmula própria — não deve sugerir");
-        confirmar(sugestor.sugerirCodigo("TRANSFORMACAO_COMPOSTA_DOIS_PASSOS", "papel.estadoFinal") == null,
-                "Transformação Composta em Dois Passos não tem fórmula própria — não deve sugerir");
         confirmar(sugestor.sugerirCodigo("TRANSFORMACAO_RELACAO", "papel.relacaoFinal") == null,
                 "Transformação de uma Relação não tem fórmula própria — não deve sugerir");
         confirmar(sugestor.sugerirCodigo("COMPOSICAO_RELACOES", "papel.relacaoFinal") == null,

@@ -29,14 +29,10 @@ public class InferidorIncognitaLinguistica {
                 return inferirComposicaoMedidas(texto, pergunta, numeros);
             case TRANSFORMACAO_MEDIDAS:
                 return inferirTransformacaoMedidas(texto, pergunta, numeros);
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                return inferirComposicaoTransformacaoMedidas(texto, pergunta, numeros);
             case COMPARACAO_MEDIDAS:
                 return inferirComparacaoMedidas(texto, pergunta, numeros);
             case COMPOSICAO_TRANSFORMACOES:
                 return inferirComposicaoTransformacoes(texto, pergunta, numeros);
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                return inferirTransformacaoCompostaDoisPassos(texto, pergunta, numeros);
             case TRANSFORMACAO_RELACAO:
                 return inferirTransformacaoRelacao(texto, pergunta, numeros);
             case COMPOSICAO_RELACOES:
@@ -92,21 +88,6 @@ public class InferidorIncognitaLinguistica {
         return resultado("papel.estadoFinal", "transformacao: padrao geral");
     }
 
-    private ResultadoIncognitaLinguistica inferirComposicaoTransformacaoMedidas(String texto, String pergunta, List<NumeroEncontrado> numeros) {
-        String base = pergunta.length() > 0 ? pergunta : texto;
-
-        if (expressaoDeParteFaltante(base)) {
-            return resultado("papel.parte2", "composicao-transformacao: parte inicial faltante");
-        }
-        if (contemAlgum(base, "ao todo", "no total", "juntos", "juntas", "total inicial")) {
-            return resultado("papel.todo", "composicao-transformacao: total inicial");
-        }
-        if (contemAlgum(base, "deu", "perdeu", "ganhou", "recebeu", "colocou", "retirou", "tirou", "mudanca", "mudança")) {
-            return resultado("papel.transformacao", "composicao-transformacao: transformacao");
-        }
-        return resultado("papel.estadoFinal", "composicao-transformacao: estado final");
-    }
-
     private ResultadoIncognitaLinguistica inferirComparacaoMedidas(String texto, String pergunta, List<NumeroEncontrado> numeros) {
         String base = pergunta.length() > 0 ? pergunta : texto;
 
@@ -132,27 +113,6 @@ public class InferidorIncognitaLinguistica {
             return resultado("papel.transformacao2", "composicao de transformacoes: segunda transformacao");
         }
         return resultado("papel.transformacaoFinal", "composicao de transformacoes: transformacao final");
-    }
-
-    private ResultadoIncognitaLinguistica inferirTransformacaoCompostaDoisPassos(String texto, String pergunta, List<NumeroEncontrado> numeros) {
-        String base = pergunta.length() > 0 ? pergunta : texto;
-
-        if (contemAlgum(base, "o que aconteceu", "que aconteceu", "qual foi a transformacao", "qual foi a transformação", "mudanca", "mudança")) {
-            return resultado("papel.transformacaoFinal", "transformacao composta: pergunta pela transformacao total");
-        }
-        if (contemAlgum(base, "primeira", "primeiro", "ontem", "passo 1", "etapa 1")) {
-            return resultado("papel.transformacao1", "transformacao composta: primeira transformacao");
-        }
-        if (contemAlgum(base, "segunda", "segundo", "hoje", "passo 2", "etapa 2")) {
-            return resultado("papel.transformacao2", "transformacao composta: segunda transformacao");
-        }
-        if (contemAlgum(base, "antes", "inicial", "inicio", "início", "comecou", "começou")) {
-            return resultado("papel.estadoInicial", "transformacao composta: estado inicial");
-        }
-        if (contemAlgum(base, "ainda", "agora", "ficou", "restou", "restaram", "sobrou", "sobraram", "tem agora", "ao final", "final")) {
-            return resultado("papel.estadoFinal", "transformacao composta: estado final");
-        }
-        return resultado("papel.estadoFinal", "transformacao composta: padrao geral");
     }
 
     private ResultadoIncognitaLinguistica inferirTransformacaoRelacao(String texto, String pergunta, List<NumeroEncontrado> numeros) {

@@ -1538,14 +1538,8 @@ public class Main extends JFrame {
          * duas setas, "tr" (a transformação composta) perto do arco,
          * exatamente como desenhado aqui.
          *
-         * ⚠️ Correção de categorização (2026-07-26): esta figura foi
-         * originalmente associada por engano a
-         * `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` — cuja renderização real
-         * (`criarCenaTransformacaoComposta`) empilha os passos
-         * verticalmente, sem nenhum arco. A usuária confirmou que a figura
-         * era para `COMPOSICAO_TRANSFORMACOES`, que já tem exatamente esta
-         * estrutura de arco. `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` continua
-         * sem atalho — nenhuma imagem foi enviada para ela.
+         * A usuária confirmou que esta figura pertence à categoria canônica
+         * `COMPOSICAO_TRANSFORMACOES`, que tem exatamente esta estrutura de arco.
          *
          * Categoria já existe (`TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES`,
          * com 20 situações curadas e renderizador próprio), mas o grupo
@@ -3365,18 +3359,12 @@ public class Main extends JFrame {
             menu.add(menuMedidas);
 
             // Grupo "Transformações compostas": misto de propósito.
-            // COMPOSICAO_TRANSFORMACOES já é aberto pelos ícones de atalho
-            // (criarPainelAtalhoCategoria, confirmado com renderizador
-            // real), então também abre aqui — consistência entre os dois
-            // caminhos de acesso, decisão da usuária em 2026-07-28. As
-            // outras duas seguem "Em construção": nenhum ícone de atalho
-            // as abre, sem confirmação visual contra o renderizador real.
+            // A composição de transformações é a única categoria deste grupo
+            // no modelo canônico de seis categorias.
             JMenu menuTransformacoes = new JMenu(localizacao.texto("ui.menu.category.transformations"));
             estilizarItemMenuPopup(menuTransformacoes);
             estilizarMenuPopup(menuTransformacoes.getPopupMenu());
-            menuTransformacoes.add(criarItemCategoriaEmConstrucao(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS));
             menuTransformacoes.add(criarItemCategoria(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES));
-            menuTransformacoes.add(criarItemCategoriaEmConstrucao(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS));
             menu.add(menuTransformacoes);
 
             // Grupo "Relações": os dois itens já são abertos pelos ícones de
@@ -3473,9 +3461,7 @@ public class Main extends JFrame {
          * 2026-08-07). Os dois botões de ícone do cabeçalho
          * (botaoFerramentaSortearMedidas/Relacoes, divididos em 2026-08-07
          * a pedido da usuária) usam as listas restritas acima, não esta.
-         * COMPOSICAO_TRANSFORMACAO_MEDIDAS e TRANSFORMACAO_COMPOSTA_DOIS_PASSOS
-         * continuam de fora por serem "Em construção" em todo lugar —
-         * nenhum caminho de UI as alcança.
+         * O domínio possui exatamente as seis categorias destas duas listas.
          */
         private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE =
                 concatenarTipos(CATEGORIAS_SORTEIO_MEDIDAS, CATEGORIAS_SORTEIO_RELACOES);
@@ -4880,14 +4866,10 @@ public class Main extends JFrame {
                     return CategoriaProblema.COMPOSICAO_MEDIDAS;
                 case TRANSFORMACAO_MEDIDAS:
                     return CategoriaProblema.TRANSFORMACAO_MEDIDAS;
-                case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                    return CategoriaProblema.COMPOSICAO_TRANSFORMACAO_MEDIDAS;
                 case COMPARACAO_MEDIDAS:
                     return CategoriaProblema.COMPARACAO_MEDIDAS;
                 case COMPOSICAO_TRANSFORMACOES:
                     return CategoriaProblema.COMPOSICAO_TRANSFORMACOES;
-                case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                    return CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
                 case TRANSFORMACAO_RELACAO:
                     return CategoriaProblema.TRANSFORMACAO_RELACAO;
                 case COMPOSICAO_RELACOES:
@@ -5020,16 +5002,19 @@ public class Main extends JFrame {
             return mapa.get(normalizada);
         }
 
+        /** Categoria removida do modelo canônico; mantido durante a migração dos renderizadores. */
         private boolean usaDiagramasEncadeadosTransformacaoComposta() {
-            return tipoSituacaoSelecionada == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS;
+            return false;
         }
 
+        /** Categoria removida do modelo canônico; mantido durante a migração dos renderizadores. */
         private boolean usaDiagramasComposicaoTransformacaoMedidas() {
-            return tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS;
+            return false;
         }
 
         private boolean usaCenaVergnaudComposta() {
-            return usaDiagramasEncadeadosTransformacaoComposta() || usaDiagramasComposicaoTransformacaoMedidas();
+            return usaDiagramasEncadeadosTransformacaoComposta()
+                    || usaDiagramasComposicaoTransformacaoMedidas();
         }
 
         private int[] extrairTodosNumerosDoTexto() {
@@ -10002,30 +9987,6 @@ public class Main extends JFrame {
         private Integer obterValorCuradoPorIndiceEChave(int indiceReal, String chave) {
             if (situacaoProblemaAtual == null) {
                 return null;
-            }
-
-            if (tipoSituacaoSelecionada == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) {
-                Integer inicial = converterTextoParaInteiro(situacaoProblemaAtual.getEstadoInicial());
-                Integer t1 = converterValorRelativoCurado(
-                        situacaoProblemaAtual.getQuantidade1(), "positivo");
-                Integer t2 = converterValorRelativoCurado(
-                        situacaoProblemaAtual.getQuantidade2(), "positivo");
-                Integer finalCurado = converterTextoParaInteiro(
-                        primeiroNaoVazio(situacaoProblemaAtual.getResultado(),
-                                situacaoProblemaAtual.getEstadoFinal()));
-                if (indiceReal == 0) return inicial;
-                if (indiceReal == 1) return t1;
-                if (indiceReal == 2 || indiceReal == 3) {
-                    if (inicial != null && t1 != null) {
-                        return Integer.valueOf(inicial.intValue() + t1.intValue());
-                    }
-                    if (finalCurado != null && t2 != null) {
-                        return Integer.valueOf(finalCurado.intValue() - t2.intValue());
-                    }
-                    return null;
-                }
-                if (indiceReal == 4) return t2;
-                if (indiceReal == 5) return finalCurado;
             }
 
             SemanticaCuradaSituacao.PapelCurado papel = SemanticaCuradaSituacao.buscar(

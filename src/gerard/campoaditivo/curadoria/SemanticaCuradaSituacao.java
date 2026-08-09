@@ -64,12 +64,6 @@ public final class SemanticaCuradaSituacao {
             adicionar(papeis, loc, "papel.estadoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao", aplicarSinal(situacao.getTransformacao(), situacao.getSinalTransformacao()), "", desconhecido);
             adicionar(papeis, loc, "papel.estadoFinal", situacao.getEstadoFinal(), situacao.getPersonagem2(), desconhecido);
-        } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS) {
-            adicionar(papeis, loc, "papel.parte1", situacao.getQuantidade1(), situacao.getPersonagem1(), desconhecido);
-            adicionar(papeis, loc, "papel.parte2", situacao.getQuantidade2(), situacao.getPersonagem2(), desconhecido);
-            adicionar(papeis, loc, "papel.todo", situacao.getResultado(), situacao.getPersonagem3(), desconhecido);
-            adicionar(papeis, loc, "papel.transformacao", aplicarSinal(situacao.getTransformacao(), situacao.getSinalTransformacao()), "", desconhecido);
-            adicionar(papeis, loc, "papel.estadoFinal", situacao.getEstadoFinal(), "", desconhecido);
         } else if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             adicionar(papeis, loc, "papel.referido", primeiroNaoVazio(situacao.getReferido(), situacao.getQuantidade2()), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.diferenca", primeiroNaoVazio(aplicarSinal(situacao.getValorRelativo(), situacao.getSinalValorRelativo()), situacao.getResultado()), "", desconhecido);
@@ -78,11 +72,6 @@ public final class SemanticaCuradaSituacao {
             adicionar(papeis, loc, "papel.transformacao1", situacao.getQuantidade1(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao2", situacao.getQuantidade2(), situacao.getPersonagem2(), desconhecido);
             adicionar(papeis, loc, "papel.transformacaoFinal", situacao.getResultado(), situacao.getPersonagem3(), desconhecido);
-        } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) {
-            adicionar(papeis, loc, "papel.estadoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
-            adicionar(papeis, loc, "papel.transformacao1", situacao.getQuantidade1(), "", desconhecido);
-            adicionar(papeis, loc, "papel.transformacao2", situacao.getQuantidade2(), "", desconhecido);
-            adicionar(papeis, loc, "papel.estadoFinal", situacao.getResultado(), situacao.getPersonagem2(), desconhecido);
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             adicionar(papeis, loc, "papel.relacaoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao", aplicarSinal(situacao.getTransformacao(), situacao.getSinalTransformacao()), "", desconhecido);
@@ -128,7 +117,7 @@ public final class SemanticaCuradaSituacao {
         String rotulo3 = base.getRotulo3();
         TipoSituacaoAditiva tipo = situacao.getTipo();
 
-        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             rotulo1 = loc.texto("papel.estadoInicial");
             rotulo2 = loc.texto("papel.transformacao1");
             rotulo3 = loc.texto("papel.estadoIntermediario");

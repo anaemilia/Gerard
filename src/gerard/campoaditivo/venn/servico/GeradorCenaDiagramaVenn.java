@@ -39,13 +39,6 @@ public class GeradorCenaDiagramaVenn {
             case TRANSFORMACAO_MEDIDAS:
                 return layoutProcessoTransformacao.criarCena(
                         area, definicao, valores);
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                nos.add(new NoDiagramaVenn(ax + 28, ay + h/2 - 60, 110, 110, definicao.getRotulo1(), valor(valores, 0), true));
-                nos.add(new NoDiagramaVenn(ax + w/2 - 55, ay + h/2 - 55, 110, 110, definicao.getRotulo2(), valor(valores, 1), false));
-                nos.add(new NoDiagramaVenn(ax + w - 148, ay + h/2 - 60, 120, 120, definicao.getRotulo3(), valor(valores, 2), true));
-                conectores.add(seta(ax + 140, ay + h/2, ax + w/2 - 65, ay + h/2));
-                conectores.add(seta(ax + w/2 + 65, ay + h/2, ax + w - 160, ay + h/2));
-                break;
             case COMPOSICAO_MEDIDAS:
                 // Diagrama de composição de coleções:
                 // duas coleções à esquerda compõem a coleção total à direita.
