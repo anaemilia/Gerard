@@ -136,6 +136,7 @@ import gerard.ui.menu.ConfiguradorOpcaoComparacaoCategorias;
 import gerard.ui.vergnaud.SeletorIndicesEstadoCompartilhado;
 import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
 import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
+import gerard.ui.vergnaud.ApresentadorItemVergnaud;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -823,6 +824,8 @@ public class Main extends JFrame {
                 new SeletorIndicesEstadoCompartilhado();
         final PlanejadorAplicacaoEstadoVergnaud planejadorAplicacaoEstadoVergnaud =
                 new PlanejadorAplicacaoEstadoVergnaud();
+        final ApresentadorItemVergnaud apresentadorItemVergnaud =
+                new ApresentadorItemVergnaud();
         int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
@@ -12980,16 +12983,8 @@ public class Main extends JFrame {
 
         private void centralizarItemNoNumeroRelativoSeNecessario(ItemTextoArrastavel item) {
             ElementoVergnaud numeroRelativo = encontrarNumeroRelativoPorItem(item);
-            if (item == null || numeroRelativo == null) {
-                return;
-            }
-            int centroX = item.x + item.largura / 2;
-            int centroY = item.y + item.altura / 2;
-            if (numeroRelativo.contem(centroX, centroY)) {
-                expandirElementoParaCaberItem(numeroRelativo, item);
-                item.x = numeroRelativo.x + (numeroRelativo.largura - item.largura) / 2;
-                item.y = numeroRelativo.y + (numeroRelativo.altura - item.altura) / 2;
-            }
+            apresentadorItemVergnaud.centralizarSeCentroEstiverContido(
+                    item, numeroRelativo);
         }
 
         private void editarTextoElementoVergnaud(ElementoVergnaud elemento) {
@@ -13378,9 +13373,8 @@ public class Main extends JFrame {
         private void ajustarTamanhoDoItem(ItemTextoArrastavel item) {
             Font fonte = new Font("Arial", Font.BOLD, 20);
             FontMetrics fm = getFontMetrics(fonte);
-
-            item.largura = fm.stringWidth(item.valor) + 8;
-            item.altura = fm.getHeight() - 5;
+            apresentadorItemVergnaud.atualizarEDimensionar(
+                    item, item == null ? null : item.valor, fm);
         }
 
         public void mouseEntered(MouseEvent e) {}
@@ -13711,24 +13705,7 @@ public class Main extends JFrame {
         }
 
         private void centralizarItemNoElemento(ItemTextoArrastavel item, ElementoVergnaud alvo) {
-            expandirElementoParaCaberItem(alvo, item);
-            item.x = alvo.x + (alvo.largura - item.largura) / 2;
-            item.y = alvo.y + (alvo.altura - item.altura) / 2;
-        }
-
-        /**
-         * Valores mais longos que o número inteiro típico (ex.: "15,00" em
-         * quantidades monetárias) podem ficar mais largos que o elemento do
-         * diagrama onde o item é centralizado. Sem isso, o item ultrapassa a
-         * borda do elemento em vez de ficar contido nela.
-         */
-        private void expandirElementoParaCaberItem(ElementoVergnaud alvo, ItemTextoArrastavel item) {
-            if (item.largura <= alvo.largura) {
-                return;
-            }
-            int centroX = alvo.x + alvo.largura / 2;
-            alvo.largura = item.largura;
-            alvo.x = centroX - alvo.largura / 2;
+            apresentadorItemVergnaud.centralizar(item, alvo);
         }
 
         private boolean itemEstaProximoDoElemento(ItemTextoArrastavel item, ElementoVergnaud elemento) {
