@@ -102,6 +102,8 @@ import gerard.campoaditivo.venn.interacao.RepresentacaoVennEditavel;
 import gerard.campoaditivo.venn.interacao.ResultadoOperacaoUnidade;
 import gerard.campoaditivo.sincronizacao.representacoes.EstadoPrimeiroPosicionamento;
 import gerard.campoaditivo.sincronizacao.representacoes.PoliticaInteracaoRepresentacoes;
+import gerard.campoaditivo.sincronizacao.representacoes.CoordenadorSincronizacaoRepresentacoes;
+import gerard.campoaditivo.sincronizacao.representacoes.DestinoSincronizacaoRepresentacoes;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackMultissensorialErro;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackProxyPosicionamento;
 import gerard.Scaffolding.feedbackerro.ControladorAnotacaoTemporaria;
@@ -806,7 +808,8 @@ public class Main extends JFrame {
         final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
         final SincronizadorElementosSemanticosTexto sincronizadorElementosSemanticosTexto =
                 new SincronizadorElementosSemanticosTextoAditivo();
-        boolean aplicandoEstadoSemanticoCompartilhado = false;
+        final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
+                new CoordenadorSincronizacaoRepresentacoes();
         int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
@@ -7598,7 +7601,7 @@ public class Main extends JFrame {
             }
 
             Rectangle areaAtual = obterAreaDiagramaAditivo();
-            if (!aplicandoEstadoSemanticoCompartilhado) {
+            if (!coordenadorSincronizacaoRepresentacoes.estaSincronizando()) {
                 capturarEstadoCompartilhadoDoVergnaud(-1,
                         EstadoSemanticoCompartilhado.Origem.VERGNAUD);
             }
@@ -7902,41 +7905,59 @@ public class Main extends JFrame {
         }
 
         private void aplicarEstadoCompartilhadoEmTodasAsRepresentacoes(
-                EstadoSemanticoCompartilhado.Snapshot snapshot,
+                final EstadoSemanticoCompartilhado.Snapshot snapshot,
                 boolean reconstruirComplementar) {
-            if (snapshot == null || aplicandoEstadoSemanticoCompartilhado) {
+            coordenadorSincronizacaoRepresentacoes.sincronizar(
+                    snapshot, reconstruirComplementar,
+                    new DestinoSincronizacaoRepresentacoes() {
+                        @Override
+                        public void aplicarNoVergnaud(
+                                EstadoSemanticoCompartilhado.Snapshot estado) {
+                            aplicarEstadoCompartilhadoNoVergnaud(estado);
+                        }
+
+                        @Override
+                        public void aplicarNoTexto(
+                                EstadoSemanticoCompartilhado.Snapshot estado) {
+                            sincronizarElementosSemanticosDoTexto(estado);
+                        }
+
+                        @Override
+                        public void reconstruirRepresentacaoComplementar() {
+                            sincronizarDiagramaVennComRepresentacoes(true);
+                        }
+
+                        @Override
+                        public void aplicarNosEixos(
+                                EstadoSemanticoCompartilhado.Snapshot estado) {
+                            sincronizarEixosComEstadoCompartilhado(estado);
+                        }
+                    });
+        }
+
+        private void aplicarEstadoCompartilhadoNoVergnaud(
+                EstadoSemanticoCompartilhado.Snapshot snapshot) {
+            if (elementosVergnaud == null || elementosVergnaud.size() < 3) {
                 return;
             }
-            aplicandoEstadoSemanticoCompartilhado = true;
-            try {
-                if (elementosVergnaud != null && elementosVergnaud.size() >= 3) {
-                    for (int i = 0; i < 3; i++) {
-                        if (!snapshot.isConhecido(i)) {
-                            continue;
-                        }
-                        int indiceReal = indicesElementosEstadoCompartilhado[i];
-                        if (indiceReal < 0 || indiceReal >= elementosVergnaud.size()) {
-                            continue;
-                        }
-                        int valor = snapshot.valorOuZero(i);
-                        ElementoVergnaud elemento = elementosVergnaud.get(indiceReal);
-                        if (ehElementoNumeroRelativo(elemento)) {
-                            definirValorNoElementoNumeroRelativo(elemento, valor, true);
-                        } else {
-                            definirValorNoElementoMedida(elemento,
-                                    servicoQuantidadeContextual.formatarInteiroLegado(
-                                            Math.max(0, valor),
-                                            situacaoProblemaAtual, false));
-                        }
-                    }
+            for (int i = 0; i < 3; i++) {
+                if (!snapshot.isConhecido(i)) {
+                    continue;
                 }
-                sincronizarElementosSemanticosDoTexto(snapshot);
-                if (reconstruirComplementar) {
-                    sincronizarDiagramaVennComRepresentacoes(true);
+                int indiceReal = indicesElementosEstadoCompartilhado[i];
+                if (indiceReal < 0 || indiceReal >= elementosVergnaud.size()) {
+                    continue;
                 }
-                sincronizarEixosComEstadoCompartilhado(snapshot);
-            } finally {
-                aplicandoEstadoSemanticoCompartilhado = false;
+                int valor = snapshot.valorOuZero(i);
+                ElementoVergnaud elemento = elementosVergnaud.get(indiceReal);
+                if (ehElementoNumeroRelativo(elemento)) {
+                    definirValorNoElementoNumeroRelativo(elemento, valor, true);
+                } else {
+                    definirValorNoElementoMedida(elemento,
+                            servicoQuantidadeContextual.formatarInteiroLegado(
+                                    Math.max(0, valor),
+                                    situacaoProblemaAtual, false));
+                }
             }
         }
 
