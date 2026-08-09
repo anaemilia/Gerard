@@ -188,52 +188,8 @@ public final class EstadoSemanticoCompartilhado {
         if (resolverViaRelacaoEstruturalRica(indiceIncognitaProtegida, permitirPreenchimentoIncognita)) {
             return;
         }
-        if (resolverConsistenciaViaRelacaoEstruturalRica(indiceIncognitaProtegida, permitirPreenchimentoIncognita)) {
-            return;
-        }
-        if (indiceAlterado == 0) {
-            if (conhecido(0) && conhecido(1)) {
-                definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            } else if (conhecido(0) && conhecido(2)) {
-                definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            }
-            return;
-        }
-        if (indiceAlterado == 1) {
-            if (conhecido(0) && conhecido(1)) {
-                definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            } else if (conhecido(1) && conhecido(2)) {
-                definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            }
-            return;
-        }
-        if (indiceAlterado == 2) {
-            if (conhecido(0) && conhecido(2)) {
-                definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            } else if (conhecido(1) && conhecido(2)) {
-                definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            }
-            return;
-        }
-
-        int faltantes = 0;
-        int indiceFaltante = -1;
-        for (int i = 0; i < 3; i++) {
-            if (!conhecido(i)) {
-                faltantes++;
-                indiceFaltante = i;
-            }
-        }
-        if (faltantes != 1) {
-            return;
-        }
-        if (indiceFaltante == 0 && conhecido(1) && conhecido(2)) {
-            definirSubtracaoSePermitido(0, valor(2), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-        } else if (indiceFaltante == 1 && conhecido(0) && conhecido(2)) {
-            definirSubtracaoSePermitido(1, valor(2), valor(0), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-        } else if (indiceFaltante == 2 && conhecido(0) && conhecido(1)) {
-            definirSomaSePermitido(2, valor(0), valor(1), indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-        }
+        resolverConsistenciaViaRelacaoEstruturalRica(
+                indiceIncognitaProtegida, permitirPreenchimentoIncognita);
     }
 
     /**
@@ -241,31 +197,21 @@ public final class EstadoSemanticoCompartilhado {
      * (RelacaoEstruturalComposicao/Transformacao/Comparacao — ver
      * TAREFA_PENDENTE_LOCALIDADE_CONHECIMENTO_ESTADO_COMPARTILHADO.md, Fase B,
      * opção B1) quando exatamente um dos três papéis está incógnito e essa
-     * incógnita não é a posição que acabou de ser tocada (indiceAlterado).
-     * Esse é o caso de "primeiro preenchimento": o sistema completa o único
-     * valor que falta, nunca sobrescreve um valor que o usuário acabou de
-     * editar/esvaziar. O preenchimento automático de consistência (quando os
+     * Esse é o caso de preenchimento do único valor ausente. O preenchimento
+     * automático de consistência (quando os
      * três já estão preenchidos e um deles muda, podendo sobrescrever outro
      * já preenchido) não é o mesmo problema que calcularValorAusente resolve
      * — por isso não está aqui —, mas também é delegado ao piloto, em
      * resolverConsistenciaViaRelacaoEstruturalRica (fechado em 2026-08-06,
-     * Fase B2 completa). O algoritmo genérico abaixo só continua ativo, para
-     * os 6 tipos cobertos, nos casos que nenhum dos dois métodos ricos trata
-     * (ex.: indiceAlterado fora de 0-2 com 2+ incógnitas) — e integralmente
-     * para os 2 tipos "Em construção", que o piloto não cobre.
+     * Fase B2 completa). Desde a Fase 2.4, esses dois caminhos estruturais são
+     * a única implementação da resolução aditiva.
      *
      * Cobre os 3 tipos "Medidas" (Composição, Transformação, Comparação) e,
      * desde 2026-08-06, os 3 tipos "Relações" alcançáveis pela UI
      * (Composição de Transformações, Transformação de Relação, Composição
      * de Relações — ver RELATORIO_INVESTIGACAO_5_TIPOS_NAO_COBERTOS_2026-08-06.md).
-     * Os 2 tipos restantes (Composição seguida de Transformação,
-     * Transformação Composta em Dois Passos) ficam de fora: "Em construção"
-     * no menu, nenhum caminho de UI os alcança hoje — sem urgência, sem
-     * usuário para proteger.
-     *
      * @return true se este caminho tratou a resolução (calculou e escreveu,
-     *         ou não havia nada a calcular) — o chamador não deve rodar o
-     *         algoritmo genérico por cima neste caso.
+     *         ou não havia nada a calcular).
      */
     private boolean resolverViaRelacaoEstruturalRica(int indiceIncognitaProtegida,
             boolean permitirPreenchimentoIncognita) {
@@ -288,14 +234,6 @@ public final class EstadoSemanticoCompartilhado {
         if (quantidadeIncognitas != 1) {
             return false;
         }
-        if (indiceAlterado >= 0 && indiceAlterado <= 2 && indiceIncognita == indiceAlterado) {
-            // O usuário acabou de tocar exatamente esta posição (ex.: apagou o
-            // valor) — não é "preencher o que falta automaticamente", é o
-            // próprio campo em edição. Preserva o comportamento atual: não
-            // auto-preenche o campo que acabou de ser mexido.
-            return false;
-        }
-
         ResultadoCalculo resultado = calcularComRelacaoRica();
         if (resultado != null && resultado.temValorCalculavel()) {
             definirSePermitido(indiceIncognita,
@@ -408,12 +346,7 @@ public final class EstadoSemanticoCompartilhado {
      * completa, no espírito "Main só chama métodos de objetos que já
      * funcionam", em vez de reescrever os funis de escrita de Main.java).
      *
-     * Cobre os mesmos 6 tipos que resolverViaRelacaoEstruturalRica; os 2
-     * tipos "Em construção" continuam no algoritmo genérico abaixo, sem
-     * cobertura no piloto.
-     *
-     * Só se aplica quando indiceAlterado é 0, 1 ou 2 (o algoritmo genérico
-     * equivalente também só age nesses três casos — quando indiceAlterado
+     * Só se aplica quando indiceAlterado é 0, 1 ou 2. Quando indiceAlterado
      * está fora desse intervalo, ou já foi tratado por
      * resolverViaRelacaoEstruturalRica, ou não há informação suficiente
      * sobre o que mudou) e os três papéis já estão conhecidos — se não, não
@@ -421,9 +354,8 @@ public final class EstadoSemanticoCompartilhado {
      * (resolverViaRelacaoEstruturalRica) ou estado ainda incompleto, e este
      * método não interfere.
      *
-     * @return true se este caminho tratou a resolução (o chamador não deve
-     *         rodar o algoritmo genérico por cima); false se o tipo não é
-     *         coberto ou não é o caso de consistência
+     * @return true se este caminho tratou a resolução; false se o tipo não
+     *         é coberto ou não é o caso de consistência
      */
     private boolean resolverConsistenciaViaRelacaoEstruturalRica(
             int indiceIncognitaProtegida, boolean permitirPreenchimentoIncognita) {
@@ -506,50 +438,6 @@ public final class EstadoSemanticoCompartilhado {
 
     private boolean conhecido(int indice) {
         return valores[indice] != null && valores[indice].ehConhecido();
-    }
-
-    private int valor(int indice) {
-        Integer valor = valores[indice].valorOuNull();
-        return valor == null ? 0 : valor.intValue();
-    }
-
-
-    /**
-     * Soma protegida contra estouro de int (2026-08-06). Antes desta guarda,
-     * 2000000000 + 2000000000 escrevia -294967296 no estado compartilhado e
-     * as representações eram sincronizadas com esse número errado. Quando a
-     * conta não é representável, nada é escrito — o valor anterior/ausente é
-     * preservado, exatamente o mesmo tratamento que definir(...) já dava a um
-     * valor inválido para o domínio do papel.
-     *
-     * O caminho da arquitetura rica (resolverViaRelacaoEstruturalRica) já está
-     * protegido desde a guarda equivalente nas classes RelacaoEstrutural*:
-     * calcularValorAusente devolve NAO_RESOLVIVEL_NESTE_ESTADO ao estourar, e
-     * temValorCalculavel() falso impede a escrita. Esta guarda cobre o
-     * algoritmo genérico abaixo — o de preenchimento automático de
-     * consistência, que roda quando os três já estão preenchidos.
-     */
-    private void definirSomaSePermitido(int indice, int a, int b,
-            int indiceIncognitaProtegida,
-            boolean permitirPreenchimentoIncognita) {
-        try {
-            definirSePermitido(indice, Math.addExact(a, b),
-                    indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-        } catch (ArithmeticException estouro) {
-            // Não representável: preserva o estado anterior sem publicar lixo.
-        }
-    }
-
-    /** Subtração protegida contra estouro de int — ver definirSomaSePermitido. */
-    private void definirSubtracaoSePermitido(int indice, int a, int b,
-            int indiceIncognitaProtegida,
-            boolean permitirPreenchimentoIncognita) {
-        try {
-            definirSePermitido(indice, Math.subtractExact(a, b),
-                    indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-        } catch (ArithmeticException estouro) {
-            // Não representável: preserva o estado anterior sem publicar lixo.
-        }
     }
 
     /**
