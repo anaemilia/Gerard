@@ -14,7 +14,7 @@ public final class TesteTooltipCategoriaConstrucao {
     public static void main(String[] args) throws Exception {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         localizacao.definirIdioma(IdiomaInterface.PORTUGUES);
-        confirmar("Construir situação-problema".equals(localizacao.texto("ui.tab.assembly")),
+        confirmar("Construir".equals(localizacao.texto("ui.tab.assembly")),
                 "o nome da aba em português deve usar Construir");
         confirmar("Construa a situação-problema".equals(localizacao.texto("montagem.title")),
                 "o título interno em português deve usar Construa");

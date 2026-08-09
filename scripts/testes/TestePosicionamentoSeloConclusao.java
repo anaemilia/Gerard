@@ -21,13 +21,13 @@ public final class TestePosicionamentoSeloConclusao {
         selo.atualizarTexto("Modelagem concluída");
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                selo.mostrarAbaixoDoDiagrama(areaDiagrama,
+                selo.mostrarAoLadoDireitoDoDiagrama(areaDiagrama,
                         new Rectangle(15, 215, 1110, 530), 1140, 800);
             }
         });
         confirmar(selo.isVisible(), "o selo deve aparecer em " + categoria);
-        confirmar(selo.getY() >= areaDiagrama.y + areaDiagrama.height + 10,
-                "o selo deve ficar abaixo do diagrama de " + categoria);
+        confirmar(selo.getX() >= areaDiagrama.x + areaDiagrama.width + 10,
+                "o selo deve ficar à direita do diagrama de " + categoria);
         confirmar(selo.getX() >= 25 && selo.getX() + selo.getWidth() <= 1115,
                 "o selo deve permanecer dentro do painel de " + categoria);
         SwingUtilities.invokeAndWait(new Runnable() {
