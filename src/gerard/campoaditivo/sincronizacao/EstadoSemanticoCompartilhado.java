@@ -2,7 +2,6 @@ package gerard.campoaditivo.sincronizacao;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.PoliticaValoresAditivos;
-import gerard.dominio.campoaditivo.ResultadoCalculo;
 import gerard.semantica.categoria.CatalogoEsquemasCategoriasAditivas;
 import gerard.semantica.numero.DominioNumerico;
 import gerard.semantica.numero.FabricaValoresNumericos;
@@ -21,8 +20,8 @@ public final class EstadoSemanticoCompartilhado {
             new CatalogoEsquemasCategoriasAditivas();
     private final FabricaValoresNumericos fabricaValores =
             new FabricaValoresNumericos();
-    private final CatalogoRelacoesEstruturaisAditivas catalogoRelacoes =
-            new CatalogoRelacoesEstruturaisAditivas();
+    private final ResolvedorRelacoesEstruturaisAditivas resolvedorRelacoes =
+            new ResolvedorRelacoesEstruturaisAditivas();
 
     public enum Origem {
         INICIALIZACAO,
@@ -172,129 +171,12 @@ public final class EstadoSemanticoCompartilhado {
 
     private void resolverRelacaoAditiva(int indiceIncognitaProtegida,
             boolean permitirPreenchimentoIncognita) {
-        if (resolverViaRelacaoEstruturalRica(indiceIncognitaProtegida, permitirPreenchimentoIncognita)) {
-            return;
-        }
-        resolverConsistenciaViaRelacaoEstruturalRica(
-                indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-    }
-
-    /**
-     * Delega o cálculo aritmético ao catálogo das relações estruturais
-     * canônicas — ver
-     * TAREFA_PENDENTE_LOCALIDADE_CONHECIMENTO_ESTADO_COMPARTILHADO.md, Fase B,
-     * opção B1) quando exatamente um dos três papéis está incógnito e essa
-     * Esse é o caso de preenchimento do único valor ausente. O preenchimento
-     * automático de consistência (quando os
-     * três já estão preenchidos e um deles muda, podendo sobrescrever outro
-     * já preenchido) não é o mesmo problema que calcularValorAusente resolve
-     * — por isso não está aqui —, mas também é delegado ao piloto, em
-     * resolverConsistenciaViaRelacaoEstruturalRica (fechado em 2026-08-06,
-     * Fase B2 completa). Desde a Fase 2.4, esses dois caminhos estruturais são
-     * a única implementação da resolução aditiva.
-     *
-     * Cobre os 3 tipos "Medidas" (Composição, Transformação, Comparação) e,
-     * desde 2026-08-06, os 3 tipos "Relações" alcançáveis pela UI
-     * (Composição de Transformações, Transformação de Relação, Composição
-     * de Relações — ver RELATORIO_INVESTIGACAO_5_TIPOS_NAO_COBERTOS_2026-08-06.md).
-     * @return true se este caminho tratou a resolução (calculou e escreveu,
-     *         ou não havia nada a calcular).
-     */
-    private boolean resolverViaRelacaoEstruturalRica(int indiceIncognitaProtegida,
-            boolean permitirPreenchimentoIncognita) {
-        if (tipo != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
-                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            return false;
-        }
-        int indiceIncognita = -1;
-        int quantidadeIncognitas = 0;
-        for (int i = 0; i < 3; i++) {
-            if (!conhecido(i)) {
-                quantidadeIncognitas++;
-                indiceIncognita = i;
-            }
-        }
-        if (quantidadeIncognitas != 1) {
-            return false;
-        }
-        CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada contexto =
-                catalogoRelacoes.criar(tipo, valores);
-        ResultadoCalculo resultado = contexto == null
-                ? null : contexto.calcularValorAusente();
-        if (resultado != null && resultado.temValorCalculavel()) {
-            definirSePermitido(indiceIncognita,
-                    resultado.getValorCalculado().valorOuNull().intValue(),
+        ResolvedorRelacoesEstruturaisAditivas.ResolucaoAutomatica resolucao =
+                resolvedorRelacoes.resolver(tipo, valores, indiceAlterado);
+        if (resolucao.foiResolvida()) {
+            definirSePermitido(resolucao.getIndice(), resolucao.getValor(),
                     indiceIncognitaProtegida, permitirPreenchimentoIncognita);
         }
-        return true;
-    }
-
-    /**
-     * Recalcula um papel já conhecido para preservar a consistência da
-     * relação aditiva quando os três papéis já estavam preenchidos e um
-     * deles muda (ex.: o sujeito arrasta um valor já posicionado num
-     * diagrama já completo) — delega às 6 classes RelacaoEstrutural* do
-     * piloto (recalcularParaConsistencia), a capacidade que faltava no
-     * Achado 2 de RELATORIO_INVESTIGACAO_FASE_B2_COMPLETA_2026-08-06.md e
-     * foi fechada em 2026-08-06 (RELATORIO_RECALCULAR_PARA_CONSISTENCIA_2026-08-06.md).
-     * Com esta chamada, resolverRelacaoAditiva passa a delegar 100% da
-     * lógica de relação aditiva ao piloto para os 6 tipos cobertos — Main.java
-     * não muda uma linha (já só chama atualizar(...) neste objeto), mas
-     * tudo que acontece a partir daqui são objetos do piloto (Fase B2
-     * completa, no espírito "Main só chama métodos de objetos que já
-     * funcionam", em vez de reescrever os funis de escrita de Main.java).
-     *
-     * Só se aplica quando indiceAlterado é 0, 1 ou 2. Quando indiceAlterado
-     * está fora desse intervalo, ou já foi tratado por
-     * resolverViaRelacaoEstruturalRica, ou não há informação suficiente
-     * sobre o que mudou) e os três papéis já estão conhecidos — se não, não
-     * é "recálculo de consistência", é "primeiro preenchimento"
-     * (resolverViaRelacaoEstruturalRica) ou estado ainda incompleto, e este
-     * método não interfere.
-     *
-     * @return true se este caminho tratou a resolução; false se o tipo não
-     *         é coberto ou não é o caso de consistência
-     */
-    private boolean resolverConsistenciaViaRelacaoEstruturalRica(
-            int indiceIncognitaProtegida, boolean permitirPreenchimentoIncognita) {
-        if (tipo != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-                && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
-                && tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            return false;
-        }
-        if (indiceAlterado < 0 || indiceAlterado > 2) {
-            return false;
-        }
-        if (!conhecido(0) || !conhecido(1) || !conhecido(2)) {
-            return false;
-        }
-
-        CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada contexto =
-                catalogoRelacoes.criar(tipo, valores);
-        if (contexto == null) {
-            return false; // inalcançável — já filtrado acima
-        }
-        ResultadoCalculo resultado = contexto.recalcularParaConsistencia(indiceAlterado);
-        if (resultado != null && resultado.temValorCalculavel()) {
-            int indiceRecalculado = contexto.indiceDoPapel(resultado.getPapelCalculado());
-            if (indiceRecalculado >= 0) {
-                definirSePermitido(indiceRecalculado,
-                        resultado.getValorCalculado().valorOuNull().intValue(),
-                        indiceIncognitaProtegida, permitirPreenchimentoIncognita);
-            }
-        }
-        return true;
-    }
-
-    private boolean conhecido(int indice) {
-        return valores[indice] != null && valores[indice].ehConhecido();
     }
 
     /**
