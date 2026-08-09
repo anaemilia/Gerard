@@ -13,7 +13,7 @@ javac -source 8 -target 8 -encoding UTF-8 -d "$TMP" \
   "$BASE/src/gerard/interacao/texto/TipoElementoMatematicoTexto.java" \
   "$BASE/src/gerard/interacao/texto/ElementoMatematicoImersoTexto.java" \
   "$BASE/src/gerard/interacao/arraste/SessaoArrasteTextoParaDiagrama.java" \
-  "$BASE/scripts/testes/TesteProxyArrasteTextoSemantico.java"
+  "$BASE/tests/java/TesteProxyArrasteTextoSemantico.java"
 java -Djava.awt.headless=true -cp "$TMP" TesteProxyArrasteTextoSemantico
 
 python - "$BASE/src/Main.java" <<'PY'

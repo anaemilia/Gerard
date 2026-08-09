@@ -7,6 +7,6 @@ mkdir -p build/testes
 javac -encoding UTF-8 -source 8 -target 8 \
   -cp build/classes \
   -d build/testes \
-  scripts/testes/TesteBloqueioAdicaoAntesVergnaud.java
+  tests/java/TesteBloqueioAdicaoAntesVergnaud.java
 java -Djava.awt.headless=true -cp build/classes:build/testes \
   TesteBloqueioAdicaoAntesVergnaud

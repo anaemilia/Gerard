@@ -16,5 +16,5 @@ javac -encoding UTF-8 -d "$TMP" \
   "$ROOT/src/gerard/campoaditivo/venn/apresentacao/RenderizadorUnidadeTransformacaoPositiva.java" \
   "$ROOT/src/gerard/campoaditivo/venn/apresentacao/RenderizadorUnidadeTransformacaoNegativa.java" \
   "$ROOT/src/gerard/campoaditivo/venn/apresentacao/FabricaRenderizadoresUnidadeVenn.java" \
-  "$ROOT/scripts/testes/TesteRenderizacaoUnidadesVenn.java"
+  "$ROOT/tests/java/TesteRenderizacaoUnidadesVenn.java"
 java -Djava.awt.headless=true -cp "$TMP" TesteRenderizacaoUnidadesVenn

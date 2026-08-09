@@ -6,5 +6,5 @@ rm -rf "$TMP"
 mkdir -p "$TMP"
 javac -encoding UTF-8 -d "$TMP" \
   "$ROOT/src/gerard/Scaffolding/venn/ScaffoldingLimiteQuantidadeVenn.java" \
-  "$ROOT/scripts/testes/TesteLimiteQuantidadeVenn.java"
+  "$ROOT/tests/java/TesteLimiteQuantidadeVenn.java"
 java -cp "$TMP" TesteLimiteQuantidadeVenn

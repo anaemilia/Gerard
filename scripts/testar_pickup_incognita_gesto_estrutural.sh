@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p build/test-classes
 javac -source 8 -target 8 -cp build/classes -d build/test-classes \
-  scripts/testes/TestePickupIncognitaEGestoEstrutural.java
+  tests/java/TestePickupIncognitaEGestoEstrutural.java
 java -Djava.awt.headless=true -cp build/classes:build/test-classes TestePickupIncognitaEGestoEstrutural
 
 grep -q 'politicaUnicidadeElementoMatematicoTexto.jaEstaNoDiagrama' src/Main.java

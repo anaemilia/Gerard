@@ -9,5 +9,5 @@ mkdir -p "$TMP"
 javac -source 8 -target 8 -encoding UTF-8 \
   -cp "$BASE/build/classes" \
   -d "$TMP" \
-  "$BASE/scripts/testes/TesteClassificacaoInteracaoEixoInteiros.java"
+  "$BASE/tests/java/TesteClassificacaoInteracaoEixoInteiros.java"
 java -Djava.awt.headless=true -cp "$BASE/build/classes:$TMP" TesteClassificacaoInteracaoEixoInteiros

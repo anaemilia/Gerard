@@ -46,8 +46,8 @@ Assim, a variedade do botão não converte a atividade em uma sucessão de conte
 
 - `src/gerard/campoaditivo/montagem/CatalogoAtividadesMontagemPadrao.java`
 - `src/gerard/campoaditivo/montagem/TelaMontagemSituacao.java`
-- `scripts/testes/TesteMontagemSituacao.java`
-- `scripts/testes/TesteAbaMontagem.java`
+- `tests/java/TesteMontagemSituacao.java`
+- `tests/java/TesteAbaMontagem.java`
 - `scripts/verificar_regressao_gerard.py`
 
 ## Verificação

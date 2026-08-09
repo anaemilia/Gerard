@@ -6,7 +6,7 @@ ant -noinput -q clean jar
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 javac -source 8 -target 8 -encoding UTF-8 -cp build/classes -d "$TMP" \
-  scripts/testes/TesteFeedbackProxyPosicionamento.java
+  tests/java/TesteFeedbackProxyPosicionamento.java
 java -Djava.awt.headless=true -cp "build/classes:$TMP" TesteFeedbackProxyPosicionamento
 python3 - <<'PY'
 from pathlib import Path

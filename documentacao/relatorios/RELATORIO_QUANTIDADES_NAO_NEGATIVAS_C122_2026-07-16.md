@@ -53,7 +53,7 @@ A mensagem de bloqueio foi localizada em português, inglês e francês.
 - `src/gerard/Scaffolding/reacao/ScaffoldingReacaoRepresentacoes.java`
 - `src/gerard/campoaditivo/sincronizacao/EstadoSemanticoCompartilhado.java`
 - `src/gerard/i18n/ServicoLocalizacao.java`
-- `scripts/testes/TesteSinalRelativoSemQuantidadeNegativa.java`
+- `tests/java/TesteSinalRelativoSemQuantidadeNegativa.java`
 - `scripts/testar_sinal_relativo_sem_quantidade_negativa.sh`
 
 ## Verificações executadas

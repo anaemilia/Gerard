@@ -7,7 +7,7 @@ mkdir -p "$TMP"
 javac -source 8 -target 8 -encoding UTF-8 -d "$TMP" \
   "$BASE/src/gerard/campoaditivo/sincronizacao/representacoes/EstadoPrimeiroPosicionamento.java" \
   "$BASE/src/gerard/campoaditivo/sincronizacao/representacoes/PoliticaInteracaoRepresentacoes.java" \
-  "$BASE/scripts/testes/TestePoliticaInteracaoRepresentacoes.java"
+  "$BASE/tests/java/TestePoliticaInteracaoRepresentacoes.java"
 java -Djava.awt.headless=true -cp "$TMP" TestePoliticaInteracaoRepresentacoes
 
 grep -q 'NaturezaInteracao.VALOR_SEMANTICO' "$BASE/src/Main.java"
