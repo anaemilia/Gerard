@@ -134,6 +134,8 @@ import gerard.pesquisador.tentativa.ItemExplicacaoModelagem;
 import gerard.pesquisador.tentativa.TelaArtefatoExplicativo;
 import gerard.ui.menu.ConfiguradorOpcaoComparacaoCategorias;
 import gerard.ui.vergnaud.SeletorIndicesEstadoCompartilhado;
+import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
+import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -819,6 +821,8 @@ public class Main extends JFrame {
                 new CoordenadorSincronizacaoRepresentacoes();
         final SeletorIndicesEstadoCompartilhado seletorIndicesEstadoCompartilhado =
                 new SeletorIndicesEstadoCompartilhado();
+        final PlanejadorAplicacaoEstadoVergnaud planejadorAplicacaoEstadoVergnaud =
+                new PlanejadorAplicacaoEstadoVergnaud();
         int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
@@ -7900,20 +7904,16 @@ public class Main extends JFrame {
 
         private void aplicarEstadoCompartilhadoNoVergnaud(
                 EstadoSemanticoCompartilhado.Snapshot snapshot) {
-            if (elementosVergnaud == null || elementosVergnaud.size() < 3) {
-                return;
-            }
-            for (int i = 0; i < 3; i++) {
-                if (!snapshot.isConhecido(i)) {
-                    continue;
-                }
-                int indiceReal = indicesElementosEstadoCompartilhado[i];
-                if (indiceReal < 0 || indiceReal >= elementosVergnaud.size()) {
-                    continue;
-                }
-                int valor = snapshot.valorOuZero(i);
-                ElementoVergnaud elemento = elementosVergnaud.get(indiceReal);
-                if (ehElementoNumeroRelativo(elemento)) {
+            java.util.List<AtualizacaoElementoVergnaud> atualizacoes =
+                    planejadorAplicacaoEstadoVergnaud.planejar(
+                            snapshot, indicesElementosEstadoCompartilhado,
+                            elementosVergnaud);
+            for (AtualizacaoElementoVergnaud atualizacao : atualizacoes) {
+                ElementoVergnaud elemento = elementosVergnaud.get(
+                        atualizacao.getIndiceElemento());
+                int valor = atualizacao.getValor();
+                if (atualizacao.getNaturezaVisual()
+                        == AtualizacaoElementoVergnaud.NaturezaVisual.NUMERO_RELATIVO) {
                     definirValorNoElementoNumeroRelativo(elemento, valor, true);
                 } else {
                     definirValorNoElementoMedida(elemento,
