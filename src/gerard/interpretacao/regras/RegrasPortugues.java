@@ -42,14 +42,14 @@ public class RegrasPortugues extends RegrasBase {
         regra("restaram", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 5);
         regra("restou", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 5);
 
-        regra("ontem", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("hoje", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("em seguida", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("depois", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("na primeira etapa", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("na segunda etapa", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("primeiro", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("segundo", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
+        regra("ontem", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("hoje", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("em seguida", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("depois", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("na primeira etapa", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("na segunda etapa", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("primeiro", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("segundo", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
 
         regra("transformacao total", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 6);
         regra("na primeira rodada", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);

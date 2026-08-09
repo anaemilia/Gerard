@@ -56,15 +56,6 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if ("papel.transformacao".equals(chavePapel)) return 1;
                 if ("papel.estadoFinal".equals(chavePapel)) return 2;
                 break;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                if ("papel.parte1".equals(chavePapel)) return 0;
-                if ("papel.parte2".equals(chavePapel)) return 1;
-                if ("papel.todo".equals(chavePapel)) return 2;
-                if ("papel.estadoInicial".equals(chavePapel)) return 3;
-                if ("papel.transformacao".equals(chavePapel)
-                        || chavePapel.startsWith("papel.transformacao")) return 4;
-                if ("papel.estadoFinal".equals(chavePapel)) return 5;
-                break;
             case COMPARACAO_MEDIDAS:
                 if ("papel.referido".equals(chavePapel)) return 0;
                 if ("papel.diferenca".equals(chavePapel)) return 1;
@@ -75,13 +66,6 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if ("papel.transformacao1".equals(chavePapel)) return 0;
                 if ("papel.transformacao2".equals(chavePapel)) return 1;
                 if ("papel.transformacaoFinal".equals(chavePapel)) return 2;
-                break;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                if ("papel.estadoInicial".equals(chavePapel)) return 0;
-                if ("papel.transformacao1".equals(chavePapel)) return 1;
-                if ("papel.estadoIntermediario".equals(chavePapel)) return 2;
-                if ("papel.transformacao2".equals(chavePapel)) return 3;
-                if ("papel.estadoFinal".equals(chavePapel)) return 4;
                 break;
             case TRANSFORMACAO_RELACAO:
                 if ("papel.relacaoInicial".equals(chavePapel)) return 0;
@@ -144,14 +128,6 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if (indiceElemento == 1) return "papel.transformacao";
                 if (indiceElemento == 2) return "papel.estadoFinal";
                 break;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                if (indiceElemento == 0) return "papel.parte1";
-                if (indiceElemento == 1) return "papel.parte2";
-                if (indiceElemento == 2) return "papel.todo";
-                if (indiceElemento == 3) return "papel.estadoInicial";
-                if (indiceElemento == 4) return "papel.transformacao";
-                if (indiceElemento == 5) return "papel.estadoFinal";
-                break;
             case COMPARACAO_MEDIDAS:
                 if (indiceElemento == 0) return "papel.referido";
                 if (indiceElemento == 1) return "papel.diferenca";
@@ -161,13 +137,6 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if (indiceElemento == 0) return "papel.transformacao1";
                 if (indiceElemento == 1) return "papel.transformacao2";
                 if (indiceElemento == 2) return "papel.transformacaoFinal";
-                break;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                if (indiceElemento == 0) return "papel.estadoInicial";
-                if (indiceElemento == 1) return "papel.transformacao1";
-                if (indiceElemento == 2) return "papel.estadoIntermediario";
-                if (indiceElemento == 3) return "papel.transformacao2";
-                if (indiceElemento == 4) return "papel.estadoFinal";
                 break;
             case TRANSFORMACAO_RELACAO:
                 if (indiceElemento == 0) return "papel.relacaoInicial";

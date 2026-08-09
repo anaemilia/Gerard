@@ -37,12 +37,12 @@ public class RegrasIngles extends RegrasBase {
         regra("left with", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 5);
         regra("remained", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 4);
 
-        regra("yesterday", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("today", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("then", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("after that", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("first step", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
-        regra("second step", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 4);
+        regra("yesterday", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("today", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("then", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("after that", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("first step", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
+        regra("second step", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);
 
         regra("total change", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 6);
         regra("first round", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);

@@ -32,9 +32,9 @@ public class RegrasEspanhol extends RegrasBase {
         regra("dio", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 4);
         regra("quedan", CategoriaProblema.TRANSFORMACAO_MEDIDAS, 5);
 
-        regra("despues", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("primero", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
-        regra("luego", CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS, 3);
+        regra("despues", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("primero", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
+        regra("luego", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 3);
 
         regra("transformacion total", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 6);
         regra("primera ronda", CategoriaProblema.COMPOSICAO_TRANSFORMACOES, 4);

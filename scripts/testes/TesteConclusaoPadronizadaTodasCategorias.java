@@ -18,18 +18,11 @@ public final class TesteConclusaoPadronizadaTodasCategorias {
                 lista("papel.parte1", "papel.parte2", "papel.todo"));
         papeis.put(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                 lista("papel.estadoInicial", "papel.transformacao", "papel.estadoFinal"));
-        papeis.put(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
-                lista("papel.parte1", "papel.parte2", "papel.todo",
-                        "papel.transformacao", "papel.estadoFinal"));
         papeis.put(TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
                 lista("papel.referido", "papel.diferenca", "papel.referendo"));
         papeis.put(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 lista("papel.transformacao1", "papel.transformacao2",
                         "papel.transformacaoFinal"));
-        papeis.put(TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
-                lista("papel.estadoInicial", "papel.transformacao1",
-                        "papel.estadoIntermediario", "papel.transformacao2",
-                        "papel.estadoFinal"));
         papeis.put(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 lista("papel.relacaoInicial", "papel.transformacao",
                         "papel.relacaoFinal"));

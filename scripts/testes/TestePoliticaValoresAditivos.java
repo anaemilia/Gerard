@@ -34,12 +34,12 @@ public final class TestePoliticaValoresAditivos {
                 TipoSituacaoAditiva.COMPARACAO_MEDIDAS, 1, false, 1)),
                 "Comparação deveria mapear índice 1 para valor relativo.");
         exigir("papel.estadoIntermediario".equals(catalogo.obterChavePapelDoElemento(
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 3, true, 2)),
                 "O segundo passo encadeado deveria iniciar no estado intermediário.");
         exigir(catalogo.obterIndiceElementoPorPapel(
                 "papel.estadoFinal",
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 true, 2) == 5,
                 "Estado final de dois passos deveria ocupar o índice 5.");
     }
@@ -80,11 +80,11 @@ public final class TestePoliticaValoresAditivos {
                 TipoSituacaoAditiva.COMPOSICAO_RELACOES, 0, false, 1, -2),
                 "Relação negativa deve ser aceita.");
         exigir(!politica.valorEhValidoParaElemento(
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 3, true, 2, -1),
                 "Estado intermediário negativo deve ser rejeitado.");
         exigir(politica.valorEhValidoParaElemento(
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 4, true, 2, -7),
                 "Transformação do segundo passo deve admitir sinal.");
     }

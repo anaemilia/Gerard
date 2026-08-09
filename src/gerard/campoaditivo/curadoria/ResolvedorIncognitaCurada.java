@@ -137,13 +137,6 @@ public final class ResolvedorIncognitaCurada {
                 if (eh(t, "transformacao", "mudanca")) return "papel.transformacao";
                 if (eh(t, "estadofinal", "final", "resultado")) return "papel.estadoFinal";
                 break;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                if (eh(t, "parte1", "quantidade1", "q1")) return "papel.parte1";
-                if (eh(t, "parte2", "quantidade2", "q2")) return "papel.parte2";
-                if (eh(t, "todo", "total", "resultado")) return "papel.todo";
-                if (eh(t, "transformacao", "mudanca")) return "papel.transformacao";
-                if (eh(t, "estadofinal", "final")) return "papel.estadoFinal";
-                break;
             case COMPARACAO_MEDIDAS:
                 if (eh(t, "referido")) return "papel.referido";
                 if (eh(t, "referendo", "referente")) return "papel.referendo";
@@ -154,12 +147,6 @@ public final class ResolvedorIncognitaCurada {
                 if (eh(t, "transformacao2", "quantidade2", "q2")) return "papel.transformacao2";
                 if (eh(t, "transformacaofinal", "transformacaoresultante",
                         "resultado", "total")) return "papel.transformacaoFinal";
-                break;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                if (eh(t, "estadoinicial", "inicial")) return "papel.estadoInicial";
-                if (eh(t, "transformacao1", "quantidade1", "q1")) return "papel.transformacao1";
-                if (eh(t, "transformacao2", "quantidade2", "q2")) return "papel.transformacao2";
-                if (eh(t, "estadofinal", "final", "resultado")) return "papel.estadoFinal";
                 break;
             case TRANSFORMACAO_RELACAO:
                 if (eh(t, "relacaoinicial", "estadoinicial", "inicial")) return "papel.relacaoInicial";
@@ -220,13 +207,6 @@ public final class ResolvedorIncognitaCurada {
                 add(r, "papel.transformacao", transformacao);
                 add(r, "papel.estadoFinal", estadoFinal);
                 break;
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                add(r, "papel.parte1", quantidade1);
-                add(r, "papel.parte2", quantidade2);
-                add(r, "papel.todo", resultado);
-                add(r, "papel.transformacao", transformacao);
-                add(r, "papel.estadoFinal", estadoFinal);
-                break;
             case COMPARACAO_MEDIDAS:
                 add(r, "papel.referido", referido);
                 add(r, "papel.diferenca", valorRelativo);
@@ -237,12 +217,6 @@ public final class ResolvedorIncognitaCurada {
                 add(r, "papel.transformacao1", quantidade1);
                 add(r, "papel.transformacao2", quantidade2);
                 add(r, "papel.transformacaoFinal", resultado);
-                break;
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                add(r, "papel.estadoInicial", estadoInicial);
-                add(r, "papel.transformacao1", quantidade1);
-                add(r, "papel.transformacao2", quantidade2);
-                add(r, "papel.estadoFinal", resultado);
                 break;
             case TRANSFORMACAO_RELACAO:
                 add(r, "papel.relacaoInicial", estadoInicial);

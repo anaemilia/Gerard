@@ -84,10 +84,8 @@ public class ServicoLocalizacao {
         switch (categoria) {
             case COMPOSICAO_MEDIDAS: return texto("categoria.composicao_medidas");
             case TRANSFORMACAO_MEDIDAS: return texto("categoria.transformacao_medidas");
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS: return texto("categoria.composicao_transformacao_medidas");
             case COMPARACAO_MEDIDAS: return texto("categoria.comparacao_medidas");
             case COMPOSICAO_TRANSFORMACOES: return texto("categoria.composicao_transformacoes");
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS: return texto("categoria.transformacao_composta_dois_passos");
             case TRANSFORMACAO_RELACAO: return texto("categoria.transformacao_relacao");
             case COMPOSICAO_RELACOES: return texto("categoria.composicao_relacoes");
             case MULTIPLICACAO: return texto("categoria.multiplicacao");

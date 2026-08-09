@@ -154,12 +154,12 @@ public class TesteComparativoEstadoSemanticoCompartilhado {
 
         // ================= tipo NÃO coberto pelo piloto (controle) =================
         System.out.println();
-        System.out.println("=== COMPOSICAO_TRANSFORMACAO_MEDIDAS (nao coberto pelo piloto — controle) ===");
+        System.out.println("=== COMPOSICAO_TRANSFORMACOES (controle) ===");
         cenario("tipo composto: preencher indice2, indiceAlterado=0",
-                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 new Integer[]{8, 6, null}, new boolean[]{true, true, false}, 0);
         cenario("tipo composto: fase 2 consistencia",
-                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS,
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 new Integer[]{10, 6, 14}, new boolean[]{true, true, true}, 0);
 
         // ================= sequência realista (drag simulado) =================

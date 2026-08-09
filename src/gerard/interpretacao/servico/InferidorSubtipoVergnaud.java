@@ -18,14 +18,10 @@ public class InferidorSubtipoVergnaud {
                 return subtipoComposicaoMedidas(incognita);
             case TRANSFORMACAO_MEDIDAS:
                 return subtipoTransformacaoMedidas(incognita);
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                return subtipoComposicaoTransformacaoMedidas(incognita);
             case COMPARACAO_MEDIDAS:
                 return subtipoComparacaoMedidas(incognita);
             case COMPOSICAO_TRANSFORMACOES:
                 return subtipoComposicaoTransformacoes(incognita);
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                return subtipoTransformacaoCompostaDoisPassos(incognita);
             case TRANSFORMACAO_RELACAO:
                 return subtipoTransformacaoRelacao(incognita);
             case COMPOSICAO_RELACOES:
@@ -64,14 +60,6 @@ public class InferidorSubtipoVergnaud {
     }
 
 
-    private SubtipoVergnaud subtipoComposicaoTransformacaoMedidas(String incognita) {
-        if ("papel.parte1".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_medidas.parte1", "papel.parte1", 0);
-        if ("papel.parte2".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_medidas.parte2", "papel.parte2", 1);
-        if ("papel.todo".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_medidas.todo", "papel.todo", 2);
-        if ("papel.transformacao".equals(incognita)) return new SubtipoVergnaud("subtipo.transformacao_medidas.transformacao", "papel.transformacao", 4);
-        if ("papel.estadoFinal".equals(incognita)) return new SubtipoVergnaud("subtipo.transformacao_medidas.estadoFinal", "papel.estadoFinal", 5);
-        return new SubtipoVergnaud("subtipo.composicao_transformacao_medidas.geral", null, -1);
-    }
     private SubtipoVergnaud subtipoComparacaoMedidas(String incognita) {
         if ("papel.referido".equals(incognita)) return new SubtipoVergnaud("subtipo.comparacao_medidas.referido", "papel.referido", 0);
         if ("papel.diferenca".equals(incognita)) return new SubtipoVergnaud("subtipo.comparacao_medidas.diferenca", "papel.diferenca", 1);
@@ -86,14 +74,6 @@ public class InferidorSubtipoVergnaud {
         return new SubtipoVergnaud("subtipo.composicao_transformacoes.geral", null, -1);
     }
 
-    private SubtipoVergnaud subtipoTransformacaoCompostaDoisPassos(String incognita) {
-        if ("papel.estadoInicial".equals(incognita)) return new SubtipoVergnaud("subtipo.transformacao_medidas.estadoInicial", "papel.estadoInicial", 0);
-        if ("papel.transformacao1".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_transformacoes.transformacao1", "papel.transformacao1", 1);
-        if ("papel.transformacao2".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_transformacoes.transformacao2", "papel.transformacao2", 4);
-        if ("papel.transformacaoFinal".equals(incognita)) return new SubtipoVergnaud("subtipo.composicao_transformacoes.transformacaoFinal", "papel.transformacaoFinal", 2);
-        if ("papel.estadoFinal".equals(incognita)) return new SubtipoVergnaud("subtipo.transformacao_medidas.estadoFinal", "papel.estadoFinal", 5);
-        return new SubtipoVergnaud("subtipo.transformacao_composta_dois_passos.geral", null, -1);
-    }
 
     private SubtipoVergnaud subtipoTransformacaoRelacao(String incognita) {
         if ("papel.relacaoInicial".equals(incognita)) return new SubtipoVergnaud("subtipo.transformacao_relacao.relacaoInicial", "papel.relacaoInicial", 0);

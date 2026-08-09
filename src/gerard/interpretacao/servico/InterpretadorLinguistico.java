@@ -141,7 +141,7 @@ public class InterpretadorLinguistico {
         if ((categoria == CategoriaProblema.COMPARACAO_MEDIDAS || categoria == CategoriaProblema.TRANSFORMACAO_RELACAO || categoria == CategoriaProblema.COMPOSICAO_RELACOES) && numeros.size() < 2) {
             avisos.add(ServicoLocalizacao.getInstancia().texto("warning.incomplete_relation"));
         }
-        if ((categoria == CategoriaProblema.TRANSFORMACAO_MEDIDAS || categoria == CategoriaProblema.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS || categoria == CategoriaProblema.COMPOSICAO_MEDIDAS || categoria == CategoriaProblema.COMPOSICAO_TRANSFORMACOES) && numeros.size() < 2) {
+        if ((categoria == CategoriaProblema.TRANSFORMACAO_MEDIDAS || categoria == CategoriaProblema.COMPOSICAO_MEDIDAS || categoria == CategoriaProblema.COMPOSICAO_TRANSFORMACOES) && numeros.size() < 2) {
             avisos.add(ServicoLocalizacao.getInstancia().texto("warning.incomplete_problem"));
         }
         if (pistas.size() > 1) {

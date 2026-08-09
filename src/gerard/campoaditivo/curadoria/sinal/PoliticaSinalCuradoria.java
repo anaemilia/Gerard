@@ -16,7 +16,6 @@ public final class PoliticaSinalCuradoria {
         }
         switch (tipo) {
             case TRANSFORMACAO_MEDIDAS:
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
             case TRANSFORMACAO_RELACAO:
                 return papel == PapelSinalCuradoria.TRANSFORMACAO;
             case COMPARACAO_MEDIDAS:

@@ -41,7 +41,7 @@ public class TesteBaseConhecimento {
         checar("invariante comparacao", invarianteComparacao, "referendo + valor_relativo = referido");
 
         List<String> papeisComposto =
-                monitor.papeisValidosPara(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACAO_MEDIDAS);
+                monitor.papeisValidosPara(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
         System.out.println("papeis categoria composta (sem regra de dominio): " + papeisComposto);
         checar("categoria composta devolve lista vazia", papeisComposto.toString(), "[]");
 

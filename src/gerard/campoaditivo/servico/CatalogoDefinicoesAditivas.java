@@ -27,13 +27,6 @@ public class CatalogoDefinicoesAditivas {
                         localizacao.texto("def.r2.transformacao_medidas"),
                         localizacao.texto("def.r3.transformacao_medidas")
                 );
-            case COMPOSICAO_TRANSFORMACAO_MEDIDAS:
-                return new DefinicaoDiagramaAditivo(
-                        localizacao.texto("def.titulo.composicao_transformacao_medidas"),
-                        localizacao.texto("papel.parte1"),
-                        localizacao.texto("papel.parte2"),
-                        localizacao.texto("papel.todo")
-                );
             case COMPARACAO_MEDIDAS:
                 return new DefinicaoDiagramaAditivo(
                         localizacao.texto("def.titulo.comparacao_medidas"),
@@ -47,13 +40,6 @@ public class CatalogoDefinicoesAditivas {
                         localizacao.texto("def.r1.composicao_transformacoes"),
                         localizacao.texto("def.r2.composicao_transformacoes"),
                         localizacao.texto("def.r3.composicao_transformacoes")
-                );
-            case TRANSFORMACAO_COMPOSTA_DOIS_PASSOS:
-                return new DefinicaoDiagramaAditivo(
-                        localizacao.texto("def.titulo.transformacao_composta_dois_passos"),
-                        localizacao.texto("papel.estadoInicial"),
-                        localizacao.texto("papel.transformacao1"),
-                        localizacao.texto("papel.estadoIntermediario")
                 );
             case TRANSFORMACAO_RELACAO:
                 return new DefinicaoDiagramaAditivo(

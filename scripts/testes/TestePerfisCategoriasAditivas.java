@@ -45,7 +45,7 @@ public final class TestePerfisCategoriasAditivas {
                 "referido e referendo devem permanecer cardinais");
 
         PerfilInteracaoCategoria composta = catalogo.obter(
-                TipoSituacaoAditiva.TRANSFORMACAO_COMPOSTA_DOIS_PASSOS);
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES);
         confirmar(composta.papelPermiteSinal("papel.transformacao1")
                         && composta.papelPermiteSinal("papel.transformacao2"),
                 "transformações compostas devem generalizar papéis numerados");
