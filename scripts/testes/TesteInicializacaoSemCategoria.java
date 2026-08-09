@@ -29,7 +29,10 @@ public class TesteInicializacaoSemCategoria {
                     exigir(tela.elementosTexto.isEmpty(), "A tela iniciou com elementos textuais.");
                     exigir(tela.elementosVergnaud.isEmpty(), "A tela iniciou com diagrama de Vergnaud.");
                     exigir(tela.circulosVenn.isEmpty(), "A tela iniciou com diagrama complementar.");
-                    exigir(!tela.botaoSortear.isEnabled(), "Sortear deveria estar desabilitado antes da categoria.");
+                    exigir(tela.botaoFerramentaSortearMedidas.isEnabled(),
+                            "Sortear Medidas deve estar disponível antes da categoria.");
+                    exigir(tela.botaoFerramentaSortearRelacoes.isEnabled(),
+                            "Sortear Relações deve estar disponível antes da categoria.");
                     exigir(!tela.botaoAjudaTexto.isVisible(), "Ajuda textual deveria estar oculta.");
                     exigir(!tela.botaoAjudaVergnaud.isVisible(), "Ajuda de Vergnaud deveria estar oculta.");
                     exigir(painelVisivel(imagemInicial, 20, 60), "O painel do texto não permaneceu visível.");
@@ -41,7 +44,10 @@ public class TesteInicializacaoSemCategoria {
                     exigir(!tela.categoriaSelecionadaParaAtividade, "Trocar o idioma ativou uma categoria.");
                     exigir(tela.situacaoProblemaAtual == null, "Trocar o idioma carregou uma situação.");
                     exigir(tela.elementosVergnaud.isEmpty(), "Trocar o idioma carregou um diagrama.");
-                    exigir(!tela.botaoSortear.isEnabled(), "Trocar o idioma habilitou o sorteio.");
+                    exigir(tela.botaoFerramentaSortearMedidas.isEnabled(),
+                            "Trocar o idioma desabilitou Sortear Medidas.");
+                    exigir(tela.botaoFerramentaSortearRelacoes.isEnabled(),
+                            "Trocar o idioma desabilitou Sortear Relações.");
 
                     tela.idiomaSelecionado = IdiomaInterface.PORTUGUES;
                     invocar(tela, "aplicarIdiomaSelecionadoMantendoEstadoTela");
@@ -55,7 +61,10 @@ public class TesteInicializacaoSemCategoria {
                     exigir(!tela.elementosTexto.isEmpty(), "A categoria não inicializou os elementos do texto.");
                     exigir(!tela.elementosVergnaud.isEmpty(), "A categoria não inicializou o diagrama de Vergnaud.");
                     exigir(!tela.circulosVenn.isEmpty(), "Composição de medidas não inicializou o diagrama complementar.");
-                    exigir(tela.botaoSortear.isEnabled(), "Sortear não foi habilitado após a categoria.");
+                    exigir(tela.botaoFerramentaSortearMedidas.isEnabled(),
+                            "Sortear Medidas foi desabilitado após a categoria.");
+                    exigir(tela.botaoFerramentaSortearRelacoes.isEnabled(),
+                            "Sortear Relações foi desabilitado após a categoria.");
                     exigir(tela.botaoAjudaTexto.isVisible(), "Ajuda textual não apareceu após a categoria.");
                     exigir(tela.botaoAjudaVergnaud.isVisible(), "Ajuda de Vergnaud não apareceu após a categoria.");
                     exigir(tela.botaoAjudaComplementar.isVisible(), "Ajuda complementar não apareceu após a categoria.");

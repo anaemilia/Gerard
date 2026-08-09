@@ -57,6 +57,31 @@
 
     <import file="nbproject/build-impl.xml"/>
 
+    <!--
+      Sobrescreve os alvos simplificados importados do NetBeans para que as
+      dependências locais sejam usadas de forma portátil em Windows e Linux.
+      O build-impl.xml é gerado/ignorado e, portanto, não deve carregar esta
+      correção.
+    -->
+    <target name="compile" depends="-init,-copy-resources">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
+               source="${javac.source}" target="${javac.target}"
+               includeantruntime="false">
+            <classpath>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="${main.class}" fork="true">
+            <classpath>
+                <pathelement location="${build.classes.dir}"/>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
+        </java>
+    </target>
+
     <target name="validar-regressao-artigo">
         <exec executable="python3" failonerror="true" dir="${documentacao.dir}/artigo_codesign">
             <arg value="scripts/validar_regressao_artigo.py"/>

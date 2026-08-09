@@ -14,7 +14,7 @@ correto. Para isso, veja a recomendação de testes JUnit no relatório de
 análise de código.
 """
 from pathlib import Path
-import re, subprocess, sys
+import re, shutil, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
 def check(cond,msg):
@@ -33,8 +33,12 @@ def properties(rel):
     return mapa
 
 print('== Compilação ==')
-r=subprocess.run(['ant','clean','jar'],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-print(r.stdout); check(r.returncode==0,'ant clean jar')
+ant=shutil.which('ant') or shutil.which('ant.bat')
+if ant:
+    r=subprocess.run([ant,'clean','jar'],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    print(r.stdout); check(r.returncode==0,'ant clean jar')
+else:
+    check(False,'ant clean jar (Ant não encontrado no PATH)')
 check((ROOT/'dist/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar').exists(),'JAR gerado')
 
 print('== Internacionalização ==')
@@ -310,18 +314,18 @@ check('for (int i = 0; i < elementosVergnaud.size(); i++)' in main
       and 'encontrarItemSobreElemento(alvo)' in main,
       'conclusão inspeciona cada elemento do diagrama por mouse ou teclado')
 check('definirConclusaoDestacada' in destaque_conclusao
-      and 'elementos' in destaque_conclusao and 'conectores' in destaque_conclusao
-      and 'itens' in destaque_conclusao,
-      'destaque azul abrange elementos, conectores e itens do Vergnaud')
+      and 'elementos' in destaque_conclusao and 'itens' in destaque_conclusao
+      and 'for (ConectorVergnaud' not in destaque_conclusao,
+      'destaque azul abrange valores e não colore conectores do Vergnaud')
 check('JRadioButton' in tip_conclusao and 'opcaoSim' in tip_conclusao
       and 'opcaoNao' in tip_conclusao,
       'tip de conclusão usa radio buttons Sim e Não')
 check('ui.completion.congratulations' in main
-      and 'botaoSortear.doClick()' in main,
-      'escolha Sim aciona o botão Sortear consolidado')
-check('botaoSortear.addActionListener' in main
-      and 'iniciarNovaAtividade(AcaoAtividade.SORTEAR)' in main,
-      'botão Sortear preserva o fluxo consolidado de nova tarefa na categoria selecionada')
+      and 'itemNovaSituacao.doClick()' in main,
+      'escolha Sim aciona o item consolidado de nova situação')
+check('itemNovaSituacao.addActionListener' in main
+      and 'sortearNovaSituacao()' in main,
+      'item Nova situação preserva o fluxo consolidado de sorteio')
 check('verificarConclusaoModelagem()' in main
       and 'suspenderConclusaoDuranteManipulacao()' in main,
       'tela verifica conclusão após soltura e a suspende durante nova manipulação')
@@ -367,7 +371,7 @@ check('renderizador.renderizar(g2, area, cena, false, sucesso)' in painel_montag
       'definição da categoria não fica permanentemente desenhada na construção')
 check('getToolTipText(MouseEvent evento)' in painel_montagem and 'limitesTituloCategoria.contains' in painel_montagem,
       'definição aparece somente no onmouseover do nome da categoria')
-check(props['pt'].get('ui.tab.assembly') == 'Construir situação-problema'
+check(props['pt'].get('ui.tab.assembly') == 'Construir'
       and props['pt'].get('montagem.title') == 'Construa a situação-problema',
       'nomenclatura portuguesa usa Construir e Construa')
 check('CatalogoAtividadesMontagemPadrao.listar(idioma)' in montagem

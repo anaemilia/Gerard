@@ -170,9 +170,9 @@ public final class TesteConclusaoModelagem {
         aplicador.aplicar(true, Arrays.asList(elemento),
                 Arrays.asList(conector), Arrays.asList(item));
         confirmar(elemento.isConclusaoDestacada()
-                        && conector.isConclusaoDestacada()
+                        && !conector.isConclusaoDestacada()
                         && item.isConclusaoDestacada(),
-                "elementos, conectores e itens devem receber destaque azul");
+                "somente elementos e itens numéricos devem receber destaque azul");
     }
 
     private static void testarRegistroDoProtocoloNoItem() {

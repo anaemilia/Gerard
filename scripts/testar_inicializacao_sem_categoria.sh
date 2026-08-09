@@ -12,7 +12,8 @@ from pathlib import Path
 main = Path('src/Main.java').read_text(encoding='utf-8')
 assert 'categoriaSelecionadaParaAtividade = false' in main
 assert 'inicializarTelaSemCategoria()' in main
-assert 'botaoSortear.setEnabled(categoriaSelecionadaParaAtividade)' in main
+assert 'botaoFerramentaSortearMedidas.setEnabled(abaGerardAtiva)' in main
+assert 'botaoFerramentaSortearRelacoes.setEnabled(abaGerardAtiva)' in main
 assert 'if (!categoriaSelecionadaParaAtividade)' in main
 print('OK: proteções estruturais da inicialização vazia presentes.')
 PY
