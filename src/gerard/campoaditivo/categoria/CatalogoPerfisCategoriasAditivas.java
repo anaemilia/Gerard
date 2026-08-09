@@ -4,7 +4,7 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.semantica.categoria.CatalogoEsquemasCategoriasAditivas;
 import gerard.semantica.categoria.EsquemaCategoriaAditiva;
 import gerard.semantica.numero.DominioNumerico;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -22,7 +22,7 @@ public final class CatalogoPerfisCategoriasAditivas {
         Set<String> papeisInteiros = new LinkedHashSet<String>();
         Set<Integer> indicesInteiros = new LinkedHashSet<Integer>();
 
-        for (PapelQuantitativo papel : esquema.obterPapeis()) {
+        for (DescritorPapelQuantitativo papel : esquema.obterPapeis()) {
             if (papel.getDominio() == DominioNumerico.INTEIROS) {
                 papeisInteiros.add(papel.getChave());
                 if (papel.getChave().startsWith("papel.transformacao")) {

@@ -11,8 +11,8 @@ import java.util.Map;
  * pertencem a N0.
  */
 public final class CatalogoPapeisSemanticos {
-    private final Map<String, PapelQuantitativo> exatos =
-            new LinkedHashMap<String, PapelQuantitativo>();
+    private final Map<String, DescritorPapelQuantitativo> exatos =
+            new LinkedHashMap<String, DescritorPapelQuantitativo>();
 
     public CatalogoPapeisSemanticos() {
         registrarNatural("papel.parte", "Parte");
@@ -44,29 +44,29 @@ public final class CatalogoPapeisSemanticos {
     }
 
     private void registrarNatural(String chave, String nome) {
-        exatos.put(chave, new PapelQuantitativo(chave, nome, DominioNumerico.NATURAIS));
+        exatos.put(chave, new DescritorPapelQuantitativo(chave, nome, DominioNumerico.NATURAIS));
     }
 
     private void registrarInteiro(String chave, String nome) {
-        exatos.put(chave, new PapelQuantitativo(chave, nome, DominioNumerico.INTEIROS));
+        exatos.put(chave, new DescritorPapelQuantitativo(chave, nome, DominioNumerico.INTEIROS));
     }
 
-    public PapelQuantitativo obter(String chavePapel) {
+    public DescritorPapelQuantitativo obter(String chavePapel) {
         String chave = chavePapel == null ? "" : chavePapel.trim();
-        PapelQuantitativo papel = exatos.get(chave);
+        DescritorPapelQuantitativo papel = exatos.get(chave);
         if (papel != null) {
             return papel;
         }
         if (chave.startsWith("papel.transformacao")) {
-            return new PapelQuantitativo(chave, "Transformação", DominioNumerico.INTEIROS);
+            return new DescritorPapelQuantitativo(chave, "Transformação", DominioNumerico.INTEIROS);
         }
         if (chave.startsWith("papel.relacao")) {
-            return new PapelQuantitativo(chave, "Relação", DominioNumerico.INTEIROS);
+            return new DescritorPapelQuantitativo(chave, "Relação", DominioNumerico.INTEIROS);
         }
         if (chave.startsWith("papel.parte")) {
-            return new PapelQuantitativo(chave, "Parte", DominioNumerico.NATURAIS);
+            return new DescritorPapelQuantitativo(chave, "Parte", DominioNumerico.NATURAIS);
         }
-        return new PapelQuantitativo(chave, "Valor", DominioNumerico.NATURAIS);
+        return new DescritorPapelQuantitativo(chave, "Valor", DominioNumerico.NATURAIS);
     }
 
     public DominioNumerico dominioDoPapel(String chavePapel) {
@@ -77,7 +77,7 @@ public final class CatalogoPapeisSemanticos {
         return dominioDoPapel(chavePapel) == DominioNumerico.INTEIROS;
     }
 
-    public Map<String, PapelQuantitativo> papeisRegistrados() {
+    public Map<String, DescritorPapelQuantitativo> papeisRegistrados() {
         return Collections.unmodifiableMap(exatos);
     }
 }

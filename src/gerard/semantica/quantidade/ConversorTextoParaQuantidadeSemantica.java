@@ -1,6 +1,6 @@
 package gerard.semantica.quantidade;
 
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import java.math.BigDecimal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +11,7 @@ public final class ConversorTextoParaQuantidadeSemantica {
             "[+\\-]?(?:\\d[\\d.,]*|[.,]\\d+)");
 
     public QuantidadeSemantica converter(String texto,
-            PerfilQuantidadeSituacao perfil, PapelQuantitativo papel) {
+            PerfilQuantidadeSituacao perfil, DescritorPapelQuantitativo papel) {
         BigDecimal valor = converterDecimal(texto);
         if (valor == null) {
             return null;

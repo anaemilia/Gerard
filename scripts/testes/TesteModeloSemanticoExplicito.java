@@ -19,7 +19,7 @@ import gerard.semantica.numero.NumeroInteiro;
 import gerard.semantica.numero.NumeroNatural;
 import gerard.semantica.numero.ValorDesconhecido;
 import gerard.semantica.papel.CatalogoPapeisSemanticos;
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import gerard.semantica.pista.LexicoPistasAditivas;
 import gerard.semantica.pista.OcorrenciaPista;
 import gerard.semantica.pista.TipoPistaLinguistica;
@@ -83,8 +83,8 @@ public final class TesteModeloSemanticoExplicito {
                         == DominioNumerico.NATURAIS,
                 "referendo pertence aos naturais");
 
-        PapelQuantitativo estado = catalogo.obter("papel.estadoFinal");
-        PapelQuantitativo transformacao = catalogo.obter("papel.transformacao");
+        DescritorPapelQuantitativo estado = catalogo.obter("papel.estadoFinal");
+        DescritorPapelQuantitativo transformacao = catalogo.obter("papel.transformacao");
         new ElementoNumerico("n1", estado, new NumeroNatural(3), "3");
         new ElementoNumerico("n2", transformacao, new NumeroInteiro(-2), "-2");
         boolean rejeitou = false;

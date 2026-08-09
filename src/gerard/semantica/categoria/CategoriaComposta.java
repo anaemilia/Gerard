@@ -1,6 +1,6 @@
 package gerard.semantica.categoria;
 
-import gerard.semantica.papel.PapelQuantitativo;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +17,8 @@ public final class CategoriaComposta implements ComponenteCategoria {
 
     public List<ComponenteCategoria> getComponentes() { return componentes; }
 
-    public List<PapelQuantitativo> obterPapeis() {
-        List<PapelQuantitativo> resultado = new ArrayList<PapelQuantitativo>();
+    public List<DescritorPapelQuantitativo> obterPapeis() {
+        List<DescritorPapelQuantitativo> resultado = new ArrayList<DescritorPapelQuantitativo>();
         for (ComponenteCategoria componente : componentes) {
             resultado.addAll(componente.obterPapeis());
         }
