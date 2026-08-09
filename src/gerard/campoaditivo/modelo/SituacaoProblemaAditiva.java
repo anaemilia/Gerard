@@ -2,8 +2,9 @@ package gerard.campoaditivo.modelo;
 
 import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
+import gerard.semantica.quantidade.ContextoQuantidade;
 
-public class SituacaoProblemaAditiva {
+public class SituacaoProblemaAditiva implements ContextoQuantidade {
     private final String id;
     private final String situacaoGrupoId;
     private final String tipoVersao;
