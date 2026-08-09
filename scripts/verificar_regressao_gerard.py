@@ -187,6 +187,7 @@ politica_valores=text('src/gerard/campoaditivo/semantica/PoliticaValoresAditivos
 natureza_papel=text('src/gerard/campoaditivo/semantica/NaturezaPapelAditivo.java')
 questionamento=text('src/gerard/Scaffolding/questionamento/ScaffoldingQuestionamento.java')
 estado_compartilhado=text('src/gerard/campoaditivo/sincronizacao/EstadoSemanticoCompartilhado.java')
+conversor_valores=text('src/gerard/campoaditivo/sincronizacao/ConversorValoresEstadoAditivo.java')
 controle_anotacao=text('src/gerard/Scaffolding/feedbackerro/ControladorAnotacaoTemporaria.java')
 check('class CatalogoPapeisSemanticosAditivos' in catalogo_papeis
       and 'obterChavePapelDoElemento' in catalogo_papeis
@@ -203,8 +204,10 @@ check('class PoliticaValoresAditivos' in politica_valores
 check('catalogoPapeis.obterChavePapelDoElemento' in questionamento
       and 'catalogoPapeis.obterIndiceElementoPorPapel' in questionamento,
       'questionamento delega mapeamento ao catálogo central')
-check('politicaValores.valorEhValidoNoEstadoCompartilhado' in estado_compartilhado,
-      'estado compartilhado delega validade à política semântica')
+check('ConversorValoresEstadoAditivo' in estado_compartilhado
+      and 'conversorValores.normalizarEntrada' in estado_compartilhado
+      and 'politicaValores.valorEhValidoNoEstadoCompartilhado' in conversor_valores,
+      'estado compartilhado delega validade à política semântica via conversor')
 check('ControladorAnotacaoTemporaria' in main
       and 'controladorAnotacaoTemporaria.mostrar' in main
       and 'class ControladorAnotacaoTemporaria' in controle_anotacao,

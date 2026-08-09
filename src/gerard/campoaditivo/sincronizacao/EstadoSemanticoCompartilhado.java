@@ -1,10 +1,7 @@
 package gerard.campoaditivo.sincronizacao;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
-import gerard.campoaditivo.semantica.PoliticaValoresAditivos;
-import gerard.semantica.categoria.CatalogoEsquemasCategoriasAditivas;
 import gerard.semantica.numero.DominioNumerico;
-import gerard.semantica.numero.FabricaValoresNumericos;
 import gerard.semantica.numero.ValorNumerico;
 
 /**
@@ -14,12 +11,8 @@ import gerard.semantica.numero.ValorNumerico;
  * eixo e tabuleiro não decidem localmente se um valor aceita sinal.
  */
 public final class EstadoSemanticoCompartilhado {
-    private final PoliticaValoresAditivos politicaValores =
-            new PoliticaValoresAditivos();
-    private final CatalogoEsquemasCategoriasAditivas esquemas =
-            new CatalogoEsquemasCategoriasAditivas();
-    private final FabricaValoresNumericos fabricaValores =
-            new FabricaValoresNumericos();
+    private final ConversorValoresEstadoAditivo conversorValores =
+            new ConversorValoresEstadoAditivo();
     private final ResolvedorRelacoesEstruturaisAditivas resolvedorRelacoes =
             new ResolvedorRelacoesEstruturaisAditivas();
 
@@ -109,7 +102,7 @@ public final class EstadoSemanticoCompartilhado {
     public synchronized void limpar(TipoSituacaoAditiva novoTipo) {
         tipo = novoTipo;
         for (int i = 0; i < valores.length; i++) {
-            valores[i] = fabricaValores.desconhecido(dominioDoIndice(novoTipo, i));
+            valores[i] = conversorValores.desconhecido(novoTipo, i);
         }
         indiceAlterado = -1;
         origem = Origem.INICIALIZACAO;
@@ -148,11 +141,8 @@ public final class EstadoSemanticoCompartilhado {
                 conhecido = false;
                 bruto = null;
             }
-            if (conhecido && !politicaValores.valorEhValidoNoEstadoCompartilhado(
-                    tipo, i, bruto)) {
-                conhecido = false;
-            }
-            valores[i] = criarValorSeguro(dominioDoIndice(tipo, i), bruto, conhecido);
+            valores[i] = conversorValores.normalizarEntrada(
+                    tipo, i, bruto, conhecido);
         }
         indiceAlterado = novoIndiceAlterado;
         origem = novaOrigem == null ? Origem.PROTOCOLO : novaOrigem;
@@ -200,34 +190,14 @@ public final class EstadoSemanticoCompartilhado {
             return;
         }
         Integer valorAntes = valores[indice] == null ? null : valores[indice].valorOuNull();
-        definir(indice, valor);
+        ValorNumerico calculado = conversorValores.criarCalculadoOuNull(
+                tipo, indice, valor);
+        if (calculado != null) {
+            valores[indice] = calculado;
+        }
         Integer valorDepois = valores[indice] == null ? null : valores[indice].valorOuNull();
         if (valorDepois != null && !valorDepois.equals(valorAntes)) {
             indiceResolvidoAutomaticamente = indice;
         }
-    }
-    private void definir(int indice, int valor) {
-        try {
-            valores[indice] = fabricaValores.conhecido(
-                    dominioDoIndice(tipo, indice), valor);
-        } catch (IllegalArgumentException ex) {
-            // A relação matemática não pode converter uma medida em negativo.
-            // O valor anterior/ausente é preservado sem publicar estado inválido.
-        }
-    }
-
-    private ValorNumerico criarValorSeguro(DominioNumerico dominio,
-                                            Integer valor,
-                                            boolean conhecido) {
-        try {
-            return fabricaValores.criar(dominio, valor, conhecido);
-        } catch (IllegalArgumentException ex) {
-            return fabricaValores.desconhecido(dominio);
-        }
-    }
-
-    private DominioNumerico dominioDoIndice(TipoSituacaoAditiva tipoAtual,
-                                            int indice) {
-        return esquemas.obter(tipoAtual).obterDominioCompartilhado(indice);
     }
 }
