@@ -137,6 +137,7 @@ import gerard.ui.vergnaud.SeletorIndicesEstadoCompartilhado;
 import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
 import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
 import gerard.ui.vergnaud.ApresentadorItemVergnaud;
+import gerard.ui.vergnaud.ApresentadorGraficoInteiros;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -669,6 +670,8 @@ public class Main extends JFrame {
         PoliticaValoresAditivos politicaValoresAditivos = new PoliticaValoresAditivos(catalogoPapeisSemanticos);
         ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
         ScaffoldingGraficoInteiros scaffoldingGraficoInteiros = new ScaffoldingGraficoInteiros();
+        final ApresentadorGraficoInteiros apresentadorGraficoInteiros =
+                new ApresentadorGraficoInteiros(scaffoldingGraficoInteiros);
         ScaffoldingReacaoRepresentacoes scaffoldingReacaoRepresentacoes = new ScaffoldingReacaoRepresentacoes();
         final FornecedorCursoresPickup fornecedorCursoresPickup = new FornecedorCursoresPickupSwing();
         final RenderizadorPickup renderizadorPickup = new RenderizadorPickupElevado();
@@ -12138,24 +12141,18 @@ public class Main extends JFrame {
             }
             itemGraficoInteiros = item;
             numeroRelativoGraficoInteiros = numeroRelativo;
-            scaffoldingGraficoInteiros.mostrar(
-                    retanguloDoElemento(numeroRelativo),
-                    valorBase
-            );
+            apresentadorGraficoInteiros.mostrar(
+                    retanguloDoElemento(numeroRelativo), valorBase);
         }
 
         private void registrarEscolhaGraficoInteiros(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo, String valorBase, String sinal) {
             if (numeroRelativo == null) {
                 return;
             }
-            if (!scaffoldingGraficoInteiros.isVisivel()) {
-                mostrarGraficoInteirosNumeroRelativo(item, numeroRelativo, valorBase);
-            } else {
-                scaffoldingGraficoInteiros.atualizarCirculo(retanguloDoElemento(numeroRelativo));
-            }
             itemGraficoInteiros = item;
             numeroRelativoGraficoInteiros = numeroRelativo;
-            scaffoldingGraficoInteiros.registrarEscolha(valorBase, sinal);
+            apresentadorGraficoInteiros.registrarEscolha(
+                    retanguloDoElemento(numeroRelativo), valorBase, sinal);
         }
 
         /**
@@ -12227,7 +12224,8 @@ public class Main extends JFrame {
             if (confirmarAoFinalizar) {
                 verificarConclusaoModelagem();
             }
-            scaffoldingGraficoInteiros.atualizarCirculo(retanguloDoElemento(numeroRelativoGraficoInteiros));
+            apresentadorGraficoInteiros.atualizarGeometria(
+                    retanguloDoElemento(numeroRelativoGraficoInteiros));
             scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
         }
 
@@ -12650,7 +12648,8 @@ public class Main extends JFrame {
                 limparGraficoInteiros();
                 return;
             }
-            scaffoldingGraficoInteiros.atualizarCirculo(retanguloDoElemento(numeroRelativoAtual));
+            apresentadorGraficoInteiros.atualizarGeometria(
+                    retanguloDoElemento(numeroRelativoAtual));
         }
 
         private void limparGraficoInteirosSeForItemAtivo(ItemTextoArrastavel item) {
