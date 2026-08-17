@@ -15,20 +15,34 @@ lacunas reais, três delas registradas dentro desses próprios arquivos como
 "não resolvido aqui", mais um item novo (fora desses cinco) sobre o roteiro
 de extração de handlers.
 
-## 1. `AG_EME` — mensagem explicativa ainda mínima
+## 1. `AG_EME` — mensagem explicativa ainda mínima — IMPLEMENTADO (2026-08-16)
 
-`TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md` classifica `AG_EME`
+`TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md` classificava `AG_EME`
 ("exibir mensagem explicativa") como **parcialmente implementado**:
-`Main.mostrarDicaOperacaoIncognita()` (`Main.java:6411-6416`) mostra só uma
+`Main.mostrarDicaOperacaoIncognita()` (`Main.java:6411-6416`) mostrava só uma
 frase fixa (`ui.hint.chooseOperation` → "escolha soma ou subtração e tente
-de novo"), sem explicação conceitual do porquê. Confirmado hoje: o método
-continua exatamente assim, sem mudança desde 07/08.
+de novo"), sem explicação conceitual do porquê.
 
-- **Trabalho**: redação de conteúdo pedagógico dentro de um mecanismo que já
-  existe (mesmo padrão do rascunho de `ui.notice.attemptLimitReached`
-  já aceito). Baixo risco técnico.
-- **Risco**: baixo tecnicamente; depende de decisão de conteúdo pedagógico,
-  não decidida ainda.
+Decisão da usuária (2026-08-16): a explicação deve morar no objeto rico
+("preserve a localidade do conhecimento, pois foi pensada para essa
+finalidade: encapsular conhecimento para agir como objeto rico"), e deve
+explicar conceitualmente o objeto rico manipulado via protocolo de mouse.
+Parte1 e Parte2 compartilham o mesmo texto conceitual ("Parte") — são
+conceitualmente iguais.
+
+Implementado: `DescritorRepresentacaoPapel` ganhou `chaveExplicacaoConceitual`;
+as fábricas já existentes de `PapelQuantitativo` (`PapelQuantitativo.parte1/
+parte2/todo`, `FabricaPapeisTransformacaoMedidas`, `FabricaPapeisComparacaoMedidas`,
+`FabricaPapeisComposicaoDeTransformacoes`, `FabricaPapeisTransformacaoDeRelacao`,
+`FabricaPapeisComposicaoDeRelacoes` — já existiam como piloto testado, só não
+estavam ligadas à UI para esta finalidade) passaram a fornecer essa chave;
+o novo `CatalogoExplicacoesConceituaisPapel` resolve a chave viva do papel
+(a mesma que `Main.obterPapelIncognitaAtual()` já usa) para a chave de
+explicação, consultando os objetos ricos já existentes, sem duplicar
+conhecimento. `mostrarDicaOperacaoIncognita()` passou a mostrar a
+explicação conceitual antes da instrução operacional já existente. Ver
+`RELATORIO_ITEM1_AG_EME_EXPLICACAO_CONCEITUAL_2026-08-16.md` para os
+detalhes completos e a verificação.
 
 ## 2. Flag de teste `EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES` ainda ativa
 

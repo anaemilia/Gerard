@@ -19,19 +19,22 @@ public final class FabricaPapeisComposicaoDeRelacoes {
 
     public static PapelQuantitativo relacao1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.relacao1", "Relação 1", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.relacao1"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.relacao1",
+                        "explicacao.papel.relacao"),
                 publicador);
     }
 
     public static PapelQuantitativo relacao2(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.relacao2", "Relação 2", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.relacao2"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.relacao2",
+                        "explicacao.papel.relacao"),
                 publicador);
     }
 
     public static PapelQuantitativo relacaoFinal(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.relacaoFinal", "Relação Final", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.relacaoFinal"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.relacaoFinal",
+                        "explicacao.papel.relacaoFinal"),
                 publicador);
     }
 }

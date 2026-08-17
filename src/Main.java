@@ -6406,18 +6406,30 @@ public class Main extends JFrame {
         }
 
         /**
-         * Dica genérica (a mesma frase para as oito categorias, por decisão
-         * do usuário em 2026-07-22): não nomeia a operação nem os operandos,
-         * só orienta a escolher soma ou subtração e tentar de novo.
+         * AG_EME (levantamento de pendências de 2026-08-11, item 1; decisão
+         * da usuária em 2026-08-16): não nomeia a operação nem os operandos,
+         * mas agora explica conceitualmente o papel manipulado via protocolo
+         * de mouse antes de orientar a escolher soma ou subtração — a
+         * explicação vem do objeto rico (DescritorRepresentacaoPapel de
+         * PapelQuantitativo/FabricaPapeis*, via
+         * CatalogoExplicacoesConceituaisPapel), não de texto solto aqui.
+         * Até 2026-08-16 mostrava só a instrução operacional, mesma frase
+         * para todas as categorias, por decisão do usuário em 2026-07-22.
          */
         private void mostrarDicaOperacaoIncognita() {
-            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
-            String mensagem = localizacao.formatar("ui.hint.chooseOperation", nomePapel);
+            String chavePapelAtual = obterPapelIncognitaAtual();
+            String nomePapel = localizacao.texto(chavePapelAtual);
+            String chaveExplicacao = gerard.dominio.campoaditivo.CatalogoExplicacoesConceituaisPapel
+                    .obterChaveExplicacao(chavePapelAtual);
+            String explicacaoConceitual = localizacao.texto(chaveExplicacao);
+            String mensagem = explicacaoConceitual + "\n\n"
+                    + localizacao.formatar("ui.hint.chooseOperation", nomePapel);
             JOptionPane.showMessageDialog(this, mensagem,
                     localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
             registrarFeedbackExibido("AG_EME",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "dica genérica de escolher soma ou subtração");
+                    "explicação conceitual do papel (" + chavePapelAtual
+                            + ") + dica de escolher soma ou subtração");
         }
 
         private void verificarConclusaoModelagem() {

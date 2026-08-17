@@ -638,6 +638,54 @@ check(main.count('flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao()') 
       'flush do log represado é chamado tanto no reset defensivo de mousePressed'
       ' quanto na soltura normal do controle de Comparação')
 
+print('== Item 1 (AG_EME): explicação conceitual do papel no objeto rico ==')
+descritor_papel = text('src/gerard/dominio/campoaditivo/DescritorRepresentacaoPapel.java')
+papel_quantitativo = text('src/gerard/dominio/campoaditivo/PapelQuantitativo.java')
+catalogo_explicacoes = text('src/gerard/dominio/campoaditivo/CatalogoExplicacoesConceituaisPapel.java')
+fabrica_transformacao_medidas = text('src/gerard/dominio/campoaditivo/FabricaPapeisTransformacaoMedidas.java')
+fabrica_comparacao_medidas = text('src/gerard/dominio/campoaditivo/FabricaPapeisComparacaoMedidas.java')
+fabrica_composicao_transformacoes = text('src/gerard/dominio/campoaditivo/FabricaPapeisComposicaoDeTransformacoes.java')
+fabrica_transformacao_relacao = text('src/gerard/dominio/campoaditivo/FabricaPapeisTransformacaoDeRelacao.java')
+fabrica_composicao_relacoes = text('src/gerard/dominio/campoaditivo/FabricaPapeisComposicaoDeRelacoes.java')
+
+check('private final String chaveExplicacaoConceitual' in descritor_papel
+      and 'getChaveExplicacaoConceitual' in descritor_papel,
+      'DescritorRepresentacaoPapel carrega a chave de explicação conceitual do papel')
+check('explicacao.papel.parte' in papel_quantitativo
+      and 'explicacao.papel.todo' in papel_quantitativo,
+      'PapelQuantitativo.parte1/parte2/todo já fornecem chave de explicação conceitual')
+for fabrica, chaves in (
+        (fabrica_transformacao_medidas, ('explicacao.papel.estadoInicial',
+                                          'explicacao.papel.transformacao', 'explicacao.papel.estadoFinal')),
+        (fabrica_comparacao_medidas, ('explicacao.papel.referido',
+                                       'explicacao.papel.referendo', 'explicacao.papel.diferenca')),
+        (fabrica_composicao_transformacoes, ('explicacao.papel.transformacao',
+                                              'explicacao.papel.transformacaoFinal')),
+        (fabrica_transformacao_relacao, ('explicacao.papel.relacaoInicial',
+                                          'explicacao.papel.transformacao', 'explicacao.papel.relacaoFinal')),
+        (fabrica_composicao_relacoes, ('explicacao.papel.relacao', 'explicacao.papel.relacaoFinal'))):
+    for chave in chaves:
+        check(chave in fabrica, f'fábrica de papéis fornece chave de explicação {chave}')
+check('class CatalogoExplicacoesConceituaisPapel' in catalogo_explicacoes
+      and 'obterChaveExplicacao' in catalogo_explicacoes
+      and 'CHAVE_EXPLICACAO_GENERICA' in catalogo_explicacoes,
+      'catálogo coordenador resolve chave de papel -> chave de explicação, com fallback genérico')
+check("papel.diferenca" in catalogo_explicacoes and "papel.referente" in catalogo_explicacoes,
+      'catálogo trata os sinônimos vivos sem fábrica própria (diferenca/valorRelativo, referente/referendo)')
+check('CatalogoExplicacoesConceituaisPapel' in main
+      and 'obterChaveExplicacao' in main
+      and 'explicacaoConceitual' in main,
+      'mostrarDicaOperacaoIncognita consulta o catálogo e usa a explicação conceitual')
+chaves_explicacao = ('explicacao.papel.generica', 'explicacao.papel.parte', 'explicacao.papel.todo',
+                      'explicacao.papel.estadoInicial', 'explicacao.papel.transformacao',
+                      'explicacao.papel.estadoFinal', 'explicacao.papel.transformacaoFinal',
+                      'explicacao.papel.referido', 'explicacao.papel.referendo',
+                      'explicacao.papel.diferenca', 'explicacao.papel.relacaoInicial',
+                      'explicacao.papel.relacaoFinal', 'explicacao.papel.relacao')
+for chave in chaves_explicacao:
+    check(all(chave in sets[k] for k in ('pt', 'en', 'fr')) and chave in props['es'],
+          f'explicação conceitual localizada em pt/en/es/fr: {chave}')
+
 if errors:
     print(f'REPROVADO: {len(errors)} falha(s) no total.'); sys.exit(1)
 print('APROVADO: verificador de regressão completo, nenhuma falha registrada.')

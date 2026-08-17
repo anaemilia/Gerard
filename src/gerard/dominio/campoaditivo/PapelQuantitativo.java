@@ -107,19 +107,22 @@ public final class PapelQuantitativo {
 
     public static PapelQuantitativo parte1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte1", "Parte", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte1"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.parte1",
+                        "explicacao.papel.parte"),
                 publicador);
     }
 
     public static PapelQuantitativo parte2(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte2", "Parte", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte2"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.parte2",
+                        "explicacao.papel.parte"),
                 publicador);
     }
 
     public static PapelQuantitativo todo(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.todo", "Todo", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "rotulo.papel.todo"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "", "rotulo.papel.todo",
+                        "explicacao.papel.todo"),
                 publicador);
     }
 
