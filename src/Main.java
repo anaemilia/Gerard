@@ -138,6 +138,7 @@ import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
 import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
 import gerard.ui.vergnaud.ApresentadorItemVergnaud;
 import gerard.ui.vergnaud.ApresentadorGraficoInteiros;
+import gerard.ui.enunciado.GeometriaAreaEnunciado;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -146,7 +147,8 @@ import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
 import gerard.campoaditivo.diagrama.elementos.FragmentoAnotacao;
 import gerard.campoaditivo.diagrama.elementos.MarcadorTexto;
 import gerard.interacao.arraste.SessaoArrasteTextoParaDiagrama;
-import gerard.interacao.arraste.ControladorLimiarArrasteEstrutural;
+import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
+import gerard.interacao.arraste.HandlerInteracaoElementosDiagramaVergnaud;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
 import gerard.interacao.texto.PoliticaElementoMatematicoTexto;
@@ -690,8 +692,6 @@ public class Main extends JFrame {
                 new ResolvedorPickupElementoMatematicoTexto(politicaElementoMatematicoTexto);
         final PoliticaUnicidadeElementoMatematicoTexto politicaUnicidadeElementoMatematicoTexto =
                 new PoliticaUnicidadeElementoMatematicoTexto();
-        final ControladorLimiarArrasteEstrutural controladorLimiarArrasteEstrutural =
-                new ControladorLimiarArrasteEstrutural();
         final PoliticaGestoEstrutural politicaGestoEstrutural =
                 new PoliticaGestoEstrutural();
         final ControladorConclusaoModelagem controladorConclusaoModelagem =
@@ -835,6 +835,11 @@ public class Main extends JFrame {
 
         final HandlerInteracaoItemTextoArrastavel handlerItemTextoArrastavel =
                 new HandlerInteracaoItemTextoArrastavel();
+        final HandlerInteracaoElementoTextoMovel handlerElementoTextoMovel =
+                new HandlerInteracaoElementoTextoMovel();
+        final HandlerInteracaoElementosDiagramaVergnaud handlerElementosDiagramaVergnaud =
+                new HandlerInteracaoElementosDiagramaVergnaud();
+        final GeometriaAreaEnunciado geometriaAreaEnunciado;
         int ultimoDispatchIndexMouseReleased = 0;
         // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
         // ver mouseReleased: um release na MESMA posicao do pickup nao e
@@ -843,26 +848,31 @@ public class Main extends JFrame {
         // edicao), so o handler move as coordenadas do item. Distingue
         // "soltura real do usuario" de "clique sem deslocamento".
         ItemTextoArrastavel itemFocado = null;
-        ElementoTextoMovel elementoTextoSelecionado = null;
         ElementoTextoMovel elementoTextoFocado = null;
         boolean layoutTextoInicializado = false;
         int larguraUltimoLayoutTexto = -1;
         QuadradinhoVenn quadradinhoVennSelecionado = null;
         QuadradinhoVenn quadradinhoVennFocado = null;
-        ElementoVergnaud elementoVergnaudSelecionado = null;
-        ConectorVergnaud conectorVergnaudSelecionado = null;
         ElementoVergnaud alvoRealcadoPorProximidade = null;
         final int DISTANCIA_REALCE_ALVO = 48;
 
-        int deslocamentoX;
-        int deslocamentoY;
         int deslocamentoVennX;
         int deslocamentoVennY;
-        int mouseAnteriorX;
-        int mouseAnteriorY;
         boolean arrastandoControleComparacao = false;
         double proporcaoControleComparacao = -1.0;
         int ultimoValorInteiroControleComparacao = -1;
+        // Throttling do log CONSISTENCIA_AUTOMATICA durante o arraste
+        // contínuo do controle das barras de Comparação — decisão da
+        // usuária, 2026-08-16 (item 3 do levantamento de pendências de
+        // 2026-08-11, ver TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md).
+        // Guarda só o snapshot mais recente enquanto arrastandoControleComparacao
+        // é verdadeiro; o log em si só é escrito quando o gesto termina (ver
+        // registrarLogConsistenciaAutomaticaSeHouve/
+        // flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao). Não
+        // afeta a propagação de estado, que continua acontecendo a cada
+        // passo do arrasto.
+        EstadoSemanticoCompartilhado.Snapshot logConsistenciaAutomaticaPendenteArrasteComparacao;
+        EstadoSemanticoCompartilhado.Origem origemLogConsistenciaAutomaticaPendenteArrasteComparacao;
 
         boolean rastreamentoCaminhoAtivo = false;
         int rastreamentoInicioX;
@@ -926,6 +936,8 @@ public class Main extends JFrame {
         ElementoVergnaud elementoEstadoFinalSincronizado = null;
 
         public TelaGerard() {
+            geometriaAreaEnunciado = new GeometriaAreaEnunciado(
+                    ALTURA_PAINEL_ATALHOS_CATEGORIA);
             setBackground(COR_FUNDO);
             setFocusable(true);
             setLayout(null);
@@ -2221,7 +2233,7 @@ public class Main extends JFrame {
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
             estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             inicializarElementosTexto();
             atualizarRotulosDiagramaVergnaudSemReposicionar();
@@ -4559,7 +4571,7 @@ public class Main extends JFrame {
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
             estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             inicializarElementosTexto();
             atualizarRotulosDiagramaVergnaudSemReposicionar();
@@ -4606,13 +4618,12 @@ public class Main extends JFrame {
 
             handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             sessaoArrasteTextoParaDiagrama.limpar();
             quadradinhoVennSelecionado = null;
             quadradinhoVennFocado = null;
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
+            handlerElementosDiagramaVergnaud.cancelar();
             limparRealceAlvoProximidade();
             limparQuestionamentoPersistente();
             limparGraficoInteiros();
@@ -4709,12 +4720,11 @@ public class Main extends JFrame {
             elementosTexto.clear();
             handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             quadradinhoVennSelecionado = null;
             quadradinhoVennFocado = null;
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
+            handlerElementosDiagramaVergnaud.cancelar();
             limparRealceAlvoProximidade();
             mostrarAnotacaoMouseOver = false;
             limparQuestionamentoPersistente();
@@ -4764,7 +4774,7 @@ public class Main extends JFrame {
                 transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
                 quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
                 estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
-                elementoTextoSelecionado = null;
+                handlerElementoTextoMovel.cancelar();
                 elementoTextoFocado = null;
                 inicializarElementosTexto();
             } else {
@@ -4774,7 +4784,7 @@ public class Main extends JFrame {
                 textoProblema = normalizarTextoProblemaParaRenderizacao(textoAusenciaSituacaoCurada());
                 resultadoInterpretacao = null;
                 elementosTexto.clear();
-                elementoTextoSelecionado = null;
+                handlerElementoTextoMovel.cancelar();
                 elementoTextoFocado = null;
                 inicializarElementosTexto();
             }
@@ -5404,7 +5414,7 @@ public class Main extends JFrame {
                 // Mantém a divisão visual da interface desde a inicialização.
                 // Somente o conteúdo educativo permanece ausente até que o
                 // usuário escolha uma categoria.
-                desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
+                desenharCardEnunciado(g2);
                 ocultarControlesDaAtividadeSemCategoria();
                 return;
             }
@@ -5418,7 +5428,7 @@ public class Main extends JFrame {
             yInicial += ALTURA_PAINEL_ATALHOS_CATEGORIA;
             int larguraMaxima = getWidth() - margemX - 30;
 
-            desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
+            desenharCardEnunciado(g2);
             if (botaoIdiomaSituacao != null) botaoIdiomaSituacao.setVisible(situacaoProblemaAtual != null);
             atualizarDisponibilidadeArtefatoExplicativo();
             reposicionarBotaoAjudaTexto();
@@ -5434,13 +5444,18 @@ public class Main extends JFrame {
                 ElementoTextoMovel elemento = elementosTexto.get(i);
                 elemento.atualizarTamanho(fm);
 
-                if (elemento != elementoTextoSelecionado) {
+                if (elemento != handlerElementoTextoMovel.obterElementoAtivo()) {
                     desenharElementoTextoMovel(g2, fm, elemento);
                 }
                 marcarElementoSemanticoDoTexto(fm, elemento);
             }
 
             desenharMarcadoresFixosDoTexto(g2);
+        }
+
+        private void desenharCardEnunciado(Graphics2D g2) {
+            Rectangle area = geometriaAreaEnunciado.obterArea(getWidth());
+            desenharCard(g2, area.x, area.y, area.width, area.height, 18);
         }
 
         /**
@@ -5450,7 +5465,7 @@ public class Main extends JFrame {
          * já usado pelas anotações (quebrarTextoAnotacao).
          */
         private void desenharTextoProblemaAdivinhacao(Graphics2D g2) {
-            desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18);
+            desenharCardEnunciado(g2);
 
             int margemX = 94;
             int yInicial = 101 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
@@ -5512,10 +5527,9 @@ public class Main extends JFrame {
         private void restaurarElementosForaDoDiagrama() {
             restaurarTentativasIncognitaAtual();
             handlerItemTextoArrastavel.cancelar();
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             quadradinhoVennSelecionado = null;
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
+            handlerElementosDiagramaVergnaud.cancelar();
             limparRealceAlvoProximidade();
 
             java.util.Iterator<ItemTextoArrastavel> iterador = itensArrastaveis.iterator();
@@ -5577,12 +5591,11 @@ public class Main extends JFrame {
             itemFocado = null;
             itemGraficoInteiros = null;
             numeroRelativoGraficoInteiros = null;
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             quadradinhoVennSelecionado = null;
             quadradinhoVennFocado = null;
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
+            handlerElementosDiagramaVergnaud.cancelar();
             alvoRealcadoPorProximidade = null;
 
             itensArrastaveis.clear();
@@ -6619,10 +6632,12 @@ public class Main extends JFrame {
         }
 
         private void desenharElementoTextoMovel(Graphics2D g2, FontMetrics fm, ElementoTextoMovel elemento) {
-            if (!textoProblemaEhMensagemSistema && (elemento == elementoTextoSelecionado || elemento == elementoTextoFocado)) {
+            if (!textoProblemaEhMensagemSistema
+                    && (elemento == handlerElementoTextoMovel.obterElementoAtivo()
+                    || elemento == elementoTextoFocado)) {
                 Stroke original = g2.getStroke();
 
-                if (elemento == elementoTextoSelecionado) {
+                if (elemento == handlerElementoTextoMovel.obterElementoAtivo()) {
                     g2.setColor(COR_DESTAQUE);
                     g2.fillRoundRect(elemento.x - 4, elemento.y - fm.getAscent() + 1,
                             elemento.largura + 8, elemento.altura + 4, 8, 8);
@@ -6944,12 +6959,12 @@ public class Main extends JFrame {
             }
 
             for (ConectorVergnaud conector : conectoresVergnaud) {
-                if (conector != conectorVergnaudSelecionado) {
+                if (conector != handlerElementosDiagramaVergnaud.obterConectorAtivo()) {
                     conector.desenhar(g2);
                 }
             }
             for (ElementoVergnaud elemento : elementosVergnaud) {
-                if (elemento != elementoVergnaudSelecionado) {
+                if (elemento != handlerElementosDiagramaVergnaud.obterElementoAtivo()) {
                     elemento.desenhar(g2);
                 }
             }
@@ -7071,8 +7086,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (elementoTextoSelecionado != null) {
-                final ElementoTextoMovel elemento = elementoTextoSelecionado;
+            if (handlerElementoTextoMovel.estaAtivo()) {
+                final ElementoTextoMovel elemento =
+                        handlerElementoTextoMovel.obterElementoAtivo();
                 final Font fonte = new Font("Arial", Font.BOLD, 20);
                 final FontMetrics fm = getFontMetrics(fonte);
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
@@ -7144,8 +7160,8 @@ public class Main extends JFrame {
                 });
             }
 
-            if (elementoVergnaudSelecionado != null) {
-                final ElementoVergnaud elemento = elementoVergnaudSelecionado;
+            if (handlerElementosDiagramaVergnaud.obterElementoAtivo() != null) {
+                final ElementoVergnaud elemento = handlerElementosDiagramaVergnaud.obterElementoAtivo();
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         int margemSuperior = elemento.rotulosAcima ? 42 : 8;
@@ -7162,8 +7178,8 @@ public class Main extends JFrame {
                 });
             }
 
-            if (conectorVergnaudSelecionado != null) {
-                final ConectorVergnaud conector = conectorVergnaudSelecionado;
+            if (handlerElementosDiagramaVergnaud.obterConectorAtivo() != null) {
+                final ConectorVergnaud conector = handlerElementosDiagramaVergnaud.obterConectorAtivo();
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return obterLimitesVisuaisConector(conector);
@@ -7865,6 +7881,23 @@ public class Main extends JFrame {
             if (snapshot == null) {
                 return;
             }
+            if (arrastandoControleComparacao) {
+                // Arraste contínuo do controle das barras de Comparação:
+                // adia o log até o fim do gesto (ver
+                // flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao),
+                // mantendo só o snapshot mais recente. A propagação de
+                // estado que gerou este snapshot já aconteceu normalmente —
+                // só o registro no log é que espera o soltar do mouse.
+                logConsistenciaAutomaticaPendenteArrasteComparacao = snapshot;
+                origemLogConsistenciaAutomaticaPendenteArrasteComparacao = origem;
+                return;
+            }
+            registrarLogConsistenciaAutomaticaImediatamente(snapshot, origem);
+        }
+
+        private void registrarLogConsistenciaAutomaticaImediatamente(
+                EstadoSemanticoCompartilhado.Snapshot snapshot,
+                EstadoSemanticoCompartilhado.Origem origem) {
             int indiceResolvido = snapshot.getIndiceResolvidoAutomaticamente();
             if (indiceResolvido < 0) {
                 return;
@@ -7881,6 +7914,27 @@ public class Main extends JFrame {
                     "CONSISTENCIA_AUTOMATICA",
                     "origem=" + origem + "; papelResolvido=" + indiceResolvido
                             + "; valor=" + snapshot.valorOuZero(indiceResolvido));
+        }
+
+        /**
+         * Escreve, se houver, o log CONSISTENCIA_AUTOMATICA represado durante
+         * o arraste contínuo do controle das barras de Comparação — chamar
+         * sempre que arrastandoControleComparacao voltar a false (soltura
+         * normal em mouseReleased, ou reset defensivo no início de um novo
+         * mousePressed, caso um arraste anterior tenha sido interrompido sem
+         * passar por mouseReleased).
+         */
+        private void flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao() {
+            if (logConsistenciaAutomaticaPendenteArrasteComparacao == null) {
+                return;
+            }
+            EstadoSemanticoCompartilhado.Snapshot snapshot =
+                    logConsistenciaAutomaticaPendenteArrasteComparacao;
+            EstadoSemanticoCompartilhado.Origem origem =
+                    origemLogConsistenciaAutomaticaPendenteArrasteComparacao;
+            logConsistenciaAutomaticaPendenteArrasteComparacao = null;
+            origemLogConsistenciaAutomaticaPendenteArrasteComparacao = null;
+            registrarLogConsistenciaAutomaticaImediatamente(snapshot, origem);
         }
 
         private void aplicarEstadoCompartilhadoEmTodasAsRepresentacoes(
@@ -8157,18 +8211,6 @@ public class Main extends JFrame {
         // rótulos "Medidas"/"Relações" acima dos ícones (ver
         // desenharFaixaAtalhoCategoria) — decisão da usuária, 2026-07-28.
         private static final int ALTURA_PAINEL_ATALHOS_CATEGORIA = 130;
-        // Topo/base reais do card do enunciado (ver desenharCard(g2, 15,
-        // 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18) em
-        // desenharTextoProblema/desenharTextoProblemaAdivinhacao) — fonte
-        // única para quem precisa saber se um ponto está dentro da área do
-        // enunciado (estaNaAreaDoTexto) ou limitar arraste a essa área
-        // (processarMovimentoArraste). Bug registrado em 2026-08-06
-        // (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_TEXTO_ENUNCIADO): o clamp de
-        // arraste tinha sua própria cópia desses números (58/184), que ficou
-        // pra trás quando ALTURA_PAINEL_ATALHOS_CATEGORIA cresceu — daí em
-        // diante, os dois pontos de uso compartilham as mesmas constantes.
-        private static final int TOPO_AREA_ENUNCIADO = 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
-        private static final int BASE_AREA_ENUNCIADO = 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int X_BASE_VERGNAUD = 25;
         private static final int Y_BASE_VERGNAUD = 215 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
         private static final int LARGURA_BASE_VERGNAUD = 655;
@@ -8265,22 +8307,6 @@ public class Main extends JFrame {
         }
 
         /**
-         * ATIVAÇÃO TEMPORÁRIA SÓ PARA TESTES (2026-08-07) — NÃO é a decisão
-         * final de comportamento. A regra definitiva (AG_EMCME, item 5 do
-         * levantamento de pendências — TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md)
-         * é o material concreto (diagrama complementar) só aparecer na 3ª
-         * tentativa rejeitada consecutiva da incógnita atual, implementada
-         * logo abaixo em deveExibirDiagramaComplementar(). A usuária pediu
-         * para mantê-lo visível o tempo todo por enquanto, para poder testar
-         * a interação com ele e a manutenção de consistência entre
-         * representações sem precisar errar 3 vezes a cada verificação.
-         * Quando o teste terminar, apagar esta constante (e o `||` que a usa
-         * logo abaixo) restaura o comportamento definitivo sem precisar
-         * desfazer mais nada.
-         */
-        private static final boolean EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true;
-
-        /**
          * O material concreto (diagrama complementar — quadradinhos, barras,
          * processo) só aparece na última opção da escalada de Scaffolding
          * (3ª tentativa rejeitada consecutiva da incógnita atual — AG_EMCME),
@@ -8291,10 +8317,15 @@ public class Main extends JFrame {
          * tentativa rejeitada de uma situação-problema — tratado como "não
          * bloqueado", igual a uma instância recém-criada.
          *
-         * Ver EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES acima: enquanto
-         * essa constante for true, a regra de escalada abaixo é calculada
-         * normalmente (nada nela mudou), mas o resultado final ignora o
-         * bloqueio e sempre mostra — só para a fase de teste manual.
+         * Entre 2026-08-07 e 2026-08-16 o diagrama complementar ficou visível
+         * o tempo todo (constante temporária
+         * EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES = true), a pedido
+         * da usuária, só para testar a interação com ele sem precisar errar 3
+         * vezes a cada verificação. Encerrada essa fase de teste (decisão da
+         * usuária, 2026-08-16, item 2 do levantamento de pendências de
+         * 2026-08-11), a constante e o `||` que a usava foram removidos —
+         * restaurando o comportamento definitivo abaixo sem mais nada a
+         * desfazer, exatamente como a nota original previa.
          */
         private boolean deveExibirDiagramaComplementar() {
             boolean escaladaNoLimite = tentativasIncognitaAtual != null
@@ -8302,7 +8333,7 @@ public class Main extends JFrame {
             return seletorRepresentacaoComplementar.deveExibir(
                     categoriaSelecionadaParaAtividade,
                     tipoSituacaoSelecionada,
-                    escaladaNoLimite || EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES);
+                    escaladaNoLimite);
         }
 
         private boolean ehProcessoTransformacaoMedidas() {
@@ -9221,7 +9252,7 @@ public class Main extends JFrame {
             if (precisaReconstruirEstruturaVenn
                     || (quadradinhoVennSelecionado == null
                     && !handlerItemTextoArrastavel.estaAtivo()
-                    && elementoTextoSelecionado == null)) {
+                    && !handlerElementoTextoMovel.estaAtivo())) {
                 sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
             }
 
@@ -10746,9 +10777,7 @@ public class Main extends JFrame {
         }
 
         private boolean estaNaAreaDoTexto(int x, int y) {
-            return x >= 15 && x <= getWidth() - 15
-                    && y >= TOPO_AREA_ENUNCIADO
-                    && y <= BASE_AREA_ENUNCIADO;
+            return geometriaAreaEnunciado.contem(x, y, getWidth());
         }
 
         private boolean ehNumeroDoTexto(ElementoTextoMovel elemento) {
@@ -10782,7 +10811,7 @@ public class Main extends JFrame {
                 mostrarAnotacaoMouseOver = true;
                 mouseOverX = mouseX;
                 mouseOverY = mouseY;
-                elementoTextoSelecionado = null;
+                handlerElementoTextoMovel.cancelar();
                 return;
             }
 
@@ -10798,12 +10827,9 @@ public class Main extends JFrame {
             );
 
             itensArrastaveis.add(novo);
+            handlerElementoTextoMovel.cancelar();
             handlerItemTextoArrastavel.iniciar(novo, mouseX, mouseY);
             itemFocado = novo;
-            elementoTextoSelecionado = null;
-
-            deslocamentoX = mouseX - novo.x;
-            deslocamentoY = mouseY - novo.y;
             atualizarRealceAlvoProximidade(novo);
         }
 
@@ -10863,10 +10889,9 @@ public class Main extends JFrame {
 
         private boolean existePickupAtivo() {
             return handlerItemTextoArrastavel.estaAtivo()
-                    || elementoTextoSelecionado != null
+                    || handlerElementoTextoMovel.estaAtivo()
                     || quadradinhoVennSelecionado != null
-                    || elementoVergnaudSelecionado != null
-                    || conectorVergnaudSelecionado != null
+                    || handlerElementosDiagramaVergnaud.estaAtivo()
                     || arrastandoControleComparacao
                     || scaffoldingGraficoInteiros.estaArrastando();
         }
@@ -10914,7 +10939,7 @@ public class Main extends JFrame {
 
         private void cancelarEfeitosArraste() {
             controladorArrasteElastico.cancelar();
-            controladorLimiarArrasteEstrutural.cancelar();
+            handlerElementosDiagramaVergnaud.finalizarLimiar();
             marcadorOrigemArraste.limpar();
             scaffoldingFeedbackProxyPosicionamento.cancelar();
             sessaoArrasteTextoParaDiagrama.limpar();
@@ -11039,11 +11064,11 @@ public class Main extends JFrame {
 
             cancelarEfeitosArraste();
             handlerItemTextoArrastavel.cancelar();
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
-            elementoTextoSelecionado = null;
+            handlerElementoTextoMovel.cancelar();
+            handlerElementosDiagramaVergnaud.cancelar();
             limparRealceAlvoProximidade();
             mostrarAnotacaoMouseOver = false;
+            flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
             arrastandoControleComparacao = false;
 
             RepresentacaoComUnidadesRemoviveis representacaoRemover =
@@ -11269,8 +11294,6 @@ public class Main extends JFrame {
                                 + (marcador.chavePapel != null ? marcador.chavePapel : ""),
                         "Elemento semântico selecionado para manipulação.");
 
-                deslocamentoX = x - novo.x;
-                deslocamentoY = y - novo.y;
                 iniciarRastreamentoGranular(x, y, novo.valor, "Marcador textual convertido em item", true);
                 atualizarRealceAlvoProximidade(novo);
                 iniciarFantasmaItem(novo);
@@ -11284,16 +11307,15 @@ public class Main extends JFrame {
 
             ElementoTextoMovel elementoTexto = encontrarElementoTextoMovel(x, y);
 
-            if (elementoTexto != null && estaNaAreaDoTexto(x, y)) {
-                elementoTextoSelecionado = elementoTexto;
+            if (handlerElementoTextoMovel.iniciar(
+                    estaNaAreaDoTexto(x, y) ? elementoTexto : null, x, y)) {
                 elementoTextoFocado = elementoTexto;
                 itemFocado = null;
                 quadradinhoVennFocado = null;
-                deslocamentoX = x - elementoTexto.x;
-                deslocamentoY = y - elementoTexto.y;
                 iniciarRastreamentoGranular(x, y, elementoTexto.valor, "Texto do enunciado", true);
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento textual", "Texto do problema", "Elemento textual", "Escolher texto para manipulação", "texto=" + elementoTexto.valor, "Seleção visual do texto.");
-                iniciarFantasmaElementoTexto(elementoTextoSelecionado);
+                iniciarFantasmaElementoTexto(
+                        handlerElementoTextoMovel.obterElementoAtivo());
                 iniciarArrasteElastico(x, y);
                 definirCursorMaoFechada();
                 repaint();
@@ -11348,42 +11370,36 @@ public class Main extends JFrame {
                 return;
             }
 
-            elementoVergnaudSelecionado = encontrarElementoVergnaud(x, y);
+            ElementoVergnaud elementoVergnaudCandidato = encontrarElementoVergnaud(x, y);
 
-            if (elementoVergnaudSelecionado != null) {
+            if (elementoVergnaudCandidato != null) {
                 if (politicaGestoEstrutural.ehPressionamentoDeDuploClique(e.getClickCount())) {
-                    elementoVergnaudSelecionado = null;
                     return;
                 }
-                controladorLimiarArrasteEstrutural.iniciar(x, y);
-                deslocamentoX = x - elementoVergnaudSelecionado.x;
-                deslocamentoY = y - elementoVergnaudSelecionado.y;
+                handlerElementosDiagramaVergnaud.iniciarElemento(elementoVergnaudCandidato, x, y);
                 itemFocado = null;
                 quadradinhoVennFocado = null;
                 iniciarRastreamentoGranular(x, y, "Elemento de Vergnaud", "Elemento do diagrama", false);
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento de Vergnaud", "Diagrama", "Elemento do modelo", "Escolher elemento para reposicionamento", "", "Elemento selecionado.");
-                iniciarFantasmaElementoVergnaud(elementoVergnaudSelecionado);
+                iniciarFantasmaElementoVergnaud(elementoVergnaudCandidato);
                 iniciarArrasteElastico(x, y);
                 definirCursorMaoFechada();
                 repaint();
                 return;
             }
 
-            conectorVergnaudSelecionado = encontrarConectorVergnaud(x, y);
+            ConectorVergnaud conectorVergnaudCandidato = encontrarConectorVergnaud(x, y);
 
-            if (conectorVergnaudSelecionado != null) {
+            if (conectorVergnaudCandidato != null) {
                 if (politicaGestoEstrutural.ehPressionamentoDeDuploClique(e.getClickCount())) {
-                    conectorVergnaudSelecionado = null;
                     return;
                 }
-                controladorLimiarArrasteEstrutural.iniciar(x, y);
+                handlerElementosDiagramaVergnaud.iniciarConector(conectorVergnaudCandidato, x, y);
                 itemFocado = null;
                 quadradinhoVennFocado = null;
-                mouseAnteriorX = x;
-                mouseAnteriorY = y;
                 iniciarRastreamentoGranular(x, y, "Conector de Vergnaud", "Conector do diagrama", false);
                 registrarAcaoGranular("SELECIONAR", "Selecionar conector", "Diagrama", "Conector", "Escolher conector para reposicionamento", "", "Conector selecionado.");
-                iniciarFantasmaConector(conectorVergnaudSelecionado);
+                iniciarFantasmaConector(conectorVergnaudCandidato);
                 iniciarArrasteElastico(x, y);
                 definirCursorMaoFechada();
                 repaint();
@@ -11400,7 +11416,7 @@ public class Main extends JFrame {
             int y = e.getY();
 
             if (handlerItemTextoArrastavel.estaAtivo()
-                    || elementoVergnaudSelecionado != null) {
+                    || handlerElementosDiagramaVergnaud.estaAtivo()) {
                 suspenderConclusaoDuranteManipulacao();
             }
             atualizarRastreamentoGranular(x, y);
@@ -11437,50 +11453,26 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (elementoTextoSelecionado != null) {
-                if (podeEnviarParaDiagrama(elementoTextoSelecionado) && !estaNaAreaDoTexto(x, y)) {
-                    converterElementoTextoEmItemDiagrama(elementoTextoSelecionado, x, y);
+            ElementoTextoMovel elementoTextoAtivo =
+                    handlerElementoTextoMovel.obterElementoAtivo();
+            if (elementoTextoAtivo != null) {
+                if (podeEnviarParaDiagrama(elementoTextoAtivo)
+                        && !estaNaAreaDoTexto(x, y)) {
+                    converterElementoTextoEmItemDiagrama(
+                            elementoTextoAtivo, x, y);
                     repaint();
                     return;
                 }
 
-                int novoX = x - deslocamentoX;
-                int novoY = y - deslocamentoY;
-
-                if (!ehNumeroOuInterrogacaoDoTexto(elementoTextoSelecionado)) {
-                    int limiteEsquerdo = 20;
-                    int limiteDireito = getWidth() - 25 - elementoTextoSelecionado.largura;
-
-                    // A coordenada y do ElementoTextoMovel corresponde à linha de base do texto.
-                    // Por isso o limite superior soma a altura do texto — para impedir que
-                    // palavras sem número ultrapassem a área visual do enunciado, a mesma área
-                    // que estaNaAreaDoTexto verifica (TOPO_AREA_ENUNCIADO/BASE_AREA_ENUNCIADO,
-                    // fonte única — ver comentário junto da constante). Antes de 2026-08-06 este
-                    // clamp tinha sua própria cópia desses limites (58/184), independente da de
-                    // estaNaAreaDoTexto, que ficou desatualizada quando ALTURA_PAINEL_ATALHOS_
-                    // CATEGORIA cresceu (RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_TEXTO_ENUNCIADO).
-                    int limiteSuperior = TOPO_AREA_ENUNCIADO + elementoTextoSelecionado.altura;
-                    int limiteInferior = BASE_AREA_ENUNCIADO;
-
-                    if (novoX < limiteEsquerdo) {
-                        novoX = limiteEsquerdo;
-                    }
-
-                    if (novoX > limiteDireito) {
-                        novoX = limiteDireito;
-                    }
-
-                    if (novoY < limiteSuperior) {
-                        novoY = limiteSuperior;
-                    }
-
-                    if (novoY > limiteInferior) {
-                        novoY = limiteInferior;
-                    }
+                if (ehNumeroOuInterrogacaoDoTexto(elementoTextoAtivo)) {
+                    handlerElementoTextoMovel.moverLivrePara(x, y);
+                } else {
+                    Rectangle limites = geometriaAreaEnunciado
+                            .obterLimitesMovimento(
+                                    elementoTextoAtivo, getWidth());
+                    handlerElementoTextoMovel.moverDentroDosLimites(
+                            x, y, limites);
                 }
-
-                elementoTextoSelecionado.x = novoX;
-                elementoTextoSelecionado.y = novoY;
                 repaint();
                 return;
             }
@@ -11495,26 +11487,12 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (elementoVergnaudSelecionado != null) {
-                if (!controladorLimiarArrasteEstrutural.deveMovimentar(x, y)) {
-                    return;
+            if (handlerElementosDiagramaVergnaud.estaAtivo()) {
+                boolean moveu = handlerElementosDiagramaVergnaud.mover(
+                        x, y, obterAreaConteudoDiagramaVergnaud());
+                if (moveu) {
+                    repaint();
                 }
-                Rectangle limite = obterAreaConteudoDiagramaVergnaud();
-                elementoVergnaudSelecionado.moverPara(x - deslocamentoX, y - deslocamentoY, limite);
-                repaint();
-                return;
-            }
-
-            if (conectorVergnaudSelecionado != null) {
-                if (!controladorLimiarArrasteEstrutural.deveMovimentar(x, y)) {
-                    return;
-                }
-                int dx = x - mouseAnteriorX;
-                int dy = y - mouseAnteriorY;
-                conectorVergnaudSelecionado.mover(dx, dy, obterAreaConteudoDiagramaVergnaud());
-                mouseAnteriorX = x;
-                mouseAnteriorY = y;
-                repaint();
             }
         }
 
@@ -11529,7 +11507,7 @@ public class Main extends JFrame {
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
             }
-            controladorLimiarArrasteEstrutural.finalizar();
+            handlerElementosDiagramaVergnaud.finalizarLimiar();
             boolean houveMovimentoQuadradinhoVenn = quadradinhoVennSelecionado != null;
             int indiceDestinoQuadradinhoVenn = -1;
             if (quadradinhoVennSelecionado != null) {
@@ -11554,6 +11532,7 @@ public class Main extends JFrame {
 
             if (arrastandoControleComparacao) {
                 arrastandoControleComparacao = false;
+                flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
                 marcadorOrigemArraste.limpar();
                 // Ao soltar o controle do gráfico de barras (comparação de
                 // medidas): mesma checagem/pergunta de confirmação do valor
@@ -11577,6 +11556,7 @@ public class Main extends JFrame {
                 return;
             }
 
+            handlerElementoTextoMovel.concluir();
             HandlerInteracaoItemTextoArrastavel.ResultadoSoltura solturaItem =
                     handlerItemTextoArrastavel.concluir();
             ItemTextoArrastavel itemSolto = solturaItem.getItem();
@@ -11624,9 +11604,7 @@ public class Main extends JFrame {
             finalizarProxyTextoSolto(itemSolto, !posicionamentoIncorreto);
             limparRealceAlvoProximidade();
             quadradinhoVennSelecionado = null;
-            elementoVergnaudSelecionado = null;
-            conectorVergnaudSelecionado = null;
-            elementoTextoSelecionado = null;
+            handlerElementosDiagramaVergnaud.cancelar();
 
             if (posicionamentoIncorreto) {
                 // O item permanece no diagrama e reutiliza o fluxo consolidado
@@ -13529,9 +13507,16 @@ public class Main extends JFrame {
                 return;
             }
 
-            ElementoTextoMovel elementoTexto = encontrarElementoTextoMovel(e.getX(), e.getY());
+            ElementoTextoMovel candidatoTexto =
+                    encontrarElementoTextoMovel(e.getX(), e.getY());
+            ElementoTextoMovel elementoTexto =
+                    handlerElementoTextoMovel.identificarFoco(
+                            candidatoTexto,
+                            candidatoTexto != null
+                                    && estaNaAreaDoTexto(
+                                            e.getX(), e.getY()));
 
-            if (elementoTexto != null && estaNaAreaDoTexto(e.getX(), e.getY())) {
+            if (elementoTexto != null) {
                 elementoTextoFocado = elementoTexto;
                 mostrarAnotacaoMouseOver = true;
 

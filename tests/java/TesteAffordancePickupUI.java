@@ -44,7 +44,7 @@ public class TesteAffordancePickupUI {
                     tela.mousePressed(evento(tela, MouseEvent.MOUSE_PRESSED, mx, my));
                     exigir(tela.getCursor().getType() == Cursor.MOVE_CURSOR,
                             "O pickup ativo deve mudar para o cursor de movimentação.");
-                    exigir(tela.elementoTextoSelecionado != null
+                    exigir(tela.handlerElementoTextoMovel.estaAtivo()
                                     || tela.handlerItemTextoArrastavel.estaAtivo(),
                             "Pickup do marcador não iniciou a seleção textual.");
                     tela.mouseDragged(evento(tela, MouseEvent.MOUSE_DRAGGED, mx + 30, my + 230));

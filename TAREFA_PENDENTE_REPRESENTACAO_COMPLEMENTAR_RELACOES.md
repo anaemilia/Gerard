@@ -1,6 +1,7 @@
 # Tarefa pendente — representação complementar própria para as categorias de Relações
 
-Status: **não iniciada**. Registrada a pedido da usuária (2026-08-08), que
+Status: **parcialmente decidida (2026-08-16); desenho concreto ainda não
+iniciado.** Registrada a pedido da usuária (2026-08-08), que
 pediu para remover o diagrama complementar genérico dessas categorias
 "por enquanto" — não pediu (nem autorizou) o desenho da representação
 definitiva.
@@ -75,18 +76,31 @@ tela confirmam: painel direito em branco para Composição de relações,
 widgets (barras de comparação, funil de composição de transformações etc.)
 intactos nas demais categorias — sem regressão.
 
+## Decisão parcial (2026-08-16)
+
+A usuária decidiu uma das perguntas em aberto: a futura representação
+complementar de Relações **deve suportar valores negativos** — ao
+contrário das medidas absolutas (sempre positivas) já representadas pelos
+outros widgets (quadradinhos, barras, funil), uma relação/número relativo
+é um inteiro que pode ser positivo ou negativo, e qualquer material
+concreto desenhado para essa categoria precisa expressar as duas
+possibilidades, não só a magnitude.
+
+Isso é só uma restrição de design, não uma especificação completa. Não
+altera nenhum código: não há ainda decisão sobre a forma concreta do
+material (o que exatamente é desenhado, como o sinal é indicado
+visualmente, se reaproveita algum widget existente ou é um desenho novo).
+
 ## O que falta (não decidido, não autorizado)
 
 Se e quando fizer sentido pedagogicamente, desenhar uma representação
-complementar própria para `TRANSFORMACAO_RELACAO` e `COMPOSICAO_RELACOES`
-— números relativos (podem ser negativos), diferente das medidas
-absolutas que os widgets atuais (quadradinhos, barras, funil) já
-representam. Não é uma decisão técnica isolada: exige entender o que
-"material concreto" significa para uma relação/número relativo antes de
-qualquer código, seguindo o mesmo processo já usado para outras decisões
-de scaffolding neste projeto (perguntas de confirmação com a usuária
-antes de codificar — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md`
-como exemplo do processo).
+complementar própria para `TRANSFORMACAO_RELACAO` e `COMPOSICAO_RELACOES`,
+já sabendo que precisa suportar negativos (decisão acima). O restante do
+desenho concreto continua exigindo decisão pedagógica antes de qualquer
+código, seguindo o mesmo processo já usado para outras decisões de
+scaffolding neste projeto (perguntas de confirmação com a usuária antes de
+codificar — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md` como
+exemplo do processo).
 
 ## Arquivos alterados
 

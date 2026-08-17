@@ -312,6 +312,60 @@ check('ItemTextoArrastavel itemSelecionado = null' not in main
       and 'yDoItemNoPickup' not in main,
       'tela não duplica o estado mecânico pertencente ao handler')
 
+print('== Handler local do elemento textual ==')
+handler_elemento_texto=text('src/gerard/interacao/arraste/HandlerInteracaoElementoTextoMovel.java')
+geometria_enunciado=text('src/gerard/ui/enunciado/GeometriaAreaEnunciado.java')
+no_geometria=text('src/gerard/ui/geometria/NoGeometriaRepresentacao.java')
+check('class HandlerInteracaoElementoTextoMovel' in handler_elemento_texto
+      and 'moverLivrePara' in handler_elemento_texto
+      and 'moverDentroDosLimites' in handler_elemento_texto
+      and 'Rectangle limites' in handler_elemento_texto,
+      'handler textual recebe a restrição geométrica sem conhecer o layout')
+check('handlerElementoTextoMovel.iniciar' in main
+      and 'handlerElementoTextoMovel.moverLivrePara' in main
+      and 'handlerElementoTextoMovel.moverDentroDosLimites' in main
+      and 'handlerElementoTextoMovel.concluir' in main,
+      'tela roteia o protocolo textual pelo handler local')
+check('ElementoTextoMovel elementoTextoSelecionado = null' not in main
+      and 'TOPO_AREA_ENUNCIADO' not in main
+      and 'BASE_AREA_ENUNCIADO' not in main,
+      'tela não duplica seleção nem limites do enunciado')
+check('NoGeometriaRepresentacao pai' in no_geometria
+      and 'getPai()' in no_geometria
+      and 'while (ancestral != null)' in no_geometria
+      and 'cardEnunciado.obterLimitesAbsolutos()' in geometria_enunciado,
+      'geometria do enunciado deriva de árvore enraizada com apontador para o pai')
+check('GeometriaAreaEnunciado' not in handler_elemento_texto
+      and 'Main' not in handler_elemento_texto
+      and 'getWidth()' not in handler_elemento_texto,
+      'handler permanece independente da tela e da árvore de layout')
+
+print('== Fase 7.4: handler dos elementos e conectores do diagrama de Vergnaud ==')
+handler_vergnaud=text('src/gerard/interacao/arraste/HandlerInteracaoElementosDiagramaVergnaud.java')
+check('class HandlerInteracaoElementosDiagramaVergnaud' in handler_vergnaud
+      and 'iniciarElemento' in handler_vergnaud
+      and 'iniciarConector' in handler_vergnaud
+      and 'Rectangle limites' in handler_vergnaud,
+      'handler do diagrama de Vergnaud recebe a restrição geométrica sem conhecer o layout')
+check('handlerElementosDiagramaVergnaud.iniciarElemento' in main
+      and 'handlerElementosDiagramaVergnaud.iniciarConector' in main
+      and 'handlerElementosDiagramaVergnaud.mover' in main
+      and 'handlerElementosDiagramaVergnaud.finalizarLimiar' in main
+      and 'handlerElementosDiagramaVergnaud.cancelar' in main,
+      'tela roteia pickup, movimento e soltura do diagrama de Vergnaud pelo handler local')
+check('ElementoVergnaud elementoVergnaudSelecionado' not in main
+      and 'ConectorVergnaud conectorVergnaudSelecionado' not in main
+      and 'ControladorLimiarArrasteEstrutural controladorLimiarArrasteEstrutural' not in main,
+      'tela não duplica seleção do diagrama de Vergnaud nem o limiar de arraste estrutural')
+check('Main' not in handler_vergnaud
+      and 'getWidth()' not in handler_vergnaud
+      and 'encontrarElementoVergnaud' not in handler_vergnaud
+      and 'encontrarConectorVergnaud' not in handler_vergnaud,
+      'handler permanece independente da tela e do hit-testing dos elementos/conectores')
+check(main.count('encontrarElementoVergnaud(x, y)') >= 1
+      and main.count('encontrarConectorVergnaud(x, y)') >= 1,
+      'tela continua responsável por decidir qual elemento/conector foi alvo do pickup')
+
 print('== Contrato de posicionamento incorreto manipulável ==')
 sessao_proxy=text('src/gerard/interacao/arraste/SessaoArrasteTextoParaDiagrama.java')
 feedback_erro=text('src/gerard/Scaffolding/feedbackerro/ScaffoldingFeedbackMultissensorialErro.java')
@@ -569,3 +623,21 @@ check('podeAlterarQuantidadeNoEstadoAtual' in main
 if errors:
     print(f'REPROVADO: {len(errors)} falha(s) após o processo de transformação.'); sys.exit(1)
 print('APROVADO: processo de transformação integrado sem remover os contratos consolidados.')
+
+print('== Ajustes de 2026-08-16 (levantamento de pendências de 2026-08-11) ==')
+check('private static final boolean EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES'
+      not in main
+      and '|| EXIBIR_DIAGRAMA_COMPLEMENTAR_SEMPRE_PARA_TESTES' not in main,
+      'flag temporária de teste do diagrama complementar foi removida (item 2)')
+check('registrarLogConsistenciaAutomaticaImediatamente' in main
+      and 'flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao' in main
+      and 'logConsistenciaAutomaticaPendenteArrasteComparacao' in main,
+      'log CONSISTENCIA_AUTOMATICA represa durante o arraste do controle de'
+      ' Comparação e só é escrito ao soltar o mouse (item 3)')
+check(main.count('flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao()') >= 3,
+      'flush do log represado é chamado tanto no reset defensivo de mousePressed'
+      ' quanto na soltura normal do controle de Comparação')
+
+if errors:
+    print(f'REPROVADO: {len(errors)} falha(s) no total.'); sys.exit(1)
+print('APROVADO: verificador de regressão completo, nenhuma falha registrada.')
