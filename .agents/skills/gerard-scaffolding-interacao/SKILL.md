@@ -27,6 +27,14 @@ Protocolo de mouse:
 - Proximidade (incluindo proximidade de cores)
 - Atração magnética
 
+Esses três itens descrevem mecanismos do estilo de interação. Não os
+confundir com os seis valores de “Tarefa de Interação” de Shneiderman
+(`SELECIONAR`, `POSICIONAR`, `ORIENTAR`, `QUANTIFICAR`, `CAMINHO`, `TEXTO`),
+cujo vocabulário e registro pertencem a `gerard-log-acao-instrumental`.
+Tampouco converter automaticamente um gesto de mouse nesses valores: a
+fronteira entre gesto físico e ação semanticamente constituída pertence a
+`gerard-log-gestos-interacao` e `gerard-handlers-de-interacao`.
+
 Cores de significado (convenções culturais já estabelecidas, não arbitrárias) — confirmado em `gerard/ui/UITemaGerard.java`:
 - Azul → sucesso (`COR_SUCESSO = new Color(74,130,201)`, `UITemaGerard.java:85`)
 - Vermelho → erro (`COR_ERRO = new Color(200,40,40)`, `UITemaGerard.java:98`)

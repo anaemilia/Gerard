@@ -115,6 +115,12 @@
       "kind": "skill",
       "path": ".agents/skills/gerard-scaffolding-interacao/SKILL.md",
       "knowledge_owner": "apoios_pedagogicos_oferecidos"
+    },
+    {
+      "id": "gerard-geracao-texto-diagrama",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-geracao-texto-diagrama/SKILL.md",
+      "knowledge_owner": "fluxo_de_candidatas_textuais_para_curadoria_humana"
     }
   ],
   "edges": [
@@ -255,6 +261,12 @@
       "relation": "related",
       "to": "gerard-log-acao-instrumental",
       "reason": "A interacao apoiada deve preservar o esquema de captura aplicavel."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-log-gestos-interacao",
+      "reason": "Mecanismos de scaffolding podem acompanhar gestos que nao constituem acao instrumental."
     },
     {
       "from": "gerard-scaffolding-interacao",
@@ -423,6 +435,30 @@
       "relation": "related",
       "to": "gerard-scaffolding-interacao",
       "reason": "A identidade escolhe tons; o scaffolding possui o significado do feedback."
+    },
+    {
+      "from": "gerard-geracao-texto-diagrama",
+      "relation": "requires",
+      "to": "gerard-construcao-texto",
+      "reason": "A geracao docente orquestra candidatas, mas a sintaxe do enunciado pertence a construcao de texto."
+    },
+    {
+      "from": "gerard-geracao-texto-diagrama",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Categorias, papeis e relacoes usados nas candidatas seguem o vocabulario normativo."
+    },
+    {
+      "from": "gerard-geracao-texto-diagrama",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "A relacao numerica nao pode ser confundida com uma situacao semantica completa."
+    },
+    {
+      "from": "gerard-geracao-texto-diagrama",
+      "relation": "constrains",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A skill nao assume a autoridade curatorial nem duplica a sintaxe textual proprietaria."
     }
   ]
 }

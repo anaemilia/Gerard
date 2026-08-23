@@ -23,6 +23,20 @@ Isto não é uma especificação para implementar do zero. É a documentação d
 
 5. **Caso especial do eixo dos inteiros — confirmado (2026-08-07), com escopo mais preciso do que a formulação original.** `ScaffoldingGraficoInteiros.identificarNaturezaInteracao` distingue interação de componente de tela (nunca é erro) de interação com valor semântico. O gate não vive em `ScaffoldingGraficoInteiros`/`LayoutPainelEixoInteiros` nem em `PoliticaPreenchimentoIncognita` — vive no ponto de chamada, em `Main.java`: `sincronizarNumeroRelativoComGraficoSeNecessario` (`Main.java:11612-11674`) só propaga para as demais representações (`sincronizarTodasAsRepresentacoesAPartirDoVergnaud(..., Origem.EIXO_X)`) quando `liberadoParaPropagar` é verdadeiro — `!incognitaAguardandoConfirmacaoDeValor(item)` durante o arrasto, `confirmarValorIncognitaAceito(item)` ao soltar. A formulação original ("só depois que a incógnita foi concluída") é verdadeira só quando o item movido pelo eixo **é** a própria incógnita: `incognitaAguardandoConfirmacaoDeValor` (`Main.java:5811-5818`) retorna `false` — ou seja, libera a propagação imediatamente, a cada passo do arrasto — sempre que o item não é a incógnita original ou ainda não foi preenchido pelo protocolo mouse/texto. Não é "eixo trava até incógnita terminar" em geral; é "o valor da incógnita não se propaga para as outras representações enquanto está pendente de confirmação", e só isso. O mesmo padrão (`incognitaAguardandoConfirmacaoDeValor`/`confirmarValorIncognitaAceito`) protege igualmente `Origem.EIXO_VERTICAL` (`Main.java:10000`, `10998`) e `Origem.ARRASTE` (`Main.java:11764`) — não é exclusivo do eixo dos inteiros, é o mecanismo geral que aplica `PoliticaPreenchimentoIncognita` a qualquer origem de escrita.
 
+6. **Cópia representacional ao sair do texto — confirmado em 2026-08-23.**
+   Arrastar um número ou a incógnita do enunciado cria um novo
+   `ItemTextoArrastavel` em `converterElementoTextoEmItemDiagrama`; o
+   `ElementoTextoMovel` de origem não é removido. O enunciado preserva sua
+   informação enquanto a cópia participa da construção do diagrama. Não
+   substituir esse protocolo por uma movimentação destrutiva do texto.
+
+7. **Confirmação da incógnita — confirmado em 2026-08-23.** O valor digitado
+   para a incógnita não deve ser propagado como resposta aceita apenas porque
+   foi digitado. `incognitaAguardandoConfirmacaoDeValor` mantém a alteração
+   local enquanto `confirmarValorIncognitaAceito` realiza a confirmação no
+   fim do protocolo. Componentes que materializam esse fluxo podem variar por
+   representação, mas devem preservar a separação entre digitar e confirmar.
+
 ## Termo desconhecido / incógnita — corrigido
 
 `termo_desconhecido` **não é** a fonte única de verdade para a incógnita. `gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada` mostra que dois mecanismos coexistem por design: o símbolo "?" digitado diretamente no campo do papel semântico, e o campo `termo_desconhecido`. Quando eles divergem, a classe sinaliza um conflito curatorial (`mensagemInconsistencia`) em vez de escolher um como autoritativo. Ao mexer nessa área: não presuma que gravar em `termo_desconhecido` basta, e não crie uma regra permanente que "resolve" a divergência escolhendo um lado — trate como o conflito que `ResolvedorIncognitaCurada` já modela, e corrija a inconsistência na origem dos dados quando possível.
@@ -43,8 +57,9 @@ Antes de alterar qualquer código relacionado a esta lógica:
 4. Nunca apresente um resultado reaproveitado como se fosse uma nova execução. Se os timestamps/hashes não forem de uma execução real e atual, isso é inaceitável.
 5. Se não for possível rodar os testes (ambiente sem acesso ao projeto completo), avise explicitamente que a mudança não foi validada contra a bateria de regressão, em vez de assumir que está tudo certo.
 
-## Princípio geral do domínio — ver skill gerard-scaffolding-interacao
+## Princípio geral do domínio — ver `gerard-scaffolding-interacao`
 
-O princípio de não automatizar passos sem autorização do pesquisador (tipo 4 de scaffolding, ainda não implementado) está documentado na íntegra na skill `gerard-scaffolding-interacao`, seção "4. Automatização de passos". Não duplicar esse texto aqui — apenas consultar a outra skill quando o assunto for automação de passos.
-
-**Nota:** esta skill companheira ainda não existe no projeto (só é referenciada aqui). Se for citada antes de existir, trate a referência como um lembrete de criá-la, não como algo já disponível.
+O princípio de não automatizar passos sem autorização do pesquisador e o
+estado atual de `AG_AE` estão documentados na seção “Automatização de passos”
+de `gerard-scaffolding-interacao`. Consulte essa fonte proprietária em vez de
+duplicar aqui a definição ou o status de implementação.
