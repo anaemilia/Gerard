@@ -1,6 +1,7 @@
 package gerard.ui.enunciado;
 
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
+import gerard.interacao.geometria.LimitesMovimento;
 import gerard.ui.geometria.NoGeometriaRepresentacao;
 import java.awt.Rectangle;
 
@@ -43,10 +44,10 @@ public final class GeometriaAreaEnunciado {
 
     /**
      * Retorna o intervalo permitido para x e para a linha de base y do texto.
-     * A largura e a altura do Rectangle representam a distância entre os
-     * limites mínimo e máximo, não o tamanho visual do elemento.
+     * A representação produz um parâmetro geométrico neutro para o protocolo
+     * de interação; o handler não precisa conhecer Rectangle, AWT ou Swing.
      */
-    public Rectangle obterLimitesMovimento(ElementoTextoMovel elemento,
+    public LimitesMovimento obterLimitesMovimento(ElementoTextoMovel elemento,
             int larguraConteiner) {
         if (elemento == null) {
             throw new IllegalArgumentException("elemento obrigatorio");
@@ -57,8 +58,8 @@ public final class GeometriaAreaEnunciado {
                 - elemento.largura;
         int minimoY = obterTopo() + elemento.altura;
         int maximoY = obterBase();
-        return new Rectangle(minimoX, minimoY,
-                maximoX - minimoX, maximoY - minimoY);
+        return new LimitesMovimento(
+                minimoX, maximoX, minimoY, maximoY);
     }
 
     private int obterTopo() {

@@ -1,10 +1,14 @@
 # Tarefa pendente — representação complementar própria para as categorias de Relações
 
-Status: **parcialmente decidida (2026-08-16); desenho concreto ainda não
-iniciado.** Registrada a pedido da usuária (2026-08-08), que
-pediu para remover o diagrama complementar genérico dessas categorias
-"por enquanto" — não pediu (nem autorizou) o desenho da representação
-definitiva.
+Status: **implementada (2026-08-17, regra de visibilidade revista duas
+vezes no mesmo dia — por último, revelação individual por lupa sob
+demanda), pendente de validação real (sem JDK neste ambiente) — ver
+`RELATORIO_ITEM4_PAINEIS_EIXOS_RELACOES_2026-08-17.md`.**
+Registrada a pedido da usuária (2026-08-08), que pediu para remover o
+diagrama complementar genérico dessas categorias "por enquanto" — não
+pediu (nem autorizou) o desenho da representação definitiva na época;
+autorização e desenho concreto vieram só em 2026-08-16/17, ver seção
+"Desenho final (2026-08-17)" ao final deste arquivo.
 
 ## Contexto
 
@@ -91,7 +95,7 @@ altera nenhum código: não há ainda decisão sobre a forma concreta do
 material (o que exatamente é desenhado, como o sinal é indicado
 visualmente, se reaproveita algum widget existente ou é um desenho novo).
 
-## O que falta (não decidido, não autorizado)
+## O que faltava em 2026-08-16 (histórico — ver seção seguinte)
 
 Se e quando fizer sentido pedagogicamente, desenhar uma representação
 complementar própria para `TRANSFORMACAO_RELACAO` e `COMPOSICAO_RELACOES`,
@@ -102,7 +106,56 @@ scaffolding neste projeto (perguntas de confirmação com a usuária antes de
 codificar — ver `RELATORIO_AG_AE_DICA_POSICIONAMENTO_2026-08-08.md` como
 exemplo do processo).
 
-## Arquivos alterados
+## Desenho final e implementação (2026-08-17)
+
+Decisões da usuária, em rodadas sucessivas de confirmação (mesmo processo
+citado acima):
+
+1. Um painel de eixo dos inteiros por papel da categoria (3 em cada uma das
+   duas categorias de Relações), não um painel único compartilhado —
+   "a mesma quantidade de painéis renderizados quanto for o número de
+   relações", posicionados "discretamente, manipulável, em cima e embaixo
+   das relações".
+2. Todos os papéis ao mesmo tempo (não um de cada vez).
+3. Manipulável, "mantendo a consistência entre representações".
+4. Reaproveitar a classe já existente `ScaffoldingGraficoInteiros` criando
+   instâncias novas — "os dados e comportamento são iguais... isso deve
+   ser a base da tomada de decisão sobre reaproveitar ou não... princípio
+   da localidade do conhecimento" — em vez de um widget novo. Investigação
+   à parte revelou que o mecanismo de instância única já existente está
+   fortemente amarrado a um fluxo específico (menu de escolha de sinal sob
+   demanda, com auditoria de pesquisa); a usuária concordou em manter esse
+   fluxo intocado e criar um coordenador novo e paralelo
+   (`PaineisEixosRelacoes`) só para o caso de vários papéis sempre
+   visíveis, evitando risco de regressão no fluxo já validado.
+5. ~~Mesmo gatilho de visibilidade de todo outro material concreto do app
+   (`deveExibirDiagramaComplementar()` — só depois da 3ª tentativa
+   rejeitada, nunca durante a modelagem normal): "mesma regra".~~
+   **Decisão revista no mesmo dia (2026-08-17)**, depois de a usuária ver o
+   comportamento real (só o widget antigo de instância única aparecendo, os
+   3 painéis novos ainda escondidos aguardando a 3ª tentativa rejeitada) e
+   esperar ver os 3 eixos imediatamente: "Nesse caso existem três número
+   relativos, deveria existir três eixos" / "tire essa regra: Para ver os 3
+   eixos: erre a Relação final 3 vezes seguidas, sem acertar entre as
+   tentativas." Os painéis de Relações passam a ficar visíveis sempre que a
+   categoria ativa for uma das duas de Relações, sem esperar nenhuma
+   tentativa rejeitada — diferente de quadradinhos/barras/processo, que
+   continuam com o gatilho original.
+
+Ver `RELATORIO_ITEM4_PAINEIS_EIXOS_RELACOES_2026-08-17.md` para a lista
+completa de arquivos alterados e a verificação feita (inclui a revisão da
+regra de visibilidade).
+
+**Ajuste adicional no mesmo dia**: ao ver o eixo único antigo aparecendo
+junto com os 3 painéis novos (redundante — o papel em questão já tinha
+painel próprio), a usuária pediu para suprimir o eixo antigo "apenas nas
+categorias de relações" ("Tres relações apenas tres eixos"). Implementado:
+`mostrarGraficoInteirosNumeroRelativo`/`registrarEscolhaGraficoInteiros`
+em `Main.java` agora não fazem nada quando `devemExibirPaineisEixosRelacoes()`
+é verdadeiro — o menu de escolha de sinal continua igual, só o eixo
+flutuante antigo fica de fora. Nas demais categorias nada muda.
+
+## Arquivos alterados (revisão original, 2026-08-08)
 
 - `src/gerard/campoaditivo/representacao/SeletorRepresentacaoComplementar.java`
   (revertido para a forma original)

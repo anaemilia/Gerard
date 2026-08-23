@@ -78,20 +78,26 @@ tomada.
 - **Risco**: baixo a médio — não quebra nada hoje, mas pode estar inflando o
   volume de log de pesquisa sem que ninguém tenha decidido que está ok.
 
-## 4. Representação complementar própria para as categorias de Relações — não iniciada
+## 4. Representação complementar própria para as categorias de Relações — IMPLEMENTADO (2026-08-17)
 
-`TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md`: status explícito
-"não iniciada". `TRANSFORMACAO_RELACAO` e `COMPOSICAO_RELACOES` mostram o
-painel complementar em branco desde 08/08 (a pedido da usuária, que removeu
-o diagrama genérico sem função mas não pediu o desenho da representação
-definitiva). Nenhuma decisão pedagógica foi tomada sobre o que "material
-concreto" significa para uma relação/número relativo (podem ser negativos),
-diferente das medidas absolutas já representadas nas outras categorias.
-
-- **Trabalho**: exige decisão pedagógica nova antes de qualquer código —
-  mesmo processo de perguntas de confirmação já usado para `AG_AE`.
-- **Risco**: médio — decisão de design ainda não iniciada, escopo (o que
-  desenhar) não está definido.
+`TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md` estava "não
+iniciada". Decisão pedagógica tomada pela usuária em 2026-08-16/17 (mesmo
+processo de perguntas de confirmação usado para `AG_AE`): um painel de
+eixo dos inteiros por papel (3 por categoria), todos visíveis ao mesmo
+tempo, manipuláveis, posicionados acima/abaixo de cada papel do diagrama
+de Vergnaud, reaproveitando a classe já existente
+`ScaffoldingGraficoInteiros` (várias instâncias novas, não um widget novo).
+Visibilidade: decisão revista pela usuária no mesmo dia, depois de ver o
+comportamento real — em vez do mesmo gatilho de todo outro material
+concreto do app (só depois da 3ª tentativa rejeitada), os painéis de
+Relações ficam sempre visíveis quando a categoria ativa é uma das duas de
+Relações, sem esperar nenhuma tentativa rejeitada. Também nesse dia: o
+eixo único antigo (menu de escolha de sinal) deixou de aparecer nas
+categorias de Relações, já que os painéis novos por papel cobrem o mesmo
+lugar — nas demais categorias (Comparação de Medidas etc.) continua igual.
+Ver `RELATORIO_ITEM4_PAINEIS_EIXOS_RELACOES_2026-08-17.md` para os
+detalhes completos e a verificação (estrutural, sem JDK neste ambiente —
+falta validação real).
 
 ## 5. Roteiro de extração de handlers de interação — próximo protocolo não escolhido
 

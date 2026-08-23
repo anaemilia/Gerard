@@ -91,9 +91,9 @@ public class RepositorioModeloUsuario {
 
     /**
      * Atualiza a mídia preferida de um perfil já existente e persiste
-     * imediatamente — usado pelo checkbox de mídia da ajuda contextual
-     * ("E agora?"), que deixa o usuário trocar a preferência sem reabrir o
-     * cadastro. Não faz nada se o id não corresponder a um perfil
+     * imediatamente — usado pela escolha exclusiva de mídia da ajuda
+     * contextual ("E agora?"), que deixa o usuário trocar a preferência sem
+     * reabrir o cadastro. Não faz nada se o id não corresponder a um perfil
      * cadastrado (ex.: usuário ainda não fez login).
      */
     public synchronized void atualizarMidiaPreferida(String idUsuario, MidiaPreferida midia) {

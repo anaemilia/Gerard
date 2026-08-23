@@ -260,6 +260,21 @@ public class TestePilotoTransformacaoDeRelacao {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== necessitaRepresentacaoDeSinal() (2026-08-18): objeto rico, sem olhar forma/desenho ===");
+        checar("RelacaoInicial (INTEIROS) necessita representação de sinal",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador).necessitaRepresentacaoDeSinal()),
+                "true");
+        checar("Transformacao (INTEIROS) necessita representação de sinal",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.transformacao(publicador).necessitaRepresentacaoDeSinal()),
+                "true");
+        checar("RelacaoFinal (INTEIROS) necessita representação de sinal",
+                String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador).necessitaRepresentacaoDeSinal()),
+                "true");
+        checar("Parte1 (NATURAIS, outro esquema) NÃO necessita representação de sinal",
+                String.valueOf(PapelQuantitativo.parte1(publicador).necessitaRepresentacaoDeSinal()),
+                "false");
+
+        System.out.println();
         System.out.println("TODOS OS TESTES DO PILOTO DE TRANSFORMAÇÃO DE RELAÇÃO PASSARAM.");
     }
 

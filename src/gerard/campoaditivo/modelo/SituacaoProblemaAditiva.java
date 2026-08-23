@@ -40,6 +40,7 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     private final String fragmentoTexto4;
     private final String fragmentoTexto5;
     private final String fragmentoTexto6;
+    private final String operacaoRelacao;
 
     public SituacaoProblemaAditiva(TipoSituacaoAditiva tipo, IdiomaInterface idioma, String enunciado) {
         this("", false, tipo, idioma, enunciado, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
@@ -206,6 +207,37 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
             String personagem1, String personagem2, String personagem3,
             String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
             String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6) {
+        this(id, situacaoGrupoId, tipoVersao, versaoOrigemId, validada, tipo, codigoIdioma,
+                enunciado, contexto, fonte, subtipo, estadoInicial, transformacao,
+                sinalTransformacao, estadoFinal, quantidade1, quantidade2, resultado,
+                referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido,
+                representacaoVisual, observacoes, personagem1, personagem2, personagem3,
+                fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4,
+                fragmentoTexto5, fragmentoTexto6, "");
+    }
+
+    /**
+     * Construtor completo com o campo de operação (2026-08-18) — soma ou
+     * subtração declarada pelo pesquisador. Em Transformação de Relação, a
+     * operação e a relação final são campos curados independentes; o sistema
+     * não recalcula nem corrige a relação final. O campo também é relevante
+     * para Composição de Relações e Composição de Transformações; nas demais
+     * categorias fica vazio.
+     * O overload anterior (sem esse parâmetro) delega pra este com "",
+     * preservando todos os chamadores existentes sem alteração.
+     */
+    public SituacaoProblemaAditiva(
+            String id, String situacaoGrupoId, String tipoVersao, String versaoOrigemId,
+            boolean validada, TipoSituacaoAditiva tipo, String codigoIdioma, String enunciado,
+            String contexto, String fonte, String subtipo, String estadoInicial,
+            String transformacao, String sinalTransformacao, String estadoFinal,
+            String quantidade1, String quantidade2, String resultado, String referido,
+            String referendo, String valorRelativo, String sinalValorRelativo,
+            String termoDesconhecido, String representacaoVisual, String observacoes,
+            String personagem1, String personagem2, String personagem3,
+            String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
+            String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6,
+            String operacaoRelacao) {
         this.id = limpar(id);
         this.situacaoGrupoId = limpar(situacaoGrupoId).isEmpty() ? limpar(id) : limpar(situacaoGrupoId);
         this.codigoIdioma = IdiomaSituacao.normalizarCodigo(codigoIdioma);
@@ -244,6 +276,7 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
         this.fragmentoTexto4 = limpar(fragmentoTexto4);
         this.fragmentoTexto5 = limpar(fragmentoTexto5);
         this.fragmentoTexto6 = limpar(fragmentoTexto6);
+        this.operacaoRelacao = limpar(operacaoRelacao);
     }
 
     private static String limpar(String texto) {
@@ -285,4 +318,5 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     public String getFragmentoTexto4() { return fragmentoTexto4; }
     public String getFragmentoTexto5() { return fragmentoTexto5; }
     public String getFragmentoTexto6() { return fragmentoTexto6; }
+    public String getOperacaoRelacao() { return operacaoRelacao; }
 }

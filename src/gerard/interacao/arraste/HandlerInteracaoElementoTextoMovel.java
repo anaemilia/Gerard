@@ -1,7 +1,7 @@
 package gerard.interacao.arraste;
 
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
-import java.awt.Rectangle;
+import gerard.interacao.geometria.LimitesMovimento;
 
 /**
  * Mantém o estado e a mecânica local do gesto de um elemento textual.
@@ -37,7 +37,7 @@ public final class HandlerInteracaoElementoTextoMovel {
     }
 
     public ElementoTextoMovel moverDentroDosLimites(int mouseX, int mouseY,
-            Rectangle limites) {
+            LimitesMovimento limites) {
         if (elementoAtivo == null) {
             return null;
         }
@@ -45,10 +45,8 @@ public final class HandlerInteracaoElementoTextoMovel {
             throw new IllegalArgumentException("limites obrigatorios");
         }
 
-        int novoX = limitar(mouseX - deslocamentoX,
-                limites.x, limites.x + limites.width);
-        int novoY = limitar(mouseY - deslocamentoY,
-                limites.y, limites.y + limites.height);
+        int novoX = limites.limitarX(mouseX - deslocamentoX);
+        int novoY = limites.limitarY(mouseY - deslocamentoY);
         elementoAtivo.x = novoX;
         elementoAtivo.y = novoY;
         return elementoAtivo;
@@ -77,17 +75,6 @@ public final class HandlerInteracaoElementoTextoMovel {
     public ElementoTextoMovel identificarFoco(
             ElementoTextoMovel candidato, boolean estaNaAreaDoTexto) {
         return candidato != null && estaNaAreaDoTexto ? candidato : null;
-    }
-
-    private int limitar(int valor, int minimo, int maximo) {
-        int limitado = valor;
-        if (limitado < minimo) {
-            limitado = minimo;
-        }
-        if (limitado > maximo) {
-            limitado = maximo;
-        }
-        return limitado;
     }
 
 }

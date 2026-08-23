@@ -76,6 +76,8 @@ import gerard.interpretacao.modelo.CategoriaProblema;
 import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
 import gerard.dominio.campoaditivo.OrigemAcao;
+import gerard.dominio.campoaditivo.ajuda.FormatoAjudaNarrativaVisual;
+import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
@@ -126,6 +128,7 @@ import gerard.Scaffolding.arraste.MarcadorOrigemArrasteTracejado;
 import gerard.Scaffolding.arraste.OuvinteArrasteElastico;
 import gerard.pesquisador.TelaVisaoPesquisador;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
+import gerard.pesquisador.log.LoggerGestosInteracaoGerard;
 import gerard.aplicacao.AcaoAtividade;
 import gerard.aplicacao.ControladorEstadoAtividade;
 import gerard.aplicacao.ContextoCarregamentoAtividade;
@@ -138,7 +141,11 @@ import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
 import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
 import gerard.ui.vergnaud.ApresentadorItemVergnaud;
 import gerard.ui.vergnaud.ApresentadorGraficoInteiros;
+import gerard.ui.vergnaud.PaineisEixosRelacoes;
+import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;
+import gerard.ui.vergnaud.AdaptadorMovimentoConectorVergnaud;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
+import gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -148,9 +155,14 @@ import gerard.campoaditivo.diagrama.elementos.FragmentoAnotacao;
 import gerard.campoaditivo.diagrama.elementos.MarcadorTexto;
 import gerard.interacao.arraste.SessaoArrasteTextoParaDiagrama;
 import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
-import gerard.interacao.arraste.HandlerInteracaoElementosDiagramaVergnaud;
+import gerard.interacao.arraste.HandlerInteracaoArrasteIncremental;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
+import gerard.interacao.arraste.HandlerInteracaoQuadradinhoVenn;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
+import gerard.interacao.ContextoRegistroGesto;
+import gerard.interacao.DestinoGeometricoGesto;
+import gerard.interacao.PublicadorGestoInteracao;
+import gerard.interacao.geometria.LimitesMovimento;
 import gerard.interacao.texto.PoliticaElementoMatematicoTexto;
 import gerard.interacao.texto.PoliticaUnicidadeElementoMatematicoTexto;
 import gerard.interacao.texto.ResolvedorPickupElementoMatematicoTexto;
@@ -676,6 +688,23 @@ public class Main extends JFrame {
         final ApresentadorGraficoInteiros apresentadorGraficoInteiros =
                 new ApresentadorGraficoInteiros(scaffoldingGraficoInteiros);
         ScaffoldingReacaoRepresentacoes scaffoldingReacaoRepresentacoes = new ScaffoldingReacaoRepresentacoes();
+        /**
+         * Item 4 do levantamento de pendências (2026-08-11): material
+         * concreto próprio de TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES —
+         * um eixo dos inteiros por papel, todos visíveis e manipuláveis ao
+         * mesmo tempo, ativados pelo mesmo gatilho de todo outro material
+         * concreto do app (deveExibirDiagramaComplementar). Coordenador
+         * novo e paralelo ao scaffoldingGraficoInteiros já existente acima
+         * (decisão da usuária, 2026-08-16) — não o modifica.
+         */
+        final PaineisEixosRelacoes paineisEixosRelacoes = new PaineisEixosRelacoes();
+        /**
+         * Item 22 (2026-08-18): seletor soma/subtração mostrado ao aluno
+         * perto da seta do diagrama, nas 3 categorias de Relações — parte
+         * avaliada da resposta, não decorativo. Ver Javadoc de
+         * SeletorOperacaoRelacaoAluno.
+         */
+        final SeletorOperacaoRelacaoAluno seletorOperacaoRelacaoAluno = new SeletorOperacaoRelacaoAluno();
         final FornecedorCursoresPickup fornecedorCursoresPickup = new FornecedorCursoresPickupSwing();
         final RenderizadorPickup renderizadorPickup = new RenderizadorPickupElevado();
         final ControladorArrasteElastico controladorArrasteElastico =
@@ -711,6 +740,8 @@ public class Main extends JFrame {
         final MarcadorOrigemArraste marcadorOrigemArraste =
                 new MarcadorOrigemArrasteTracejado();
         LoggerInteracaoGerard loggerInteracaoGerard = LoggerInteracaoGerard.getInstancia();
+        final PublicadorGestoInteracao publicadorGestosInteracao =
+                LoggerGestosInteracaoGerard.paraSessao(loggerInteracaoGerard);
         ControladorContextoSituacao controladorContextoSituacao = new ControladorContextoSituacao(loggerInteracaoGerard);
         ControladorEstadoAtividade controladorEstadoAtividade = new ControladorEstadoAtividade();
         FachadaCarregamentoAtividade fachadaCarregamentoAtividade =
@@ -816,6 +847,21 @@ public class Main extends JFrame {
         CirculoVenn agrupamentoLimiteQuantidadeQuestionado = null;
         boolean mostrarLimiteQuantidadeQuestionado = false;
         String textoLimiteQuantidadeQuestionado = "";
+        /**
+         * Aviso persistente (2026-08-18) de sinal divergente do curado no
+         * número relativo — mesma família do aviso de limite de quantidade
+         * acima, mas independente dele: "deixe na tela até que seja
+         * corrigido" (a usuária achou o tooltip anterior, de 2600ms,
+         * sumindo rápido demais). itemSinalDivergentePersistente é usado
+         * quando o menu foi aberto a partir de um item já solto no
+         * diagrama; elementoSinalDivergentePersistente, quando foi aberto a
+         * partir do próprio círculo/retângulo (sem item associado) — nunca
+         * os dois ao mesmo tempo.
+         */
+        ItemTextoArrastavel itemSinalDivergentePersistente = null;
+        ElementoVergnaud elementoSinalDivergentePersistente = null;
+        boolean mostrarSinalDivergentePersistente = false;
+        String textoSinalDivergentePersistente = "";
         ArrayList<QuadradinhoVenn> quadradinhosCorrespondentesComparacao = new ArrayList<QuadradinhoVenn>();
         ArrayList<ElementoVergnaud> elementosVergnaud = new ArrayList<ElementoVergnaud>();
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
@@ -830,15 +876,17 @@ public class Main extends JFrame {
                 new PlanejadorAplicacaoEstadoVergnaud();
         final ApresentadorItemVergnaud apresentadorItemVergnaud =
                 new ApresentadorItemVergnaud();
-        int indiceCirculoVennOrigemArraste = -1;
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
 
         final HandlerInteracaoItemTextoArrastavel handlerItemTextoArrastavel =
                 new HandlerInteracaoItemTextoArrastavel();
         final HandlerInteracaoElementoTextoMovel handlerElementoTextoMovel =
                 new HandlerInteracaoElementoTextoMovel();
-        final HandlerInteracaoElementosDiagramaVergnaud handlerElementosDiagramaVergnaud =
-                new HandlerInteracaoElementosDiagramaVergnaud();
+        final HandlerInteracaoArrasteIncremental<AdaptadorMovimentoConectorVergnaud>
+                handlerConectorVergnaud =
+                new HandlerInteracaoArrasteIncremental<AdaptadorMovimentoConectorVergnaud>();
+        final HandlerInteracaoQuadradinhoVenn handlerQuadradinhoVenn =
+                new HandlerInteracaoQuadradinhoVenn();
         final GeometriaAreaEnunciado geometriaAreaEnunciado;
         int ultimoDispatchIndexMouseReleased = 0;
         // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
@@ -851,13 +899,10 @@ public class Main extends JFrame {
         ElementoTextoMovel elementoTextoFocado = null;
         boolean layoutTextoInicializado = false;
         int larguraUltimoLayoutTexto = -1;
-        QuadradinhoVenn quadradinhoVennSelecionado = null;
         QuadradinhoVenn quadradinhoVennFocado = null;
         ElementoVergnaud alvoRealcadoPorProximidade = null;
         final int DISTANCIA_REALCE_ALVO = 48;
 
-        int deslocamentoVennX;
-        int deslocamentoVennY;
         boolean arrastandoControleComparacao = false;
         double proporcaoControleComparacao = -1.0;
         int ultimoValorInteiroControleComparacao = -1;
@@ -1966,6 +2011,9 @@ public class Main extends JFrame {
                     && scaffoldingGraficoInteiros.isVisivel()) {
                 representacoes.add(localizacao.texto("ui.bug.representation.integerAxis"));
             }
+            if (paineisEixosRelacoes.estaAtivo()) {
+                representacoes.add(localizacao.texto("ui.bug.representation.integerAxis"));
+            }
 
             // Campo livre da curadoria: funciona como extensão para uma
             // representação específica que ainda não tenha classificação
@@ -2804,12 +2852,9 @@ public class Main extends JFrame {
         }
 
         /**
-         * Checkbox de mídia preferida (Som/Gráfico/Linguagem natural/Vídeo) —
-         * mesmas 4 opções e mesma exclusividade mútua de
-         * DialogoUsuario.campoMidia (só uma mídia preferida por usuário),
-         * reaproveitando as chaves i18n ui.userDialog.media.* em vez de
-         * duplicá-las. Ocupa o espaço que antes mostrava só o texto estático
-         * "Escolha uma forma de apoio." dentro do menu "E agora?".
+         * Preferência de materialização da ajuda. É uma escolha exclusiva:
+         * não decide se haverá ajuda nem sua função pedagógica; apenas indica
+         * como uma decisão já fundamentada deve ser apresentada.
          */
         private JPanel criarPainelMidiaAjudaContextual() {
             final String idUsuario = loggerInteracaoGerard.getUsuarioAtual();
@@ -2835,64 +2880,62 @@ public class Main extends JFrame {
             painelMidia.add(rotuloEscolha);
             painelMidia.add(Box.createVerticalStrut(5));
 
-            final JCheckBox caixaSom = new JCheckBox(
+            final JRadioButton opcaoSom = new JRadioButton(
                     localizacao.texto("ui.userDialog.media.som"), midiaAtual == gerard.agente.modelousuario.MidiaPreferida.SOM);
-            final JCheckBox caixaGrafico = new JCheckBox(
+            final JRadioButton opcaoGrafico = new JRadioButton(
                     localizacao.texto("ui.userDialog.media.grafico"), midiaAtual == gerard.agente.modelousuario.MidiaPreferida.GRAFICO);
-            final JCheckBox caixaLinguagemNatural = new JCheckBox(
+            final JRadioButton opcaoLinguagemNatural = new JRadioButton(
                     localizacao.texto("ui.userDialog.media.linguagemNatural"),
                     midiaAtual == gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL);
-            final JCheckBox caixaVideo = new JCheckBox(
+            final JRadioButton opcaoVideo = new JRadioButton(
                     localizacao.texto("ui.userDialog.media.video"), midiaAtual == gerard.agente.modelousuario.MidiaPreferida.VIDEO);
-            final JCheckBox[] todasAsCaixas = {caixaSom, caixaGrafico, caixaLinguagemNatural, caixaVideo};
-            final gerard.agente.modelousuario.MidiaPreferida[] midiasDasCaixas = {
+            final JRadioButton opcaoHistoriaEmQuadrinhos = new JRadioButton(
+                    localizacao.texto("ui.userDialog.media.historiaEmQuadrinhos"),
+                    midiaAtual == gerard.agente.modelousuario.MidiaPreferida.HISTORIA_EM_QUADRINHOS);
+            final JRadioButton[] opcoes = {
+                opcaoSom,
+                opcaoGrafico,
+                opcaoLinguagemNatural,
+                opcaoVideo,
+                opcaoHistoriaEmQuadrinhos
+            };
+            final gerard.agente.modelousuario.MidiaPreferida[] midiasDasOpcoes = {
                     gerard.agente.modelousuario.MidiaPreferida.SOM,
                     gerard.agente.modelousuario.MidiaPreferida.GRAFICO,
                     gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL,
-                    gerard.agente.modelousuario.MidiaPreferida.VIDEO};
-            for (JCheckBox caixa : todasAsCaixas) {
-                caixa.setOpaque(false);
-                caixa.setFont(new Font("Arial", Font.PLAIN, 12));
-                caixa.setForeground(COR_TEXTO);
-                caixa.setFocusPainted(false);
-                caixa.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    gerard.agente.modelousuario.MidiaPreferida.VIDEO,
+                    gerard.agente.modelousuario.MidiaPreferida.HISTORIA_EM_QUADRINHOS};
+            ButtonGroup grupoMidia = new ButtonGroup();
+            for (JRadioButton opcao : opcoes) {
+                grupoMidia.add(opcao);
+                opcao.setOpaque(false);
+                opcao.setFont(new Font("Arial", Font.PLAIN, 12));
+                opcao.setForeground(COR_TEXTO);
+                opcao.setFocusPainted(false);
+                opcao.setAlignmentX(Component.LEFT_ALIGNMENT);
             }
-            for (int i = 0; i < todasAsCaixas.length; i++) {
-                final JCheckBox caixa = todasAsCaixas[i];
-                final gerard.agente.modelousuario.MidiaPreferida midia = midiasDasCaixas[i];
-                caixa.addActionListener(new ActionListener() {
+            for (int i = 0; i < opcoes.length; i++) {
+                final JRadioButton opcao = opcoes[i];
+                final gerard.agente.modelousuario.MidiaPreferida midia = midiasDasOpcoes[i];
+                opcao.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        aplicarSelecaoUnicaMidia(caixa, todasAsCaixas, midia, idUsuario);
+                        repositorioModeloUsuario.atualizarMidiaPreferida(idUsuario, midia);
+                        registrarAcaoGranular(
+                                "SELECIONAR",
+                                "Ajustar mídia preferida",
+                                "Ajuda contextual",
+                                "MENU_E_AGORA",
+                                opcao.getText(),
+                                "midia=" + midia.name(),
+                                "A mídia preferida do usuário foi atualizada.");
                     }
                 });
             }
 
-            for (JCheckBox caixa : todasAsCaixas) {
-                painelMidia.add(caixa);
+            for (JRadioButton opcao : opcoes) {
+                painelMidia.add(opcao);
             }
             return painelMidia;
-        }
-
-        private void aplicarSelecaoUnicaMidia(JCheckBox marcada, JCheckBox[] todasAsCaixas,
-                gerard.agente.modelousuario.MidiaPreferida midia, String idUsuario) {
-            if (!marcada.isSelected()) {
-                marcada.setSelected(true);
-                return;
-            }
-            for (JCheckBox caixa : todasAsCaixas) {
-                if (caixa != marcada) {
-                    caixa.setSelected(false);
-                }
-            }
-            repositorioModeloUsuario.atualizarMidiaPreferida(idUsuario, midia);
-            registrarAcaoGranular(
-                    "SELECIONAR",
-                    "Ajustar mídia preferida",
-                    "Ajuda contextual",
-                    "MENU_E_AGORA",
-                    marcada.getText(),
-                    "midia=" + midia.name(),
-                    "A mídia preferida do usuário foi atualizada.");
         }
 
         private void fecharMenuAjudaContextual() {
@@ -3680,7 +3723,7 @@ public class Main extends JFrame {
                     limiteErrosCategoria.registrarAcerto(loggerInteracaoGerard.getUsuarioAtual());
                     confirmarCategoriaAdivinhada(tipo);
                 } else if (limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
-                    acionarTimeoutCategoria();
+                    acionarTimeoutCategoria(categoriaReal);
                 } else {
                     mostrarQuestionamentoCategoriaErrada(tipo, categoriaReal);
                 }
@@ -3789,7 +3832,7 @@ public class Main extends JFrame {
             // Só o acerto do ícone (clicarAtalhoCategoria) zera de fato —
             // ver LimiteErrosConsecutivosCategoria.registrarAcerto.
             if (!correto && limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
-                acionarTimeoutCategoria();
+                acionarTimeoutCategoria(categoriaReal);
             }
         }
 
@@ -3802,41 +3845,44 @@ public class Main extends JFrame {
          * usuária fazia manualmente como pesquisadora nos experimentos em
          * papel: parar a ação e explicar novamente cada categoria.
          */
-        private void acionarTimeoutCategoria() {
+        private void acionarTimeoutCategoria(TipoSituacaoAditiva categoriaReal) {
             aguardandoAdivinhacaoCategoria = false;
             categoriaSorteioOculta = null;
             atualizarHabilitacaoIconesAtalhoCategoria();
             registrarLogUsuario(
-                    "Encerrar a adivinhação após erros consecutivos e reexplicar as categorias",
+                    "Encerrar a adivinhação após erros consecutivos e reexplicar a categoria",
                     "-",
                     "Faixa de ícones de categoria",
                     "Diálogo de reexplicação",
                     "Retomar a compreensão da categoria antes de continuar a modelagem",
                     "OBJ8",
-                    "Após erros consecutivos, o sistema para a adivinhação e reexplica as 3 categorias.",
+                    "Após erros consecutivos, o sistema para a adivinhação e reexplica a categoria da situação sorteada.",
                     "TIMEOUT_CATEGORIA",
-                    ""
+                    "categoria=" + categoriaReal
             );
-            mostrarExplicacaoCategorias();
+            mostrarExplicacaoCategorias(categoriaReal);
         }
 
         /**
-         * Reexplica composição/transformação/comparação de uma vez, no
-         * formato da MidiaPreferida do usuário (Modelo do Usuário) —
+         * Reexplica só a categoria real da situação sorteada (2026-08-17:
+         * antes reexplicava sempre as 3 categorias de Medidas, hardcoded,
+         * mesmo quando a situação era de Relações — bug relatado pela
+         * usuária, "essa explicação aparece no terceiro erro da categoria
+         * de relações", com captura de tela mostrando CM/TM/COP mesmo numa
+         * situação de Relações. Decisão: "cada categoria deve vir apenas
+         * com sua explicação curta" — uma linha só, a da categoria real
+         * (`categoriaReal`, capturada por quem chama antes de
+         * `categoriaSorteioOculta` ser zerada), qualquer uma das 6),
+         * no formato da MidiaPreferida do usuário (Modelo do Usuário) —
          * primeira vez que esse campo passa a influenciar algo mostrado na
          * tela; até agora só era gravado (ver criarPainelMidiaAjudaContextual).
-         * Só LINGUAGEM_NATURAL tem conteúdo pronto hoje. GRAFICO, SOM e
-         * VIDEO ainda não têm conteúdo próprio de verdade — nenhum ícone
-         * é uma explicação gráfica real, não há narração/texto-para-voz
-         * (só o beep genérico de ScaffoldingFeedbackMultissensorialErro), e
-         * não há player de vídeo embutido em lugar nenhum do app. Decisão
-         * explícita da usuária (2026-07-30): "não pode ser uma decisão às
-         * pressas" — em vez de fingir esses 3 formatos prontos, mostra o
-         * aviso de "em construção" e cai para o mesmo texto de
-         * LINGUAGEM_NATURAL por baixo, em vez de deixar a pessoa sem
-         * explicação nenhuma.
+         * VIDEO e HISTORIA_EM_QUADRINHOS materializam o mesmo repertório
+         * curado das categorias de Relações em sintaxes diferentes. A
+         * categoria possui o conteúdo; Swing resolve GIFs ou storyboards.
+         * GRAFICO e SOM ainda mostram o aviso de "em construção" e caem
+         * para o mesmo texto de LINGUAGEM_NATURAL por baixo.
          */
-        private void mostrarExplicacaoCategorias() {
+        private void mostrarExplicacaoCategorias(TipoSituacaoAditiva categoriaReal) {
             String idUsuario = loggerInteracaoGerard.getUsuarioAtual();
             gerard.agente.modelousuario.ModeloUsuario modeloAtual = repositorioModeloUsuario.obter(idUsuario);
             gerard.agente.modelousuario.MidiaPreferida midia =
@@ -3844,6 +3890,18 @@ public class Main extends JFrame {
             if (midia == null) {
                 midia = gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL;
             }
+            final RepertorioAjudaVisual repertorioAjudaVisual =
+                    categoriaReal.selecionarRepertorioAjudaVisual();
+            final FormatoAjudaNarrativaVisual formatoNarrativa =
+                    midia == gerard.agente.modelousuario.MidiaPreferida.VIDEO
+                            ? FormatoAjudaNarrativaVisual.ANIMACAO
+                            : midia == gerard.agente.modelousuario.MidiaPreferida.HISTORIA_EM_QUADRINHOS
+                                    ? FormatoAjudaNarrativaVisual.HISTORIA_EM_QUADRINHOS
+                                    : null;
+            final PainelAjudaNarrativaVisualCategoria painelNarrativa =
+                    formatoNarrativa == null ? null
+                            : PainelAjudaNarrativaVisualCategoria.criarSeDisponivel(
+                                    repertorioAjudaVisual, formatoNarrativa);
 
             final JDialog dialogo = new JDialog(
                     SwingUtilities.getWindowAncestor(this),
@@ -3869,7 +3927,8 @@ public class Main extends JFrame {
             corpo.add(intro);
             corpo.add(Box.createVerticalStrut(12));
 
-            boolean formatoPendente = midia != gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL;
+            boolean formatoPendente = midia != gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL
+                    && painelNarrativa == null;
             if (formatoPendente) {
                 JLabel avisoConstrucao = new JLabel("<html><body style='width: 320px'><i>"
                         + localizacao.texto("ui.dialog.categoryExplanation.midiaPendente") + "</i></body></html>");
@@ -3880,14 +3939,13 @@ public class Main extends JFrame {
                 corpo.add(Box.createVerticalStrut(10));
             }
 
+            if (painelNarrativa != null) {
+                corpo.add(painelNarrativa);
+                corpo.add(Box.createVerticalStrut(12));
+            }
+
             corpo.add(criarLinhaExplicacaoCategoria(
-                    TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, criarIconeCategoriaComposicao()));
-            corpo.add(Box.createVerticalStrut(10));
-            corpo.add(criarLinhaExplicacaoCategoria(
-                    TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, criarIconeCategoriaTransformacao()));
-            corpo.add(Box.createVerticalStrut(10));
-            corpo.add(criarLinhaExplicacaoCategoria(
-                    TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao()));
+                    categoriaReal, obterIconeParaCategoria(categoriaReal)));
 
             conteudo.add(corpo, BorderLayout.CENTER);
 
@@ -3918,7 +3976,54 @@ public class Main extends JFrame {
             dialogo.setContentPane(conteudo);
             dialogo.pack();
             dialogo.setLocationRelativeTo(this);
+            final String formatoExibido = painelNarrativa == null
+                    ? "linguagem_natural"
+                    : painelNarrativa.getFormato() == FormatoAjudaNarrativaVisual.ANIMACAO
+                            ? "historinha_animada"
+                            : "historia_em_quadrinhos";
+            dialogo.addWindowListener(new WindowAdapter() {
+                public void windowOpened(WindowEvent e) {
+                    registrarFeedbackExibido(
+                            "AG_EME",
+                            gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                            "categoria=" + categoriaReal
+                                    + "; formato=" + formatoExibido
+                                    + "; gatilho=terceiro_erro_categoria"
+                                    + (painelNarrativa == null ? ""
+                                            : "; repertorio=" + painelNarrativa.getChaveRepertorio()
+                                                    + "; quantidade_historinhas="
+                                                    + painelNarrativa.getQuantidadeHistorias()));
+                }
+            });
             dialogo.setVisible(true);
+        }
+
+        /**
+         * Mesmo ícone usado nos botões de atalho de categoria
+         * (criarPainelAtalhoCategoria), reaproveitado aqui para não duplicar
+         * o desenho — localidade do conhecimento: cada categoria só tem um
+         * ícone, definido em um lugar só (criarIconeCategoria*).
+         */
+        private Icon obterIconeParaCategoria(TipoSituacaoAditiva tipo) {
+            if (tipo == null) {
+                return criarIconeCategoriaComposicao();
+            }
+            switch (tipo) {
+                case COMPOSICAO_MEDIDAS:
+                    return criarIconeCategoriaComposicao();
+                case TRANSFORMACAO_MEDIDAS:
+                    return criarIconeCategoriaTransformacao();
+                case COMPARACAO_MEDIDAS:
+                    return criarIconeCategoriaComparacao();
+                case COMPOSICAO_TRANSFORMACOES:
+                    return criarIconeCategoriaComposicaoTransformacoes();
+                case TRANSFORMACAO_RELACAO:
+                    return criarIconeCategoriaTransformacaoRelacao();
+                case COMPOSICAO_RELACOES:
+                    return criarIconeCategoriaComposicaoRelacoes();
+                default:
+                    return criarIconeCategoriaComposicao();
+            }
         }
 
         /**
@@ -4621,12 +4726,15 @@ public class Main extends JFrame {
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             sessaoArrasteTextoParaDiagrama.limpar();
-            quadradinhoVennSelecionado = null;
+            handlerQuadradinhoVenn.cancelar();
             quadradinhoVennFocado = null;
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerConectorVergnaud.cancelar();
             limparRealceAlvoProximidade();
             limparQuestionamentoPersistente();
+            limparSinalDivergentePersistente();
             limparGraficoInteiros();
+            paineisEixosRelacoes.desativar();
+            seletorOperacaoRelacaoAluno.desativar();
             desabilitarSincronizacaoEstadoFinal();
             estadoSemanticoCompartilhado.limpar(tipoSituacaoSelecionada);
             layoutTextoInicializado = false;
@@ -4722,12 +4830,13 @@ public class Main extends JFrame {
             itemFocado = null;
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
-            quadradinhoVennSelecionado = null;
+            handlerQuadradinhoVenn.cancelar();
             quadradinhoVennFocado = null;
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerConectorVergnaud.cancelar();
             limparRealceAlvoProximidade();
             mostrarAnotacaoMouseOver = false;
             limparQuestionamentoPersistente();
+            limparSinalDivergentePersistente();
             limparGraficoInteiros();
             desabilitarSincronizacaoEstadoFinal();
             estadoSemanticoCompartilhado.limpar(tipoSituacaoSelecionada);
@@ -5528,8 +5637,8 @@ public class Main extends JFrame {
             restaurarTentativasIncognitaAtual();
             handlerItemTextoArrastavel.cancelar();
             handlerElementoTextoMovel.cancelar();
-            quadradinhoVennSelecionado = null;
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerQuadradinhoVenn.cancelar();
+            handlerConectorVergnaud.cancelar();
             limparRealceAlvoProximidade();
 
             java.util.Iterator<ItemTextoArrastavel> iterador = itensArrastaveis.iterator();
@@ -5593,10 +5702,12 @@ public class Main extends JFrame {
             numeroRelativoGraficoInteiros = null;
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
-            quadradinhoVennSelecionado = null;
+            handlerQuadradinhoVenn.cancelar();
             quadradinhoVennFocado = null;
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerConectorVergnaud.cancelar();
             alvoRealcadoPorProximidade = null;
+            paineisEixosRelacoes.desativar();
+            seletorOperacaoRelacaoAluno.desativar();
 
             itensArrastaveis.clear();
             marcadoresFixosTexto.clear();
@@ -5609,6 +5720,7 @@ public class Main extends JFrame {
 
             limparRealceAlvoProximidade();
             limparQuestionamentoPersistente();
+            limparSinalDivergentePersistente();
             limparGraficoInteiros();
             desabilitarSincronizacaoEstadoFinal();
             mostrarAnotacaoMouseOver = false;
@@ -6970,16 +7082,26 @@ public class Main extends JFrame {
                 desenharRotulosComposicaoTransformacaoNoDiagrama(g2);
             }
 
+            ConectorVergnaud conectorAtivo = obterConectorVergnaudAtivo();
             for (ConectorVergnaud conector : conectoresVergnaud) {
-                if (conector != handlerElementosDiagramaVergnaud.obterConectorAtivo()) {
+                if (conector != conectorAtivo) {
                     conector.desenhar(g2);
                 }
             }
             for (ElementoVergnaud elemento : elementosVergnaud) {
-                if (elemento != handlerElementosDiagramaVergnaud.obterElementoAtivo()) {
-                    elemento.desenhar(g2);
-                }
+                elemento.desenhar(g2);
             }
+        }
+
+        private ConectorVergnaud obterConectorVergnaudAtivo() {
+            AdaptadorMovimentoConectorVergnaud adaptador =
+                    handlerConectorVergnaud.obterAlvoAtivo();
+            return adaptador == null ? null : adaptador.obterConector();
+        }
+
+        private LimitesMovimento obterLimitesMovimentoConectorVergnaud() {
+            return AdaptadorMovimentoConectorVergnaud.traduzir(
+                    obterAreaConteudoDiagramaVergnaud());
         }
 
         private void desenharRotulosPassosNoDiagrama(Graphics2D g2) {
@@ -7073,6 +7195,165 @@ public class Main extends JFrame {
                     getHeight(),
                     obterAreaVisivelDiagramasVergnaud()
             );
+            atualizarPaineisEixosRelacoesConformeVisibilidade();
+            paineisEixosRelacoes.desenhar(
+                    g2,
+                    getWidth(),
+                    getHeight(),
+                    obterAreaVisivelDiagramasVergnaud()
+            );
+            paineisEixosRelacoes.desenharLupas(g2);
+            seletorOperacaoRelacaoAluno.desenhar(g2, localizacao);
+        }
+
+        /**
+         * Ativa/desativa os painéis de eixo das Relações a cada repaint.
+         * Decisão revista da usuária, 2026-08-17 (depois de ver o
+         * comportamento real): ao contrário de quadradinhos/barras/processo
+         * (gatilho de {@link #deveExibirDiagramaComplementar()}, só depois
+         * da 3ª tentativa rejeitada), os painéis de Relações não esperam
+         * nenhuma tentativa rejeitada — aparecem sempre que a categoria
+         * ativa for uma das duas de Relações, mesma disponibilidade do
+         * mecanismo já existente de eixo único ("o eixo sempre aparece").
+         * Decisão anterior (2026-08-16, "mesma regra" das 3 tentativas)
+         * revogada nesta mesma sessão, ainda antes de qualquer validação
+         * real ter passado por ela. Autocorretivo: não precisa de um ponto
+         * de reset dedicado em cada lugar que hoje zera
+         * handlerQuadradinhoVenn/etc. — some ou aparece sozinho se a
+         * situação ou a categoria mudar.
+         */
+        private void atualizarPaineisEixosRelacoesConformeVisibilidade() {
+            boolean deveExibir = devemExibirPaineisEixosRelacoes();
+            if (deveExibir && !paineisEixosRelacoes.estaAtivo()) {
+                ativarPaineisEixosRelacoes();
+            } else if (!deveExibir && paineisEixosRelacoes.estaAtivo()) {
+                paineisEixosRelacoes.desativar();
+            }
+        }
+
+        /**
+         * Regra da usuária (2026-08-18, generalização do item 4): "todo
+         * número relativo ou transformação carrega uma lupa. Essa é a
+         * regra" — não importa a categoria, nem se veio de uma cena
+         * simples ou composta/encadeada. O critério deixou de ser uma
+         * lista fixa de TipoSituacaoAditiva e passou a ser estrutural:
+         * existe pelo menos um elemento do diagrama atual que é um
+         * número relativo ({@link #ehElementoNumeroRelativo}, mesmo
+         * critério — TipoFiguraDiagrama.ELIPSE — já usado para decidir
+         * onde o menu de sinal se aplica). Antes: só
+         * TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES. Categorias sem
+         * nenhum número relativo (ex.: Composição de Medidas, só
+         * quadrados) continuam sem painel, pois a busca não encontra
+         * nenhum elemento elipse.
+         */
+        private boolean devemExibirPaineisEixosRelacoes() {
+            if (!categoriaSelecionadaParaAtividade || elementosVergnaud == null) {
+                return false;
+            }
+            for (ElementoVergnaud elemento : elementosVergnaud) {
+                if (ehElementoNumeroRelativo(elemento)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Cria um painel por papel de {@code elementosVergnaud}, com o
+         * valor atual do elemento (mesmos helpers já usados pelo
+         * mecanismo de escolha de sinal sob demanda —
+         * {@code obterValorNumericoDoElemento},
+         * {@code scaffoldingReacaoRepresentacoes}) e posição inicial
+         * acima/abaixo dele, alternando por índice. A posição é só um
+         * ponto de partida razoável — cada painel continua livremente
+         * arrastável depois (mesma regra do painel único já existente).
+         */
+        private void ativarPaineisEixosRelacoes() {
+            paineisEixosRelacoes.ativar(elementosVergnaud);
+            int larguraTela = Math.max(getWidth(), 1);
+            int alturaTela = Math.max(getHeight(), 1);
+            for (PaineisEixosRelacoes.Painel painel : paineisEixosRelacoes.obterPaineis()) {
+                prepararPainelEixoRelacao(painel, larguraTela, alturaTela);
+            }
+        }
+
+        /**
+         * Semeia valor e posição inicial de um painel — extraído para ser
+         * reaproveitado tanto na ativação de todos os papéis quanto na
+         * revelação individual de um só pela lupa (2026-08-17, ver Javadoc
+         * de PaineisEixosRelacoes): mesma preparação, um só lugar.
+         */
+        private void prepararPainelEixoRelacao(
+                PaineisEixosRelacoes.Painel painel, int larguraTela, int alturaTela) {
+            atualizarValorPainelEixoRelacao(painel);
+            ElementoVergnaud elemento = painel.elemento;
+            int indice = elementosVergnaud == null ? -1 : elementosVergnaud.indexOf(elemento);
+            boolean acima = indice % 2 == 0;
+            int x = Math.max(8, Math.min(elemento.x, larguraTela - 200));
+            int y = acima
+                    ? Math.max(50, elemento.y - 110)
+                    : Math.min(elemento.y + elemento.altura + 12, alturaTela - 108);
+            painel.grafico.definirPosicaoInicial(x, y);
+        }
+
+        /**
+         * Envia para o painel o valor atual do elemento correspondente
+         * ({@code obterValorNumericoDoElemento}, mesmo helper já usado pelo
+         * mecanismo de escolha de sinal sob demanda). Extraído de
+         * {@link #ativarPaineisEixosRelacoes()} para ser reaproveitado
+         * também por {@link #atualizarPaineisEixosRelacoesComValoresAtuais()}
+         * — mesma lógica de leitura de valor, um só lugar (localidade do
+         * conhecimento). Não mexe na posição do painel: {@code registrarEscolha}/
+         * {@code mostrar} só criam a posição padrão a primeira vez
+         * (painelFlutuante ainda nulo); com o painel já existente, a posição
+         * arrastada pelo usuário — ou definida por definirPosicaoInicial —
+         * permanece intacta.
+         */
+        private void atualizarValorPainelEixoRelacao(PaineisEixosRelacoes.Painel painel) {
+            ElementoVergnaud elemento = painel.elemento;
+            Rectangle geometria = new Rectangle(
+                    elemento.x, elemento.y, elemento.largura, elemento.altura);
+            Integer valor = obterValorNumericoDoElemento(elemento);
+            if (valor != null) {
+                painel.apresentador.registrarEscolha(
+                        geometria,
+                        scaffoldingReacaoRepresentacoes.valorAbsolutoComoTexto(valor.intValue()),
+                        scaffoldingReacaoRepresentacoes.sinalDe(valor.intValue()));
+            } else {
+                painel.apresentador.mostrar(geometria, "");
+            }
+        }
+
+        /**
+         * Corrige o bug relatado pela usuária em 2026-08-17 ("eixos não
+         * mudam com a mudança dos elementos no diagrama"): como o eixo
+         * único antigo foi suprimido nas categorias de Relações (ver
+         * {@code mostrarGraficoInteirosNumeroRelativo}/
+         * {@code registrarEscolhaGraficoInteiros}), o único ponto que
+         * atualizava o eixo quando o valor mudava por outro caminho (menu
+         * de escolha de sinal, protocolo da incógnita) deixou de alcançar
+         * os painéis novos. Chamado do mesmo ponto central por onde toda
+         * outra representação já se mantém sincronizada
+         * ({@link #aplicarEstadoCompartilhadoEmTodasAsRepresentacoes}), em
+         * vez de duplicar gatilhos espalhados pelo código.
+         *
+         * Ignora o painel que estiver sendo arrastado no momento — ele já
+         * escreve seu próprio valor de volta no elemento em tempo real
+         * ({@link #sincronizarPainelEixoRelacaoSeNecessario(boolean)}),
+         * então reaplicar o valor do elemento nele aqui seria na melhor das
+         * hipóteses redundante e, durante o próprio arraste, uma fonte de
+         * disputa com o gesto do usuário.
+         */
+        private void atualizarPaineisEixosRelacoesComValoresAtuais() {
+            if (!paineisEixosRelacoes.estaAtivo()) {
+                return;
+            }
+            for (PaineisEixosRelacoes.Painel painel : paineisEixosRelacoes.obterPaineis()) {
+                if (painel.grafico.estaArrastando()) {
+                    continue;
+                }
+                atualizarValorPainelEixoRelacao(painel);
+            }
         }
 
         private void desenharElementos(Graphics2D g2) {
@@ -7118,8 +7399,8 @@ public class Main extends JFrame {
                 });
             }
 
-            if (quadradinhoVennSelecionado != null) {
-                final QuadradinhoVenn quadradinho = quadradinhoVennSelecionado;
+            if (handlerQuadradinhoVenn.estaAtivo()) {
+                final QuadradinhoVenn quadradinho = handlerQuadradinhoVenn.obterQuadradinhoAtivo();
                 final boolean composicao = ehDiagramaVennComposicaoMedidas();
                 final boolean comparacao = ehGraficoBarrasComparacao();
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
@@ -7172,26 +7453,8 @@ public class Main extends JFrame {
                 });
             }
 
-            if (handlerElementosDiagramaVergnaud.obterElementoAtivo() != null) {
-                final ElementoVergnaud elemento = handlerElementosDiagramaVergnaud.obterElementoAtivo();
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
-                    public Rectangle obterLimitesVisuais() {
-                        int margemSuperior = elemento.rotulosAcima ? 42 : 8;
-                        int margemInferior = elemento.rotulosAcima ? 8 : 42;
-                        return new Rectangle(
-                                elemento.x - 8,
-                                elemento.y - margemSuperior,
-                                Math.max(1, elemento.largura + 16),
-                                Math.max(1, elemento.altura + margemSuperior + margemInferior));
-                    }
-                    public void desenharConteudo(Graphics2D grafico) {
-                        elemento.desenhar(grafico);
-                    }
-                });
-            }
-
-            if (handlerElementosDiagramaVergnaud.obterConectorAtivo() != null) {
-                final ConectorVergnaud conector = handlerElementosDiagramaVergnaud.obterConectorAtivo();
+            final ConectorVergnaud conector = obterConectorVergnaudAtivo();
+            if (conector != null) {
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return obterLimitesVisuaisConector(conector);
@@ -7209,6 +7472,20 @@ public class Main extends JFrame {
                     }
                     public void desenharConteudo(Graphics2D grafico) {
                         scaffoldingGraficoInteiros.desenharPontoControleEmPrimeiroPlano(grafico);
+                    }
+                });
+            }
+
+            final PaineisEixosRelacoes.Painel painelEixoRelacaoArrastando =
+                    paineisEixosRelacoes.encontrarArrastando();
+            if (painelEixoRelacaoArrastando != null
+                    && painelEixoRelacaoArrastando.grafico.estaArrastandoPontoControle()) {
+                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                    public Rectangle obterLimitesVisuais() {
+                        return painelEixoRelacaoArrastando.grafico.obterAreaVisualPontoControle();
+                    }
+                    public void desenharConteudo(Graphics2D grafico) {
+                        painelEixoRelacaoArrastando.grafico.desenharPontoControleEmPrimeiroPlano(grafico);
                     }
                 });
             }
@@ -7297,6 +7574,20 @@ public class Main extends JFrame {
                     && textoLimiteQuantidadeQuestionado != null
                     && textoLimiteQuantidadeQuestionado.trim().length() > 0;
 
+            // Aviso de sinal divergente do número relativo (2026-08-18) —
+            // mesma família persistente, ancorado no item OU no elemento
+            // (nunca os dois), conforme o menu de sinal foi aberto a partir
+            // de um ou de outro.
+            boolean usarSinalDivergentePersistente = !usarQuestionamentoPersistente
+                    && !usarLimiteQuantidadePersistente
+                    && mostrarSinalDivergentePersistente
+                    && (itemSinalDivergentePersistente != null
+                            ? itensArrastaveis.contains(itemSinalDivergentePersistente)
+                            : (elementoSinalDivergentePersistente != null
+                                    && elementosVergnaud.contains(elementoSinalDivergentePersistente)))
+                    && textoSinalDivergentePersistente != null
+                    && textoSinalDivergentePersistente.trim().length() > 0;
+
             // AG_AE — mesma família de anotação persistente das duas acima,
             // mas com uma checagem extra: se o papel foi resolvido (ou o
             // diagrama mudou) desde a última exibição, a dica se auto-fecha
@@ -7309,6 +7600,7 @@ public class Main extends JFrame {
                     ? obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual) : null;
             boolean usarDicaPosicionamentoPersistente = !usarQuestionamentoPersistente
                     && !usarLimiteQuantidadePersistente
+                    && !usarSinalDivergentePersistente
                     && mostrarDicaPosicionamentoPersistente
                     && elementoDicaPosicionamentoPersistente != null
                     && elementosVergnaud.contains(elementoDicaPosicionamentoPersistente)
@@ -7324,6 +7616,7 @@ public class Main extends JFrame {
             }
 
             if (!usarQuestionamentoPersistente && !usarLimiteQuantidadePersistente
+                    && !usarSinalDivergentePersistente
                     && !usarDicaPosicionamentoPersistente && !mostrarAnotacaoMouseOver) {
                 return;
             }
@@ -7332,9 +7625,11 @@ public class Main extends JFrame {
                     ? textoQuestionamentoPersistente
                     : (usarLimiteQuantidadePersistente
                             ? textoLimiteQuantidadeQuestionado
-                            : (usarDicaPosicionamentoPersistente
-                                    ? localizacao.formatar("ui.hint.stepPlacement", fraseDicaPosicionamento)
-                                    : textoAnotacaoMouseOver));
+                            : (usarSinalDivergentePersistente
+                                    ? textoSinalDivergentePersistente
+                                    : (usarDicaPosicionamentoPersistente
+                                            ? localizacao.formatar("ui.hint.stepPlacement", fraseDicaPosicionamento)
+                                            : textoAnotacaoMouseOver)));
 
             if (mensagem == null || mensagem.length() == 0) {
                 return;
@@ -7375,6 +7670,16 @@ public class Main extends JFrame {
                                 obterAreaDiagramaAditivo());
                 baseX = areaControle.x + areaControle.width;
                 baseY = Math.max(50, areaControle.y + areaControle.height / 2);
+            } else if (usarSinalDivergentePersistente) {
+                if (itemSinalDivergentePersistente != null) {
+                    baseX = itemSinalDivergentePersistente.x + itemSinalDivergentePersistente.largura;
+                    baseY = Math.max(50, itemSinalDivergentePersistente.y
+                            + itemSinalDivergentePersistente.altura / 2);
+                } else {
+                    baseX = elementoSinalDivergentePersistente.x + elementoSinalDivergentePersistente.largura;
+                    baseY = Math.max(50, elementoSinalDivergentePersistente.y
+                            + elementoSinalDivergentePersistente.altura / 2);
+                }
             } else if (usarDicaPosicionamentoPersistente) {
                 baseX = elementoDicaPosicionamentoPersistente.x
                         + elementoDicaPosicionamentoPersistente.largura;
@@ -7978,6 +8283,11 @@ public class Main extends JFrame {
                             sincronizarEixosComEstadoCompartilhado(estado);
                         }
                     });
+            // Ver Javadoc de atualizarPaineisEixosRelacoesComValoresAtuais():
+            // fora do destino acima porque os painéis de Relações cobrem 3
+            // papéis simultâneos (não um único índice como aplicarNosEixos),
+            // e é um no-op fora das categorias de Relações.
+            atualizarPaineisEixosRelacoesComValoresAtuais();
         }
 
         private void aplicarEstadoCompartilhadoNoVergnaud(
@@ -8483,6 +8793,12 @@ public class Main extends JFrame {
             limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             desabilitarSincronizacaoEstadoFinal();
+            // Os painéis (se houver) apontam para os ElementoVergnaud
+            // antigos, prestes a serem descartados — desativa aqui
+            // incondicionalmente (mesma categoria, novo sorteio, inclusive)
+            // em vez de confiar só na autocorreção por repaint, que não
+            // reativaria sozinha dentro da MESMA categoria de Relações.
+            paineisEixosRelacoes.desativar();
 
             if (usaDiagramasEncadeadosTransformacaoComposta()) {
                 cenaDiagramaAtual = criarCenaTransformacaoComposta(area);
@@ -8573,6 +8889,8 @@ public class Main extends JFrame {
             // e só pode aparecer dentro de uma figura após o arraste do usuário.
             removerInterrogacoesPreenchidasAutomaticamenteNoDiagrama();
             aplicarSubtitulosPersonagensNoDiagramaVergnaud();
+            seletorOperacaoRelacaoAluno.ativar(
+                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud, localizacao);
         }
 
         /**
@@ -9262,7 +9580,7 @@ public class Main extends JFrame {
 
             boolean precisaReconstruirEstruturaVenn = cenaDiagramaVennAtual == null || ultimaAreaDiagramaVenn == null || !ultimaAreaDiagramaVenn.equals(area);
             if (precisaReconstruirEstruturaVenn
-                    || (quadradinhoVennSelecionado == null
+                    || (!handlerQuadradinhoVenn.estaAtivo()
                     && !handlerItemTextoArrastavel.estaAtivo()
                     && !handlerElementoTextoMovel.estaAtivo())) {
                 sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
@@ -9314,7 +9632,7 @@ public class Main extends JFrame {
                 atualizarQuadradinhosCorrespondentesComparacao(comparacaoMedidas);
                 for (int i = 0; i < quadradinhosVenn.size(); i++) {
                     QuadradinhoVenn quadradinho = quadradinhosVenn.get(i);
-                    if (quadradinho != quadradinhoVennSelecionado) {
+                    if (quadradinho != handlerQuadradinhoVenn.obterQuadradinhoAtivo()) {
                         desenharQuadradinhoVenn(g2, quadradinho, composicaoMedidas, comparacaoMedidas);
                     }
                 }
@@ -10260,7 +10578,7 @@ public class Main extends JFrame {
                 renderizador = FabricaRenderizadoresUnidadeVenn.paraOrigem(quadradinho);
             }
 
-            EstadoVisualUnidadeVenn estado = quadradinho == quadradinhoVennSelecionado
+            EstadoVisualUnidadeVenn estado = quadradinho == handlerQuadradinhoVenn.obterQuadradinhoAtivo()
                     ? EstadoVisualUnidadeVenn.ARRASTADA
                     : quadradinho == quadradinhoVennFocado
                             ? EstadoVisualUnidadeVenn.FOCADA
@@ -10727,19 +11045,17 @@ public class Main extends JFrame {
         }
 
         private void sincronizarVergnaudAPartirDosQuadradinhosVenn() {
+            QuadradinhoVenn quadradinhoAtivo = handlerQuadradinhoVenn.obterQuadradinhoAtivo();
             int indiceAlterado = -1;
-            if (quadradinhoVennSelecionado != null) {
+            if (quadradinhoAtivo != null) {
                 for (int i = 0; i < circulosVenn.size(); i++) {
                     if (circulosVenn.get(i).contem(
-                            quadradinhoVennSelecionado.centroX(),
-                            quadradinhoVennSelecionado.centroY())) {
+                            quadradinhoAtivo.centroX(),
+                            quadradinhoAtivo.centroY())) {
                         indiceAlterado = i;
                         break;
                     }
                 }
-            }
-            if (indiceAlterado < 0) {
-                indiceAlterado = indiceCirculoVennOrigemArraste;
             }
             sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
                     indiceAlterado,
@@ -10902,16 +11218,21 @@ public class Main extends JFrame {
         private boolean existePickupAtivo() {
             return handlerItemTextoArrastavel.estaAtivo()
                     || handlerElementoTextoMovel.estaAtivo()
-                    || quadradinhoVennSelecionado != null
-                    || handlerElementosDiagramaVergnaud.estaAtivo()
+                    || handlerQuadradinhoVenn.estaAtivo()
+                    || handlerConectorVergnaud.estaAtivo()
                     || arrastandoControleComparacao
-                    || scaffoldingGraficoInteiros.estaArrastando();
+                    || scaffoldingGraficoInteiros.estaArrastando()
+                    || paineisEixosRelacoes.estaArrastando();
         }
 
         private boolean pontoSobreElementoArrastavel(int x, int y) {
             boolean representacoesLiberadas = interacaoRepresentacoesLiberadaPelaModelagem();
             if (representacoesLiberadas
                     && scaffoldingGraficoInteiros.contemPontoControle(x, y)) {
+                return true;
+            }
+            if (representacoesLiberadas
+                    && paineisEixosRelacoes.contemPontoControle(x, y)) {
                 return true;
             }
             if (representacoesLiberadas && ehGraficoBarrasComparacao()
@@ -10924,7 +11245,6 @@ public class Main extends JFrame {
             }
             if ((representacoesLiberadas && encontrarQuadradinhoVenn(x, y) != null)
                     || encontrarItemArrastavel(x, y) != null
-                    || encontrarElementoVergnaud(x, y) != null
                     || encontrarConectorVergnaud(x, y) != null
                     || encontrarMarcadorFixoTexto(x, y) != null) {
                 return true;
@@ -10951,7 +11271,7 @@ public class Main extends JFrame {
 
         private void cancelarEfeitosArraste() {
             controladorArrasteElastico.cancelar();
-            handlerElementosDiagramaVergnaud.finalizarLimiar();
+            handlerConectorVergnaud.finalizarLimiar();
             marcadorOrigemArraste.limpar();
             scaffoldingFeedbackProxyPosicionamento.cancelar();
             sessaoArrasteTextoParaDiagrama.limpar();
@@ -11077,7 +11397,7 @@ public class Main extends JFrame {
             cancelarEfeitosArraste();
             handlerItemTextoArrastavel.cancelar();
             handlerElementoTextoMovel.cancelar();
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerConectorVergnaud.cancelar();
             limparRealceAlvoProximidade();
             mostrarAnotacaoMouseOver = false;
             flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
@@ -11259,6 +11579,93 @@ public class Main extends JFrame {
                 return;
             }
 
+            PaineisEixosRelacoes.Painel painelRecemRevelado =
+                    paineisEixosRelacoes.processarPressionamentoLupa(x, y);
+            if (painelRecemRevelado != null) {
+                prepararPainelEixoRelacao(painelRecemRevelado, getWidth(), getHeight());
+                registrarLogUsuario(
+                        "Revelar o eixo de um papel de Relações pela lupa",
+                        "-",
+                        "Lupa perto do elemento",
+                        "Papel do diagrama de Relações",
+                        "Ampliar a visão do número relativo e do sinal daquele papel, sob demanda",
+                        "OBJ4",
+                        "O eixo de cada papel fica escondido até a lupa ser clicada, para reduzir poluição visual.",
+                        "LUPA_EIXO_RELACAO",
+                        ""
+                );
+                itemFocado = null;
+                quadradinhoVennFocado = null;
+                repaint();
+                return;
+            }
+
+            if (seletorOperacaoRelacaoAluno.processarPressionamento(x, y)) {
+                boolean correta = seletorOperacaoRelacaoAluno.respondeuCorretamente();
+                if (!correta) {
+                    scaffoldingFeedbackMultissensorialErro.emitirApenasSom();
+                }
+                registrarLogUsuario(
+                        "Escolher a operação (soma/subtração) da situação de Relações",
+                        "-",
+                        "Seletor de operação perto da seta do diagrama",
+                        "Operação entre os papéis de Relações",
+                        seletorOperacaoRelacaoAluno.obterEscolhaAluno().name(),
+                        "OBJ4",
+                        correta
+                                ? "O aluno escolheu a operação (soma/subtração) que combina os dois papéis curados."
+                                : "O aluno escolheu uma operação diferente da curada — explicação exibida perto do seletor.",
+                        "OPERACAO_RELACAO_ALUNO",
+                        correta ? "CORRETO" : "INCORRETO"
+                );
+                itemFocado = null;
+                quadradinhoVennFocado = null;
+                repaint();
+                return;
+            }
+
+            ScaffoldingGraficoInteiros.NaturezaInteracao naturezaInteracaoPaineisRelacoes =
+                    paineisEixosRelacoes.identificarNaturezaInteracao(
+                            x, y, getWidth(), getHeight(),
+                            obterAreaVisivelDiagramasVergnaud());
+            if (naturezaInteracaoPaineisRelacoes
+                    == ScaffoldingGraficoInteiros.NaturezaInteracao.VALOR_SEMANTICO
+                    && !interacaoRepresentacoesLiberadaPelaModelagem()) {
+                informarBloqueioInteracaoRepresentacao(
+                        x, y, "Valor semântico no painel de eixo das Relações");
+                return;
+            }
+            if (paineisEixosRelacoes.processarPressionamento(
+                    x, y, getWidth(), getHeight(), obterAreaVisivelDiagramasVergnaud())) {
+                PaineisEixosRelacoes.Painel painelPressionado = paineisEixosRelacoes.encontrarArrastando();
+                if (painelPressionado != null && painelPressionado.grafico.estaArrastandoPontoControle()) {
+                    iniciarFantasmaRetangular(
+                            painelPressionado.grafico.obterAreaVisualPontoControle(), 14, true);
+                    iniciarArrasteElastico(x, y);
+                    definirCursorMaoFechada();
+                } else if (painelPressionado != null && painelPressionado.grafico.estaArrastandoPainel()) {
+                    iniciarFantasmaRetangular(
+                            painelPressionado.grafico.obterAreaVisualPainel(), 16, false);
+                    iniciarArrasteElastico(x, y);
+                    definirCursorMaoFechada();
+                }
+                // painelPressionado == null aqui significa clique no botão
+                // de esconder de algum painel — nada ficou arrastando, e
+                // sincronizarPainelEixoRelacaoSeNecessario já não faz nada
+                // quando nenhum painel tem alteração pendente. Nesse caso, a
+                // lupa daquele papel volta a aparecer (2026-08-17).
+                PaineisEixosRelacoes.Painel painelOcultado =
+                        paineisEixosRelacoes.encontrarComOcultacaoPorInteracao();
+                if (painelOcultado != null) {
+                    paineisEixosRelacoes.ocultarRevelacao(painelOcultado);
+                }
+                sincronizarPainelEixoRelacaoSeNecessario(false);
+                itemFocado = null;
+                quadradinhoVennFocado = null;
+                repaint();
+                return;
+            }
+
             MarcadorTexto marcador = encontrarMarcadorFixoTexto(x, y);
 
             if (marcador != null) {
@@ -11306,7 +11713,6 @@ public class Main extends JFrame {
                                 + (marcador.chavePapel != null ? marcador.chavePapel : ""),
                         "Elemento semântico selecionado para manipulação.");
 
-                iniciarRastreamentoGranular(x, y, novo.valor, "Marcador textual convertido em item", true);
                 atualizarRealceAlvoProximidade(novo);
                 iniciarFantasmaItem(novo);
                 iniciarArrasteElastico(x, y);
@@ -11334,32 +11740,22 @@ public class Main extends JFrame {
                 return;
             }
 
-            quadradinhoVennSelecionado = encontrarQuadradinhoVenn(x, y);
+            QuadradinhoVenn quadradinhoVennCandidato = encontrarQuadradinhoVenn(x, y);
+            handlerQuadradinhoVenn.cancelar();
 
-            if (quadradinhoVennSelecionado != null
+            if (quadradinhoVennCandidato != null
                     && !interacaoRepresentacoesLiberadaPelaModelagem()) {
-                quadradinhoVennSelecionado = null;
                 informarBloqueioInteracaoRepresentacao(x, y, "Unidade da representação complementar");
                 return;
             }
 
-            if (quadradinhoVennSelecionado != null) {
-                indiceCirculoVennOrigemArraste = -1;
-                for (int i = 0; i < circulosVenn.size(); i++) {
-                    if (circulosVenn.get(i).contem(
-                            quadradinhoVennSelecionado.centroX(),
-                            quadradinhoVennSelecionado.centroY())) {
-                        indiceCirculoVennOrigemArraste = i;
-                        break;
-                    }
-                }
-                quadradinhoVennFocado = quadradinhoVennSelecionado;
+            if (quadradinhoVennCandidato != null) {
+                handlerQuadradinhoVenn.iniciar(quadradinhoVennCandidato, x, y, circulosVenn);
+                quadradinhoVennFocado = quadradinhoVennCandidato;
                 itemFocado = null;
-                deslocamentoVennX = x - quadradinhoVennSelecionado.x;
-                deslocamentoVennY = y - quadradinhoVennSelecionado.y;
                 iniciarRastreamentoGranular(x, y, "Elemento do diagrama", "Quadrado do diagrama", false);
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento do diagrama", "Diagrama", "Quadrado", "Escolher objeto para manipulação", "", "Elemento selecionado.");
-                iniciarFantasmaQuadradinho(quadradinhoVennSelecionado);
+                iniciarFantasmaQuadradinho(quadradinhoVennCandidato);
                 iniciarArrasteElastico(x, y);
                 definirCursorMaoFechada();
                 repaint();
@@ -11373,7 +11769,6 @@ public class Main extends JFrame {
                         handlerItemTextoArrastavel.obterItemAtivo();
                 scaffoldingFeedbackMultissensorialErro.pararTremor();
                 itemFocado = itemSelecionado;
-                iniciarRastreamentoGranular(x, y, itemSelecionado.valor, "Item arrastável", true);
                 registrarAcaoGranular("SELECIONAR", "Selecionar item arrastável", "Área de trabalho", "Item arrastável", "Escolher valor para posicionamento", "valor=" + itemSelecionado.valor, "Item selecionado.");
                 iniciarFantasmaItem(itemSelecionado);
                 iniciarArrasteElastico(x, y);
@@ -11382,31 +11777,23 @@ public class Main extends JFrame {
                 return;
             }
 
-            ElementoVergnaud elementoVergnaudCandidato = encontrarElementoVergnaud(x, y);
-
-            if (elementoVergnaudCandidato != null) {
-                if (politicaGestoEstrutural.ehPressionamentoDeDuploClique(e.getClickCount())) {
-                    return;
-                }
-                handlerElementosDiagramaVergnaud.iniciarElemento(elementoVergnaudCandidato, x, y);
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                iniciarRastreamentoGranular(x, y, "Elemento de Vergnaud", "Elemento do diagrama", false);
-                registrarAcaoGranular("SELECIONAR", "Selecionar elemento de Vergnaud", "Diagrama", "Elemento do modelo", "Escolher elemento para reposicionamento", "", "Elemento selecionado.");
-                iniciarFantasmaElementoVergnaud(elementoVergnaudCandidato);
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
-                repaint();
-                return;
-            }
-
+            // Elementos semânticos (círculos/retângulos do diagrama de
+            // Vergnaud) deixaram de ser arrastáveis (2026-08-18): "isso foi
+            // um requisito muito antigo que, agora, não faz mais sentido" —
+            // decisão da usuária, aplicada uniformemente a todas as
+            // categorias, já que este mousePressed é compartilhado por
+            // todas elas. A edição de texto por duplo clique continua
+            // funcionando (mouseClicked → editarTextoElementoVergnaud), que
+            // sempre foi um caminho independente deste aqui. Conectores
+            // (setas) continuam arrastáveis normalmente, abaixo — não foram
+            // mencionados no pedido.
             ConectorVergnaud conectorVergnaudCandidato = encontrarConectorVergnaud(x, y);
 
             if (conectorVergnaudCandidato != null) {
                 if (politicaGestoEstrutural.ehPressionamentoDeDuploClique(e.getClickCount())) {
                     return;
                 }
-                handlerElementosDiagramaVergnaud.iniciarConector(conectorVergnaudCandidato, x, y);
+                handlerConectorVergnaud.iniciar(new AdaptadorMovimentoConectorVergnaud(conectorVergnaudCandidato), x, y);
                 itemFocado = null;
                 quadradinhoVennFocado = null;
                 iniciarRastreamentoGranular(x, y, "Conector de Vergnaud", "Conector do diagrama", false);
@@ -11428,7 +11815,7 @@ public class Main extends JFrame {
             int y = e.getY();
 
             if (handlerItemTextoArrastavel.estaAtivo()
-                    || handlerElementosDiagramaVergnaud.estaAtivo()) {
+                    || handlerConectorVergnaud.estaAtivo()) {
                 suspenderConclusaoDuranteManipulacao();
             }
             atualizarRastreamentoGranular(x, y);
@@ -11452,15 +11839,21 @@ public class Main extends JFrame {
                 return;
             }
 
+            if (paineisEixosRelacoes.estaArrastando()) {
+                paineisEixosRelacoes.arrastarPara(x, y, getWidth(), getHeight());
+                sincronizarPainelEixoRelacaoSeNecessario(false);
+                repaint();
+                return;
+            }
+
             if (arrastandoControleComparacao) {
                 aplicarControleComparacaoPeloMouse(y);
                 repaint();
                 return;
             }
 
-            if (quadradinhoVennSelecionado != null) {
-                quadradinhoVennSelecionado.x = x - deslocamentoVennX;
-                quadradinhoVennSelecionado.y = y - deslocamentoVennY;
+            if (handlerQuadradinhoVenn.estaAtivo()) {
+                handlerQuadradinhoVenn.mover(x, y);
                 repaint();
                 return;
             }
@@ -11479,7 +11872,7 @@ public class Main extends JFrame {
                 if (ehNumeroOuInterrogacaoDoTexto(elementoTextoAtivo)) {
                     handlerElementoTextoMovel.moverLivrePara(x, y);
                 } else {
-                    Rectangle limites = geometriaAreaEnunciado
+                    LimitesMovimento limites = geometriaAreaEnunciado
                             .obterLimitesMovimento(
                                     elementoTextoAtivo, getWidth());
                     handlerElementoTextoMovel.moverDentroDosLimites(
@@ -11499,9 +11892,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (handlerElementosDiagramaVergnaud.estaAtivo()) {
-                boolean moveu = handlerElementosDiagramaVergnaud.mover(
-                        x, y, obterAreaConteudoDiagramaVergnaud());
+            if (handlerConectorVergnaud.estaAtivo()) {
+                boolean moveu = handlerConectorVergnaud.mover(
+                        x, y, obterLimitesMovimentoConectorVergnaud());
                 if (moveu) {
                     repaint();
                 }
@@ -11519,23 +11912,22 @@ public class Main extends JFrame {
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
             }
-            handlerElementosDiagramaVergnaud.finalizarLimiar();
-            boolean houveMovimentoQuadradinhoVenn = quadradinhoVennSelecionado != null;
-            int indiceDestinoQuadradinhoVenn = -1;
-            if (quadradinhoVennSelecionado != null) {
-                for (int i = 0; i < circulosVenn.size(); i++) {
-                    if (circulosVenn.get(i).contem(
-                            quadradinhoVennSelecionado.centroX(),
-                            quadradinhoVennSelecionado.centroY())) {
-                        indiceDestinoQuadradinhoVenn = i;
-                        break;
-                    }
-                }
-            }
+            handlerConectorVergnaud.finalizarLimiar();
+            HandlerInteracaoQuadradinhoVenn.ResultadoSoltura resultadoSolturaQuadradinho =
+                    handlerQuadradinhoVenn.concluir(circulosVenn);
             finalizarRastreamentoGranular(e.getX(), e.getY());
             if (scaffoldingGraficoInteiros.estaArrastando()) {
                 sincronizarNumeroRelativoComGraficoSeNecessario(true);
                 scaffoldingGraficoInteiros.finalizarArraste();
+                marcadorOrigemArraste.limpar();
+                atualizarCursorDepoisDoPickup(e.getX(), e.getY());
+                repaint();
+                return;
+            }
+
+            if (paineisEixosRelacoes.estaArrastando()) {
+                sincronizarPainelEixoRelacaoSeNecessario(true);
+                paineisEixosRelacoes.finalizarArraste();
                 marcadorOrigemArraste.limpar();
                 atualizarCursorDepoisDoPickup(e.getX(), e.getY());
                 repaint();
@@ -11570,23 +11962,13 @@ public class Main extends JFrame {
 
             handlerElementoTextoMovel.concluir();
             HandlerInteracaoItemTextoArrastavel.ResultadoSoltura solturaItem =
-                    handlerItemTextoArrastavel.concluir();
+                    handlerItemTextoArrastavel.concluir(e.getX(), e.getY());
             ItemTextoArrastavel itemSolto = solturaItem.getItem();
-            // Causa raiz confirmada na rodada 4 (2026-07-31, ver
-            // despacho_mouse_released.log): um release na MESMA posicao do
-            // pickup — sem mouseDragged real no meio — nao e um novo
-            // arrasto. E exatamente o padrao de cada clique de um
-            // duplo-clique sobre um item ja posicionado (ex.:
-            // executarPassoTexto abre o dialogo de edicao com
-            // duplo-clique sobre a interrogacao recem-solta): cada um dos
-            // 2 cliques do duplo-clique tambem passa por mousePressed
-            // (que reseleciona o mesmo item) e mouseReleased, disparando
-            // avaliarQuestionamentoPosicionamento de novo — 3 avaliacoes
-            // canonicas reais (drop + clique 1 + clique 2) pra 1 gesto do
-            // usuario. Corrigido na origem: so classifica SOLTURA_USUARIO
-            // (canonica) quando o item REALMENTE se moveu do pickup ate a
-            // soltura; senao, e reavaliacao de consistencia (reativa —
-            // preserva debounce/idempotencia como defesa, nao os remove).
+            ElementoVergnaud destinoGeometrico =
+                    encontrarElementoVergnaudPorItem(itemSolto);
+            registrarGestoItemSolto(solturaItem, destinoGeometrico);
+            // Clique parado, inclusive no duplo-clique, é reavaliação de
+            // consistência e não um novo arraste/posicionamento do usuário.
             boolean itemRealmenteMoveu = solturaItem.houveMovimento();
             if (itemSolto != null) {
                 ElementoVergnaud alvo = obterAlvoCorretoParaItem(itemSolto);
@@ -11615,8 +11997,7 @@ public class Main extends JFrame {
                     && !resultadoPosicionamento.isCorreto();
             finalizarProxyTextoSolto(itemSolto, !posicionamentoIncorreto);
             limparRealceAlvoProximidade();
-            quadradinhoVennSelecionado = null;
-            handlerElementosDiagramaVergnaud.cancelar();
+            handlerConectorVergnaud.cancelar();
 
             if (posicionamentoIncorreto) {
                 // O item permanece no diagrama e reutiliza o fluxo consolidado
@@ -11631,20 +12012,17 @@ public class Main extends JFrame {
                 // pode permanecer associado ao item já compatível.
                 limparQuestionamentoPersistente();
             }
-            registrarLogSolturaItem(itemSolto);
+            registrarLogSolturaItem(
+                    itemSolto, itemRealmenteMoveu, resultadoPosicionamento);
             if (!posicionamentoIncorreto) {
                 atualizarHabilitacaoSincronizacaoEstadoFinal(itemSolto);
                 processarSolturaEmNumeroRelativo(itemSolto);
                 atualizarRepresentacoesReativasAposAlteracaoDoItem(itemSolto);
             }
-            if (houveMovimentoQuadradinhoVenn) {
-                int indiceAlterado = indiceDestinoQuadradinhoVenn >= 0
-                        ? indiceDestinoQuadradinhoVenn
-                        : indiceCirculoVennOrigemArraste;
+            if (resultadoSolturaQuadradinho.houveMovimento()) {
                 sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
-                        indiceAlterado,
+                        resultadoSolturaQuadradinho.obterIndiceParaSincronizacao(),
                         EstadoSemanticoCompartilhado.Origem.ARRASTE);
-                indiceCirculoVennOrigemArraste = -1;
             }
             marcadorOrigemArraste.limpar();
             atualizarCursorDepoisDoPickup(e.getX(), e.getY());
@@ -11842,26 +12220,44 @@ public class Main extends JFrame {
             }
         }
 
-        private void registrarLogSolturaItem(ItemTextoArrastavel item) {
-            if (item == null) {
+        private void registrarGestoItemSolto(
+                HandlerInteracaoItemTextoArrastavel.ResultadoSoltura soltura,
+                ElementoVergnaud destinoGeometrico) {
+            if (soltura == null || soltura.getItem() == null
+                    || soltura.getGestoConcluido() == null) {
+                return;
+            }
+            ContextoRegistroGesto contexto = new ContextoRegistroGesto(
+                    loggerInteracaoGerard.getSessaoId(),
+                    loggerInteracaoGerard.getUsuarioAtual(),
+                    loggerInteracaoGerard.getProblemaAtual(),
+                    loggerInteracaoGerard.getTentativaAtualId());
+            DestinoGeometricoGesto destino = destinoGeometrico == null
+                    ? DestinoGeometricoGesto.FORA_DE_ELEMENTO_DO_DIAGRAMA
+                    : DestinoGeometricoGesto.SOBRE_ELEMENTO_DO_DIAGRAMA;
+            publicadorGestosInteracao.publicar(
+                    soltura.getItem().produzirRegistroGestoArraste(
+                            soltura.getGestoConcluido(), contexto, destino));
+        }
+
+        private void registrarLogSolturaItem(ItemTextoArrastavel item,
+                boolean houveMovimento,
+                ResultadoQuestionamento resultadoPosicionamento) {
+            if (item == null || !houveMovimento
+                    || resultadoPosicionamento == null
+                    || !resultadoPosicionamento.isAplicavel()) {
                 return;
             }
 
             ElementoVergnaud elemento = encontrarElementoVergnaudPorItem(item);
-            String artefato = elemento != null ? descreverElementoVergnaudParaLog(elemento) : "Fora do diagrama";
-            String ce = "-";
-            String regras = "A ação não foi avaliada como acerto ou erro matemático.";
-
-            if (elemento != null && scaffoldingNumeroRelativo.ehNumeroOuInterrogacao(item.valor)) {
-                ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
-                        gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
-                if (resultado.isAplicavel()) {
-                    ce = resultado.isCorreto() ? "C" : "E";
-                    regras = resultado.isCorreto()
-                            ? "O valor foi associado ao elemento do modelo que representa sua função no problema."
-                            : "O valor deve ser associado ao elemento do modelo que representa sua função no problema.";
-                }
+            if (elemento == null) {
+                return;
             }
+            String artefato = descreverElementoVergnaudParaLog(elemento);
+            String ce = resultadoPosicionamento.isCorreto() ? "C" : "E";
+            String regras = resultadoPosicionamento.isCorreto()
+                    ? "O valor foi associado ao elemento do modelo que representa sua função no problema."
+                    : "O valor deve ser associado ao elemento do modelo que representa sua função no problema.";
 
             registrarLogUsuario(
                     "Associar valor do enunciado a um elemento do modelo",
@@ -12139,6 +12535,17 @@ public class Main extends JFrame {
             if (numeroRelativo == null) {
                 return;
             }
+            // Decisão da usuária (2026-08-17): nas categorias de Relações os
+            // painéis novos (paineisEixosRelacoes) já cobrem esse mesmo papel
+            // com um eixo próprio e persistente — mostrar também o eixo único
+            // antigo aqui seria redundante e sobrepunha o enunciado. Nas
+            // demais categorias (ex.: Comparação de Medidas) nada muda: o
+            // menu de escolha de sinal (radio buttons, tratado à parte por
+            // scaffoldingNumeroRelativo) continua funcionando igual, só o
+            // eixo antigo é que fica de fora aqui.
+            if (devemExibirPaineisEixosRelacoes()) {
+                return;
+            }
             itemGraficoInteiros = item;
             numeroRelativoGraficoInteiros = numeroRelativo;
             apresentadorGraficoInteiros.mostrar(
@@ -12147,6 +12554,12 @@ public class Main extends JFrame {
 
         private void registrarEscolhaGraficoInteiros(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo, String valorBase, String sinal) {
             if (numeroRelativo == null) {
+                return;
+            }
+            // Mesma razão do guard em mostrarGraficoInteirosNumeroRelativo
+            // acima: nas categorias de Relações o eixo antigo fica suprimido,
+            // os painéis novos (por papel) já assumem esse papel.
+            if (devemExibirPaineisEixosRelacoes()) {
                 return;
             }
             itemGraficoInteiros = item;
@@ -12227,6 +12640,65 @@ public class Main extends JFrame {
             apresentadorGraficoInteiros.atualizarGeometria(
                     retanguloDoElemento(numeroRelativoGraficoInteiros));
             scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
+        }
+
+        /**
+         * Mesma lógica de {@link #sincronizarNumeroRelativoComGraficoSeNecessario(boolean)},
+         * generalizada para o painel de {@code paineisEixosRelacoes} que
+         * teve alteração pendente — mecanismo novo e paralelo (item 4 do
+         * levantamento de pendências), não substitui nem compartilha
+         * estado com o mecanismo já existente acima.
+         */
+        private void sincronizarPainelEixoRelacaoSeNecessario(boolean confirmarAoFinalizar) {
+            PaineisEixosRelacoes.Painel painel = paineisEixosRelacoes.encontrarComAlteracaoPorInteracao();
+            if (painel == null) {
+                return;
+            }
+            ElementoVergnaud numeroRelativo = painel.elemento;
+            int valor = painel.grafico.getValorNavegavel();
+            Integer valorAnterior = obterValorNumericoDoElemento(numeroRelativo);
+            if (!valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valor)) {
+                int seguro = valorAnterior == null ? Math.abs(valor) : valorAnterior.intValue();
+                aplicarValorRelativoNoDiagrama(numeroRelativo, null, seguro, false);
+                painel.apresentador.registrarEscolha(
+                        retanguloDoElemento(numeroRelativo),
+                        scaffoldingReacaoRepresentacoes.valorAbsolutoComoTexto(seguro),
+                        scaffoldingReacaoRepresentacoes.sinalDe(seguro));
+                informarBloqueioQuantidadeNegativa(null, numeroRelativo);
+                painel.grafico.limparAlteracaoValorPorInteracao();
+                repaint();
+                return;
+            }
+            registrarLogUsuario(
+                    "Navegar no eixo x das Relações (painel próprio do papel)",
+                    "-",
+                    "Eixo x navegável",
+                    "Ponto de controle do eixo",
+                    "Quantificar o papel da relação e manter consistência entre representações",
+                    "OBJ4",
+                    "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
+                    "EIXO_X_RELACOES",
+                    "valorRelativo=" + valor
+            );
+            aplicarValorRelativoNoDiagrama(numeroRelativo, null, valor, false);
+            ItemTextoArrastavel itemIncognita = encontrarItemSobreElemento(numeroRelativo);
+            boolean liberadoParaPropagar = confirmarAoFinalizar
+                    ? confirmarValorIncognitaAceito(itemIncognita)
+                    : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
+            if (liberadoParaPropagar) {
+                reagirConsistenciaAPartirDoElemento(
+                        numeroRelativo,
+                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
+                );
+                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                        numeroRelativo,
+                        EstadoSemanticoCompartilhado.Origem.EIXO_X);
+            }
+            if (confirmarAoFinalizar) {
+                verificarConclusaoModelagem();
+            }
+            painel.apresentador.atualizarGeometria(retanguloDoElemento(numeroRelativo));
+            painel.grafico.limparAlteracaoValorPorInteracao();
         }
 
         private void atualizarHabilitacaoSincronizacaoEstadoFinal(ItemTextoArrastavel item) {
@@ -12747,6 +13219,20 @@ public class Main extends JFrame {
         }
 
         private void informarBloqueioQuantidadeNegativa() {
+            informarBloqueioQuantidadeNegativa(itemGraficoInteiros, numeroRelativoGraficoInteiros);
+        }
+
+        /**
+         * Mesma mensagem/anotação de bloqueio, com âncora explícita — usada
+         * por {@link #sincronizarPainelEixoRelacaoSeNecessario(boolean)}
+         * (painéis persistentes de Relações), que tem seu próprio par
+         * item/elemento, independente dos campos
+         * itemGraficoInteiros/numeroRelativoGraficoInteiros do mecanismo já
+         * existente. O overload sem parâmetros acima preserva exatamente o
+         * comportamento anterior para todos os chamadores já existentes.
+         */
+        private void informarBloqueioQuantidadeNegativa(
+                final ItemTextoArrastavel itemAncora, ElementoVergnaud elementoAncora) {
             final String mensagem = localizacao.texto("ui.tooltip.negativeQuantity");
             registrarAcaoGranular(
                     "QUANTIFICAR",
@@ -12758,16 +13244,16 @@ public class Main extends JFrame {
                     "Quantidade não pode ser negativa em nenhuma categoria."
             );
 
-            if (itemGraficoInteiros != null) {
-                scaffoldingFeedbackMultissensorialErro.sinalizarErro(itemGraficoInteiros, new Runnable() {
+            if (itemAncora != null) {
+                scaffoldingFeedbackMultissensorialErro.sinalizarErro(itemAncora, new Runnable() {
                     public void run() {
                         repaint();
                     }
                 });
             }
 
-            Rectangle ancora = numeroRelativoGraficoInteiros != null
-                    ? retanguloDoElemento(numeroRelativoGraficoInteiros)
+            Rectangle ancora = elementoAncora != null
+                    ? retanguloDoElemento(elementoAncora)
                     : null;
             if (ancora != null) {
                 mouseOverX = ancora.x + ancora.width;
@@ -12796,6 +13282,83 @@ public class Main extends JFrame {
             );
         }
 
+        /**
+         * Aviso não bloqueante (2026-08-18, revisto no mesmo dia para
+         * persistente) quando o sinal escolhido pelo usuário no menu de
+         * número relativo diverge do sinal curado da situação: tremor + som
+         * (ScaffoldingFeedbackMultissensorialErro) e um aviso com pergunta,
+         * convidando a reconferir — sem desfazer a escolha nem bloquear o
+         * fluxo, ao contrário de informarBloqueioQuantidadeNegativa.
+         * Primeira versão usava um tooltip de 2600ms (controladorAnotacaoTemporaria);
+         * a usuária achou que sumia rápido demais — "deixe na tela até que
+         * seja corrigido" — então agora usa o mesmo mecanismo persistente de
+         * mostrarLimiteQuantidadeQuestionado (desenharAnotacaoMouseOver),
+         * limpo só quando o menu for reaberto para o mesmo item/elemento
+         * (ver limparSinalDivergentePersistente, chamado no início de cada
+         * sinalEscolhido). Antes desta correção, sinalEscolhidoCorrespondeAoCurado
+         * calculava a divergência só para o log de pesquisa (C/E), sem
+         * nenhum feedback visível ao participante — bug relatado pela
+         * usuária ao testar Composição de relações: sinal "+3" aceito sem
+         * aviso quando o curado era "-3".
+         */
+        private void informarSuspeitaSinalIncorretoNumeroRelativo(
+                final ItemTextoArrastavel itemAncora, ElementoVergnaud elementoAncora,
+                String sinalEscolhido) {
+            final String mensagem = localizacao.formatar(
+                    "ui.tooltip.relativeSign.confirm", sinalEscolhido);
+            registrarAcaoGranular(
+                    "SINALIZAR",
+                    "Questionar sinal divergente do número relativo",
+                    "Sincronização entre representações",
+                    "Número relativo do diagrama",
+                    "Convidar o participante a reconferir o sinal escolhido",
+                    mensagem,
+                    "O sinal escolhido diverge do valor curado da situação; o aviso não bloqueia, só convida a reconferir, "
+                            + "e permanece na tela até o menu ser reaberto para o mesmo item/elemento."
+            );
+
+            if (itemAncora != null) {
+                scaffoldingFeedbackMultissensorialErro.sinalizarErro(itemAncora, new Runnable() {
+                    public void run() {
+                        repaint();
+                    }
+                });
+            } else if (elementoAncora != null) {
+                scaffoldingFeedbackMultissensorialErro.sinalizarErro(elementoAncora, new Runnable() {
+                    public void run() {
+                        repaint();
+                    }
+                });
+            }
+
+            itemSinalDivergentePersistente = itemAncora;
+            elementoSinalDivergentePersistente = itemAncora == null ? elementoAncora : null;
+            textoSinalDivergentePersistente = mensagem;
+            mostrarSinalDivergentePersistente = true;
+            mostrarAnotacaoMouseOver = false;
+            repaint();
+        }
+
+        /**
+         * Ver informarSuspeitaSinalIncorretoNumeroRelativo. Chamado no
+         * início de cada sinalEscolhido (antes de recalcular sinalCorreto)
+         * para que reabrir o menu do mesmo item/elemento sempre substitua o
+         * aviso anterior — seja porque o novo sinal já está certo (some), seja
+         * porque ainda está errado (informarSuspeitaSinalIncorretoNumeroRelativo
+         * o reexibe já com a mensagem atual).
+         */
+        private void limparSinalDivergentePersistente() {
+            if (mostrarSinalDivergentePersistente
+                    || itemSinalDivergentePersistente != null
+                    || elementoSinalDivergentePersistente != null) {
+                scaffoldingFeedbackMultissensorialErro.pararTremor();
+            }
+            mostrarSinalDivergentePersistente = false;
+            textoSinalDivergentePersistente = "";
+            itemSinalDivergentePersistente = null;
+            elementoSinalDivergentePersistente = null;
+        }
+
         private void restaurarValorRelativoPositivoSeguro(
                 ElementoVergnaud relacao, ItemTextoArrastavel item, String base) {
             int valorSeguro = Math.abs(calcularValorRelativo(base, "+"));
@@ -12813,6 +13376,7 @@ public class Main extends JFrame {
                     base,
                     new ScaffoldingNumeroRelativo.AcaoSinalNumeroRelativo() {
                         public void sinalEscolhido(String sinal) {
+                            limparSinalDivergentePersistente();
                             int valorRelativoCandidato = calcularValorRelativo(base, sinal);
                             if (!valorRelativoPreservaQuantidadesNaoNegativas(
                                     elemento, valorRelativoCandidato)) {
@@ -12850,6 +13414,9 @@ public class Main extends JFrame {
                                 if (agentAuditService != null) {
                                     agentAuditService.finalizarAcao();
                                 }
+                            }
+                            if (sinalCorreto != null && !sinalCorreto.booleanValue()) {
+                                informarSuspeitaSinalIncorretoNumeroRelativo(null, elemento, sinal);
                             }
                             registrarLogUsuario(
                                     "Escolher sinal do número relativo",
@@ -12900,6 +13467,7 @@ public class Main extends JFrame {
                     base,
                     new ScaffoldingNumeroRelativo.AcaoSinalNumeroRelativo() {
                         public void sinalEscolhido(String sinal) {
+                            limparSinalDivergentePersistente();
                             int valorRelativoCandidato = calcularValorRelativo(base, sinal);
                             if (!valorRelativoPreservaQuantidadesNaoNegativas(
                                     numeroRelativoFinal, valorRelativoCandidato)) {
@@ -12943,6 +13511,9 @@ public class Main extends JFrame {
                                 if (agentAuditService != null) {
                                     agentAuditService.finalizarAcao();
                                 }
+                            }
+                            if (sinalCorreto != null && !sinalCorreto.booleanValue()) {
+                                informarSuspeitaSinalIncorretoNumeroRelativo(item, numeroRelativoFinal, sinal);
                             }
                             registrarLogUsuario(
                                     "Escolher sinal do número relativo",
@@ -13384,6 +13955,7 @@ public class Main extends JFrame {
             agrupamentoAdicionarQuadradinhoFocado = null;
             agrupamentoRemoverQuadradinhoFocado = null;
             scaffoldingGraficoInteiros.limparFocoBotaoEsconder();
+            paineisEixosRelacoes.limparFocoBotaoEsconder();
             limparRealceAlvoProximidade();
             setCursor(Cursor.getDefaultCursor());
             repaint();
@@ -13397,10 +13969,13 @@ public class Main extends JFrame {
                     interacaoRepresentacoesLiberadaPelaModelagem();
             if (interacaoRepresentacoesLiberada) {
                 scaffoldingGraficoInteiros.atualizarFocoBotaoEsconder(e.getX(), e.getY());
+                paineisEixosRelacoes.atualizarFocoBotaoEsconder(e.getX(), e.getY());
             } else {
                 scaffoldingGraficoInteiros.limparFocoBotaoEsconder();
+                paineisEixosRelacoes.limparFocoBotaoEsconder();
                 Rectangle areaEixo = scaffoldingGraficoInteiros.obterAreaVisualPainel();
-                if (areaEixo.contains(e.getX(), e.getY())) {
+                if (areaEixo.contains(e.getX(), e.getY())
+                        || paineisEixosRelacoes.contemAlgumPainel(e.getX(), e.getY())) {
                     elementoTextoFocado = null;
                     itemFocado = null;
                     quadradinhoVennFocado = null;
@@ -13504,6 +14079,36 @@ public class Main extends JFrame {
                 return;
             }
 
+            if (paineisEixosRelacoes.contemLupa(e.getX(), e.getY())) {
+                elementoTextoFocado = null;
+                itemFocado = null;
+                mostrarAnotacaoMouseOver = true;
+                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaLupa();
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                repaint();
+                return;
+            }
+
+            if (paineisEixosRelacoes.contemBotaoEsconder(e.getX(), e.getY())) {
+                elementoTextoFocado = null;
+                itemFocado = null;
+                mostrarAnotacaoMouseOver = true;
+                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaBotaoEsconder();
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                repaint();
+                return;
+            }
+
+            if (paineisEixosRelacoes.contemPontoControle(e.getX(), e.getY())) {
+                elementoTextoFocado = null;
+                itemFocado = null;
+                mostrarAnotacaoMouseOver = true;
+                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaPontoControle();
+                definirCursorMaoAberta();
+                repaint();
+                return;
+            }
+
             if (ehGraficoBarrasComparacao() && (contemPontoControleComparacao(e.getX(), e.getY()) || contemEscalaComparacao(e.getX(), e.getY()))) {
                 elementoTextoFocado = null;
                 itemFocado = null;
@@ -13570,7 +14175,7 @@ public class Main extends JFrame {
                                 textoAnotacaoMouseOver = criarMensagemPapelItemArrastavel(item);
                             }
                             definirCursorMaoAberta();
-                        } else if (encontrarElementoVergnaud(e.getX(), e.getY()) != null || encontrarConectorVergnaud(e.getX(), e.getY()) != null) {
+                        } else if (encontrarConectorVergnaud(e.getX(), e.getY()) != null) {
                         mostrarAnotacaoMouseOver = false;
                         textoAnotacaoMouseOver = "";
                         definirCursorMaoAberta();
@@ -14023,7 +14628,7 @@ public class Main extends JFrame {
                     }
                     quadradinhosVenn.remove(quadradinhoVennFocado);
                     quadradinhoVennFocado = null;
-                    quadradinhoVennSelecionado = null;
+                    handlerQuadradinhoVenn.cancelar();
                     mostrarAnotacaoMouseOver = false;
                     sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
                             indiceAlterado,

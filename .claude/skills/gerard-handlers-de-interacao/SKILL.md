@@ -1,9 +1,9 @@
 ---
 name: gerard-handlers-de-interacao
-description: Direção arquitetural (ainda não implementada) para separar o código de manipulação de mouse/teclado (arrastar, soltar, hover, clique) dos elementos representacionais e de TelaGerard, hoje concentrado ali. Use ao planejar como extrair handlers de interação de Main.java, ao decidir onde colocar um novo protocolo de arraste/clique, ou quando a tela estiver difícil de navegar por causa de lógica de mouse. Registrada em 2026-08-07 a partir de uma discussão externa com a usuária — não confundir com gerard-scaffolding-interacao (que decide o que cada protocolo faz, não onde o código mora).
+description: Direção arquitetural e estado da extração incremental do código de manipulação de mouse/teclado (arrastar, soltar, hover e clique) de Main.TelaGerard. Use ao extrair ou revisar um protocolo de interação, ao decidir onde colocar um adaptador Swing ou handler, ou quando a tela voltar a concentrar mecânica particular. Não confundir com gerard-scaffolding-interacao, que decide o que o protocolo faz, e não onde sua mecânica reside.
 ---
 
-# Handlers de interação modulares — direção (não implementada)
+# Handlers de interação modulares
 
 ## Dependência normativa
 
@@ -13,16 +13,16 @@ ela propõe uma implementação concreta para a camada "Interação" que
 `gerard-domain-model-first` já separa de Domínio e Representação, mas
 sem prescrever como estruturar isso em código.
 
-## Status: proposta registrada, não implementada
+## Status: extração incremental em curso
 
 `TelaGerard` (`Main.java`) implementa `MouseListener`, `MouseMotionListener`
-e `KeyListener` diretamente (`Main.java:466`). `mousePressed` sozinho tem
-~366 linhas (`Main.java:10462`–`10828`), despachando por tipo de elemento
-(`ItemTextoArrastavel`, `ElementoTextoMovel`, quadradinhos do diagrama
-Venn, eixo de inteiros, elementos de Vergnaud...) dentro do mesmo método;
-`mouseDragged` (`10828`), `mouseReleased` (`10950`) e `mouseMoved`
-(`12843`) seguem o mesmo padrão. Nada disso muda por este registro — é
-só o diagnóstico que motiva a proposta abaixo.
+e `KeyListener` diretamente. Quatro famílias já possuem handlers locais,
+mas `mousePressed`, `mouseReleased` e `mouseMoved` ainda contêm trechos
+extensos de despacho e mecânica particular. A inclusão das três categorias
+de relações acrescentou novas necessidades à interface; por isso, o total
+de linhas de `Main.java` não é uma medida válida do progresso desta
+extração. A medida relevante é se cada protocolo central deixa de possuir
+a mecânica particular que já pode ser encaminhada a um handler.
 
 ## Por que isso não contradiz a arquitetura já registrada
 
@@ -35,20 +35,27 @@ das outras skills: `PapelQuantitativo` e as classes `RelacaoEstrutural*`
 continuam no Domínio, sem saber de mouse, pixel ou Swing — muda só onde
 o despacho de eventos de mouse é organizado.
 
-## O padrão proposto
+## O padrão adotado
 
 1. **Elemento representacional** (`ItemTextoArrastavel`, `ElementoTextoMovel`,
-   `ElementoVergnaud`) continua rico, mas sem código de mouse — só estado
-   e como se desenha, exatamente como já é hoje.
-2. **Um handler de interação por tipo de elemento** concentra a lógica
-   hoje espalhada entre `mousePressed`/`mouseDragged`/`mouseReleased`/
-   `mouseMoved` para aquele tipo específico — decide o que o gesto
-   significa (iniciar arraste, soltar sobre um alvo, hover) e chama o
-   objeto de domínio ou de sincronização (`EstadoSemanticoCompartilhado`,
-   os `RelacaoEstrutural*`) correspondente.
-3. **`TelaGerard` roteia**, não decide — recebe o evento bruto do Swing e
-   repassa pro handler certo, em vez de conter a lógica de decisão
-   inline.
+   `ElementoVergnaud`) continua rico, mas sem receber eventos de mouse. Ele
+   mantém o estado e a realização visual e, quando possui esse conhecimento,
+   produz o registro factual de sua própria participação no gesto.
+2. **O adaptador da interface** conhece Swing, recebe `MouseEvent`, consulta
+   a geometria e o hit-testing reais da árvore de componentes e traduz o
+   evento bruto em dados explícitos para o protocolo.
+3. **Um handler de interação por protocolo** mantém o estado e a sequência
+   do gesto. Recebe coordenadas e tipos geométricos neutros; AWT, Swing e a
+   classe visual concreta terminam no adaptador da plataforma.
+4. **O proprietário semântico** avalia a ação constituída usando seu
+   conhecimento local ou relacional, sem receber `MouseEvent`, componentes
+   Swing ou coordenadas de tela.
+5. **`TelaGerard` compõe e roteia** — recebe o evento bruto e o encaminha;
+   não conserva inline a mecânica particular de cada protocolo.
+
+Fluxo obrigatório:
+
+`MouseEvent/Swing -> adaptador da plataforma -> handler portátil -> porta da representação -> proprietário semântico, quando houver ação constituída`
 
 Nomes devem usar o vocabulário real do domínio Gérard (`ItemTextoArrastavel`,
 `ElementoVergnaud`...), não termos genéricos como "SemanticElement" ou
@@ -82,6 +89,11 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   `RELATORIO_VALIDACAO_ROBOT_HANDLER_ITEM_TEXTO_2026-08-11.md`. Pickup,
   drag, soltura, reposicionamento e o caso de item já presente no
   diagrama ficaram consistentes com o comportamento anterior à extração.
+- **P1.1 — gesto separado da ação no item textual.** O mesmo handler agora
+  encerra a trajetória física em `ResumoGestoArraste`, sem conhecer alvo
+  semântico. `ItemTextoArrastavel` produz o registro factual, a tela fornece
+  somente a classificação derivada da geometria real e uma porta separada o
+  persiste. O rastreador granular legado deixou de receber esse protocolo.
 - **Fase 7.3 — validada.** Segundo protocolo (`ElementoTextoMovel`, ver
   `HandlerInteracaoElementoTextoMovel`) extraído seguindo o passo 3 (um de
   cada vez). Validado pelo mesmo harness Robot real da Fase 7.2 (os dois
@@ -94,12 +106,74 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   do Venn, eixo de inteiros, elementos de Vergnaud) extrair a seguir. Ver
   `RELATORIO_FASE_7_4_HANDLER_ELEMENTOS_DIAGRAMA_VERGNAUD_2026-08-16.md`
   para a validação (build, verificador de regressão e harness Robot real).
-  Restam do roteiro: quadradinhos do diagrama Venn e eixo de inteiros.
+  Na decisão posterior da usuária, o reposicionamento livre de
+  `ElementoVergnaud` deixou de constituir ação permitida.
+- **P4.2 — protocolo do conector tornado portátil.** O protocolo ainda
+  válido dos conectores usa `HandlerInteracaoArrasteIncremental`, que depende
+  somente de `AlvoMovelIncremental` e `LimitesMovimento`. A classe
+  `AdaptadorMovimentoConectorVergnaud` possui a tradução desktop entre
+  `Rectangle` e o contrato neutro. O antigo handler misto, que ainda continha
+  o protocolo inativo de `ElementoVergnaud`, foi removido.
+- **Fase 7.5 — implementada e verificada isoladamente.** O protocolo dos quadradinhos do diagrama de
+  Venn foi transferido para `HandlerInteracaoQuadradinhoVenn`. A tela faz o
+  hit-testing e encaminha início, movimento, conclusão e cancelamento. O
+  teste `TesteAffordancePickupUI` usa o acesso encapsulado
+  `obterQuadradinhoAtivo()`. Resta do roteiro conhecido o eixo de inteiros e a
+  revisão incremental dos trechos particulares ainda presentes nos métodos
+  centrais.
 
-`mousePressed` com 366 linhas concentra risco alto para uma mudança só;
+`mousePressed` com 423 linhas concentra risco alto para uma mudança só;
 extrações grandes de uma vez são exatamente o tipo de refatoração que
 `gerard-consistencia-estado` pede pra não presumir como "melhoria" sem
 confirmação.
+
+## Regra determinística: Main compositora e roteadora
+
+> A Main deve progressivamente se tornar uma compositora e roteadora, sem
+> concentrar a mecânica particular de cada protocolo.
+
+Essa direção possui um *ratchet* no verificador frequente
+`scripts/verificar_regressao_gerard.py`:
+
+- os tamanhos correntes de `mousePressed`, `mouseDragged`,
+  `processarMovimentoArraste`, `mouseReleased`, `mouseClicked` e
+  `mouseMoved` são limites máximos, e não metas permanentes;
+- qualquer crescimento desses métodos falha deterministicamente;
+- quando uma extração reduzir um método, o limite registrado deve ser
+  reduzido na mesma alteração, impedindo a reintrodução posterior;
+- a presença e a conexão dos handlers já extraídos continuam verificadas
+  pelo mesmo script.
+
+A contagem de linhas é apenas uma trava de regressão. Ela não demonstra
+localidade correta por si só: toda alteração deve também verificar se Swing
+ficou na fronteira de interação, se a mecânica ficou no handler e se a regra
+do domínio permaneceu no proprietário semântico legítimo. O tamanho total de
+`Main.java` não participa do ratchet, pois funcionalidades representacionais
+novas podem aumentar a classe sem justificar o crescimento dos protocolos.
+
+## Consequência para web e mobile
+
+A extração também deve criar uma fronteira de portabilidade. Eventos e tipos
+da plataforma terminam no adaptador: `MouseEvent` no desktop, `PointerEvent`
+na web e gestos de toque no mobile. O protocolo recebe dados de interação
+equivalentes e não componentes da plataforma.
+
+A primeira prova desta fronteira na versão corrente é `LimitesMovimento`: a
+geometria real do enunciado continua sendo calculada pelo objeto de
+representação, mas `HandlerInteracaoElementoTextoMovel` recebe um intervalo
+neutro, sem importar `java.awt.Rectangle` ou Swing. O padrão deve ser aplicado
+incrementalmente; os componentes visuais Swing não são considerados
+reutilizáveis.
+
+O protocolo de conectores fornece a segunda prova: o handler portátil conhece
+somente `AlvoMovelIncremental`, deltas e `LimitesMovimento`; a representação
+Swing é alcançada pelo `AdaptadorMovimentoConectorVergnaud`. Uma versão web ou
+mobile implementará outra porta sem herdar `ConectorVergnaud` nem `Rectangle`.
+
+JSON ou XML podem futuramente serializar comandos e estados quando existir
+uma fronteira externa real. O formato de transporte pertence à infraestrutura
+e não substitui os objetos semanticamente ricos nem a sintaxe própria de cada
+sistema de representação.
 
 ## Relação com outras skills
 
@@ -115,12 +189,9 @@ confirmação.
   skill não altera essa lista — é uma oportunidade de revisão futura,
   não decidida aqui.
 
-## Autorização
+## Autorização e segurança
 
-Registro normativo apenas. Nenhum código muda em função deste documento.
-A extração de `Main.java` é trabalho grande e arriscado, na mesma tela
-que `gerard-consistencia-estado` documenta como tendo comportamento já
-validado em produção — só deve começar com autorização explícita e um
-plano de verificação, do mesmo jeito que as outras mudanças de
-arquitetura desta sessão (Fase B1, Fase B2, N=3 tentativas) foram
-confirmadas antes de implementar.
+Cada nova extração continua exigindo autorização explícita e validação do
+protocolo afetado. O ratchet autoriza somente a verificação frequente; ele
+não autoriza refatorações automáticas nem substitui os testes funcionais e
+Robot exigidos por `gerard-consistencia-estado`.

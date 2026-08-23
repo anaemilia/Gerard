@@ -1,5 +1,6 @@
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
 import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
+import gerard.interacao.geometria.LimitesMovimento;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
 import gerard.ui.geometria.NoGeometriaRepresentacao;
 import java.awt.Rectangle;
@@ -22,8 +23,9 @@ public final class TesteHandlerInteracaoElementoTextoMovel {
 
         GeometriaAreaEnunciado geometria =
                 new GeometriaAreaEnunciado(130);
-        Rectangle limites = geometria.obterLimitesMovimento(elemento, 295);
-        exigir(limites.equals(new Rectangle(20, 205, 200, 115)),
+        LimitesMovimento limites = geometria.obterLimitesMovimento(elemento, 295);
+        exigir(limites.getMinimoX() == 20 && limites.getMaximoX() == 220
+                        && limites.getMinimoY() == 205 && limites.getMaximoY() == 320,
                 "A árvore deveria derivar os limites do card e do elemento.");
         handler.moverDentroDosLimites(500, 100, limites);
         exigir(elemento.x == 220 && elemento.y == 205,

@@ -6,6 +6,7 @@ import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.curadoria.sinal.ControladorSinaisCuradoria;
 import gerard.campoaditivo.curadoria.sinal.ModoPersistenciaSinalCuradoria;
+import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.curadoria.sinal.PainelValorComSinalCuradoria;
 import gerard.campoaditivo.curadoria.sinal.PapelSinalCuradoria;
 import gerard.campoaditivo.servico.ClassificadorTipoSituacaoAditiva;
@@ -53,10 +54,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.Icon;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -630,6 +633,43 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         PapelSinalCuradoria.RELACAO_RESULTANTE,
                         ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
                         campoResultado, "") : null;
+        // Operação (soma/subtração). Em composição de relações e composição
+        // de transformações, o papel resultante continua calculado a partir
+        // dos dois papéis-dado. Em transformação de relação, relacao_final é
+        // curada diretamente pelo pesquisador e permanece editável.
+        final JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao =
+                new JComboBox<OpcaoOperacaoCuradoria>(OpcaoOperacaoCuradoria.values());
+        campoOperacaoRelacao.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                Component componente = super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+                if (value instanceof OpcaoOperacaoCuradoria) {
+                    setText(((OpcaoOperacaoCuradoria) value).rotulo(localizacao));
+                }
+                return componente;
+            }
+        });
+        campoOperacaoRelacao.setSelectedItem(
+                OpcaoOperacaoCuradoria.aPartirDoEstado(linha.operacaoRelacao));
+        // Nas duas categorias de composição, uma operação válida mantém o
+        // resultante somente-leitura. Transformação de relação não participa
+        // desse bloqueio: sua relacao_final é informada pelo pesquisador.
+        final PainelValorComSinalCuradoria painelResultantePorOperacao =
+                composicaoRelacoes ? painelSinalRelacaoResultante
+                : composicaoTransformacoes ? painelSinalTransformacaoResultante
+                : null;
+        final String dicaOperacaoCalculada = localizacao.texto("curadoria.operacao.calculadoTooltip");
+        final Runnable aplicarBloqueioResultantePorOperacao = () -> {
+            if (painelResultantePorOperacao == null) return;
+            Object selecionado = campoOperacaoRelacao.getSelectedItem();
+            boolean bloqueado = selecionado instanceof OpcaoOperacaoCuradoria
+                    && ((OpcaoOperacaoCuradoria) selecionado).isEscolhaValida();
+            painelResultantePorOperacao.definirHerdado(bloqueado, dicaOperacaoCalculada);
+        };
+        campoOperacaoRelacao.addActionListener(e -> aplicarBloqueioResultantePorOperacao.run());
+        aplicarBloqueioResultantePorOperacao.run();
         final JComboBox<String> campoTermoDesconhecido = comboTermoDesconhecido(tipoSemantico, linha.termoDesconhecido);
         final AvisoTermoDesconhecidoVazio avisoTermoDesconhecido =
                 new AvisoTermoDesconhecidoVazio(
@@ -691,14 +731,17 @@ public class TelaCuradoriaSituacoes extends JPanel {
         } else if (tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);
             y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);
+            y = adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao);
             y = adicionarCampo(formulario, gbc, y, "transformacao_resultante", painelSinalTransformacaoResultante);
         } else if (tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             y = adicionarCampo(formulario, gbc, y, "relacao_inicial", painelSinalRelacaoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
+            y = adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao);
             y = adicionarCampo(formulario, gbc, y, "relacao_final", painelSinalRelacaoFinal);
         } else if (tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             y = adicionarCampo(formulario, gbc, y, "relacao_1", painelSinalRelacao1);
             y = adicionarCampo(formulario, gbc, y, "relacao_2", painelSinalRelacao2);
+            y = adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao);
             y = adicionarCampo(formulario, gbc, y, "relacao_resultante", painelSinalRelacaoResultante);
         }
         y = adicionarCampo(formulario, gbc, y, "termo_desconhecido", campoTermoDesconhecido);
@@ -774,6 +817,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
             configurarCampoHerdado(campoReferido, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferendo, dicaHerdado, semanticaHerdada);
             controladorSinais.definirSemanticaHerdada(semanticaHerdada, dicaHerdado);
+            if (!semanticaHerdada) {
+                aplicarBloqueioResultantePorOperacao.run();
+            }
             if (painelSinalTransformacao == null) {
                 configurarCampoHerdado(campoTransformacao, dicaHerdado, semanticaHerdada);
             }
@@ -836,7 +882,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     aplicarCamposDaCuradoriaDetalhada(linha, campoValidada, areaEnunciado, campoId, campoIdiomaVersao, campoSituacaoGrupoId, campoTipoVersao, campoVersaoOrigemId, campoFonte, campoSubtipo, campoPersonagem1, campoPersonagem2, campoPersonagem3,
                             campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                             campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
-                            campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6);
+                            campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
+                            campoOperacaoRelacao);
                     modelo.atualizarLinha(linhaModelo);
 
                     // A área de tradução é um editor independente do formulário principal.
@@ -906,7 +953,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
             aplicarCamposDaCuradoriaDetalhada(linha, campoValidada, areaEnunciado, campoId, campoIdiomaVersao, campoSituacaoGrupoId, campoTipoVersao, campoVersaoOrigemId, campoFonte, campoSubtipo, campoPersonagem1, campoPersonagem2, campoPersonagem3,
                     campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                     campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
-                    campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6);
+                    campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
+                    campoOperacaoRelacao);
             IdiomaSituacao idiomaSelecionadoTraducao = (IdiomaSituacao) campoIdiomaTraducao.getSelectedItem();
             String idiomaDestino = idiomaSelecionadoTraducao == null ? "" : idiomaSelecionadoTraducao.getCodigo();
             String textoTraduzido = UnicodeTexto.normalizarNfc(campoTextoTraducao.getText() == null ? "" : campoTextoTraducao.getText().trim());
@@ -1609,6 +1657,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.termoDesconhecido = origem.termoDesconhecido;
         destino.representacaoVisual = origem.representacaoVisual;
         destino.observacoes = origem.observacoes;
+        destino.operacaoRelacao = origem.operacaoRelacao;
     }
 
     private LinhaSituacao copiarLinha(LinhaSituacao origem) {
@@ -1630,6 +1679,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         copia.fragmentoTexto1 = origem.fragmentoTexto1; copia.fragmentoTexto2 = origem.fragmentoTexto2;
         copia.fragmentoTexto3 = origem.fragmentoTexto3; copia.fragmentoTexto4 = origem.fragmentoTexto4;
         copia.fragmentoTexto5 = origem.fragmentoTexto5; copia.fragmentoTexto6 = origem.fragmentoTexto6;
+        copia.operacaoRelacao = origem.operacaoRelacao;
         return copia;
     }
 
@@ -1651,6 +1701,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.fragmentoTexto1 = origem.fragmentoTexto1; destino.fragmentoTexto2 = origem.fragmentoTexto2;
         destino.fragmentoTexto3 = origem.fragmentoTexto3; destino.fragmentoTexto4 = origem.fragmentoTexto4;
         destino.fragmentoTexto5 = origem.fragmentoTexto5; destino.fragmentoTexto6 = origem.fragmentoTexto6;
+        destino.operacaoRelacao = origem.operacaoRelacao;
     }
 
     private void configurarCampoHerdado(JTextField campo, String dica, boolean herdado) {
@@ -1806,7 +1857,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
             JTextField campoResultado, JTextField campoReferido, JTextField campoReferendo, JTextField campoValorRelativo,
             ControladorSinaisCuradoria controladorSinais, JComboBox<String> campoTermoDesconhecido, JTextField campoRepresentacao, JTextField campoObservacoes,
             JTextField campoFragmentoTexto1, JTextField campoFragmentoTexto2, JTextField campoFragmentoTexto3,
-            JTextField campoFragmentoTexto4, JTextField campoFragmentoTexto5, JTextField campoFragmentoTexto6) {
+            JTextField campoFragmentoTexto4, JTextField campoFragmentoTexto5, JTextField campoFragmentoTexto6,
+            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao) {
         linha.validada = campoValidada.isSelected();
         linha.enunciado = UnicodeTexto.normalizarNfc(areaEnunciado.getText() == null ? "" : areaEnunciado.getText().trim());
         linha.id = campoId.getText().trim();
@@ -1869,6 +1921,31 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     controladorSinais.obterValorParaPersistencia(
                             PapelSinalCuradoria.TRANSFORMACAO_RESULTANTE,
                             campoResultado.getText()));
+            // A operação é persistida separadamente. Os resultantes das duas
+            // categorias de composição continuam calculados; relacao_final,
+            // em transformação de relação, preserva exatamente a curadoria
+            // informada pelo pesquisador.
+            Object operacaoSelecionada = campoOperacaoRelacao.getSelectedItem();
+            OpcaoOperacaoCuradoria operacaoRelacao = operacaoSelecionada instanceof OpcaoOperacaoCuradoria
+                    ? (OpcaoOperacaoCuradoria) operacaoSelecionada
+                    : OpcaoOperacaoCuradoria.NAO_SELECIONADO;
+            linha.operacaoRelacao = operacaoRelacao.getValorCanonico();
+            if (operacaoRelacao.isEscolhaValida()) {
+                PainelValorComSinalCuradoria relacao1 = controladorSinais.obter(PapelSinalCuradoria.RELACAO_1);
+                PainelValorComSinalCuradoria relacao2 = controladorSinais.obter(PapelSinalCuradoria.RELACAO_2);
+                if (relacao1 != null && relacao2 != null
+                        && !SimboloDesconhecido.eh(linha.resultado)) {
+                    linha.resultado = calcularResultadoOperacaoRelacao(
+                            relacao1, relacao2, operacaoRelacao, linha.resultado);
+                }
+                PainelValorComSinalCuradoria transformacao1 = controladorSinais.obter(PapelSinalCuradoria.TRANSFORMACAO_1);
+                PainelValorComSinalCuradoria transformacao2 = controladorSinais.obter(PapelSinalCuradoria.TRANSFORMACAO_2);
+                if (transformacao1 != null && transformacao2 != null
+                        && !SimboloDesconhecido.eh(linha.resultado)) {
+                    linha.resultado = calcularResultadoOperacaoRelacao(
+                            transformacao1, transformacao2, operacaoRelacao, linha.resultado);
+                }
+            }
             linha.referido = campoReferido.getText().trim();
             linha.referendo = campoReferendo.getText().trim();
             linha.valorRelativo = controladorSinais.obterValorParaPersistencia(
@@ -1900,6 +1977,24 @@ public class TelaCuradoriaSituacoes extends JPanel {
         }
     }
 
+    /**
+     * Calcula o valor assinado do papel resultante a partir dos dois
+     * papéis-dado e da operação escolhida na curadoria. Se algum dos dois
+     * campos de entrada ainda não tem um valor numérico válido, o valor
+     * atual é preservado (nada é sobrescrito com lixo).
+     */
+    private String calcularResultadoOperacaoRelacao(PainelValorComSinalCuradoria entradaA,
+            PainelValorComSinalCuradoria entradaB, OpcaoOperacaoCuradoria operacao,
+            String valorAtual) {
+        try {
+            int a = Integer.parseInt(entradaA.obterValorAssinado());
+            int b = Integer.parseInt(entradaB.obterValorAssinado());
+            Integer resultado = operacao.aplicar(a, b);
+            return resultado == null ? valorAtual : resultado.toString();
+        } catch (NumberFormatException ex) {
+            return valorAtual;
+        }
+    }
 
     private void limparCamposSemanticosNaoAplicaveis(LinhaSituacao linha) {
         if (linha == null || linha.tipo == null) return;
@@ -1930,6 +2025,12 @@ public class TelaCuradoriaSituacoes extends JPanel {
             linha.referendo = "";
             linha.valorRelativo = "";
             linha.sinalValorRelativo = "";
+        }
+        boolean usaOperacaoRelacao = t == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                || t == TipoSituacaoAditiva.COMPOSICAO_RELACOES
+                || t == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES;
+        if (!usaOperacaoRelacao) {
+            linha.operacaoRelacao = "";
         }
     }
 
@@ -2120,6 +2221,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         String fragmentoTexto4;
         String fragmentoTexto5;
         String fragmentoTexto6;
+        String operacaoRelacao;
     }
 
     static class ModeloTabelaSituacoes extends AbstractTableModel {
@@ -2174,6 +2276,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     l.fragmentoTexto4 = s.getFragmentoTexto4();
                     l.fragmentoTexto5 = s.getFragmentoTexto5();
                     l.fragmentoTexto6 = s.getFragmentoTexto6();
+                    l.operacaoRelacao = s.getOperacaoRelacao();
                     linhas.add(l);
                     i++;
                 }
@@ -2217,6 +2320,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
             l.fragmentoTexto4 = "";
             l.fragmentoTexto5 = "";
             l.fragmentoTexto6 = "";
+            l.operacaoRelacao = "";
             linhas.add(l);
             int i = linhas.size() - 1;
             fireTableRowsInserted(i, i);
@@ -2269,7 +2373,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         l.termoDesconhecido, l.representacaoVisual, l.observacoes,
                         l.personagem1, l.personagem2, l.personagem3,
                         l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
-                        l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6));
+                        l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao));
                 i++;
             }
             return situacoes;

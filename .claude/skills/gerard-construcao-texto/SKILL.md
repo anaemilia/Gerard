@@ -19,15 +19,17 @@ O texto gerado deve ter baixa distância semântica entre os pedaços de texto s
 
 ## Campos de trecho de texto na curadoria (implementado em 2026-07-20)
 
-A `TelaCuradoriaSituacoes` agora tem 3 campos de texto livre — `trecho_texto_1`, `trecho_texto_2`, `trecho_texto_3` — onde o pesquisador pode escrever, para cada um dos três papéis semânticos daquela categoria (nesta ordem), o trecho de frase natural correspondente a ele. Toda categoria simples do domínio (`CategoriaSimples` em `CatalogoEsquemasCategoriasAditivas.java`) tem exatamente três papéis, então os três campos cobrem: `COMPOSICAO_MEDIDAS`, `TRANSFORMACAO_MEDIDAS`, `COMPARACAO_MEDIDAS`, `COMPOSICAO_TRANSFORMACOES`, `TRANSFORMACAO_RELACAO`, `COMPOSICAO_RELACOES`.
+A `TelaCuradoriaSituacoes` agora tem 3 campos de texto livre — `trecho_texto_1`, `trecho_texto_2`, `trecho_texto_3` — onde o pesquisador pode escrever trechos correspondentes aos papéis semânticos da categoria. Os campos `trecho_texto_4`, `trecho_texto_5` e `trecho_texto_6` atendem às situações cuja estrutura curada requer mais fragmentos. A correspondência deve ser lida dos campos semânticos da própria situação; não deve ser inferida apenas do nome da categoria.
 
-As duas categorias compostas (duas categorias simples encadeadas) têm mais papéis, então ganham mais 3 campos — `trecho_texto_4`, `trecho_texto_5`, `trecho_texto_6` — reaproveitando o mesmo padrão uma segunda vez:
-- `COMPOSICAO_TRANSFORMACAO_MEDIDAS`: 1-3 cobrem parte_1/parte_2/todo, 4-6 cobrem estado_inicial/transformação/estado_final.
-- `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS`: os 6 campos existem no modelo, mas a tela hoje só mostra 4 papéis para essa categoria (estado_inicial, transformacao_1, transformacao_2, estado_final) — a correspondência exata entre trecho_texto_N e cada um desses 4 papéis não foi fixada na implementação inicial; confira `TelaCuradoriaSituacoes.java` (bloco `categoriaComposta`) antes de usar os fragmentos dessa categoria especificamente.
+O campo `tipo` do arquivo curado é a fonte normativa para a categoria de cada situação-problema. Após retirar as repetições e os dois nomes redundantes, existem exatamente seis categorias canônicas. `COMPOSICAO_TRANSFORMACAO_MEDIDAS` e `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` são identificadores históricos aceitos somente para compatibilidade de leitura; ambos convergem para `COMPOSICAO_TRANSFORMACOES`. Essa compatibilidade não autoriza renomear nenhuma outra categoria.
 
 Persistência: os 6 campos (`fragmento_texto_1`..`fragmento_texto_6`) foram adicionados como colunas finais do `situacoes_vergnaud.tsv` e do modelo `SituacaoProblemaAditiva` (getters `getFragmentoTexto1()`..`getFragmentoTexto6()`). São opcionais e retrocompatíveis — linhas antigas do TSV sem essas colunas continuam carregando normalmente, com os fragmentos vazios (validado contra as 210 situações reais do arquivo curado). Nenhuma situação curada existente tem esses campos preenchidos ainda — é infraestrutura nova, não dado retroativo.
 
 Use estes campos, quando preenchidos, como a fonte preferencial de fragmentos de texto por papel — são mais confiáveis do que inferir a partir do `enunciado` inteiro, porque foram escritos pelo pesquisador especificamente para esse propósito. Quando estiverem vazios (a maioria dos dados hoje), caia de volta para a extração a partir do enunciado validado, como já era feito antes.
+
+### Autoridade humana sobre `relacao_final`
+
+Na curadoria de `TRANSFORMACAO_RELACAO`, `relacao_final` — magnitude e sinal — permanece editável mesmo quando a operação (soma ou subtração) está selecionada. Ao salvar, o sistema preserva exatamente o valor informado pelo pesquisador; não o recalcula nem o corrige a partir de `relacao_inicial`, `transformacao` e `operacao`. A consistência dessa declaração curatorial é responsabilidade do pesquisador humano.
 
 ## Fonte de verdade obrigatória
 
@@ -37,16 +39,19 @@ Nunca improvisar textos ou diagramas sem consultar essa referência. Um texto ge
 
 ## Categorias suportadas — corrigido
 
+**Medidas**
+
 - `COMPOSICAO_MEDIDAS`
 - `TRANSFORMACAO_MEDIDAS`
 - `COMPARACAO_MEDIDAS`
-- `COMPOSICAO_TRANSFORMACAO_MEDIDAS` — **faltava na lista original.** É a composição de duas partes seguida de uma transformação (parte_1, parte_2, todo, estado_inicial, transformação, estado_final). Ver `TipoSituacaoAditiva.java:8`.
+
+**Relações**
+
 - `COMPOSICAO_TRANSFORMACOES`
 - `TRANSFORMACAO_RELACAO`
 - `COMPOSICAO_RELACOES`
-- `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS`
 
-Confira `TipoSituacaoAditiva.java` antes de assumir que esta lista está completa — é o enum, não este texto, a fonte de verdade sobre quais categorias existem.
+Essa lista tem exatamente seis categorias. Confira o campo `tipo` do arquivo curado e `TipoSituacaoAditiva.java` para a nomenclatura executável; nomes históricos aceitos pelo carregador não constituem novas categorias.
 
 ## Papéis semânticos por categoria (cuidado com inversão)
 

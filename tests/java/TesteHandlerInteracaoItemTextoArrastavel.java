@@ -1,4 +1,5 @@
 import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
+import gerard.interacao.ResumoGestoArraste;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 
 public final class TesteHandlerInteracaoItemTextoArrastavel {
@@ -17,16 +18,26 @@ public final class TesteHandlerInteracaoItemTextoArrastavel {
                 "O movimento deveria preservar o offset real do pickup.");
 
         HandlerInteracaoItemTextoArrastavel.ResultadoSoltura soltura =
-                handler.concluir();
+                handler.concluir(180, 320);
         exigir(soltura.getItem() == item && soltura.houveMovimento(),
                 "A soltura deveria identificar o item e o movimento real.");
+        ResumoGestoArraste gesto = soltura.getGestoConcluido();
+        exigir(gesto != null
+                        && gesto.getInicioX() == 112 && gesto.getInicioY() == 249
+                        && gesto.getFimX() == 180 && gesto.getFimY() == 320
+                        && gesto.getAmostras() == 1
+                        && gesto.getMudancasOrientacao() == 0
+                        && gesto.getDistanciaPercorrida() > 0,
+                "O handler deveria relatar somente os fatos físicos do arraste.");
         exigir(!handler.estaAtivo(),
                 "A conclusão deveria limpar o estado transitório do gesto.");
 
         handler.iniciar(item, item.x + 3, item.y + 4);
-        soltura = handler.concluir();
+        soltura = handler.concluir(item.x + 3, item.y + 4);
         exigir(!soltura.houveMovimento(),
                 "Pressionar e soltar sem mover deve ser reavaliação.");
+        exigir(soltura.getGestoConcluido() == null,
+                "Um clique sem deslocamento não deve gerar gesto de arraste.");
 
         handler.iniciar(item, item.x, item.y);
         handler.cancelar();

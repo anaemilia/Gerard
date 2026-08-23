@@ -56,6 +56,8 @@ Ao criar uma nova mensagem informativa, não presuma que existe um padrão de cl
 
 Preferir textos curtos; evitar linguagem natural extensa como mecanismo primário de feedback — o feedback adaptativo do Gérard é baseado em pequenas mensagens, tips, cores, posicionamento e estilo de interação, não em diálogo em linguagem natural.
 
+Quando uma mensagem explicativa usa personagens ou entidades informados na curadoria, o modelo textual deve nomear explicitamente os campos de origem, como `{Personagem_1}`, `{Personagem_2}` e `{Personagem_3}`. A representação substitui cada marcador pelo campo curado homônimo; não associa personagens pela posição no diagrama e não infere seus papéis. A adequação dos valores curados e da frase resultante permanece sob responsabilidade do pesquisador humano.
+
 ## 3. Material concreto — cobre AG_AC (confirmado 2026-08-08)
 
 Quadradinhos arrastáveis e manipuláveis — representação concreta que pode ser removida em versões simplificadas (ex.: versão mobile, que mantém só a modelagem/representação formal).

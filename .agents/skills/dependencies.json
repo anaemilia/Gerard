@@ -1,0 +1,428 @@
+{
+  "schema_version": 1,
+  "description": "Grafo de consulta das skills do Gerard. Registra somente relacoes e ordem de percurso; o conhecimento permanece nos arquivos proprietarios.",
+  "relations": {
+    "requires": "Leitura obrigatoria antes de interpretar a origem.",
+    "constrains": "Conhecimento que protege ou limita a decisao da origem.",
+    "related": "Consulta condicionada ao escopo concreto da tarefa.",
+    "conflicts": "Tensao que exige reconciliacao explicita antes da decisao."
+  },
+  "nodes": [
+    {
+      "id": "gerard-semantic-model",
+      "kind": "normative-reference",
+      "path": ".agents/skills/gerard-semantic-model/REFERENCE.md",
+      "knowledge_owner": "vocabulario_semantico_normativo"
+    },
+    {
+      "id": "reference-agente-monitor",
+      "kind": "reference",
+      "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-monitor.md",
+      "knowledge_owner": "observacao_e_registro_factual_do_monitor"
+    },
+    {
+      "id": "reference-agente-zdp",
+      "kind": "reference",
+      "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-zdp.md",
+      "knowledge_owner": "referencia_historica_zdp_e_evidencias_pedagogicas"
+    },
+    {
+      "id": "reference-agente-modelador",
+      "kind": "reference",
+      "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-modelador.md",
+      "knowledge_owner": "aprendizagem_publicacao_e_atualizacao_do_modelo_do_usuario"
+    },
+    {
+      "id": "gerard-domain-model-first",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-domain-model-first/SKILL.md",
+      "knowledge_owner": "fronteiras_do_modelo_de_dominio"
+    },
+    {
+      "id": "gerard-knowledge-locality-principle",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-knowledge-locality-principle/SKILL.md",
+      "knowledge_owner": "localidade_do_conhecimento"
+    },
+    {
+      "id": "gerard-knowledge-oriented-domain-objects",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-knowledge-oriented-domain-objects/SKILL.md",
+      "knowledge_owner": "responsabilidades_dos_objetos_semanticos"
+    },
+    {
+      "id": "gerard-semantic-event-logging",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-semantic-event-logging/SKILL.md",
+      "knowledge_owner": "eventos_semanticos_factuais"
+    },
+    {
+      "id": "gerard-ajuda-adaptativa",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-ajuda-adaptativa/SKILL.md",
+      "knowledge_owner": "fluxo_distribuido_de_ajuda_adaptativa"
+    },
+    {
+      "id": "gerard-consistencia-estado",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-consistencia-estado/SKILL.md",
+      "knowledge_owner": "propagacao_de_estado_entre_representacoes"
+    },
+    {
+      "id": "gerard-construcao-texto",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-construcao-texto/SKILL.md",
+      "knowledge_owner": "sintaxe_e_construcao_do_enunciado"
+    },
+    {
+      "id": "gerard-handlers-de-interacao",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-handlers-de-interacao/SKILL.md",
+      "knowledge_owner": "localizacao_dos_protocolos_de_interacao"
+    },
+    {
+      "id": "gerard-identidade-visual",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-identidade-visual/SKILL.md",
+      "knowledge_owner": "tokens_e_identidade_visual"
+    },
+    {
+      "id": "gerard-log-acao-instrumental",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-log-acao-instrumental/SKILL.md",
+      "knowledge_owner": "esquema_do_log_instrumental"
+    },
+    {
+      "id": "gerard-log-gestos-interacao",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-log-gestos-interacao/SKILL.md",
+      "knowledge_owner": "esquema_do_log_factual_de_gestos"
+    },
+    {
+      "id": "gerard-modelo-usuario",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-modelo-usuario/SKILL.md",
+      "knowledge_owner": "dimensoes_do_modelo_do_usuario"
+    },
+    {
+      "id": "gerard-posicionamento-relativo",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-posicionamento-relativo/SKILL.md",
+      "knowledge_owner": "geometria_relativa_da_interface"
+    },
+    {
+      "id": "gerard-scaffolding-interacao",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-scaffolding-interacao/SKILL.md",
+      "knowledge_owner": "apoios_pedagogicos_oferecidos"
+    }
+  ],
+  "edges": [
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "O modelo normativo define o vocabulario que a skill nao pode redefinir."
+    },
+    {
+      "from": "gerard-knowledge-locality-principle",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "A localidade depende das categorias semanticas normativas."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Os tipos de objeto semanticamente definido vem da referencia normativa."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-domain-model-first",
+      "reason": "Objetos ricos concretizam as fronteiras definidas para o dominio."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A responsabilidade de cada objeto deve respeitar a localidade."
+    },
+    {
+      "from": "gerard-semantic-event-logging",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Evento, acao, origem e hipotese possuem definicoes normativas."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "O gesto deve ser convertido em comando semanticamente identificado."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "A skill implementa a camada de interacao separada por esta fonte."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "constrains",
+      "to": "gerard-consistencia-estado",
+      "reason": "Extrair handlers nao pode alterar a propagacao de estado validada."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "constrains",
+      "to": "gerard-posicionamento-relativo",
+      "reason": "Handlers recebem geometria real e nao introduzem pixels soltos."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "related",
+      "to": "gerard-scaffolding-interacao",
+      "reason": "O handler localiza a mecanica; o scaffolding decide o comportamento pedagogico."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "constrains",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A extracao deve manter cada conhecimento junto de sua autoridade."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "related",
+      "to": "gerard-log-gestos-interacao",
+      "reason": "O handler observa e encerra o gesto sem converte-lo automaticamente em acao instrumental."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "Somente um comando constituido alcanca o proprietario semantico e produz uma acao instrumental."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "related",
+      "to": "gerard-identidade-visual",
+      "reason": "O adaptador de plataforma preserva a fronteira entre modalidade de entrada e apresentacao desktop, web ou mobile."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "O apoio nao pode reificar conceitos nem inferir conhecimento do participante."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "Apoio, representacao e dominio precisam permanecer separados."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "requires",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "Estrategia pedagogica nao pertence ao componente visual ou ao dominio."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "constrains",
+      "to": "gerard-consistencia-estado",
+      "reason": "Propagacao de estado e automatizacao pedagogica nao podem ser confundidas."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "constrains",
+      "to": "gerard-posicionamento-relativo",
+      "reason": "Artefatos de ajuda posicionados devem derivar da geometria real."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-ajuda-adaptativa",
+      "reason": "Uma fonte descreve o apoio; a outra decide a estrategia que o seleciona."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "A exposicao ao apoio deve produzir fatos sem inferencia cognitiva."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "A interacao apoiada deve preservar o esquema de captura aplicavel."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-modelo-usuario",
+      "reason": "O efeito no modelo do usuario depende do caso e nao do formato do apoio."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "related",
+      "to": "gerard-identidade-visual",
+      "reason": "Significado pedagogico da cor e token visual sao responsabilidades distintas."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "gerard-consistencia-estado",
+      "reason": "A decisao pedagogica opera acima do estado compartilhado existente."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "gerard-scaffolding-interacao",
+      "reason": "As regras aprendidas alimentam a selecao feita pelo proprietario semantico do repertorio."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "Os objetos ricos possuem e produzem o registro factual; a ajuda adaptativa consome esses registros sem duplicar a acao."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "gerard-modelo-usuario",
+      "reason": "O Modelador publica o modelo; proprietarios semanticos consultam projecoes imutaveis."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "reference-agente-monitor",
+      "reason": "Referencia historica para migracao e retirada do Agente Monitor legado."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "reference-agente-zdp",
+      "reason": "Referencia historica para evidencias e migracao do Agente ZDP legado."
+    },
+    {
+      "from": "gerard-ajuda-adaptativa",
+      "relation": "related",
+      "to": "reference-agente-modelador",
+      "reason": "Referencia condicional para tarefas do Agente Modelador."
+    },
+    {
+      "from": "gerard-log-acao-instrumental",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Log instrumental e evento semantico sao esquemas complementares de fatos."
+    },
+    {
+      "from": "gerard-log-acao-instrumental",
+      "relation": "related",
+      "to": "reference-agente-monitor",
+      "reason": "Referencia historica para migrar a propriedade de C/E e do log ao objeto rico responsavel."
+    },
+    {
+      "from": "gerard-log-gestos-interacao",
+      "relation": "requires",
+      "to": "gerard-handlers-de-interacao",
+      "reason": "O handler reconhece a fronteira do gesto e informa seus fatos observaveis."
+    },
+    {
+      "from": "gerard-log-gestos-interacao",
+      "relation": "constrains",
+      "to": "gerard-posicionamento-relativo",
+      "reason": "Destino geometrico e coordenadas devem vir da geometria real da representacao."
+    },
+    {
+      "from": "gerard-log-gestos-interacao",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "Um gesto pode originar uma acao, mas os dois logs preservam identidades e schemas distintos."
+    },
+    {
+      "from": "gerard-log-gestos-interacao",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Fatos tecnicos do gesto precedem e nao substituem eventos semanticos."
+    },
+    {
+      "from": "gerard-modelo-usuario",
+      "relation": "related",
+      "to": "reference-agente-modelador",
+      "reason": "A referencia decide como o agente atualiza o esquema."
+    },
+    {
+      "from": "gerard-modelo-usuario",
+      "relation": "related",
+      "to": "reference-agente-zdp",
+      "reason": "A referencia historica documenta o consumidor legado a ser substituido por projecoes locais."
+    },
+    {
+      "from": "gerard-consistencia-estado",
+      "relation": "constrains",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A propagacao nao pode criar um coordenador global proprietario das representacoes."
+    },
+    {
+      "from": "gerard-consistencia-estado",
+      "relation": "related",
+      "to": "gerard-semantic-model",
+      "reason": "Os valores propagados possuem identidade e estado semanticos."
+    },
+    {
+      "from": "gerard-consistencia-estado",
+      "relation": "related",
+      "to": "gerard-domain-model-first",
+      "reason": "A direcao arquitetural move a fonte de verdade semantica para o dominio."
+    },
+    {
+      "from": "gerard-consistencia-estado",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Propagacoes automaticas devem registrar a origem factual correta."
+    },
+    {
+      "from": "gerard-construcao-texto",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Os trechos realizam papeis semanticos definidos normativamente."
+    },
+    {
+      "from": "gerard-construcao-texto",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "O texto projeta o dominio e nao se torna fonte paralela de verdade."
+    },
+    {
+      "from": "gerard-construcao-texto",
+      "relation": "constrains",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A sintaxe textual deve permanecer na representacao responsavel."
+    },
+    {
+      "from": "gerard-construcao-texto",
+      "relation": "related",
+      "to": "gerard-consistencia-estado",
+      "reason": "Texto e diagrama projetam identidades comuns com sintaxes distintas."
+    },
+    {
+      "from": "gerard-posicionamento-relativo",
+      "relation": "constrains",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A geometria pertence ao componente ou relacao visual que a conhece."
+    },
+    {
+      "from": "gerard-posicionamento-relativo",
+      "relation": "related",
+      "to": "gerard-identidade-visual",
+      "reason": "Geometria e aparencia convivem na representacao sem se confundirem."
+    },
+    {
+      "from": "gerard-identidade-visual",
+      "relation": "related",
+      "to": "gerard-scaffolding-interacao",
+      "reason": "A identidade escolhe tons; o scaffolding possui o significado do feedback."
+    }
+  ]
+}

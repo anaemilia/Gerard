@@ -94,14 +94,14 @@ public class TesteAffordancePickupUI {
                     tela.mousePressed(evento(tela, MouseEvent.MOUSE_PRESSED, qx, qy));
                     exigir(tela.getCursor().getType() == Cursor.MOVE_CURSOR,
                             "Quadradinho em pickup deve usar cursor de movimentação.");
-                    exigir(tela.quadradinhoVennSelecionado == q,
+                    exigir(tela.handlerQuadradinhoVenn.obterQuadradinhoAtivo() == q,
                             "Quadradinho não entrou no estado de pickup.");
                     tela.mouseDragged(evento(tela, MouseEvent.MOUSE_DRAGGED, qx + 6, qy + 6));
                     exigir(q.x != qxInicial || q.y != qyInicial,
                             "Quadradinho não se deslocou durante o pickup.");
                     renderizar(tela, new File(System.getProperty("java.io.tmpdir"), "gerard_c113_pickup_square.png"));
                     tela.mouseReleased(evento(tela, MouseEvent.MOUSE_RELEASED, qx + 6, qy + 6));
-                    exigir(tela.quadradinhoVennSelecionado == null,
+                    exigir(tela.handlerQuadradinhoVenn.obterQuadradinhoAtivo() == null,
                             "Pickup do quadradinho não terminou na soltura.");
 
                     System.out.println("TesteAffordancePickupUI: OK");
