@@ -47,38 +47,37 @@ históricos aceitos pelo carregador não constituem categorias adicionais.
 
 ## Lista priorizada — da mais simples para a mais complexa
 
-### P1 — reconciliar e versionar uma única composição das skills
+### P1 — reconciliar e versionar uma única composição das skills — concluída
 
 **Complexidade:** baixa. **Risco arquitetural:** alto.
 
-As fontes normativas estão divididas entre duas pastas. A cópia de trabalho
-`C:\Users\cecomp\Documents\aemq\Gerard\.agents\skills` contém as decisões
-recentes sobre Modelador único, Modelo do Usuário, repertórios locais,
-propriedade dos logs e cardinalidade gesto/ação. A cópia versionada em
-`git\Gerard\.agents\skills` contém o histórico mais recente dos handlers
-7.3–7.5, mas ainda descreve em vários arquivos a arquitetura anterior.
+**Status em 2026-08-23:** concluída por reconciliação por conhecimento
+proprietário. As decisões adaptativas vigentes da cópia de trabalho foram
+combinadas com o estado verificado 7.2–7.5 dos handlers da árvore Git; não foi
+adotada integralmente nenhuma das duas versões anteriores.
 
-Exemplos objetivos:
+O resultado preserva:
 
-- a skill de ajuda adaptativa versionada tem 83 linhas; a fonte vigente tem
-  355;
-- a referência semântica versionada é 2.0/495 linhas; a vigente é 3.0/642;
-- a skill versionada de handlers possui o estado recente 7.3–7.5, ausente na
-  cópia de trabalho.
+- somente o Agente Modelador na arquitetura-alvo;
+- seleção de ajuda nos proprietários semânticos, usando repertório local;
+- propriedade dos registros factuais nos objetos ricos ou relações
+  correspondentes, com persistência separada;
+- um único `action_id` por ação e separação entre gesto e ação;
+- `gerard-semantic-model` na versão 3.0;
+- histórico e ratchet dos handlers 7.2–7.5;
+- nomes canônicos de frontmatter e metadado UTF-8 válido.
 
-Não se deve copiar uma pasta inteira sobre a outra. A correção é uma
-reconciliação por conhecimento proprietário: preservar as decisões adaptativas
-vigentes e incorporar nelas o estado verificado dos handlers; depois validar o
-grafo e versionar o conjunto resultante.
+`gerard-geracao-texto-diagrama` foi posteriormente revisada como conhecimento
+novo, corrigida para exigir rastreabilidade a situações curadas e impedir
+promoção automática, e então integrada ao grafo. Ela não valida candidatas nem
+substitui a decisão do pesquisador humano.
 
-O diretório não rastreado
-`.agents/skills/gerard-geracao-texto-diagrama/` não deve entrar no commit dessa
-reconciliação. Ele não pertence ao grafo, referencia uma skill inexistente e
-propõe gerar enunciados sem a consulta obrigatória à curadoria, contrariando a
-fonte semântica vigente. Deve permanecer isolado até revisão da pesquisadora;
-esta auditoria não o removeu.
+As duas pastas contêm os mesmos 29 arquivos, com igualdade SHA-256. O grafo
+possui 19 nós e 56 relações, passa na validação estrutural e em cinco testes de
+percurso, ordenação e detecção de ciclo. As referências de Monitor e ZDP
+permanecem somente como histórico explicitamente supersedido.
 
-**Aceite:** uma única árvore versionada de skills; grafo válido; nenhuma
+**Aceite atendido:** uma única composição versionada; grafo válido; nenhuma
 descrição normativa atribui decisão ao Monitor/ZDP; o histórico 7.2–7.5 dos
 handlers permanece documentado.
 

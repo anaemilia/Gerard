@@ -1,5 +1,5 @@
 ---
-name: GERARD Domain Model First
+name: gerard-domain-model-first
 description: Define o modelo de domínio semanticamente significativo como fonte única da verdade, sem confundir domínio, representação e interação.
 ---
 
@@ -45,6 +45,9 @@ Pode conhecer:
 - descritores abstratos de representação;
 - regras locais e relações estruturais;
 - estado anterior e posterior de operações do domínio.
+- repertórios de ajuda específicos dos proprietários semânticos;
+- seleção semântica dentro desses repertórios a partir de diagnóstico factual
+  e contexto adaptativo imutável.
 
 Não pode conhecer:
 
@@ -77,6 +80,14 @@ Define como usuário, sistema, agente ou pesquisador produz solicitações de mu
 - distinção da origem da ação;
 - apresentação de feedbacks e apoios.
 
+O objeto rico da representação possui e produz o registro factual do gesto
+que o envolve. Se o gesto for convertido em comando, o objeto de domínio ou a
+relação estrutural proprietária da regra possui e produz o registro da ação e
+seu resultado. A persistência desses registros continua sendo infraestrutura.
+Uma ação mantém um único `action_id`: quando abrange vários objetos, o menor
+agregado ou relação de escopo fechado que conhece a ação completa produz o
+registro único e referencia todos os participantes.
+
 Para um padrão concreto (ainda não implementado) de como estruturar essa camada em código, ver `gerard-handlers-de-interacao`.
 
 ## Representação dinâmica
@@ -97,8 +108,14 @@ Um objeto de domínio deve responder apenas às perguntas coerentes com sua resp
 - Qual descritor abstrato de representação ofereço?
 - Como sou serializado semanticamente?
 - Minha condição local é consistente?
+- Que registro factual pertence à ação que constituo ou avalio?
+- Qual ajuda do meu repertório é aplicável a este diagnóstico e a esta
+  projeção de usuário?
 
 Perguntas sobre desenho concreto, posição de tela ou gesto de mouse pertencem a outras camadas.
+Aprender regras com J48/PART ou Apriori e persistir o Modelo do Usuário também
+não pertencem ao objeto: são responsabilidades do Modelador e da
+infraestrutura. O objeto apenas aplica regras publicadas dentro de seu escopo.
 
 ## Relações que envolvem vários objetos
 

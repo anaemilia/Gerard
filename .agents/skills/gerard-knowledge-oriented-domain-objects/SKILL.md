@@ -1,5 +1,5 @@
 ---
-name: Knowledge-Oriented Domain Objects for GERARD
+name: gerard-knowledge-oriented-domain-objects
 description: Orienta a criação de objetos semanticamente ricos sem tratar papéis ou elementos do diagrama como conceitos completos.
 ---
 
@@ -21,7 +21,9 @@ Objetos não representam automaticamente conceitos completos no sentido da Teori
 - Papéis como `Parte`, `Todo` e `Transformação` integram representações de situações.
 - O conhecimento específico permanece próximo do objeto responsável por ele.
 - Relações entre vários objetos ficam em coordenadores de escopo fechado.
-- Políticas pedagógicas gerais permanecem em skills ou serviços especializados.
+- Aprendizado e políticas transversais permanecem no Modelador ou em serviços
+  especializados; a escolha dentro de um repertório local pertence ao objeto
+  semanticamente responsável.
 - Objetos devem ser ricos, mas não devem tornar-se “god objects”.
 
 ## Conhecimento que um objeto pode encapsular
@@ -38,15 +40,36 @@ Conforme sua responsabilidade:
 - chaves de mensagens específicas;
 - dados serializáveis do domínio;
 - produção de fatos necessários para eventos semânticos.
+- propriedade e produção do registro factual das ações instrumentais que o
+  objeto ou relação possui conhecimento para constituir e avaliar;
+- repertório local de ajudas semanticamente aplicáveis;
+- seleção de uma ajuda desse repertório a partir de diagnóstico factual e de
+  uma projeção imutável do Modelo do Usuário.
+- interpretação de uma projeção factual tipada do Modelo da Situação/Solução
+  corrente, quando esse conhecimento pertence ao seu escopo.
 
 ## O que não pertence automaticamente ao objeto
 
 - layout, pixel, cor concreta e componente de interface;
-- estratégia pedagógica global;
-- decisão sobre quando oferecer ajuda ou fading;
+- estratégia pedagógica global ou que ultrapasse o escopo do objeto;
+- aprendizagem de regras, execução de J48/PART ou Apriori;
+- Modelo do Usuário mutável ou completo;
 - análise de sequências que envolvem várias tentativas;
 - afirmações sobre esquemas ou invariantes operatórios do usuário;
 - persistência concreta e transporte de eventos.
+
+Objetos ricos da camada de representação possuem e produzem os registros dos
+gestos físicos que os envolvem. Objetos ricos do domínio e relações
+estruturais possuem e produzem os registros das ações instrumentais e dos
+resultados factuais que pertencem às suas regras. Essa divisão preserva a
+localidade: coordenadas e trajetórias não entram no domínio, e C/E não é
+calculado pela representação. A infraestrutura apenas persiste ou transporta
+os registros produzidos.
+
+A multiplicidade de participantes não multiplica ações. Se uma única ação
+envolve vários objetos semânticos, o menor objeto relacional ou agregado de
+escopo fechado que compreende a ação produz um único registro com um único
+`action_id`; os objetos participantes são apenas referenciados nesse registro.
 
 ## Responsabilidades típicas
 
@@ -59,6 +82,8 @@ O objeto pode responder:
 - De que relações estruturais posso participar?
 - Qual é meu estado atual?
 - Que diagnóstico factual decorre de uma tentativa de alteração?
+- Que registro factual devo produzir para a ação instrumental que constituo ou
+  avalio?
 - Que descritor abstrato forneço às representações?
 - Que dados do domínio podem ser serializados?
 
@@ -73,7 +98,7 @@ Use nomes como:
 
 Não use `InvarianteOperatorio` para essas classes.
 
-## Diagnóstico e feedback
+## Diagnóstico e ajuda local
 
 O objeto pode produzir um diagnóstico factual, por exemplo:
 
@@ -82,7 +107,18 @@ O objeto pode produzir um diagnóstico factual, por exemplo:
 - estado incompleto;
 - representação estruturalmente inconsistente.
 
-A skill de feedback decide como, quando e em que linguagem pedagógica apresentar esse diagnóstico.
+O objeto pode selecionar uma ajuda de seu repertório local usando esse
+diagnóstico e um `ContextoAdaptativoUsuario` somente de leitura. O resultado
+é uma decisão semântica — por exemplo, código do apoio, finalidade, modalidade
+abstrata, regra aplicada e versão do modelo — e não um componente visual.
+
+A representação decide como materializar a decisão em sua própria sintaxe. O
+registro factual confirma separadamente o que foi efetivamente exibido.
+
+O contexto da sessão não deve chegar como um mapa global. Objetos como
+`FatosSelecaoAjudaIncognita` e `FatosSelecaoAjudaPosicionamento` exemplificam
+projeções locais e tipadas do Modelo da Situação/Solução: elas mudam durante a
+tentativa, enquanto a fotografia do Modelo do Usuário permanece estável.
 
 Mensagens devem ser representadas por chaves de internacionalização, não por texto final embutido no domínio.
 
@@ -105,5 +141,9 @@ Antes de criar ou enriquecer um objeto, pergunte:
 3. Trata-se de fato do domínio ou de política pedagógica?
 4. Trata-se de observação factual ou de interpretação sobre o usuário?
 5. O objeto conheceria tecnologia de interface se essa regra fosse inserida aqui?
+6. O contexto do usuário foi reduzido ao mínimo necessário e permanece
+   imutável durante a sessão?
+7. Estou preservando uma única ação e apenas referenciando seus vários objetos
+   participantes, em vez de duplicar o registro?
 
 Use as respostas para escolher entre objeto local, relação estrutural, skill, infraestrutura ou hipótese analítica.

@@ -1,4 +1,18 @@
-# Agente ZDP
+# Agente ZDP — referência histórica supersedida
+
+> **Decisão da usuária em 2026-08-11:** não existe Agente ZDP na
+> arquitetura-alvo. A Zona de Desenvolvimento Proximal permanece como
+> fundamento pedagógico. O conteúdo abaixo é preservado como fonte histórica,
+> empírica e de repertórios; nenhuma instrução que atribua ao ZDP a escolha
+> central de scaffolding continua normativa. Na arquitetura vigente, o
+> Modelador aprende e publica regras, e os proprietários semânticos aplicam
+> essas regras aos próprios repertórios usando uma fotografia imutável do
+> Modelo do Usuário carregada no login.
+
+`src/gerard/agente/zdp` ainda existe como legado em migração. Não ampliar essa
+dependência. Migrar seus consumidores incrementalmente e só remover as classes
+depois que não houver chamadas, observadores ou formatos de auditoria
+dependentes.
 
 ⚠️ Proposta teórica — ver aviso de status em `../SKILL.md`.
 

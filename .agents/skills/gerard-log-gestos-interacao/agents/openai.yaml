@@ -1,0 +1,4 @@
+interface:
+  display_name: "Log de Gestos do Gérard"
+  short_description: "Registra gestos factuais sem avaliação semântica"
+  default_prompt: "Use $gerard-log-gestos-interacao para implementar ou revisar o registro factual de gestos sem convertê-los automaticamente em ações instrumentais."

@@ -1,5 +1,21 @@
 # Changelog — GERARD Semantic Model and Skills v2
 
+## 2.8 — 2026-08-13
+
+### Dois níveis temporais + fundamento rastreável da decisão adaptativa
+
+- Distinguido o Modelo do Usuário histórico/intersessões, congelado no login,
+  do Modelo da Situação/Solução contextual/intrasseção, produzido pelas ações
+  do participante sobre elementos da interface.
+- Preservada a localidade: o contexto corrente não é um mapa ou decisor
+  global; chega como fatos tipados ao proprietário semântico pertinente.
+- Registrada a fundamentação em Akhras e Self (2000) para o curso e o contexto
+  das situações interativas e a observação empírica da usuária sobre ausência
+  de progressão de dificuldade nas sessões reais, sem automatizar diagnóstico
+  de tédio ou inventar limiares.
+- `DecisaoAjuda` passou a congelar algoritmo e proveniência dos casos da regra
+  aplicada para que o evento continue reconstruível após futuras publicações.
+
 ## 2.7 — 2026-08-07
 
 ### Evento FEEDBACK_EXIBIDO + arquitetura envelope/payload — implementados

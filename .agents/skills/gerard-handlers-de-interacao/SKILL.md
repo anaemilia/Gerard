@@ -61,6 +61,22 @@ Nomes devem usar o vocabulário real do domínio Gérard (`ItemTextoArrastavel`,
 `ElementoVergnaud`...), não termos genéricos como "SemanticElement" ou
 "BoxElement".
 
+## Gesto não é ação instrumental
+
+Decisão da usuária em 2026-08-11: `ARRASTAR → POSICIONAR` delimita o
+protocolo físico do gesto, mas não basta para constituir uma ação
+instrumental. Se a soltura ocorrer fora de qualquer elemento do diagrama, o
+gesto termina com destino geométrico `FORA_DE_ELEMENTO_DO_DIAGRAMA`; não há
+comando semântico, avaliação C/E nem rejeição pedagógica. Somente um destino
+semanticamente identificável permite à camada de interação produzir um
+comando que o proprietário semântico poderá avaliar.
+
+O schema físico pertence a `gerard-log-gestos-interacao`. O objeto rico da
+representação participante produz o registro factual do gesto a partir das
+observações fornecidas pelo handler; uma porta apenas o persiste. O handler
+não se torna proprietário desse registro e não envia um gesto sem comando ao
+log de ação instrumental.
+
 ## Roteiro incremental sugerido
 
 Nenhuma etapa abaixo está autorizada a começar sem confirmação explícita
@@ -183,6 +199,12 @@ sistema de representação.
   esta skill ainda segue as regras de comportamento da outra.
 - `gerard-posicionamento-relativo` continua valendo dentro de qualquer
   handler novo — nenhum handler deve introduzir número de pixel solto.
+- `gerard-log-gestos-interacao` possui o schema factual do gesto. O handler
+  encerra o protocolo físico e fornece observações, enquanto o objeto rico da
+  representação produz o registro e a infraestrutura somente o persiste.
+- `gerard-log-acao-instrumental` recebe apenas comandos semanticamente
+  constituídos. O proprietário semântico produz um único registro por ação,
+  ainda que vários objetos participem dela.
 - `gerard-knowledge-locality-principle` lista 5 tipos de localidade
   (objeto, relacional, pedagógica, infraestrutura, epistemológica);
   interação de mouse/teclado não tem categoria própria ali hoje. Esta

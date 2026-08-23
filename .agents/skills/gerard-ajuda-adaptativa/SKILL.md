@@ -1,17 +1,266 @@
 ---
 name: gerard-ajuda-adaptativa
-description: Proposta teórica (tese/pesquisa do usuário) da arquitetura de Ajuda Adaptativa do Gérard — uma sociedade de três agentes de tutoramento (Monitor, ZDP, Modelador). Use como ponto de entrada sempre que for discutir ou implementar observação do usuário, avaliação de ações, decisão de estratégia pedagógica ou manutenção do modelo do usuário. Para detalhes de um agente específico, leia o arquivo correspondente em references/. NÃO é comportamento validado em produção — é especificação a confrontar com o código real.
+description: Arquitetura-alvo da Ajuda Adaptativa do Gérard, com o Agente Modelador concentrando a aprendizagem e os proprietários semânticos selecionando ajudas em repertórios locais; Monitor e ZDP pertencem somente à arquitetura anterior. Use ao discutir ou implementar avaliação factual de ações, regras J48/PART e Apriori, carregamento do Modelo do Usuário, escolha de scaffolding ou migração dos agentes legados Monitor/ZDP. Confronte sempre com domínio, localidade, modelo do usuário, scaffolding e registro factual.
 ---
 
 # Ajuda Adaptativa — Gérard
 
-## ⚠️ Status: proposta teórica, NÃO comportamento validado
+## Decisão arquitetural vigente — 2026-08-14
 
-Todo o conteúdo desta skill (raiz + `references/`) vem do material de pesquisa/tese do usuário (RFAs e Figuras 5.77 a 5.85). É uma **especificação de design**, não uma descrição do que já está implementado.
+A arquitetura-alvo possui somente um agente: o Agente Modelador, porque a ele
+pertencem a aprendizagem por J48/PART e Apriori e a publicação de regras. O
+Agente Monitor e o Agente ZDP são componentes legados a migrar e retirar.
+Zona de Desenvolvimento Proximal continua sendo fundamento
+pedagógico, enquanto sua operacionalização fica distribuída pelos
+proprietários semânticos e seus repertórios locais.
+
+Fluxo normativo:
+
+1. Objetos ricos da representação possuem e produzem os registros factuais dos
+   gestos que os envolvem. Objetos semânticos e relações estruturais possuem e
+   produzem os registros das ações constituídas, seus diagnósticos factuais e
+   resultados tipados de validação, incluindo C/E quando aplicável.
+   Uma ação conserva um único `action_id`; se envolver vários objetos, o menor
+   proprietário relacional ou agregado registra a ação uma vez e referencia
+   os participantes.
+2. A infraestrutura apenas transporta e persiste esses registros, preservando
+   seu proprietário, e os disponibiliza ao Modelador.
+3. O Agente Modelador transforma os registros em casos, executa J48/PART e
+   Apriori e publica regras explicáveis numa versão do Modelo do Usuário.
+4. O login carrega uma fotografia versionada do modelo, estável durante a
+   sessão.
+5. Cada proprietário semântico consulta apenas a projeção imutável que lhe é
+   relevante e escolhe uma ajuda do próprio repertório.
+6. A interface materializa a decisão; o objeto rico correspondente produz o
+   registro da ajuda efetivamente exibida, e a infraestrutura o persiste.
+
+### Fonte da tomada de decisão
+
+Refinamento explícito da usuária em 2026-08-12: a tomada de decisão não é
+pautada no perfil isolado. Perfil do aluno e perfil da aprendizagem são
+dimensões integrantes do Modelo do Usuário; preferências podem orientar a
+materialização da ajuda, mas não substituem as demais dimensões do modelo.
+
+A seleção adaptativa deve resultar da projeção multidimensional pertinente do
+Modelo do Usuário, combinada ao diagnóstico factual e às regras publicadas no
+escopo do proprietário semântico. Nenhuma preferência isolada decide se,
+quando ou qual ajuda pedagógica será aplicada. Um ensaio que altere somente
+preferências testa personalização da interface, não a tomada de decisão
+adaptativa completa.
+
+Refinamento explícito da usuária em 2026-08-13: a tomada de decisão possui
+dois níveis temporais complementares, mas não duas autoridades centrais:
+
+1. **histórico/intersessões** — a fotografia versionada do Modelo do Usuário,
+   carregada no login e mantida estável até o logout;
+2. **contextual/intrasseção** — os fatos do Modelo da Situação/Solução que
+   está sendo construído pelas ações do participante sobre elementos da
+   interface, incluindo o estado relevante da tentativa e a sequência de
+   situações interativas.
+
+Esses fatos correntes não atualizam clandestinamente a fotografia. Eles são
+projeções tipadas e mínimas entregues ao proprietário semântico que possui o
+conhecimento e o repertório. O próprio proprietário combina fotografia,
+estado atual e diagnóstico factual por seu mecanismo local de decisão. A
+interface e serviços genéricos não interpretam essa combinação.
+
+Por decisão da usuária em 2026-08-13, nenhuma política operacional nova pode
+ser inventada como valor padrão. Uma decisão deve ser rastreável a uma regra
+publicada com proveniência de casos, a uma referência identificável ou a uma
+observação registrada do mestrado/doutorado. A observação de tédio nas sessões
+reais justifica investigar progressão de dificuldade, mas o sistema não pode
+inferir automaticamente o estado mental "tédio". Dificuldade da próxima
+situação e intensidade de scaffolding permanecem controles distintos.
+
+O aprendizado é centralizado no Modelador; a aplicação é distribuída por
+localidade do conhecimento. Papéis cuidam de regras locais; relações
+estruturais, de regras entre papéis; tentativa e situação-problema, de regras
+que exigem esses escopos. Nenhum objeto recebe Weka, arquivo de log, Swing,
+geometria ou o modelo mutável completo.
+
+O código ainda implementa parcialmente a arquitetura anterior de três
+agentes. `AgenteMonitor` e `AgenteZDP` são legados em migração e não definem
+a arquitetura-alvo. Não remover ou renomear esses componentes em massa: migrar um fluxo por vez,
+preservando logs, observadores e comportamento até a regressão passar.
+
+### Estado de implementação — P2.2B, 2026-08-13
+
+O primeiro proprietário semântico foi implementado no piloto como
+`gerard.dominio.campoaditivo.IncognitaQuantitativa`. A designação da incógnita
+original é explícita e estável; não é inferida novamente pela simples ausência
+de valor do papel.
+
+O proprietário recebe `FatosSelecaoAjudaIncognita`: diagnóstico já produzido
+pelo papel ou pela relação estrutural e ordinal de rejeição já produzido pela
+sequência da tentativa. Ele não recalcula nenhum dos dois. A seleção consulta
+uma projeção que solicita `NIVEL_TAREFAS` e `DIAGNOSTICO_TAREFA`, aplica somente
+regras `PUBLICADA` do escopo `PAPEL` e escolhe somente entre `AG_EMLQ`, `AG_EME`
+e `AG_EMCME` do seu repertório local.
+
+O vocabulário local de condições é aberto apenas por alteração consciente do
+proprietário: `diagnostico_factual`, `ordem_rejeicao`, `categoria`,
+`papel_alvo`, `nivel_tarefa` e `suporte_anterior`. Condição desconhecida é erro
+de publicação, não um convite para a interface interpretá-la. Se nenhuma regra
+se aplica, a ausência de decisão é explícita. Se duas regras se aplicam ao
+mesmo tempo, o objeto recusa inventar prioridade: a ambiguidade deve ser
+resolvida na publicação pelo Modelador.
+
+Esta fase produz somente `DecisaoAjuda` abstrata. Não foi conectada a
+`Main.java`, Swing, login, Monitor ou ZDP; essa integração pertence à P2.3.
+
+### Estado de implementação — P2.3A, 2026-08-13
+
+`gerard.adaptacao.sessao.SessaoAdaptativaUsuario` passou a criar a fotografia
+na confirmação do login real, antes de `LoggerInteracaoGerard` trocar o usuário
+ativo. A sessão conserva a mesma instância até `encerrarNoLogout`; repetir o
+login do mesmo usuário não a refaz, e autenticar outro usuário exige encerrar a
+sessão anterior.
+
+`FotografiaModeloUsuario.carregarNoLogin` gera um identificador reproduzível
+`conteudo-sha256:` sobre as dimensões e regras efetivamente congeladas. Esse
+identificador registra o conteúdo carregado e não se confunde com a versão
+editorial de cada regra publicada pelo Modelador.
+
+Desde a P2.4A.1, a produção usa
+`RepositorioRegrasAdaptativasPublicadas` como
+`FonteRegrasAdaptativasCandidatas`. O catálogo operacional fica em
+`~/Gerard/analises/regras_adaptativas_publicadas.jsonl`, separado do TSV de
+inferência. A ausência desse arquivo equivale a nenhuma publicação; o login não
+fabrica regra. Os TSV de inferência e a base JSON de protocolos humanos
+permanecem fontes históricas/experimentais e não são promovidos
+automaticamente.
+
+### Estado de implementação — P2.3B, 2026-08-13
+
+`ProprietarioRepertorioAjuda` passou a declarar o menor conjunto de dimensões
+do Modelo do Usuário de que necessita. Para `IncognitaQuantitativa`, esse
+conjunto é exatamente `NIVEL_TAREFAS` e `DIAGNOSTICO_TAREFA`. A sessão usa a
+declaração do proprietário para projetar a fotografia ativa; não escolhe
+dimensões, não interpreta condições e não decide ajuda.
+
+`ProjetorContextoAdaptativoIncognita` é uma fronteira de aplicação. Ele obtém a
+designação original por `ResolvedorIncognitaCurada`, obtém o papel no modelo
+semântico canônico e solicita o contexto à sessão. Divergência entre
+`termo_desconhecido` e o símbolo `?` produz
+`DESIGNACAO_INCONSISTENTE`; nenhum lado é eleito silenciosamente. A ausência de
+situação, designação ou fotografia também permanece explícita.
+
+`Main.java` somente atualiza e conserva o resultado ao carregar uma situação ou
+confirmar o login. P2.3B não invoca `selecionarAjuda`, não altera mensagens,
+representações ou registros, e não retira a autoridade do fluxo legado. A
+materialização e o registro da decisão continuam reservados à P2.3C.
+
+### Estado de implementação — P2.3C, 2026-08-13
+
+`ExecutorAjudaIncognita` liga o contexto da P2.3B à seleção já pertencente a
+`IncognitaQuantitativa`. Ele não conhece regra, código de ajuda, Swing nem
+formato de log. Uma decisão é registrada antes da apresentação, inclusive
+quando o resultado explícito é `SEM_REGRA_APLICAVEL`.
+
+Quando existe regra publicada aplicável, `MaterializadorDecisaoAjudaSwing`
+traduz apenas a sintaxe visual do apoio recebido. A representação confirma cada
+efeito efetivamente materializado; somente então
+`RegistradorEventosAjudaLogGerard` registra `FEEDBACK_EXIBIDO`. `AG_EMCME`
+produz duas confirmações factuais: affordance manipulativa do material concreto
+ativa e mensagem visual exibida. A confirmação não atribui à representação a
+regra que tornou o material elegível.
+
+Os registros carregam `action_id`, `rejection_sequence_id`, versão da fotografia
+do Modelo do Usuário, regra e versão, proprietário semântico, diagnóstico
+factual e ajuda. A decisão usa origem `INFERENCIA_COMPUTACIONAL`; a
+materialização, origem `SISTEMA`. Nenhum evento afirma percepção, compreensão
+ou conceito-em-ação do participante.
+
+A fonte de produção lê o catálogo explicitamente publicado pelo Modelador.
+Sem uma publicação real para o usuário, a decisão local
+`SEM_REGRA_APLICAVEL` é registrada e o fluxo visual legado é usado como
+fallback de compatibilidade; as fixtures publicadas dos harnesses demonstram
+`AG_EMLQ` → `AG_EME` → `AG_EMCME` sem criar uma segunda autoridade para a
+mesma rejeição. O diagnóstico genérico
+`VALOR_INCORRETO` ainda é um adaptador transitório do booleano já calculado pelo
+legado; deve ser substituído pelo diagnóstico factual rico do proprietário
+quando essa fronteira for migrada.
+
+`AG_AE` tornou-se adaptativo na P2.4A (2026-08-13). O
+`PapelQuantitativoPosicionavel` possui o repertório local, consulta somente sua
+projeção multidimensional da fotografia e pode selecionar `AG_AE` quando uma
+regra publicada pelo Modelador se aplica ao diagnóstico factual de divergência
+entre o papel esperado e o papel de destino. O
+`MaterializadorAtracaoMagneticaAdaptativa` apenas ativa a affordance para a
+chave daquele papel; não consulta regras nem decide ajuda. `Main` consulta esse
+estado antes de chamar a atração e a centralização já existentes. Sem regra
+publicada a atração permanece desligada; a correção do posicionamento e a
+restauração/troca da atividade encerram a ativação. A geometria não foi
+alterada. O botão legado “Ver dica” não fez parte do escopo restrito da P2.4A
+e sua classificação continua pendente.
+
+### Estado de implementação — P2.4A.1, 2026-08-13
+
+`RepositorioRegrasAdaptativasPublicadas` é simultaneamente a porta de escrita
+editorial do Modelador e a fonte de leitura da sessão. Cada linha JSONL exige
+esquema versionado, usuário destinatário, identidade e versão da regra,
+algoritmo `PART`, `J48`, `J48.PART` ou `APRIORI`, data, proveniência, proprietário
+semântico, escopo, condições, código de ajuda, métricas disponíveis e estado
+explícito `PUBLICADA`. Registro ausente devolve lista vazia; registro malformado
+falha fechado e não desliga silenciosamente uma ajuda esperada.
+
+`AgenteModelador.publicarRegrasAdaptativas` substitui atomicamente o conjunto
+publicado de um usuário. Essa operação recebe regras já explicitadas: não
+analisa a saída textual do Weka, não escolhe ajuda e não cria condições. A
+mineração automática continua gravando somente `regras_inferidas.tsv` com
+estado experimental. Publicações novas tornam-se elegíveis apenas no próximo
+login, porque a fotografia ativa permanece imutável.
+
+As descrições da sociedade de três agentes e do Agente ZDP mantidas abaixo
+são histórico da tese, do relatório e da implementação anterior. Elas não
+prevalecem sobre esta seção.
+
+### Estado de implementação — P2.4A.2, 2026-08-13
+
+`DecisaoAjuda` conserva a versão da fotografia, a identidade da regra, o
+algoritmo de origem e a proveniência dos casos da regra publicada. O evento de
+decisão e a confirmação de materialização transportam esses dados sem mudar
+qual ajuda é selecionada. Os objetos
+`FatosSelecaoAjudaIncognita` e `FatosSelecaoAjudaPosicionamento` já são as
+projeções locais do contexto intrasseção; não criar um contexto global que
+duplique o conhecimento de todos os proprietários.
+
+### Estado de implementação — P2.5A, 2026-08-15
+
+O primeiro fluxo completo migrado é o protocolo `TEXTO` aplicado ao valor da
+incógnita. `IncognitaQuantitativa` recebe o valor proposto, o valor esperado
+produzido pelo Modelo da Situação/Solução e o contexto instrumental, interpreta
+a correspondência e produz um `RegistroAcaoInstrumental` com um único
+`action_id`, C/E quando aplicável, diagnóstico factual e referências a todos
+os participantes semânticos. Participantes não criam registros adicionais.
+
+`Main.java` fornece fatos de contexto e solicita a avaliação, mas não compara
+os números. Nesse fluxo ela não chama `AgenteMonitor` nem `AgenteZDP`. O mesmo
+registro é persistido idempotentemente pelo logger e convertido em um único
+caso por `ConectorVereditoModelador`, sem recalcular C/E. O caso conserva
+`action_id`, avaliação, tipo de erro e participantes; essas colunas foram
+acrescentadas ao final do TSV, com leitura retrocompatível, e a avaliação
+passou a integrar o conjunto de atributos disponível ao PART e ao Apriori.
+
+A fotografia do Modelo do Usuário continua necessária para selecionar ajuda,
+mas sua ausência não apaga a `IncognitaQuantitativa` já resolvida: a avaliação
+factual da ação pertence ao domínio e não depende de haver regra adaptativa
+publicada. O adaptador transitório `DiagnosticoCompatibilidadeIncognita` foi
+retirado porque o diagnóstico agora nasce no proprietário semântico.
+
+Esta é uma migração por fluxo. Seleção de categoria, posicionamento, sinal e
+outros protocolos ainda podem atravessar Monitor/ZDP no legado e devem ser
+migrados separadamente, sem remoção em massa.
+
+## Histórico da proposta teórica e da implementação anterior
+
+O conteúdo histórico abaixo vem do material de pesquisa/tese do usuário e de
+auditorias posteriores. Ele documenta a origem e o legado, não substitui a
+decisão vigente no topo.
 
 **Checado em 2026-07-20**: busquei no código por `AgenteMonitor`, `AgenteZDP`, `AgenteModelador`, `ModeloDoUsuario`/`ModeloUsuario` e qualquer arquitetura de threads produtor-consumidor equivalente — nada encontrado em `src/`. Confirma que nada desta arquitetura existe implementado, nem parcialmente, no código atual do Gérard.
 
-**Atualizado em 2026-07-20**: os três arquivos de `references/` (`agente-monitor.md`, `agente-zdp.md`, `agente-modelador.md`) estão completos. Duas skills companheiras também foram instaladas: `gerard-log-acao-instrumental` (esquema de captura do log, Quadro 4.55 — dona do formato que o Agente Monitor consome) e `gerard-modelo-usuario` (esquema das dimensões do Modelo do Usuário, Quadro 5.60 — dona da estrutura que o Agente Modelador escreve e o Agente ZDP consulta). Ver a seção "Relação com outras skills" abaixo.
+**Atualizado em 2026-07-20**: os três arquivos de `references/` (`agente-monitor.md`, `agente-zdp.md`, `agente-modelador.md`) estão completos. Duas skills companheiras também foram instaladas: `gerard-log-acao-instrumental` (esquema factual do Quadro 4.55; desde a decisão de 2026-08-14, o registro concreto pertence ao objeto rico proprietário da ação) e `gerard-modelo-usuario` (esquema das dimensões do Modelo do Usuário, Quadro 5.60; na arquitetura-alvo, o Modelador publica e os proprietários semânticos consultam projeções). Ver a seção "Relação com outras skills" abaixo.
 
 **Atualizado em 2026-07-22**: `agente-zdp.md` e `agente-modelador.md` incorporaram material do relatório de pesquisa "Análise de situações interativas no Gerard..." (Queiroz, 2026, Univasf), que a lacuna nº4 abaixo já apontava como necessário. Esse relatório dá camadas progressivas de ajuda (N0–N7), regras condição→ação e uma escala de indícios de reorganização pós-ajuda — a lacuna nº4 fica **parcialmente** endereçada (ver detalhe na nota atualizada abaixo).
 
@@ -27,6 +276,16 @@ Todo o conteúdo desta skill (raiz + `references/`) vem do material de pesquisa/
 2. Nunca reescrever código existente para "bater" com esta especificação sem confirmação explícita do usuário.
 3. Ao encontrar divergência entre esta skill e o código real, reportar ao usuário — não corrigir silenciosamente em nenhuma direção.
 4. É material de referência para design e implementação futura sob orientação direta do usuário — não uma ordem de serviço.
+5. Não manter duas autoridades para a mesma decisão: na arquitetura-alvo,
+   `Main.java`, `AgenteMonitor` e `AgenteZDP` não validam em nome dos
+   proprietários semânticos nem escolhem o scaffolding local.
+6. Registrar na decisão adaptativa a versão do modelo, a regra aplicada, o
+   proprietário semântico, o diagnóstico factual e o apoio escolhido.
+7. Não transformar regras mineradas em invariantes operatórios ou afirmações
+   automáticas sobre conceitos-em-ação; essa interpretação pertence ao
+   pesquisador humano.
+8. Não reduzir o Modelo do Usuário ao perfil nem usar uma preferência isolada
+   como autoridade para a tomada de decisão adaptativa.
 
 ## Motivação (RFAs)
 
@@ -37,27 +296,39 @@ Todo o conteúdo desta skill (raiz + `references/`) vem do material de pesquisa/
 - RFA 1.5 — o agente deve possuir um conjunto de conteúdos pedagógicos.
 - RFA 1.6 — o agente deve tratar situações em que o próximo estado do ambiente não é totalmente determinado pelo estado atual e pela ação do agente.
 
-## A Ajuda Adaptativa é formada por três agentes
+## Arquitetura histórica supersedida: sociedade de três agentes
+
+O quadro abaixo descreve a proposta original e o legado ainda existente no
+código. Não orientar novas implementações por ele.
 
 | Agente | Papel | Arquitetura | Detalhes |
 |---|---|---|---|
-| Agente Monitor | Avalia a ação do usuário como certa/errada | Reativo simples | `references/agente-monitor.md` |
-| Agente ZDP | Decide a estratégia pedagógica (Zona de Desenvolvimento Proximal) | Baseado em modelo | `references/agente-zdp.md` |
-| Agente Modelador | Mantém o modelo do usuário atualizado | Reativo simples | `references/agente-modelador.md` |
+| Agente Monitor | Calculava/avaliava C/E; alvo: observar e registrar | Reativo simples | `references/agente-monitor.md` |
+| Agente ZDP | Concentrava a estratégia; alvo: remover incrementalmente | Baseado em modelo | `references/agente-zdp.md` |
+| Agente Modelador | Mantinha o modelo; alvo: aprender e publicar versões | Reativo simples | `references/agente-modelador.md` |
 
-Leia o arquivo do agente relevante antes de trabalhar nele — cada um tem percepções, ações e granularidade própria (ex.: os protocolos de mouse são a folha de granularidade do Agente Monitor).
+Ao auditar ou migrar código legado, leia o arquivo histórico do agente
+envolvido para reconstruir suas percepções, ações e granularidade. Não use
+essas referências para atribuir novas decisões ao Monitor ou ao ZDP.
 
-## Comunicação entre os agentes
+## Comunicação histórica entre os agentes
 
 Agentes colaborativos, usando concorrência cooperativa. Cada agente é operacionalizado como uma Thread produtor-consumidor. Sem protocolo de comunicação direta identificado — colaboram via dados compartilhados.
 
-## Repositórios de dados compartilhados
+## Repositórios na arquitetura-alvo
 
-- **Modelo do Usuário** — lido/escrito pelo Agente Modelador; consultado pelo Agente ZDP.
-- **Ontologia do domínio** — legenda de Vergnaud (1986), invariantes verdadeiros e regras de ação verdadeiras; consultada pelo Agente Monitor.
-- **Conteúdo Pedagógico** — Mensagens, Automatização de passos, Mostrar Modelo Completo, entre outras; consultado pelo Agente ZDP.
+- **Modelo do Usuário** — publicado pelo Modelador; projetado como fotografia
+  imutável para os proprietários semânticos no login.
+- **Modelo de domínio** — fonte das validações locais e relacionais; seus
+  objetos e relações possuem e produzem os registros das ações e seus
+  resultados factuais.
+- **Objetos ricos da representação** — possuem e produzem os registros dos
+  gestos observáveis que os envolvem, sem avaliação semântica.
+- **Repertórios pedagógicos locais** — Mensagens, Automatização de passos,
+  Mostrar Modelo Completo e outros apoios pertencem aos proprietários
+  semânticos correspondentes.
 
-## Propriedades formais do ambiente (Russell & Norvig)
+## Propriedades formais da proposta histórica (Russell & Norvig)
 
 - **Estratégico**: Agente ZDP e o próprio usuário podem modificar o ambiente.
 - **Completamente observável**: sensores do Monitor têm acesso total ao estado.
@@ -77,7 +348,15 @@ Estas notas são análise feita ao documentar o material — não estão na tese
 
 ## Relação com outras skills do Gérard
 
-- `gerard-consistencia-estado` — propagação de estado já implementada; esta skill é a camada de decisão *acima* disso, ainda não implementada.
-- `gerard-scaffolding-interacao` — dona da taxonomia de tipos de scaffolding do ponto de vista do que é *oferecido* ao usuário. Esta skill (Ajuda Adaptativa) trata dos mesmos protocolos do ponto de vista do que é *percebido* pelos agentes como entrada — são ângulos complementares, propositalmente não unificados.
-- `gerard-log-acao-instrumental` — dona do esquema de captura do log (Quadro 4.55) que o Agente Monitor consome como percepção. Confirmado contra o código real: `EventoLogGerard.java` já usa os seis termos de Shneiderman ("SELECIONAR", "ORIENTACAO", "CAMINHO", "POSICIONAR", "TEXTO", "QUANTIFICAR") como valores do campo Tarefa de Interação, e tem mais campos que o quadro teórico, não menos.
-- `gerard-modelo-usuario` — dona do esquema das 5 dimensões do Modelo do Usuário (Quadro 5.60) que o Agente Modelador escreve e o Agente ZDP consulta. Nenhuma dessas dimensões existe implementada no código ainda (confirmado por busca em `src/`).
+- `gerard-consistencia-estado` — protege a propagação de estado já
+  implementada; ajuda adaptativa não pode transformar sincronização em
+  automatização pedagógica acidental.
+- `gerard-scaffolding-interacao` — possui as definições e o vocabulário dos
+  apoios oferecidos. Esta skill descreve como regras publicadas e contexto são
+  entregues ao proprietário semântico, que seleciona dentro do repertório
+  local; são conhecimentos complementares e não centralizados.
+- `gerard-log-acao-instrumental` — dona do esquema factual (Quadro 4.55) disponibilizado ao Modelador depois que os proprietários semânticos produzem seus resultados e a infraestrutura os correlaciona e persiste. O consumo desse log pelo Agente Monitor pertence ao fluxo legado. Confirmado contra o código real: `EventoLogGerard.java` já usa os seis termos de Shneiderman ("SELECIONAR", "ORIENTACAO", "CAMINHO", "POSICIONAR", "TEXTO", "QUANTIFICAR") como valores do campo Tarefa de Interação, e tem mais campos que o quadro teórico, não menos.
+- `gerard-modelo-usuario` — possui as dimensões, regras versionadas e projeções
+  de leitura do modelo que o Modelador publica e os proprietários semânticos
+  consultam. A implementação atual é parcial e deve ser confrontada com a
+  arquitetura-alvo.

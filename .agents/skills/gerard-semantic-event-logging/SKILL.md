@@ -1,5 +1,5 @@
 ---
-name: Semantic Event Logging for GERARD
+name: gerard-semantic-event-logging
 description: Registra fatos semanticamente relevantes da atividade, preservando contexto, origem e separação entre evento factual e hipótese analítica.
 ---
 
@@ -13,16 +13,22 @@ Leia `gerard-semantic-model/REFERENCE.md` antes de aplicar esta skill.
 
 Registrar mudanças, tentativas, validações e ocorrências semanticamente relevantes do domínio sem reduzir a atividade a cliques, coordenadas ou mensagens de log técnico.
 
-O domínio produz ou descreve o fato semântico. A infraestrutura persiste, indexa, consulta e exporta.
+O Objeto Semanticamente Rico ou a relação estrutural que possui o conhecimento
+produz e possui o registro factual. A infraestrutura persiste, indexa,
+consulta e exporta sem assumir sua propriedade semântica.
 
 ## Princípios
 
-- O domínio não grava logs diretamente.
+- O objeto rico produz o registro como valor factual tipado, sem executar I/O
+  direto em arquivo ou banco.
 - Eventos representam fatos contextualizados, não interpretações automáticas sobre o usuário.
 - Eventos são independentes da tecnologia de interface.
 - A origem da ação é obrigatória.
 - Valores calculados pelo sistema nunca são registrados como ações do usuário.
 - Eventos e hipóteses analíticas são estruturas separadas.
+- Uma ação instrumental conserva um único `action_id`, mesmo quando referencia
+  vários objetos semânticos; eventos derivados correlacionam-se com essa ação
+  sem recriá-la.
 
 ## Contexto mínimo do evento
 
@@ -45,6 +51,10 @@ Sempre que aplicável, registrar:
 - resultado da validação;
 - diagnóstico factual;
 - feedback apresentado, quando houver;
+- versão do Modelo do Usuário e regra adaptativa aplicada, quando houver
+  decisão de ajuda;
+- algoritmo de origem e proveniência dos casos da regra publicada, quando uma
+  regra tiver sido aplicada;
 - data e hora;
 - versão do modelo ou esquema de evento.
 
@@ -81,6 +91,7 @@ Exemplos:
 - relação estrutural verificada;
 - cálculo sugerido pelo sistema;
 - feedback apresentado;
+- ajuda adaptativa decidida;
 - explicação solicitada;
 - verbalização registrada;
 - tentativa iniciada, concluída ou abandonada.
@@ -117,6 +128,10 @@ Se os registros forem insuficientes, não formule hipótese.
 
 O publicador deve ser injetável por interface. Para funcionamento sem infraestrutura, prefira Null Object, como `PublicadorEventoDominio.NENHUM`, em vez de dependência `null`.
 
+O publicador recebe um registro já produzido pelo objeto proprietário. Ele não
+constitui a ação, não avalia C/E, não reinterpreta o gesto e não passa a ser o
+dono do log por gravá-lo.
+
 A infraestrutura é responsável por:
 
 - persistir;
@@ -138,6 +153,21 @@ Sempre que uma ação modificar, consultar, validar ou interpretar um estado sem
 
 Produza o evento somente com o significado factual conhecido naquele momento.
 
+Para ajuda adaptativa, registrar dois fatos distintos:
+
+- **decisão de ajuda**: proprietário semântico, diagnóstico, versão do modelo,
+  regra aplicada e apoio escolhido;
+- **feedback exibido**: confirmação de que a representação materializou o
+  apoio, segundo o critério de sua modalidade.
+
+O evento de decisão deve permitir reconstruir os dois níveis temporais usados:
+a versão da fotografia histórica e a projeção factual corrente do Modelo da
+Situação/Solução. Quando houver regra aplicada, registrar também seu algoritmo
+e sua proveniência de casos; não depender de o catálogo futuro ainda conter a
+mesma versão.
+
+Uma decisão não prova exibição; uma exibição não prova compreensão.
+
 ## Anti-padrões
 
 - Logar apenas `mouseClicked(x,y)`.
@@ -146,4 +176,6 @@ Produza o evento somente com o significado factual conhecido naquele momento.
 - Vincular explicação apenas à situação, ignorando a tentativa.
 - Inserir inferência cognitiva dentro do evento factual.
 - Declarar invariante operatório a partir de um evento isolado.
-- Fazer o domínio escrever diretamente em arquivo ou banco.
+- Fazer o objeto executar I/O diretamente em arquivo ou banco, ou atribuir ao
+  persistidor a propriedade semântica do registro.
+- Emitir uma ação duplicada para cada objeto participante de uma mesma ação.
