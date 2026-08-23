@@ -2,6 +2,7 @@ package gerard.Scaffolding.feedbackerro;
 
 import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
+import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.diagrama.elementos.QuadradinhoVenn;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public final class ScaffoldingFeedbackMultissensorialErro {
 
     private Timer temporizadorTremor;
     private ItemTextoArrastavel itemEmTremor;
+    private ElementoVergnaud elementoEmTremor;
     private CirculoVenn agrupamentoEmTremor;
     private final List<QuadradinhoVenn> quadradinhosEmTremor = new ArrayList<QuadradinhoVenn>();
     private final List<Integer> quadradinhosXBase = new ArrayList<Integer>();
@@ -64,6 +66,37 @@ public final class ScaffoldingFeedbackMultissensorialErro {
     }
 
 
+    /**
+     * Variante para números relativos representados diretamente por um
+     * ElementoVergnaud (círculo/retângulo do diagrama), sem um
+     * ItemTextoArrastavel associado — caso do menu de escolha de sinal
+     * acionado a partir do próprio elemento (solicitarSinalNumeroRelativoParaTexto),
+     * usada em 2026-08-18 para o aviso "tem certeza que o sinal é X?" quando
+     * o sinal escolhido diverge do curado.
+     */
+    public void sinalizarErro(ElementoVergnaud elemento, Runnable repaint) {
+        if (elemento == null) {
+            return;
+        }
+
+        pararTremor();
+        emitirSomSutil();
+
+        elementoEmTremor = elemento;
+        xBase = elemento.x;
+        indice = 0;
+        acaoRepaint = repaint;
+        acaoAoConcluir = null;
+
+        temporizadorTremor = new Timer(INTERVALO_MS, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                executarEtapaTremor();
+            }
+        });
+        temporizadorTremor.setRepeats(true);
+        temporizadorTremor.start();
+    }
+
     public void sinalizarErro(CirculoVenn agrupamento,
             List<QuadradinhoVenn> quadradinhos, Runnable repaint) {
         if (agrupamento == null) {
@@ -98,6 +131,16 @@ public final class ScaffoldingFeedbackMultissensorialErro {
         temporizadorTremor.start();
     }
 
+    /**
+     * Variante só de som, sem tremor — para widgets sem uma posição x
+     * "tremível" própria (ex.: o seletor de operação soma/subtração do
+     * diagrama, um controle fixo de dois botões, não um item arrastável).
+     * 2026-08-18.
+     */
+    public void emitirApenasSom() {
+        emitirSomSutil();
+    }
+
     public void pararTremor() {
         if (temporizadorTremor != null) {
             temporizadorTremor.stop();
@@ -105,6 +148,9 @@ public final class ScaffoldingFeedbackMultissensorialErro {
         }
         if (itemEmTremor != null) {
             itemEmTremor.x = xBase;
+        }
+        if (elementoEmTremor != null) {
+            elementoEmTremor.x = xBase;
         }
         if (agrupamentoEmTremor != null) {
             agrupamentoEmTremor.x = xBase;
@@ -117,6 +163,7 @@ public final class ScaffoldingFeedbackMultissensorialErro {
         Runnable repaintPendente = acaoRepaint;
         Runnable conclusaoPendente = acaoAoConcluir;
         itemEmTremor = null;
+        elementoEmTremor = null;
         agrupamentoEmTremor = null;
         quadradinhosEmTremor.clear();
         quadradinhosXBase.clear();
@@ -133,7 +180,7 @@ public final class ScaffoldingFeedbackMultissensorialErro {
     }
 
     private void executarEtapaTremor() {
-        if ((itemEmTremor == null && agrupamentoEmTremor == null)
+        if ((itemEmTremor == null && elementoEmTremor == null && agrupamentoEmTremor == null)
                 || indice >= DESLOCAMENTOS_X.length) {
             pararTremor();
             return;
@@ -142,6 +189,9 @@ public final class ScaffoldingFeedbackMultissensorialErro {
         int deslocamento = DESLOCAMENTOS_X[indice];
         if (itemEmTremor != null) {
             itemEmTremor.x = xBase + deslocamento;
+        }
+        if (elementoEmTremor != null) {
+            elementoEmTremor.x = xBase + deslocamento;
         }
         if (agrupamentoEmTremor != null) {
             agrupamentoEmTremor.x = xBase + deslocamento;

@@ -1,8 +1,13 @@
 package gerard.campoaditivo.diagrama.elementos;
 
 import gerard.campoaditivo.sincronizacao.texto.ElementoSemanticoTexto;
+import gerard.interacao.ContextoRegistroGesto;
+import gerard.interacao.DestinoGeometricoGesto;
+import gerard.interacao.RegistroGestoInteracao;
+import gerard.interacao.ResumoGestoArraste;
 import java.awt.*;
 import java.awt.geom.QuadCurve2D;
+import java.util.UUID;
 
 public class ItemTextoArrastavel implements ElementoSemanticoTexto {
     public int x;
@@ -16,6 +21,7 @@ public class ItemTextoArrastavel implements ElementoSemanticoTexto {
     private boolean conclusaoDestacada;
     public String tokenSemanticoId;
     private boolean preenchidoPeloProtocoloMouseTexto;
+    private final String referenciaInteracao;
 
     public ItemTextoArrastavel(int x, int y, int largura, int altura, String valor, boolean editavel, String origemValor, String chavePapel) {
         this(x, y, largura, altura, valor, editavel, origemValor, chavePapel, "");
@@ -32,6 +38,8 @@ public class ItemTextoArrastavel implements ElementoSemanticoTexto {
         this.chavePapel = chavePapel;
         this.tokenSemanticoId = tokenSemanticoId == null ? "" : tokenSemanticoId;
         this.preenchidoPeloProtocoloMouseTexto = false;
+        this.referenciaInteracao = this.tokenSemanticoId.length() > 0
+                ? this.tokenSemanticoId : "item-texto-" + UUID.randomUUID().toString();
     }
 
     public void registrarPreenchimentoPeloProtocoloMouseTexto() {
@@ -88,6 +96,26 @@ public class ItemTextoArrastavel implements ElementoSemanticoTexto {
 
     public boolean isConclusaoDestacada() {
         return conclusaoDestacada;
+    }
+
+    /**
+     * Produz o fato do gesto do qual este objeto representacional participou.
+     * O destino recebido é apenas geométrico; a decisão sobre a ação
+     * instrumental permanece fora deste registro.
+     */
+    public RegistroGestoInteracao produzirRegistroGestoArraste(
+            ResumoGestoArraste gesto, ContextoRegistroGesto contexto,
+            DestinoGeometricoGesto destinoGeometrico) {
+        if (gesto == null) {
+            return null;
+        }
+        return new RegistroGestoInteracao(
+                gesto.getInstanteConclusaoMillis(), contexto, gesto.getGestoId(),
+                "ARRASTAR_POSICIONAR", referenciaInteracao,
+                "ItemTextoArrastavel", gesto.getInicioX(), gesto.getInicioY(),
+                gesto.getFimX(), gesto.getFimY(), gesto.getAmostras(),
+                gesto.getMudancasOrientacao(), gesto.getDistanciaPercorrida(),
+                destinoGeometrico);
     }
 
     public void desenhar(Graphics2D g2) {

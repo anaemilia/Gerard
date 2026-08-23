@@ -13,12 +13,14 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WORK = ROOT / "tmp" / "linha-base-windows"
+WORK = ROOT / "tmp" / f"linha-base-windows-{os.getpid()}-{time.time_ns()}"
 CLASSES = WORK / "classes"
 TEST_CLASSES = WORK / "test-classes"
+TEST_USER_HOME = WORK / "user-home"
 LIBS = sorted((ROOT / "lib").glob("*.jar"))
 TESTES_COM_INTERFACE_GRAFICA = {
     "TesteAbaMontagem",
@@ -32,7 +34,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 
 def executar(comando: list[str], *, timeout: int = 120) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    processo = subprocess.Popen(
         comando,
         cwd=ROOT,
         text=True,
@@ -40,8 +42,28 @@ def executar(comando: list[str], *, timeout: int = 120) -> subprocess.CompletedP
         errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        timeout=timeout,
     )
+    try:
+        saida, _ = processo.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # No Windows, uma JVM com a EDT do Swing viva pode sobreviver ao
+        # encerramento simples e manter o pipe aberto. Finalizar a árvore
+        # garante que um teste não paralise toda a bateria sequencial.
+        subprocess.run(
+            ["taskkill", "/PID", str(processo.pid), "/T", "/F"],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=15,
+        )
+        try:
+            saida, _ = processo.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            processo.kill()
+            saida, _ = processo.communicate()
+        raise subprocess.TimeoutExpired(comando, timeout, output=saida)
+    return subprocess.CompletedProcess(comando, processo.returncode, saida)
 
 
 def nome_classe_teste(arquivo: Path) -> str:
@@ -70,10 +92,9 @@ def main() -> int:
         print("ERRO: java e javac precisam estar disponíveis no PATH.")
         return 2
 
-    if WORK.exists():
-        shutil.rmtree(WORK)
     CLASSES.mkdir(parents=True)
     TEST_CLASSES.mkdir(parents=True)
+    TEST_USER_HOME.mkdir(parents=True)
 
     libs_trabalho = WORK / "lib"
     libs_trabalho.mkdir(parents=True)
@@ -143,10 +164,12 @@ def main() -> int:
             graficos_nao_executados.append(classe)
             print(f"[GRÁFICO] {classe}: compilado; execução requer ambiente com display")
             continue
+        print(f"[EXECUTANDO] {classe}")
         try:
             resultado = executar([
                 java,
                 "-Djava.awt.headless=true",
+                f"-Duser.home={TEST_USER_HOME}",
                 "-cp", classpath_execucao,
                 classe,
             ], timeout=45)

@@ -125,6 +125,26 @@ public class ScaffoldingGraficoInteiros {
         }
     }
 
+    /**
+     * Sobrescreve a posição do painel logo após {@link #mostrar}/
+     * {@link #registrarEscolha} tê-lo criado com a posição padrão
+     * (centralizado, encostado no topo do diagrama). Usado por quem
+     * mantém várias instâncias simultâneas desta classe e precisa ancorar
+     * cada uma perto de um alvo específico (ex.: acima ou abaixo de um
+     * papel do diagrama de Vergnaud), em vez da posição padrão pensada
+     * para uma única instância. Não tem efeito se o painel ainda não foi
+     * criado (chame depois de mostrar/registrarEscolha) nem tenta manter
+     * a posição em repaints seguintes — arraste do usuário continua livre
+     * a partir daí, mesma regra da posição padrão.
+     */
+    public void definirPosicaoInicial(int x, int y) {
+        if (painelFlutuante == null) {
+            return;
+        }
+        painelFlutuante.x = x;
+        painelFlutuante.y = y;
+    }
+
     public void ocultar() {
         this.visivel = false;
         this.circuloReferencia = null;

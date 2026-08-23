@@ -13,11 +13,11 @@ import gerard.ui.UITemaGerard;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -26,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -79,15 +80,13 @@ public final class DialogoUsuario extends JDialog {
     private final JTextField campoNome = new JTextField(18);
     private final JSpinner campoIdade = new JSpinner(new SpinnerNumberModel(30, 0, 120, 1));
     private final JComboBox<Genero> campoSexo = new JComboBox<Genero>(Genero.values());
-    // Checkboxes em vez de combo (decisão da usuária, 2026-07-28) — as 3
-    // opções continuam mutuamente exclusivas (só uma mídia preferida por
-    // usuário, ver PerfilAprendizagem.midiaPreferida), então marcar uma
-    // desmarca as outras, mas a aparência/interação pedida foi checkbox,
-    // não radio button.
-    private final JCheckBox campoMidiaSom = new JCheckBox();
-    private final JCheckBox campoMidiaGrafico = new JCheckBox();
-    private final JCheckBox campoMidiaLinguagemNatural = new JCheckBox();
-    private final JCheckBox campoMidiaVideo = new JCheckBox();
+    // MidiaPreferida possui exatamente um valor. Botões de opção tornam essa
+    // exclusividade explícita, inclusive para tecnologias assistivas.
+    private final JRadioButton campoMidiaSom = new JRadioButton();
+    private final JRadioButton campoMidiaGrafico = new JRadioButton();
+    private final JRadioButton campoMidiaLinguagemNatural = new JRadioButton();
+    private final JRadioButton campoMidiaVideo = new JRadioButton();
+    private final JRadioButton campoMidiaHistoriaEmQuadrinhos = new JRadioButton();
     private final JComboBox<NivelEscolaridade> campoEscolaridade =
             new JComboBox<NivelEscolaridade>(NivelEscolaridade.values());
     private final JLabel rotuloPreviewFoto = new JLabel();
@@ -272,28 +271,30 @@ public final class DialogoUsuario extends JDialog {
         campoMidiaGrafico.setText(localizacao.texto(chaveMidia(MidiaPreferida.GRAFICO)));
         campoMidiaLinguagemNatural.setText(localizacao.texto(chaveMidia(MidiaPreferida.LINGUAGEM_NATURAL)));
         campoMidiaVideo.setText(localizacao.texto(chaveMidia(MidiaPreferida.VIDEO)));
+        campoMidiaHistoriaEmQuadrinhos.setText(
+                localizacao.texto(chaveMidia(MidiaPreferida.HISTORIA_EM_QUADRINHOS)));
         campoMidiaSom.setSelected(true);
-        final JCheckBox[] todasAsCaixasMidia =
-                {campoMidiaSom, campoMidiaGrafico, campoMidiaLinguagemNatural, campoMidiaVideo};
-        for (JCheckBox caixa : todasAsCaixasMidia) {
-            caixa.setOpaque(false);
-            caixa.setFont(new Font("Arial", Font.PLAIN, 13));
-            caixa.setForeground(UITemaGerard.COR_TEXTO);
-            caixa.setFocusPainted(false);
-            caixa.setAlignmentX(Component.LEFT_ALIGNMENT);
-        }
-        for (final JCheckBox caixa : todasAsCaixasMidia) {
-            caixa.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    aplicarSelecaoUnicaMidia(caixa, todasAsCaixasMidia);
-                }
-            });
+        final JRadioButton[] opcoesMidia = {
+            campoMidiaSom,
+            campoMidiaGrafico,
+            campoMidiaLinguagemNatural,
+            campoMidiaVideo,
+            campoMidiaHistoriaEmQuadrinhos
+        };
+        ButtonGroup grupoMidia = new ButtonGroup();
+        for (JRadioButton opcao : opcoesMidia) {
+            grupoMidia.add(opcao);
+            opcao.setOpaque(false);
+            opcao.setFont(new Font("Arial", Font.PLAIN, 13));
+            opcao.setForeground(UITemaGerard.COR_TEXTO);
+            opcao.setFocusPainted(false);
+            opcao.setAlignmentX(Component.LEFT_ALIGNMENT);
         }
         JPanel painelMidia = new JPanel();
         painelMidia.setOpaque(false);
         painelMidia.setLayout(new BoxLayout(painelMidia, BoxLayout.Y_AXIS));
-        for (JCheckBox caixa : todasAsCaixasMidia) {
-            painelMidia.add(caixa);
+        for (JRadioButton opcao : opcoesMidia) {
+            painelMidia.add(opcao);
         }
         campos.add(criarLinhaCampo(localizacao.texto("ui.userDialog.media"), painelMidia));
         campos.add(Box.createVerticalStrut(6));
@@ -346,6 +347,7 @@ public final class DialogoUsuario extends JDialog {
         MidiaPreferida midia = campoMidiaGrafico.isSelected() ? MidiaPreferida.GRAFICO
                 : campoMidiaLinguagemNatural.isSelected() ? MidiaPreferida.LINGUAGEM_NATURAL
                 : campoMidiaVideo.isSelected() ? MidiaPreferida.VIDEO
+                : campoMidiaHistoriaEmQuadrinhos.isSelected() ? MidiaPreferida.HISTORIA_EM_QUADRINHOS
                 : MidiaPreferida.SOM;
         NivelEscolaridade escolaridade = (NivelEscolaridade) campoEscolaridade.getSelectedItem();
 
@@ -474,8 +476,9 @@ public final class DialogoUsuario extends JDialog {
         campoMidiaGrafico.setSelected(midia == MidiaPreferida.GRAFICO);
         campoMidiaLinguagemNatural.setSelected(midia == MidiaPreferida.LINGUAGEM_NATURAL);
         campoMidiaVideo.setSelected(midia == MidiaPreferida.VIDEO);
+        campoMidiaHistoriaEmQuadrinhos.setSelected(midia == MidiaPreferida.HISTORIA_EM_QUADRINHOS);
         campoMidiaSom.setSelected(midia != MidiaPreferida.GRAFICO && midia != MidiaPreferida.LINGUAGEM_NATURAL
-                && midia != MidiaPreferida.VIDEO);
+                && midia != MidiaPreferida.VIDEO && midia != MidiaPreferida.HISTORIA_EM_QUADRINHOS);
 
         if (aprendizagem.getNivelEscolaridade() != null) {
             campoEscolaridade.setSelectedItem(aprendizagem.getNivelEscolaridade());
@@ -508,25 +511,8 @@ public final class DialogoUsuario extends JDialog {
             case SOM: return "ui.userDialog.media.som";
             case GRAFICO: return "ui.userDialog.media.grafico";
             case VIDEO: return "ui.userDialog.media.video";
+            case HISTORIA_EM_QUADRINHOS: return "ui.userDialog.media.historiaEmQuadrinhos";
             default: return "ui.userDialog.media.linguagemNatural";
-        }
-    }
-
-    /**
-     * Mesma semântica das checkboxes de mídia preferida em Main.java
-     * (aplicarSelecaoUnicaMidia): exatamente uma marcada por vez. Marcar
-     * uma desmarca as outras; tentar desmarcar a única marcada não tem
-     * efeito (força ela de volta), porque não existe "nenhuma preferida".
-     */
-    private void aplicarSelecaoUnicaMidia(JCheckBox marcada, JCheckBox[] todasAsCaixas) {
-        if (!marcada.isSelected()) {
-            marcada.setSelected(true);
-            return;
-        }
-        for (JCheckBox caixa : todasAsCaixas) {
-            if (caixa != marcada) {
-                caixa.setSelected(false);
-            }
         }
     }
 

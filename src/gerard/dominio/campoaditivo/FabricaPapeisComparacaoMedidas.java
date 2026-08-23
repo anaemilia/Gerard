@@ -17,19 +17,30 @@ public final class FabricaPapeisComparacaoMedidas {
 
     public static PapelQuantitativo referido(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.referido", "Referido", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "rotulo.papel.referido"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "", "rotulo.papel.referido",
+                        "explicacao.papel.referido"),
                 publicador);
     }
 
+    /**
+     * Chave "papel.valorRelativo" — o papel VIVO em Main.java para este
+     * mesmo conceito usa a chave "papel.diferenca" (ver
+     * Main.obterValorCuradoPorIndiceEChave). CatalogoExplicacoesConceituaisPapel
+     * registra a chave de explicação desta fábrica sob "papel.diferenca",
+     * não sob "papel.valorRelativo" — só a chave do papel diverge entre a
+     * fábrica (piloto) e o uso real, o conceito é o mesmo.
+     */
     public static PapelQuantitativo valorRelativo(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.valorRelativo", "Valor Relativo", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.valorRelativo"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.valorRelativo",
+                        "explicacao.papel.diferenca"),
                 publicador);
     }
 
     public static PapelQuantitativo referendo(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.referendo", "Referendo", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "rotulo.papel.referendo"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "", "rotulo.papel.referendo",
+                        "explicacao.papel.referendo"),
                 publicador);
     }
 }

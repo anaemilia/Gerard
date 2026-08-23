@@ -1,5 +1,6 @@
 import gerard.campoaditivo.montagem.ConjuntoBlocosMontagem;
 import gerard.campoaditivo.montagem.TelaMontagemSituacao;
+import gerard.i18n.ServicoLocalizacao;
 import java.lang.reflect.Field;
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
@@ -19,8 +20,9 @@ public final class TesteAbaMontagem {
             if (!(abas.getComponentAt(1) instanceof TelaMontagemSituacao)) {
                 throw new AssertionError("A segunda aba não é a construção de situação-problema.");
             }
-            if (!"Construir situação-problema".equals(abas.getTitleAt(1))) {
-                throw new AssertionError("O nome visível da segunda aba deve ser Construir situação-problema.");
+            String tituloEsperado = ServicoLocalizacao.getInstancia().texto("ui.tab.assembly");
+            if (!tituloEsperado.equals(abas.getTitleAt(1))) {
+                throw new AssertionError("O nome visível da segunda aba deve vir da localização: " + tituloEsperado);
             }
             TelaMontagemSituacao montagem = (TelaMontagemSituacao) abas.getComponentAt(1);
             abas.setSelectedIndex(1);

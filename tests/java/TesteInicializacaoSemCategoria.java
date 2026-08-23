@@ -67,7 +67,8 @@ public class TesteInicializacaoSemCategoria {
                             "Sortear Relações foi desabilitado após a categoria.");
                     exigir(tela.botaoAjudaTexto.isVisible(), "Ajuda textual não apareceu após a categoria.");
                     exigir(tela.botaoAjudaVergnaud.isVisible(), "Ajuda de Vergnaud não apareceu após a categoria.");
-                    exigir(tela.botaoAjudaComplementar.isVisible(), "Ajuda complementar não apareceu após a categoria.");
+                    exigir(!tela.botaoAjudaComplementar.isVisible(),
+                            "Ajuda complementar apareceu antes da condição pedagógica de escalada.");
 
                     System.out.println("OK: a tela mantém os painéis vazios e carrega os conteúdos educativos somente após a categoria.");
                 } catch (Throwable t) {

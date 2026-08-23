@@ -8,5 +8,6 @@ public enum MidiaPreferida {
     SOM,
     GRAFICO,
     LINGUAGEM_NATURAL,
-    VIDEO
+    VIDEO,
+    HISTORIA_EM_QUADRINHOS
 }

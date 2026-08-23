@@ -107,19 +107,22 @@ public final class PapelQuantitativo {
 
     public static PapelQuantitativo parte1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte1", "Parte", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte1"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.parte1",
+                        "explicacao.papel.parte"),
                 publicador);
     }
 
     public static PapelQuantitativo parte2(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.parte2", "Parte", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.parte2"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.parte2",
+                        "explicacao.papel.parte"),
                 publicador);
     }
 
     public static PapelQuantitativo todo(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.todo", "Todo", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "rotulo.papel.todo"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR_ARREDONDADA, "", "rotulo.papel.todo",
+                        "explicacao.papel.todo"),
                 publicador);
     }
 
@@ -128,6 +131,33 @@ public final class PapelQuantitativo {
     public String getChave() { return chave; }
     public String getNomeConceitual() { return nomeConceitual; }
     public DominioNumerico getDominio() { return dominio; }
+
+    /**
+     * Objeto rico (2026-08-18, decisão da usuária): "todo número relativo ou
+     * transformação carrega uma lupa. Essa é a regra" — mas a pergunta "eu
+     * preciso de lupa?" é comportamento do PRÓPRIO papel, não inferência de
+     * quem olha de fora a partir de forma/desenho. A fonte de verdade é
+     * matemática, não visual: {@code dominio == DominioNumerico.INTEIROS}
+     * (ℤ, aceita negativos) é estritamente mais fundamental que
+     * {@code descritorRepresentacao().getForma() == FIGURA_ELIPTICA} — a
+     * elipse é só a escolha visual atual que hoje representa esse domínio;
+     * o fato semântico real é o domínio numérico do papel.
+     *
+     * Nome deliberadamente sobre o CONCEITO pedagógico (representação de
+     * sinal — eixo dos inteiros, positivo/negativo), não sobre a lupa em si
+     * (um detalhe de interação/UI) nem sobre "elipse" (um detalhe de
+     * desenho) — o domínio não deve conhecer nenhum dos dois. Cabe à
+     * camada de interface decidir COMO atender essa necessidade (lupa,
+     * sempre visível, ou qualquer outro mecanismo futuro).
+     *
+     * Ainda não conectado à Main.java ao vivo — este piloto continua
+     * isolado (ver Javadoc da classe); Main.java hoje decide o mesmo fato
+     * observando a forma do ElementoVergnaud (ehElementoNumeroRelativo/
+     * TipoFiguraDiagrama.ELIPSE), não este método.
+     */
+    public boolean necessitaRepresentacaoDeSinal() {
+        return dominio == DominioNumerico.INTEIROS;
+    }
 
     // ---- representação (descritor abstrato, não desenho) ----
 

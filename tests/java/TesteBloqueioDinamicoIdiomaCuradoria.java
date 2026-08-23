@@ -1,5 +1,6 @@
 import gerard.campoaditivo.curadoria.TelaCuradoriaSituacoes;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
 import java.awt.Component;
 import java.awt.Container;
@@ -51,21 +52,39 @@ public class TesteBloqueioDinamicoIdiomaCuradoria {
                 try {
                     if (dialogo == null) throw new AssertionError("Diálogo de curadoria não localizado");
                     JComboBox<?> comboTraducao = null;
+                    JComboBox<?> comboIdiomaVersao = null;
+                    JComboBox<?> comboTipoVersao = null;
                     for (JComboBox<?> combo : componentes(dialogo, JComboBox.class)) {
                         if ("Escolha o idioma da nova tradução".equals(combo.getToolTipText())) {
                             comboTraducao = combo;
-                            break;
+                        } else if ("Idioma desta versão linguística".equals(combo.getToolTipText())) {
+                            comboIdiomaVersao = combo;
+                        } else if (combo.getSelectedItem() instanceof String) {
+                            String valor = String.valueOf(combo.getSelectedItem());
+                            if ("original".equalsIgnoreCase(valor) || "traducao".equalsIgnoreCase(valor)) {
+                                comboTipoVersao = combo;
+                            }
                         }
                     }
                     if (comboTraducao == null) throw new AssertionError("Seletor de idioma da tradução não localizado");
-                    int original = comboTraducao.getSelectedIndex();
-                    if (original < 0) throw new AssertionError("Idioma original não selecionado");
-                    String codigoOriginal = ((IdiomaSituacao) comboTraducao.getItemAt(original)).getCodigo();
+                    if (comboIdiomaVersao == null) throw new AssertionError("Idioma da versão aberta não localizado");
+                    if (comboTipoVersao == null) throw new AssertionError("Tipo da versão aberta não localizado");
+                    boolean versaoOriginal = "original".equalsIgnoreCase(
+                            String.valueOf(comboTipoVersao.getSelectedItem()));
+                    IdiomaSituacao idiomaDaVersao = (IdiomaSituacao) comboIdiomaVersao.getSelectedItem();
+                    if (idiomaDaVersao == null) throw new AssertionError("Idioma da versão aberta não selecionado");
+                    boolean semanticaEditavelNaVersao = versaoOriginal
+                            && IdiomaSituacao.paraIdiomaInterface(idiomaDaVersao.getCodigo())
+                                    == IdiomaInterface.PORTUGUES;
+                    String codigoOriginal = idiomaDaVersao.getCodigo();
+                    int original = -1;
                     int outro = -1;
                     for (int i = 0; i < comboTraducao.getItemCount(); i++) {
                         String codigo = ((IdiomaSituacao) comboTraducao.getItemAt(i)).getCodigo();
-                        if (!codigo.equalsIgnoreCase(codigoOriginal)) { outro = i; break; }
+                        if (codigo.equalsIgnoreCase(codigoOriginal)) original = i;
+                        else if (outro < 0) outro = i;
                     }
+                    if (original < 0) throw new AssertionError("Idioma da versão aberta não disponível no editor de tradução");
                     if (outro < 0) throw new AssertionError("Outro idioma não disponível");
 
                     comboTraducao.setSelectedIndex(outro);
@@ -100,10 +119,15 @@ public class TesteBloqueioDinamicoIdiomaCuradoria {
 
                     comboTraducao.setSelectedIndex(original);
                     boolean algumCampoReaberto = false;
-                    for (JTextField campo : camposVisiveis) {
+                    for (JTextField campo : componentes(dialogo, JTextField.class)) {
                         if (campo.isEditable()) { algumCampoReaberto = true; break; }
                     }
-                    if (!algumCampoReaberto) throw new AssertionError("Campos da original não foram reabertos ao retornar ao idioma original");
+                    if (semanticaEditavelNaVersao && !algumCampoReaberto) {
+                        throw new AssertionError("Campos da versão semântica original não foram reabertos");
+                    }
+                    if (!semanticaEditavelNaVersao && algumCampoReaberto) {
+                        throw new AssertionError("Campos semânticos herdados ficaram editáveis");
+                    }
                     if (!originalArea.isEditable()) throw new AssertionError("Enunciado original não foi reaberto");
                     if (!validacaoOriginal.isEnabled()) throw new AssertionError("Validação original não foi reaberta");
                 } catch (Throwable ex) {

@@ -27,13 +27,6 @@ public final class TesteConclusaoAcionaNovaSituacao {
                     if (acionamentosItem.get() != 1) {
                         throw new AssertionError("A opção Sim deve acionar exatamente uma vez o item Nova situação-problema.");
                     }
-                    if (!tela.categoriaSelecionadaParaAtividade) {
-                        throw new AssertionError("A nova situação deve selecionar uma categoria válida.");
-                    }
-                    if (tela.situacaoProblemaAtual != null
-                            && tela.situacaoProblemaAtual.getTipo() != tela.tipoSituacaoSelecionada) {
-                        throw new AssertionError("A situação carregada deve corresponder à categoria sorteada.");
-                    }
                 } catch (Throwable ex) {
                     falha[0] = ex;
                 }

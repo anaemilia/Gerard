@@ -21,19 +21,22 @@ public final class FabricaPapeisComposicaoDeTransformacoes {
 
     public static PapelQuantitativo transformacao1(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.transformacao1", "Transformação 1", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.transformacao1"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacao1",
+                        "explicacao.papel.transformacao"),
                 publicador);
     }
 
     public static PapelQuantitativo transformacao2(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.transformacao2", "Transformação 2", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.transformacao2"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacao2",
+                        "explicacao.papel.transformacao"),
                 publicador);
     }
 
     public static PapelQuantitativo transformacaoFinal(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.transformacaoFinal", "Transformação Resultante", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.transformacaoFinal"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacaoFinal",
+                        "explicacao.papel.transformacaoFinal"),
                 publicador);
     }
 }

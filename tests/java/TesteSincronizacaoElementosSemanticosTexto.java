@@ -64,7 +64,54 @@ public final class TesteSincronizacaoElementosSemanticosTexto {
         exigir("?".equals(referendo.getValorSemanticoOriginal()),
                 "A origem da incógnita deve permanecer estável para logs e validações.");
 
-        System.out.println("Teste aprovado: valores conhecidos acompanham os diagramas e a interrogação permanece estável.");
+        // Correção 2026-08-18: "Retire os sinais dos números no texto. Não
+        // faz sentido" — bug relatado pela usuária ao testar Transformação
+        // de Relação ("Julia tem -3 bonecas a mais que Maria..."). Raiz:
+        // vincularPapeisSemanticosAosElementosTexto (Main.java) passa
+        // numero.getValorCanonico() como valorOriginalDoPapel — o valor
+        // canônico do papel curado (com sinal, ex. "-3"), não o texto
+        // literalmente digitado no enunciado (que é só "3"). O antigo
+        // formatarValor lia esse "original" para decidir se preservava o
+        // sinal, então o sinal curado vazava de volta pra frase. Simulado
+        // aqui construindo o ElementoTextoMovel exatamente como o bug real
+        // (vincularSemantica com o 4º parâmetro assinalado, embora o texto
+        // do enunciado nunca tivesse sinal) — o texto sincronizado deve
+        // mostrar sempre a magnitude, nunca o sinal.
+        EstadoSemanticoCompartilhado estadoRelacao = new EstadoSemanticoCompartilhado();
+        estadoRelacao.limpar(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO);
+        EstadoSemanticoCompartilhado.Snapshot snapshotRelacao = estadoRelacao.atualizar(
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                new Integer[] { -3, 5, 2 },
+                new boolean[] { true, true, true },
+                0,
+                EstadoSemanticoCompartilhado.Origem.DIAGRAMA_COMPLEMENTAR);
+
+        ElementoTextoMovel relacaoInicialComSinalCurado = new ElementoTextoMovel("3", 50);
+        relacaoInicialComSinalCurado.vincularSemantica("papel.relacaoInicial", 0, 1, "-3");
+        ElementoTextoMovel transformacaoComSinalCurado = new ElementoTextoMovel("5", 60);
+        transformacaoComSinalCurado.vincularSemantica("papel.transformacao", 0, 1, "+5");
+
+        List<ElementoSemanticoTexto> elementosRelacao = new ArrayList<ElementoSemanticoTexto>();
+        elementosRelacao.add(relacaoInicialComSinalCurado);
+        elementosRelacao.add(transformacaoComSinalCurado);
+
+        sincronizador.sincronizar(elementosRelacao, snapshotRelacao,
+                new MapeadorPapelSemanticoTexto() {
+                    @Override
+                    public int paraIndiceSemantico(String chave) {
+                        if ("papel.relacaoInicial".equals(chave)) return 0;
+                        if ("papel.transformacao".equals(chave)) return 1;
+                        return -1;
+                    }
+                });
+
+        exigir("3".equals(relacaoInicialComSinalCurado.valor),
+                "O sinal curado (\"-3\") não deve vazar para o número no enunciado — só a magnitude \"3\".");
+        exigir("5".equals(transformacaoComSinalCurado.valor),
+                "O sinal curado (\"+5\") não deve vazar para o número no enunciado — só a magnitude \"5\".");
+
+        System.out.println("Teste aprovado: valores conhecidos acompanham os diagramas, a interrogação permanece estável, "
+                + "e o sinal curado do papel nunca vaza para o número exibido no enunciado.");
     }
 
     private static void exigir(boolean condicao, String mensagem) {

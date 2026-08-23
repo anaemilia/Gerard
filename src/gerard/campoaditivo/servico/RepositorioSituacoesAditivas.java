@@ -17,6 +17,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
@@ -27,7 +30,7 @@ import java.util.Set;
 
 public class RepositorioSituacoesAditivas {
     private static final String ARQUIVO_SITUACOES = "/gerard/campoaditivo/dados/situacoes_vergnaud.tsv";
-    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6";
+    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6\toperacao_relacao";
 
     private final Map<IdiomaInterface, Map<TipoSituacaoAditiva, List<SituacaoProblemaAditiva>>> situacoes;
     private final Random random;
@@ -176,7 +179,7 @@ public class RepositorioSituacoesAditivas {
                 s.getReferido(), s.getReferendo(), s.getValorRelativo(), s.getSinalValorRelativo(), s.getTermoDesconhecido(),
                 s.getRepresentacaoVisual(), s.getObservacoes(), s.getPersonagem1(), s.getPersonagem2(), s.getPersonagem3(),
                 s.getFragmentoTexto1(), s.getFragmentoTexto2(), s.getFragmentoTexto3(),
-                s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6());
+                s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6(), s.getOperacaoRelacao());
     }
 
     private SituacaoProblemaAditiva parseLinhaSituacao(String linha, int indice, Set<String> idsGerados) {
@@ -191,7 +194,7 @@ public class RepositorioSituacoesAditivas {
                 String codigoIdioma = converterCodigoIdiomaLegado(valor(partes, 5));
                 if (!CadastroIdiomasSituacao.ehIdiomaPermitido(codigoIdioma)) return null;
                 IdiomaInterface idioma = IdiomaSituacao.paraIdiomaInterface(codigoIdioma);
-                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.valueOf(valor(partes, 6));
+                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.deCodigoPersistido(valor(partes, 6));
                 String contexto = valor(partes, 7);
                 String enunciado = valor(partes, 8);
                 String fonte = valor(partes, 9);
@@ -219,6 +222,7 @@ public class RepositorioSituacoesAditivas {
                 String fragmentoTexto4 = partes.length > 31 ? valor(partes, 31) : "";
                 String fragmentoTexto5 = partes.length > 32 ? valor(partes, 32) : "";
                 String fragmentoTexto6 = partes.length > 33 ? valor(partes, 33) : "";
+                String operacaoRelacao = partes.length > 34 ? valor(partes, 34) : "";
                 id = garantirId(id, idioma == null ? IdiomaInterface.PORTUGUES : idioma, tipo, contexto, enunciado, indice, idsGerados);
                 if (situacaoGrupoId.length() == 0) situacaoGrupoId = id;
                 if (tipoVersao.length() == 0) tipoVersao = "original";
@@ -226,14 +230,15 @@ public class RepositorioSituacoesAditivas {
                         estadoInicial, transformacao, sinalTransformacao, estadoFinal, quantidade1, quantidade2, resultado,
                         referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido, representacaoVisual, observacoes,
                         personagem1, personagem2, personagem3,
-                        fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4, fragmentoTexto5, fragmentoTexto6);
+                        fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4, fragmentoTexto5, fragmentoTexto6,
+                        operacaoRelacao);
             }
 
             if (partes.length >= 22) {
                 String id = valor(partes, 0);
                 boolean validada = Boolean.parseBoolean(valor(partes, 1));
                 IdiomaInterface idioma = IdiomaInterface.valueOf(valor(partes, 2));
-                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.valueOf(valor(partes, 3));
+                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.deCodigoPersistido(valor(partes, 3));
                 String contexto = valor(partes, 4);
                 String enunciado = valor(partes, 5);
                 String fonte = valor(partes, 6);
@@ -262,7 +267,7 @@ public class RepositorioSituacoesAditivas {
                 String id = valor(partes, 0);
                 boolean validada = Boolean.parseBoolean(valor(partes, 1));
                 IdiomaInterface idioma = IdiomaInterface.valueOf(valor(partes, 2));
-                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.valueOf(valor(partes, 3));
+                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.deCodigoPersistido(valor(partes, 3));
                 String contexto = valor(partes, 4);
                 String enunciado = valor(partes, 5);
                 String fonte = valor(partes, 6);
@@ -289,7 +294,7 @@ public class RepositorioSituacoesAditivas {
                 String id = valor(partes, 0);
                 boolean validada = Boolean.parseBoolean(valor(partes, 1));
                 IdiomaInterface idioma = IdiomaInterface.valueOf(valor(partes, 2));
-                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.valueOf(valor(partes, 3));
+                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.deCodigoPersistido(valor(partes, 3));
                 String contexto = valor(partes, 4);
                 String enunciado = valor(partes, 5);
                 String fonte = valor(partes, 6);
@@ -311,7 +316,7 @@ public class RepositorioSituacoesAditivas {
 
             if (partes.length >= 4) {
                 IdiomaInterface idioma = IdiomaInterface.valueOf(valor(partes, 0));
-                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.valueOf(valor(partes, 1));
+                TipoSituacaoAditiva tipo = TipoSituacaoAditiva.deCodigoPersistido(valor(partes, 1));
                 String contexto = valor(partes, 2);
                 String enunciado = valor(partes, 3);
                 String fonte = partes.length > 4 ? valor(partes, 4) : "";
@@ -756,11 +761,42 @@ public class RepositorioSituacoesAditivas {
     public static void salvarCuradoria(List<SituacaoProblemaAditiva> situacoes) throws IOException {
         ValidadorVinculosTraducoes.validarOuFalhar(situacoes);
         File diretorio = obterDiretorioCuradoriaUsuario();
-        if (!diretorio.exists()) {
-            diretorio.mkdirs();
+        if (!diretorio.exists() && !diretorio.mkdirs() && !diretorio.exists()) {
+            throw new IOException("Nao foi possivel criar o diretorio de curadoria: " + diretorio.getAbsolutePath());
         }
         File destino = obterArquivoCuradoriaUsuario();
-        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destino), StandardCharsets.UTF_8))) {
+        File temporario = File.createTempFile(destino.getName() + ".", ".tmp", diretorio);
+        boolean substituiuDestino = false;
+        try {
+            escreverCuradoria(temporario, situacoes);
+            if (destino.exists()) {
+                File backup = new File(
+                        diretorio,
+                        destino.getName() + ".backup-" + System.currentTimeMillis() + "-" + System.nanoTime());
+                Files.copy(destino.toPath(), backup.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+            }
+            try {
+                Files.move(
+                        temporario.toPath(),
+                        destino.toPath(),
+                        StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ex) {
+                Files.move(
+                        temporario.toPath(),
+                        destino.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+            substituiuDestino = true;
+        } finally {
+            if (!substituiuDestino) {
+                Files.deleteIfExists(temporario.toPath());
+            }
+        }
+    }
+
+    private static void escreverCuradoria(File arquivo, List<SituacaoProblemaAditiva> situacoes) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(arquivo), StandardCharsets.UTF_8))) {
             bw.write(CABECALHO_CURADORIA);
             bw.newLine();
             if (situacoes != null) {
@@ -802,7 +838,8 @@ public class RepositorioSituacoesAditivas {
                 + "\t" + campo(s.getFragmentoTexto3())
                 + "\t" + campo(s.getFragmentoTexto4())
                 + "\t" + campo(s.getFragmentoTexto5())
-                + "\t" + campo(s.getFragmentoTexto6());
+                + "\t" + campo(s.getFragmentoTexto6())
+                + "\t" + campo(s.getOperacaoRelacao());
     }
 
     private static String campo(String valor) {

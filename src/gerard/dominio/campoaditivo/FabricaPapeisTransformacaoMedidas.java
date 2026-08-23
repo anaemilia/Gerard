@@ -18,19 +18,22 @@ public final class FabricaPapeisTransformacaoMedidas {
 
     public static PapelQuantitativo estadoInicial(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.estadoInicial", "Estado Inicial", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.estadoInicial"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.estadoInicial",
+                        "explicacao.papel.estadoInicial"),
                 publicador);
     }
 
     public static PapelQuantitativo transformacao(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.transformacao", "Transformação", DominioNumerico.INTEIROS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "rotulo.papel.transformacao"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacao",
+                        "explicacao.papel.transformacao"),
                 publicador);
     }
 
     public static PapelQuantitativo estadoFinal(PublicadorEventoDominio publicador) {
         return new PapelQuantitativo("papel.estadoFinal", "Estado Final", DominioNumerico.NATURAIS,
-                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "rotulo.papel.estadoFinal"),
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "", "rotulo.papel.estadoFinal",
+                        "explicacao.papel.estadoFinal"),
                 publicador);
     }
 }

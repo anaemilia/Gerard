@@ -3,6 +3,7 @@ import gerard.Scaffolding.venn.CondicaoHabilitacaoAdicaoUnidades;
 import gerard.Scaffolding.venn.EstadoModelagemVergnaud;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
+import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
@@ -28,7 +29,8 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
             }
         });
         if (erro[0] != null) {
-            throw new RuntimeException(erro[0]);
+            erro[0].printStackTrace();
+            System.exit(1);
         }
         System.out.println("Teste aprovado: + e - ficam bloqueados somente com Vergnaud vazio e respeitam zero/limite.");
         System.exit(0);
@@ -97,6 +99,11 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
                 800, 300, 100, 220, "Referido", 2, true);
         barra.formaRetangular = true;
         tela.circulosVenn.add(barra);
+
+        // Na arquitetura atual, o material complementar é um scaffolding
+        // disponibilizado depois da sequência de rejeições. O teste prepara
+        // explicitamente esse contexto antes de exercitar os controles +/−.
+        ativarRepresentacaoComplementar(tela);
 
         Method possuiConteudo = Main.TelaGerard.class.getDeclaredMethod(
                 "diagramaVergnaudPossuiConteudoSemantico");
@@ -168,6 +175,17 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
                 "contarQuadradinhosNoAgrupamento", CirculoVenn.class);
         metodo.setAccessible(true);
         return ((Integer) metodo.invoke(tela, tela.circulosVenn.get(indice))).intValue();
+    }
+
+    private static void ativarRepresentacaoComplementar(Main.TelaGerard tela)
+            throws Exception {
+        Method registrar = Main.TelaGerard.class.getDeclaredMethod(
+                "registrarTentativaIncognita",
+                String.class, boolean.class, ItemTextoArrastavel.class);
+        registrar.setAccessible(true);
+        for (int i = 0; i < 3; i++) {
+            registrar.invoke(tela, "Referido", Boolean.FALSE, null);
+        }
     }
 
     private static void clicar(Main.TelaGerard tela, int x, int y) {

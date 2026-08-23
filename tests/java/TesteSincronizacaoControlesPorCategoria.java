@@ -29,7 +29,8 @@ public final class TesteSincronizacaoControlesPorCategoria {
             }
         });
         if (erro[0] != null) {
-            throw new RuntimeException(erro[0]);
+            erro[0].printStackTrace();
+            System.exit(1);
         }
         System.out.println("Teste aprovado: composição, transformação e comparação sincronizam texto, Vergnaud e unidades sem alterar a curadoria.");
         System.exit(0);
@@ -75,7 +76,9 @@ public final class TesteSincronizacaoControlesPorCategoria {
         exigirValores(tela, new int[] {9, -3, 6}, "transformação");
         // O tabuleiro concreto representa também a magnitude da transformação.
         exigirContagensVisuais(tela, new int[] {9, 3, 6}, "transformação");
-        exigirTextos(tela, new String[] {"9", "-3", "6"}, "transformação");
+        // O texto linguístico exibe a magnitude; o sinal pertence ao papel
+        // semântico e às representações próprias de número relativo.
+        exigirTextos(tela, new String[] {"9", "3", "6"}, "transformação");
         exigir("10".equals(curada.getEstadoInicial())
                         && "3".equals(curada.getTransformacao())
                         && "negativo".equals(curada.getSinalTransformacao())
@@ -101,7 +104,7 @@ public final class TesteSincronizacaoControlesPorCategoria {
                 "magnitude da transformação negativa");
         exigirContagensVisuais(tela, new int[] {10, 3, 7},
                 "magnitude da transformação negativa");
-        exigirTextos(tela, new String[] {"10", "-3", "7"},
+        exigirTextos(tela, new String[] {"10", "3", "7"},
                 "magnitude da transformação negativa");
         exigir("3".equals(curada.getTransformacao())
                         && "negativo".equals(curada.getSinalTransformacao()),
