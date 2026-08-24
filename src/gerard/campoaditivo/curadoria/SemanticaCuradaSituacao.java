@@ -40,6 +40,26 @@ public final class SemanticaCuradaSituacao {
         public String getValor() { return valor; }
         public String getParticipante() { return participante; }
         public boolean isDesconhecido() { return desconhecido; }
+
+        /**
+         * O próprio papel curado responde se a modelagem pode cobrá-lo do
+         * aluno — localidade do conhecimento: quem sabe se existe curadoria
+         * para este papel é o papel, não a tela que o desenha.
+         *
+         * É exigível quando a curadoria de fato o definiu: ou tem valor, ou
+         * é a incógnita declarada (cujo campo fica vazio de propósito, para
+         * o aluno preencher). Um papel sem valor e que não é a incógnita não
+         * foi curado — cobrá-lo tornaria a situação impossível de concluir,
+         * já que não há nada para o aluno colocar ali nem com o que conferir.
+         *
+         * Isso mantém a regra geral (2026-08-23): a conclusão cobra os
+         * papéis que a curadoria definiu, não os que a cena desenha. Assim,
+         * quando a curadoria de uma categoria for completada, os papéis
+         * novos passam a ser exigidos sozinhos, sem mudar código.
+         */
+        public boolean isExigidoNaModelagem() {
+            return desconhecido || valor.length() > 0;
+        }
     }
 
     private SemanticaCuradaSituacao() {
@@ -72,6 +92,15 @@ public final class SemanticaCuradaSituacao {
             adicionar(papeis, loc, "papel.transformacao1", situacao.getQuantidade1(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao2", situacao.getQuantidade2(), situacao.getPersonagem2(), desconhecido);
             adicionar(papeis, loc, "papel.transformacaoFinal", situacao.getResultado(), situacao.getPersonagem3(), desconhecido);
+            // Os 3 estados também são papéis semânticos (2026-08-23, pedido
+            // da usuária: "deixe todos os elementos como elementos
+            // semânticos"). Ficam DEPOIS das 3 transformações de propósito:
+            // aplicarRotulos() abaixo usa papeis.get(0/1/2) para rotular os
+            // 3 círculos de transformação da cena, então a ordem dos três
+            // primeiros não pode mudar.
+            adicionar(papeis, loc, "papel.estadoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
+            adicionar(papeis, loc, "papel.estadoIntermediario", situacao.getEstadoIntermediario(), "", desconhecido);
+            adicionar(papeis, loc, "papel.estadoFinal", situacao.getEstadoFinal(), situacao.getPersonagem3(), desconhecido);
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             adicionar(papeis, loc, "papel.relacaoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao", aplicarSinal(situacao.getTransformacao(), situacao.getSinalTransformacao()), "", desconhecido);
@@ -95,6 +124,22 @@ public final class SemanticaCuradaSituacao {
     }
 
     /**
+     * A modelagem pode cobrar este papel do aluno? Delega a decisão ao
+     * próprio papel curado (ver PapelCurado.isExigidoNaModelagem) — quem
+     * pergunta não inspeciona campo nenhum da situação.
+     *
+     * Devolve false quando não há situação curada com esse papel; cabe a
+     * quem chama decidir o que fazer nesse caso (ver
+     * Main.papelValidoParaConclusao, que preserva o comportamento anterior
+     * quando não há curadoria alguma carregada).
+     */
+    public static boolean papelExigidoNaModelagem(SituacaoProblemaAditiva situacao,
+            ServicoLocalizacao localizacao, String chave) {
+        PapelCurado papel = buscar(situacao, localizacao, chave);
+        return papel != null && papel.isExigidoNaModelagem();
+    }
+
+    /**
      * Aplica à definição visual os papéis que correspondem à categoria curada.
      * A geometria continua sendo definida pelo modelo formal; apenas a fonte dos
      * papéis apresentados é centralizada na semântica da curadoria.
@@ -115,13 +160,20 @@ public final class SemanticaCuradaSituacao {
         String rotulo1 = base.getRotulo1();
         String rotulo2 = base.getRotulo2();
         String rotulo3 = base.getRotulo3();
-        TipoSituacaoAditiva tipo = situacao.getTipo();
 
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            rotulo1 = loc.texto("papel.estadoInicial");
-            rotulo2 = loc.texto("papel.transformacao1");
-            rotulo3 = loc.texto("papel.estadoIntermediario");
-        } else if (papeis.size() >= 3) {
+        // Regra da usuária (2026-08-23): "quadrado é estado, inicial,
+        // intermediário e final. Círculo é transformação, primeira e
+        // segunda [e a resultante]." Em Composição de Transformações, os 3
+        // papéis aqui (rotulo1/2/3) vão para as 3 figuras-círculo (t1, t2,
+        // tr — ver RenderizadorComposicaoTransformacoes); os rótulos dos 3
+        // quadrados de estado (inicial/intermediário/final) são fixos e
+        // aplicados diretamente pelo próprio renderizador, não por aqui.
+        // Havia um desvio aqui que rotulava os círculos com "Estado
+        // inicial"/"Transformação 1"/"Estado intermediário" — misturava as
+        // duas famílias de papel na figura errada. papeis (de mapear())
+        // já traz os 3 rótulos corretos de transformação para esta
+        // categoria, então basta usar o mesmo caminho das demais.
+        if (papeis.size() >= 3) {
             rotulo1 = papeis.get(0).getRotulo();
             rotulo2 = papeis.get(1).getRotulo();
             rotulo3 = papeis.get(2).getRotulo();

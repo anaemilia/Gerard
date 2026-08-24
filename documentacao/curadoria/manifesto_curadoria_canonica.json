@@ -1,0 +1,22 @@
+{
+  "versao_esquema": 1,
+  "capturada_em": "2026-08-24",
+  "autoridade": "curadoria_humana",
+  "fonte_humana_ativa": "C:\\Users\\cecomp\\Gerard\\curadoria\\situacoes_vergnaud_curadas.tsv",
+  "backup_local": "C:\\Users\\cecomp\\Gerard\\curadoria\\backups\\situacoes_vergnaud_curadas_2026-08-24_29686D1B.tsv",
+  "fonte_canonica_versionada": "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
+  "sha256": "29686D1BF0B3CA334C7B4034748C19BA2EC91478CF4D9B2A13A2448C67DB4ECE",
+  "bytes": 70359,
+  "colunas": 37,
+  "linhas_de_dados": 210,
+  "linhas_validadas": 40,
+  "categorias": {
+    "COMPOSICAO_MEDIDAS": 56,
+    "TRANSFORMACAO_MEDIDAS": 86,
+    "COMPARACAO_MEDIDAS": 20,
+    "COMPOSICAO_TRANSFORMACOES": 32,
+    "TRANSFORMACAO_RELACAO": 8,
+    "COMPOSICAO_RELACOES": 8
+  },
+  "observacao": "Cópia literal da fonte curada; nenhum valor, personagem, categoria, estado_final, operacao_relacao, estado_intermediario ou operacao_estado_transformacao foi inferido ou recalculado."
+}

@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class RepositorioSituacoesAditivas {
     private static final String ARQUIVO_SITUACOES = "/gerard/campoaditivo/dados/situacoes_vergnaud.tsv";
-    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6\toperacao_relacao";
+    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6\toperacao_relacao\testado_intermediario\toperacao_estado_transformacao";
 
     private final Map<IdiomaInterface, Map<TipoSituacaoAditiva, List<SituacaoProblemaAditiva>>> situacoes;
     private final Random random;
@@ -179,7 +179,8 @@ public class RepositorioSituacoesAditivas {
                 s.getReferido(), s.getReferendo(), s.getValorRelativo(), s.getSinalValorRelativo(), s.getTermoDesconhecido(),
                 s.getRepresentacaoVisual(), s.getObservacoes(), s.getPersonagem1(), s.getPersonagem2(), s.getPersonagem3(),
                 s.getFragmentoTexto1(), s.getFragmentoTexto2(), s.getFragmentoTexto3(),
-                s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6(), s.getOperacaoRelacao());
+                s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6(), s.getOperacaoRelacao(),
+                s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao());
     }
 
     private SituacaoProblemaAditiva parseLinhaSituacao(String linha, int indice, Set<String> idsGerados) {
@@ -223,6 +224,8 @@ public class RepositorioSituacoesAditivas {
                 String fragmentoTexto5 = partes.length > 32 ? valor(partes, 32) : "";
                 String fragmentoTexto6 = partes.length > 33 ? valor(partes, 33) : "";
                 String operacaoRelacao = partes.length > 34 ? valor(partes, 34) : "";
+                String estadoIntermediario = partes.length > 35 ? valor(partes, 35) : "";
+                String operacaoEstadoTransformacao = partes.length > 36 ? valor(partes, 36) : "";
                 id = garantirId(id, idioma == null ? IdiomaInterface.PORTUGUES : idioma, tipo, contexto, enunciado, indice, idsGerados);
                 if (situacaoGrupoId.length() == 0) situacaoGrupoId = id;
                 if (tipoVersao.length() == 0) tipoVersao = "original";
@@ -231,7 +234,7 @@ public class RepositorioSituacoesAditivas {
                         referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido, representacaoVisual, observacoes,
                         personagem1, personagem2, personagem3,
                         fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4, fragmentoTexto5, fragmentoTexto6,
-                        operacaoRelacao);
+                        operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao);
             }
 
             if (partes.length >= 22) {
@@ -383,9 +386,8 @@ public class RepositorioSituacoesAditivas {
         }
 
         String[] caminhos = new String[] {
-            "dados/situacoes_vergnaud.tsv",
-            "../dados/situacoes_vergnaud.tsv",
-            "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv"
+            "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
+            "../src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv"
         };
 
         for (String caminho : caminhos) {
@@ -839,7 +841,9 @@ public class RepositorioSituacoesAditivas {
                 + "\t" + campo(s.getFragmentoTexto4())
                 + "\t" + campo(s.getFragmentoTexto5())
                 + "\t" + campo(s.getFragmentoTexto6())
-                + "\t" + campo(s.getOperacaoRelacao());
+                + "\t" + campo(s.getOperacaoRelacao())
+                + "\t" + campo(s.getEstadoIntermediario())
+                + "\t" + campo(s.getOperacaoEstadoTransformacao());
     }
 
     private static String campo(String valor) {

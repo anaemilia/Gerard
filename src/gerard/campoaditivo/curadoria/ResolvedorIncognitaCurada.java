@@ -31,17 +31,27 @@ public final class ResolvedorIncognitaCurada {
         private final String termoCuradoriaEfetivo;
         private final List<String> chavesMarcadasComInterrogacao;
         private final boolean conflito;
+        private final String valorCuradoDaIncognita;
 
         Resultado(String chaveExplicita, String chaveEfetiva,
                 String termoCuradoriaEfetivo,
                 List<String> chavesMarcadasComInterrogacao,
                 boolean conflito) {
+            this(chaveExplicita, chaveEfetiva, termoCuradoriaEfetivo,
+                    chavesMarcadasComInterrogacao, conflito, "");
+        }
+
+        Resultado(String chaveExplicita, String chaveEfetiva,
+                String termoCuradoriaEfetivo,
+                List<String> chavesMarcadasComInterrogacao,
+                boolean conflito, String valorCuradoDaIncognita) {
             this.chaveExplicita = limpar(chaveExplicita);
             this.chaveEfetiva = limpar(chaveEfetiva);
             this.termoCuradoriaEfetivo = limpar(termoCuradoriaEfetivo);
             this.chavesMarcadasComInterrogacao = Collections.unmodifiableList(
                     new ArrayList<String>(chavesMarcadasComInterrogacao));
             this.conflito = conflito;
+            this.valorCuradoDaIncognita = limpar(valorCuradoDaIncognita);
         }
 
         public String getChaveExplicita() { return chaveExplicita; }
@@ -58,6 +68,25 @@ public final class ResolvedorIncognitaCurada {
             return chavesMarcadasComInterrogacao.size() > 1;
         }
         public boolean possuiConflito() { return conflito; }
+
+        /**
+         * Valor curado do papel que é a incógnita. Uso interno da curadoria:
+         * é a resposta do exercício, que o app nunca exibe ao aluno (ver
+         * ConstrutorResultadoCurado, que substitui o valor por "?").
+         */
+        public String getValorCuradoDaIncognita() { return valorCuradoDaIncognita; }
+
+        /**
+         * Há uma incógnita declarada, mas sem valor curado para conferir a
+         * resposta do aluno. Só pode acontecer enquanto a curadoria está em
+         * edição: ao finalizar, a incógnita precisa estar preenchida com o
+         * valor correto, senão qualquer número digitado pelo aluno passa a
+         * ser aceito (AvaliadorConclusaoModelagem trata "sem valor curado
+         * para conferir" como não-bloqueante, de propósito).
+         */
+        public boolean incognitaSemValorCurado() {
+            return possuiIncognita() && valorCuradoDaIncognita.length() == 0;
+        }
 
         public String mensagemInconsistencia() {
             if (possuiMultiplasInterrogacoes()) {
@@ -82,18 +111,34 @@ public final class ResolvedorIncognitaCurada {
                 situacao.getEstadoFinal(), situacao.getQuantidade1(),
                 situacao.getQuantidade2(), situacao.getResultado(),
                 situacao.getReferido(), situacao.getReferendo(),
-                situacao.getValorRelativo());
+                situacao.getValorRelativo(), situacao.getEstadoIntermediario());
+    }
+
+    /**
+     * Sobrecarga anterior, sem estado_intermediario — preservada para os
+     * chamadores já existentes. Delega para a versão completa com "" no novo
+     * parâmetro, o que só afeta Composição de Transformações (única categoria
+     * em que estado_intermediario existe).
+     */
+    public Resultado resolver(TipoSituacaoAditiva tipo, String termoDesconhecido,
+            String estadoInicial, String transformacao, String estadoFinal,
+            String quantidade1, String quantidade2, String resultado,
+            String referido, String referendo, String valorRelativo) {
+        return resolver(tipo, termoDesconhecido, estadoInicial, transformacao,
+                estadoFinal, quantidade1, quantidade2, resultado,
+                referido, referendo, valorRelativo, "");
     }
 
     public Resultado resolver(TipoSituacaoAditiva tipo, String termoDesconhecido,
             String estadoInicial, String transformacao, String estadoFinal,
             String quantidade1, String quantidade2, String resultado,
-            String referido, String referendo, String valorRelativo) {
+            String referido, String referendo, String valorRelativo,
+            String estadoIntermediario) {
         String explicita = chaveSemanticaDoTermo(termoDesconhecido, tipo);
         List<Marcacao> marcacoes = marcacoesDaCategoria(tipo,
                 estadoInicial, transformacao, estadoFinal,
                 quantidade1, quantidade2, resultado,
-                referido, referendo, valorRelativo);
+                referido, referendo, valorRelativo, estadoIntermediario);
         Set<String> unicas = new LinkedHashSet<String>();
         for (Marcacao marcacao : marcacoes) {
             if (SimboloDesconhecido.eh(marcacao.valor)) {
@@ -116,8 +161,17 @@ public final class ResolvedorIncognitaCurada {
             conflito = true;
         }
 
+        String valorDaIncognita = "";
+        for (Marcacao marcacao : marcacoes) {
+            if (marcacao.chave != null && marcacao.chave.equals(efetiva)) {
+                valorDaIncognita = marcacao.valor == null ? "" : marcacao.valor.trim();
+                break;
+            }
+        }
+
         return new Resultado(explicita, efetiva,
-                termoCuradoriaDaChave(efetiva, tipo), marcadas, conflito);
+                termoCuradoriaDaChave(efetiva, tipo), marcadas, conflito,
+                valorDaIncognita);
     }
 
     public String chaveSemanticaDoTermo(String termo,
@@ -147,6 +201,12 @@ public final class ResolvedorIncognitaCurada {
                 if (eh(t, "transformacao2", "quantidade2", "q2")) return "papel.transformacao2";
                 if (eh(t, "transformacaofinal", "transformacaoresultante",
                         "resultado", "total")) return "papel.transformacaoFinal";
+                // Os 3 estados também podem ser a incógnita (2026-08-23):
+                // desde que passaram a ser papéis semânticos desta
+                // categoria, "?" pode ser curado em qualquer um deles.
+                if (eh(t, "estadoinicial", "inicial")) return "papel.estadoInicial";
+                if (eh(t, "estadointermediario", "intermediario")) return "papel.estadoIntermediario";
+                if (eh(t, "estadofinal", "final")) return "papel.estadoFinal";
                 break;
             case TRANSFORMACAO_RELACAO:
                 if (eh(t, "relacaoinicial", "estadoinicial", "inicial")) return "papel.relacaoInicial";
@@ -172,6 +232,7 @@ public final class ResolvedorIncognitaCurada {
         if ("papel.parte2".equals(c)) return "parte_2";
         if ("papel.todo".equals(c)) return "todo";
         if ("papel.estadoInicial".equals(c)) return "estado_inicial";
+        if ("papel.estadoIntermediario".equals(c)) return "estado_intermediario";
         if ("papel.estadoFinal".equals(c)) return "estado_final";
         if ("papel.transformacao".equals(c)) return "transformação";
         if ("papel.transformacao1".equals(c)) return "transformacao_1";
@@ -193,7 +254,8 @@ public final class ResolvedorIncognitaCurada {
     private List<Marcacao> marcacoesDaCategoria(TipoSituacaoAditiva tipo,
             String estadoInicial, String transformacao, String estadoFinal,
             String quantidade1, String quantidade2, String resultado,
-            String referido, String referendo, String valorRelativo) {
+            String referido, String referendo, String valorRelativo,
+            String estadoIntermediario) {
         List<Marcacao> r = new ArrayList<Marcacao>();
         if (tipo == null) return r;
         switch (tipo) {
@@ -217,6 +279,11 @@ public final class ResolvedorIncognitaCurada {
                 add(r, "papel.transformacao1", quantidade1);
                 add(r, "papel.transformacao2", quantidade2);
                 add(r, "papel.transformacaoFinal", resultado);
+                // Ver comentário em chaveSemanticaDoTermo: os 3 estados
+                // também podem carregar o "?" desta categoria.
+                add(r, "papel.estadoInicial", estadoInicial);
+                add(r, "papel.estadoIntermediario", estadoIntermediario);
+                add(r, "papel.estadoFinal", estadoFinal);
                 break;
             case TRANSFORMACAO_RELACAO:
                 add(r, "papel.relacaoInicial", estadoInicial);

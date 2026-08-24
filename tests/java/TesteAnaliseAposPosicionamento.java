@@ -78,11 +78,11 @@ public class TesteAnaliseAposPosicionamento {
         System.setProperty("user.home", raiz.toAbsolutePath().toString());
         Path destino = raiz.resolve("Gerard/curadoria/situacoes_vergnaud_curadas.tsv");
         Files.createDirectories(destino.getParent());
-        List<String> linhas = Files.readAllLines(new File("dados/situacoes_vergnaud.tsv").toPath(), StandardCharsets.UTF_8);
+        List<String> linhas = Files.readAllLines(new File("src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv").toPath(), StandardCharsets.UTF_8);
         String cabecalho = linhas.get(0);
         String situacao = null;
         for (String linha : linhas) {
-            if (linha.contains("\tPORTUGUES\tCOMPOSICAO_MEDIDAS\t")) {
+            if (linha.contains("\tpt-BR\tCOMPOSICAO_MEDIDAS\t")) {
                 situacao = linha.replace("\toriginal\t\tfalse\t", "\toriginal\t\ttrue\t");
                 break;
             }

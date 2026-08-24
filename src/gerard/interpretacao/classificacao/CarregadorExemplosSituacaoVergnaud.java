@@ -2,6 +2,7 @@ package gerard.interpretacao.classificacao;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.idioma.IdiomaInterface;
+import gerard.idioma.IdiomaSituacao;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,9 +30,6 @@ public class CarregadorExemplosSituacaoVergnaud {
         }
         if (input == null) {
             input = abrirArquivoFisico("src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv");
-        }
-        if (input == null) {
-            input = abrirArquivoFisico("dados/situacoes_vergnaud.tsv");
         }
         return ler(input);
     }
@@ -69,8 +67,13 @@ public class CarregadorExemplosSituacaoVergnaud {
                 if (linha.length() == 0 || linha.startsWith("#")) {
                     continue;
                 }
-                String[] partes = linha.split("\\t", 5);
-                if (partes.length >= 4) {
+                String[] partes = linha.split("\\t", -1);
+                if (partes.length >= 9) {
+                    // Esquema canônico da curadoria: idioma=5, tipo=6,
+                    // contexto=7 e enunciado=8. Os demais campos não são
+                    // reinterpretados pelo classificador.
+                    adicionarExemplo(exemplos, partes[5], partes[6], partes[7], partes[8]);
+                } else if (partes.length >= 4) {
                     adicionarExemplo(exemplos, partes[0], partes[1], partes[2], partes[3]);
                 } else {
                     // Formato reduzido: texto;categoria
@@ -88,14 +91,23 @@ public class CarregadorExemplosSituacaoVergnaud {
 
     private void adicionarExemplo(List<ExemploSituacaoVergnaud> exemplos, String idiomaTexto, String categoriaTexto, String contexto, String enunciado) {
         try {
-            IdiomaInterface idioma = IdiomaInterface.valueOf(idiomaTexto.trim());
-            TipoSituacaoAditiva categoria = TipoSituacaoAditiva.valueOf(categoriaTexto.trim());
+            IdiomaInterface idioma = resolverIdioma(idiomaTexto);
+            TipoSituacaoAditiva categoria = TipoSituacaoAditiva.deCodigoPersistido(categoriaTexto.trim());
             String texto = enunciado == null ? "" : enunciado.trim();
-            if (texto.length() > 0) {
+            if (idioma != null && categoria != null && texto.length() > 0) {
                 exemplos.add(new ExemploSituacaoVergnaud(texto, categoria, idioma, contexto));
             }
         } catch (IllegalArgumentException ex) {
             // Exemplo ignorado quando o rótulo ainda não pertence ao domínio atual.
+        }
+    }
+
+    private IdiomaInterface resolverIdioma(String idiomaTexto) {
+        String codigo = idiomaTexto == null ? "" : idiomaTexto.trim();
+        try {
+            return IdiomaInterface.valueOf(codigo);
+        } catch (IllegalArgumentException ex) {
+            return IdiomaSituacao.paraIdiomaInterface(codigo);
         }
     }
 }

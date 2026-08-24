@@ -66,6 +66,19 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if ("papel.transformacao1".equals(chavePapel)) return 0;
                 if ("papel.transformacao2".equals(chavePapel)) return 1;
                 if ("papel.transformacaoFinal".equals(chavePapel)) return 2;
+                // Os 3 quadrados de estado também são papéis semânticos
+                // (2026-08-23, pedido da usuária: "deixe todos os elementos
+                // como elementos semânticos"). A cena desta categoria tem 6
+                // figuras, nesta ordem em elementosVergnaud (ver
+                // RenderizadorComposicaoTransformacoes): 3 círculos de
+                // transformação (0-2) e 3 quadrados de estado (3-5). Antes
+                // os índices 3-5 caíam em "papel.valor" e eram ignorados
+                // tanto pela conclusão quanto pela marcação dos números no
+                // enunciado — daí o estado inicial aparecer solto no texto,
+                // sem vínculo semântico.
+                if ("papel.estadoInicial".equals(chavePapel)) return 3;
+                if ("papel.estadoIntermediario".equals(chavePapel)) return 4;
+                if ("papel.estadoFinal".equals(chavePapel)) return 5;
                 break;
             case TRANSFORMACAO_RELACAO:
                 if ("papel.relacaoInicial".equals(chavePapel)) return 0;
@@ -137,6 +150,10 @@ public final class CatalogoPapeisSemanticosAditivos {
                 if (indiceElemento == 0) return "papel.transformacao1";
                 if (indiceElemento == 1) return "papel.transformacao2";
                 if (indiceElemento == 2) return "papel.transformacaoFinal";
+                // Ver comentário equivalente em obterIndiceElementoPorPapel.
+                if (indiceElemento == 3) return "papel.estadoInicial";
+                if (indiceElemento == 4) return "papel.estadoIntermediario";
+                if (indiceElemento == 5) return "papel.estadoFinal";
                 break;
             case TRANSFORMACAO_RELACAO:
                 if (indiceElemento == 0) return "papel.relacaoInicial";

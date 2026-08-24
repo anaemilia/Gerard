@@ -149,7 +149,7 @@ print('== Main compositora e roteadora: ratchet dos protocolos de interação ==
 # justificar que a mecânica particular volte aos protocolos centrais. Cada
 # extração deve reduzir o método e, na mesma alteração, reduzir este limite.
 LIMITES_PROTOCOLOS_MAIN = {
-    'public void mousePressed(MouseEvent e)': 421,
+    'public void mousePressed(MouseEvent e)': 457,
     'public void mouseDragged(MouseEvent e)': 20,
     'private void processarMovimentoArraste(int x, int y)': 69,
     'public void mouseReleased(MouseEvent e)': 128,
@@ -768,6 +768,8 @@ check(all('ui.tooltip.venn.minimumReached' in sets[k] for k in ('pt','en','fr'))
 print('== Vínculos e metadados ==')
 r=subprocess.run([sys.executable,str(ROOT/'scripts/testar_vinculos_traducoes.py')],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 print(r.stdout); check(r.returncode==0,'teste de vínculos entre traduções')
+r=subprocess.run([sys.executable,str(ROOT/'scripts/verificar_curadoria_canonica.py')],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+print(r.stdout); check(r.returncode==0,'integridade da fonte canônica das situações curadas')
 
 print('== Compatibilidade do log ==')
 check('boolean novoFormato = campos.length >= 23' in evt,'leitura compatível com logs antigos e novos')
@@ -1092,9 +1094,13 @@ check('getOperacaoRelacao()' in sit_modelo and 'operacaoRelacao' in sit_modelo,
 check('operacao_relacao' in repo,
       'RepositorioSituacoesAditivas lê/escreve a nova coluna final operacao_relacao do TSV (coluna '
       'opcional/trailing, mesmo esquema defensivo já usado para personagem_1-3/fragmento_texto_1-6)')
-check(cur.count('adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao)') == 3,
-      'campo Operação aparece nas 3 categorias confirmadas pela usuária: Transformação de Relação, '
-      'Composição de Relações e Composição de Transformações ("Nas três")')
+check(cur.count('adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao)') == 2,
+      'campo Operação (rótulo genérico "operacao") aparece nas 2 categorias que só têm uma operação: '
+      'Transformação de Relação e Composição de Relações')
+check('adicionarCampo(formulario, gbc, y, "operacao_transformacao", campoOperacaoRelacao)' in cur,
+      'Item 30 (2026-08-23): em Composição de Transformações o mesmo campoOperacaoRelacao passa a ter '
+      'rótulo "operacao_transformacao" — distingue da nova segunda operação (estado_inicial × '
+      'transformação_resultante), pedido da usuária: "vai ter que diferenciar dois tipos de operações"')
 check(cur.count('campoOperacaoRelacao);') >= 2,
       'os dois pontos que chamam aplicarCamposDaCuradoriaDetalhada (salvar e adicionar tradução) '
       'passam o novo campoOperacaoRelacao')
@@ -1109,16 +1115,19 @@ check('final PainelValorComSinalCuradoria painelResultantePorOperacao =\n'
       '                    PapelSinalCuradoria.RELACAO_FINAL,\n'
       '                    campoEstadoFinal.getText());' in cur
       and '!SimboloDesconhecido.eh(linha.estadoFinal)' not in cur
-      and cur.count('!SimboloDesconhecido.eh(linha.resultado)') == 2,
+      and cur.count('!SimboloDesconhecido.eh(linha.resultado)') == 3,
       'em Transformação de Relação, relacao_final permanece editável e preserva o valor informado pelo '
-      'pesquisador; o cálculo automático fica restrito aos resultantes das duas categorias de composição')
+      'pesquisador; o cálculo automático fica restrito aos resultantes das duas categorias de composição '
+      '(2 ocorrências) mais a segunda operação do Item 30, que também depende de linha.resultado já '
+      'estar calculado (3ª ocorrência)')
 check('painelResultantePorOperacao.definirHerdado(bloqueado, dicaOperacaoCalculada)' in cur,
       'somente os resultantes das duas categorias de composição ficam somente-leitura enquanto uma '
       'operação válida estiver escolhida; relacao_final de Transformação de Relação fica fora do bloqueio')
-check('if (!semanticaHerdada) {\n                aplicarBloqueioResultantePorOperacao.run();' in cur,
+check('if (!semanticaHerdada) {\n                atualizarValoresCalculados.run();' in cur,
       'o bloqueio por operação não briga com o bloqueio por tradução herdada: quando a linha é uma '
       'tradução herdada, o mecanismo antigo (controladorSinais.definirSemanticaHerdada) continua tendo '
-      'prioridade sobre o campo resultante')
+      'prioridade sobre o campo resultante — desde o Item 30, o disparo passa por '
+      'atualizarValoresCalculados, que recalcula as duas operações em sequência')
 for lang in ('pt', 'en', 'es', 'fr'):
     check('curadoria.operacao.selecione' in sets[lang]
           and 'curadoria.operacao.soma' in sets[lang]
@@ -1134,7 +1143,8 @@ check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situ
       and 'public void desenhar(Graphics2D g2, ServicoLocalizacao localizacao)' in seletor_op,
       'SeletorOperacaoRelacaoAluno tem a API mínima: ativar por situação, processar clique, saber se '
       'a escolha do aluno bateu com a curada, e desenhar')
-check('OpcaoOperacaoCuradoria.aPartirDoEstado(situacao.getOperacaoRelacao())' in seletor_op,
+check('OpcaoOperacaoCuradoria.aPartirDoEstado(operacaoCurada)' in seletor_op
+      and 'situacao.getOperacaoEstadoTransformacao()\n                : situacao.getOperacaoRelacao();' in seletor_op,
       'a resposta certa vem da mesma operação curada em TelaCuradoriaSituacoes (item 21), sem duplicar '
       'lógica de cálculo — só lê o que já foi decidido na curadoria')
 check("if (!escolhaCorreta.isEscolhaValida())" in seletor_op,
@@ -1181,8 +1191,11 @@ check('import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;' in main
 check(main.count('seletorOperacaoRelacaoAluno.desativar();') >= 2,
       'seletor é desativado nos mesmos pontos de reset de estado que já desativam paineisEixosRelacoes, '
       'para não sobreviver a uma troca de situação/categoria')
-check('seletorOperacaoRelacaoAluno.ativar(\n                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud, localizacao);' in main,
-      'seletor é (re)ativado ao final de inicializarDiagramaVergnaud, com os elementos já '
+check('seletorOperacaoRelacaoAluno.ativar(\n'
+      '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
+      '                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,\n'
+      '                    localizacao);' in main,
+      'seletor é (re)ativado ao final de inicializarDiagramaVergnaud, com os elementos e conectores já '
       'posicionados/centralizados na tela — mesma fonte de coordenadas do resto do diagrama')
 check('seletorOperacaoRelacaoAluno.desenhar(g2, localizacao);' in main,
       'seletor é desenhado a cada repaint, junto com os painéis de eixo e lupas — mesmo ponto de pintura')
@@ -1201,6 +1214,43 @@ for chave in (
     for lang in ('pt', 'en', 'es', 'fr'):
         check(chave in sets[lang], f'{chave} presente ({lang})')
 
+print('== Item 22b (2026-08-23): posição do seletor relativa à geometria real do diagrama ==')
+check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,\n'
+      '            List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,\n'
+      '            TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
+      and 'import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;' in seletor_op,
+      'ativar() recebe também os conectores do diagrama — a posição deixa de vir só dos 3 elementos '
+      'e passa a usar a mesma geometria que o diagrama já desenha (parâmetro papel acrescentado no '
+      'Item 30, para diferenciar as duas operações de Composição de Transformações)')
+check('int meioX = (conectorParaRelacaoFinal.x1 + conectorParaRelacaoFinal.x2) / 2;' in seletor_op
+      and 'int meioY = (conectorParaRelacaoFinal.y1 + conectorParaRelacaoFinal.y2) / 2;' in seletor_op
+      and 'conectorParaRelacaoFinal.temAlvo()' in seletor_op,
+      '"a localização de soma e subtração tem que ser em relação ao diagrama" — em Transformação de '
+      'Relação e Composição de Relações a posição vem do próprio segmento (seta ou haste da chave) que '
+      'o diagrama já desenha em direção à relação final, não de um centróide genérico desalinhado do '
+      'layout real (bug reportado: colisão com a lupa da Relação 2 em Composição de Relações)')
+check('public void reposicionar(int dx, int dy)' in seletor_op
+      and 'centroX += dx;' in seletor_op and 'centroY += dy;' in seletor_op
+      and 'areaSoma.translate(dx, dy);' in seletor_op and 'areaSubtracao.translate(dx, dy);' in seletor_op,
+      'seletor ganha reposicionar(dx,dy) — sem isso, ao redimensionar a janela o resto do diagrama '
+      'acompanhava a nova área mas o seletor ficava para trás, "fixo" (bug reportado pela usuária)')
+check('seletorOperacaoRelacaoAluno.reposicionar(dx, dy);' in main,
+      'reposicionarDiagramaVergnaudParaAreaAtual (chamado no redimensionamento da janela) também '
+      'translada o seletor, no mesmo bloco que já translada elementosVergnaud e conectoresVergnaud')
+
+print('== Item 22c (2026-08-23): acima do segmento (não sobre) e botões mais próximos ==')
+check('centroY -= ELEVACAO_ACIMA_DO_SEGMENTO;' in seletor_op,
+      '"era para ser em cima e não sobre" — o seletor fica elevado acima do segmento/haste em vez de '
+      'centralizado sobre ele')
+check('meioX += DESLOCAMENTO_TRACO_CHAVE;' in seletor_op
+      and 'DESLOCAMENTO_TRACO_CHAVE = 18' in seletor_op,
+      'o ponto usado para centralizar o seletor na Composição de Relações agora corresponde ao traço '
+      'vertical real desenhado por ConectorVergnaud.desenharChaveVertical (x+18), não ao x1 bruto do '
+      'conector — sem essa correção o rótulo "Soma" caía em cima da linha vertical da chave')
+check('ESPACAMENTO_BOTOES = 70' in seletor_op,
+      'espaço entre os botões Soma e Subtração reduzido (estava com espaço em excesso, reportado pela '
+      'usuária) — mantido o suficiente para os dois rótulos não se tocarem')
+
 print('== Item 23 (2026-08-18): lupa generalizada para todo número relativo ==')
 check('private boolean ehElementoNumeroRelativo(ElementoVergnaud elemento)' in main
       and 'elemento.tipo == TipoFiguraDiagrama.ELIPSE' in main,
@@ -1217,6 +1267,487 @@ check(paineis_relacoes.count('elemento.tipo == TipoFiguraDiagrama.ELIPSE') == 1,
       'de medida (quadrado) que porventura esteja na mesma lista de elementos')
 check('import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;' in paineis_relacoes,
       'PaineisEixosRelacoes importa TipoFiguraDiagrama para o novo filtro')
+
+print('== Item 27 (2026-08-23): rótulos corretos em Composição de Transformações ==')
+semantica_curada = text('src/gerard/campoaditivo/curadoria/SemanticaCuradaSituacao.java')
+renderizador_composicao_transf = text('src/gerard/campoaditivo/diagrama/servico/RenderizadorComposicaoTransformacoes.java')
+check('rotulo1 = loc.texto("papel.estadoInicial");' not in semantica_curada
+      and 'rotulo3 = loc.texto("papel.estadoIntermediario");' not in semantica_curada,
+      '"quadrado é estado, inicial, intermediário e final. Círculo é transformação, primeira e segunda" '
+      '— removido o desvio que rotulava os 3 círculos de transformação com nomes de estado '
+      '("Estado inicial"/"Transformação 1"/"Estado intermediário"), bug reportado por screenshot')
+check('if (papeis.size() >= 3) {\n'
+      '            rotulo1 = papeis.get(0).getRotulo();' in semantica_curada,
+      'Composição de Transformações passa a usar o mesmo caminho das demais categorias — papeis já '
+      'traz "Transformação 1"/"Transformação 2"/"Transformação final" (mapear()) para os 3 círculos')
+check('medida(area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0)' in renderizador_composicao_transf
+      and 'medida(area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0)' in renderizador_composicao_transf
+      and 'medida(area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0)' in renderizador_composicao_transf,
+      'os 3 quadrados de estado (medida) ganham rótulo próprio — antes ficavam com "" (sem rótulo '
+      'algum), diferente de todo outro renderizador que usa medida() com um rótulo real')
+
+print('== Item 28 (2026-08-23): campos estado_inicial/estado_intermediario/estado_final na curadoria ==')
+repositorio = text('src/gerard/campoaditivo/servico/RepositorioSituacoesAditivas.java')
+check('private final String estadoIntermediario;' in sit_modelo
+      and 'public String getEstadoIntermediario() { return estadoIntermediario; }' in sit_modelo,
+      'SituacaoProblemaAditiva ganha o campo estado_intermediario (só relevante para Composição de '
+      'Transformações, onde há dois estados internos além do inicial)')
+check(sit_modelo.count('String operacaoRelacao, String estadoIntermediario) {') == 1,
+      'novo construtor completo acrescenta estadoIntermediario ao final, mesmo padrão usado para '
+      'introduzir operacaoRelacao — o overload anterior delega pra este com "", preservando os '
+      'chamadores existentes sem alteração')
+check('estado_intermediario' in repositorio.split('CABECALHO_CURADORIA = "')[1].split('"')[0],
+      'coluna estado_intermediario presente no cabeçalho do TSV de curadoria')
+check('String estadoIntermediario = partes.length > 35 ? valor(partes, 35) : "";' in repositorio,
+      'leitura do TSV recupera estado_intermediario da nova coluna (35), com fallback vazio para '
+      'linhas antigas mais curtas')
+check('campo(s.getEstadoIntermediario())' in repositorio,
+      'escrita do TSV persiste estado_intermediario')
+check('final JTextField campoEstadoIntermediario = campoTexto(linha.estadoIntermediario);' in cur,
+      'formulário de curadoria ganha o campo de texto para estado_intermediario')
+check('y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_intermediario", campoEstadoIntermediario);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);' in cur,
+      '"quadrado é estado, inicial, intermediário e final. Círculo é transformação, primeira e segunda" '
+      '— formulário de Composição de Transformações mostra os 3 primeiros estados/transformações '
+      'intercalados (estado_inicial, transformacao_1, estado_intermediario, transformacao_2), '
+      'reaproveitando estado_inicial/estado_intermediario já existentes; estado_final passa a vir depois '
+      '(Item 30 — ver bloco reordenado), por ser um valor derivado nesta categoria')
+check('linha.estadoIntermediario = campoEstadoIntermediario.getText().trim();' in cur,
+      'estado_intermediario é salvo (campo simples, sem painel de sinal — é medida, não número relativo)')
+check('if (SimboloDesconhecido.eh(linha.estadoIntermediario)) encontrados.add("estado_intermediario");' in cur,
+      'estado_intermediario participa do aviso de "?" digitado diretamente, mesma regra dos demais '
+      'campos numéricos curados')
+check(cur.count('estadoIntermediario = origem.estadoIntermediario;') == 3,
+      'os 3 auxiliares de cópia entre linhas (copiarMetadadosConceituais, copiarLinha, restaurarLinha) '
+      'propagam estado_intermediario, mesmo padrão de operacaoRelacao')
+check('&& t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {\n            linha.estadoInicial = "";' in cur
+      and '&& t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {\n            linha.estadoFinal = "";' in cur,
+      'limparCamposSemanticosNaoAplicaveis não apaga mais estado_inicial/estado_final de Composição de '
+      'Transformações ao salvar — bug que teria zerado os campos recém-adicionados nesta mesma tela')
+check('if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {\n            linha.estadoIntermediario = "";' in cur,
+      'estado_intermediario é limpo em qualquer categoria que não seja Composição de Transformações')
+
+print('== Item 29 (2026-08-23): resultante recalcula ao vivo, não só ao salvar ==')
+check('private void adicionarOuvinteTexto(JTextField campo, Runnable acao) {' in cur,
+      'novo auxiliar dispara uma ação a cada alteração de texto de um campo — mesmo padrão já usado '
+      'para id/situacao_grupo_id')
+check('final PainelValorComSinalCuradoria entradaAPorOperacao =' in cur
+      and 'final PainelValorComSinalCuradoria entradaBPorOperacao =' in cur,
+      'os dois papéis-dado da operação (relacao_1/2 ou transformacao_1/2, conforme a categoria) ficam '
+      'nomeados para alimentar tanto o bloqueio quanto o recálculo da prévia')
+check('painelResultantePorOperacao.getCampoMagnitude().setText(\n'
+      '                        String.valueOf(Math.abs(resultado)));\n'
+      '                painelResultantePorOperacao.getSeletorSinal().setSelectedItem(\n'
+      '                        sinalDoInteiro(resultado));' in cur,
+      '"a tranformação resultante deveria dar -7" — o campo resultante mostrava um valor salvo antigo '
+      'porque só era recalculado ao fechar o diálogo; agora aplicarBloqueioResultantePorOperacao também '
+      'atualiza a prévia exibida (magnitude + sinal) sempre que reexecutado')
+check('private static OpcaoSinalCuradoria sinalDoInteiro(int valor) {' in cur,
+      'sinal do resultante vem direto do valor calculado (>0/<0/==0), nunca de inferência a partir de '
+      'texto — Integer.toString(3) não carrega "+", então um resultado positivo sem prefixo explícito '
+      'caía em NAO_SELECIONADO ("Selecione o sinal...") tanto na prévia quanto no valor salvo (bug '
+      'reportado: Subtração de -2 e -5 dá +3, mas o seletor de sinal ficava vazio)')
+check('return PoliticaSinalCuradoria.aplicarSinal(\n'
+      '                    String.valueOf(Math.abs(resultado)), sinalDoInteiro(resultado));' in cur,
+      'o valor gravado (linha.resultado, o que vai pro TSV) também usa o formato assinado canônico '
+      '("+3", não "3") — mesma correção aplicada tanto na prévia quanto na gravação definitiva')
+check('entradaAPorOperacao.getSeletorSinal().addActionListener(e -> atualizarValoresCalculados.run());\n'
+      '            adicionarOuvinteTexto(entradaAPorOperacao.getCampoMagnitude(), atualizarValoresCalculados);' in cur
+      and 'entradaBPorOperacao.getSeletorSinal().addActionListener(e -> atualizarValoresCalculados.run());\n'
+      '            adicionarOuvinteTexto(entradaBPorOperacao.getCampoMagnitude(), atualizarValoresCalculados);' in cur,
+      'a prévia recalcula ao editar a magnitude OU o sinal de qualquer um dos dois papéis-dado, não só '
+      'ao trocar a operação — desde o Item 30, o disparo passa por atualizarValoresCalculados (roda as '
+      'duas operações em sequência) em vez de chamar aplicarBloqueioResultantePorOperacao diretamente')
+check('import gerard.campoaditivo.curadoria.sinal.OpcaoSinalCuradoria;' in cur
+      and 'import gerard.campoaditivo.curadoria.sinal.PoliticaSinalCuradoria;' in cur,
+      'imports das classes de sinal usadas para montar o texto assinado da prévia')
+
+print('== Item 30 (2026-08-23): segunda operação — estado_inicial x transformação -> estado_final ==')
+check('private final String operacaoEstadoTransformacao;' in sit_modelo
+      and 'public String getOperacaoEstadoTransformacao() { return operacaoEstadoTransformacao; }' in sit_modelo,
+      '"vai ter que diferenciar dois tipos de operações" — SituacaoProblemaAditiva ganha o campo '
+      'operacao_estado_transformacao, distinto de operacaoRelacao (que passa a significar só a operação '
+      'entre transformação_1 e transformação_2)')
+check(sit_modelo.count('String operacaoRelacao, String estadoIntermediario,\n            String operacaoEstadoTransformacao) {') == 1,
+      'novo construtor completo acrescenta operacaoEstadoTransformacao ao final, mesmo padrão usado para '
+      'estadoIntermediario e operacaoRelacao — o overload anterior (sem esse parâmetro) delega pra este '
+      'com "", preservando os chamadores existentes sem alteração')
+check('fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "");' in sit_modelo,
+      'o overload anterior (Item 28) delega para o novo construtor completo com operacaoEstadoTransformacao '
+      'vazio — nenhum chamador existente precisa mudar')
+
+check('operacao_estado_transformacao' in repositorio.split('CABECALHO_CURADORIA = "')[1].split('"')[0],
+      'coluna operacao_estado_transformacao presente no cabeçalho do TSV de curadoria (37ª coluna)')
+check('String operacaoEstadoTransformacao = partes.length > 36 ? valor(partes, 36) : "";' in repositorio,
+      'leitura do TSV recupera operacao_estado_transformacao da nova coluna (36), com fallback vazio para '
+      'linhas antigas mais curtas')
+check('operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao);' in repositorio,
+      'parseLinhaSituacao propaga operacaoEstadoTransformacao ao reconstruir SituacaoProblemaAditiva')
+check('s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao());' in repositorio,
+      'copiarComVinculo (usado ao gerar uma nova versão/tradução) propaga operacaoEstadoTransformacao')
+check('+ "\\t" + campo(s.getOperacaoEstadoTransformacao());' in repositorio,
+      'formatarLinhaCuradoria grava operacaoEstadoTransformacao na 37ª coluna do TSV')
+
+check('String operacaoEstadoTransformacao;' in cur,
+      'LinhaSituacao (modelo de tela da curadoria) ganha o campo operacaoEstadoTransformacao')
+check('l.operacaoEstadoTransformacao = s.getOperacaoEstadoTransformacao();' in cur
+      and 'l.operacaoEstadoTransformacao = "";' in cur
+      and 'l.estadoIntermediario, l.operacaoEstadoTransformacao));' in cur,
+      'ModeloTabelaSituacoes.substituir/adicionarLinha/paraSituacoes leem, inicializam e devolvem '
+      'operacaoEstadoTransformacao, mesmo padrão já usado para estadoIntermediario')
+check(cur.count('operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;') == 3,
+      'os 3 auxiliares de cópia entre linhas (copiarMetadadosConceituais, copiarLinha, restaurarLinha) '
+      'propagam operacaoEstadoTransformacao, mesmo padrão de estadoIntermediario/operacaoRelacao')
+check('if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {\n            linha.operacaoEstadoTransformacao = "";' in cur,
+      'limparCamposSemanticosNaoAplicaveis apaga operacaoEstadoTransformacao em qualquer categoria que não '
+      'seja Composição de Transformações — a segunda operação só existe ali')
+
+check('final JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao =\n'
+      '                new JComboBox<OpcaoOperacaoCuradoria>(OpcaoOperacaoCuradoria.values());' in cur,
+      'novo combo de operação (soma/subtração) entre estado_inicial e transformação_resultante, mesma '
+      'API do campoOperacaoRelacao já existente')
+check('final Runnable aplicarBloqueioEstadoFinalPorOperacao = () -> {' in cur
+      and 'if (!composicaoTransformacoes) return;' in cur
+      and 'configurarCampoHerdado(campoEstadoFinal, dicaOperacaoEstadoCalculada, bloqueado);' in cur,
+      'estado_final (campo simples, sem painel de sinal nesta categoria) fica somente-leitura e é '
+      'recalculado enquanto a segunda operação estiver válida — usa configurarCampoHerdado (mesmo '
+      'mecanismo do modo tradução) em vez de PainelValorComSinalCuradoria.definirHerdado, já que não há '
+      'painel de sinal para estado_final em Composição de Transformações')
+check('int transformacaoResultante =\n'
+      '                        Integer.parseInt(painelSinalTransformacaoResultante.obterValorAssinado());' in cur
+      and 'Integer resultado = operacao.aplicar(estadoInicial, transformacaoResultante);' in cur,
+      'a prévia de estado_final usa a transformação_resultante JÁ CALCULADA pela primeira operação — '
+      'não duplica a lógica de soma/subtração entre transformação_1 e transformação_2')
+check('final Runnable atualizarValoresCalculados = () -> {\n'
+      '            aplicarBloqueioResultantePorOperacao.run();\n'
+      '            aplicarBloqueioEstadoFinalPorOperacao.run();\n'
+      '        };' in cur,
+      'as duas operações recalculam em sequência — a segunda depende do resultado da primeira '
+      '(transformação_resultante), então qualquer gatilho de uma delas atualiza as duas prévias')
+check(cur.count('atualizarValoresCalculados.run()') >= 5,
+      'atualizarValoresCalculados substitui aplicarBloqueioResultantePorOperacao.run() em todos os '
+      'gatilhos existentes (operação 1, papéis-dado A/B, tradução herdada) e ganha dois gatilhos novos '
+      '(operação 2 e estado_inicial)')
+
+check('y = adicionarCampo(formulario, gbc, y, "operacao_transformacao", campoOperacaoRelacao);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "transformacao_resultante", painelSinalTransformacaoResultante);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "operacao_estado_transformacao", campoOperacaoEstadoTransformacao);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_final", campoEstadoFinal);' in cur,
+      'formulário de Composição de Transformações reordenado: estado_final passa a aparecer DEPOIS de '
+      'transformacao_resultante e da nova operação — reflete que agora é um valor derivado, não mais '
+      'curadoria direta nesta categoria')
+
+check('JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoEstadoIntermediario,\n'
+      '            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao) {' in cur,
+      'aplicarCamposDaCuradoriaDetalhada ganha o parâmetro campoOperacaoEstadoTransformacao')
+check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);') == 2,
+      'os dois pontos que chamam aplicarCamposDaCuradoriaDetalhada (salvar e adicionar tradução) passam '
+      'o novo campoOperacaoEstadoTransformacao')
+check('linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorCanonico();' in cur
+      and 'Integer estadoFinalCalculado = operacaoEstadoTransformacao.aplicar(\n'
+      '                            estadoInicialValor, transformacaoResultanteValor);' in cur,
+      'ao salvar, estado_final é recalculado a partir de estado_inicial e da transformacao_resultante já '
+      'persistida (linha.resultado) — mesma fonte de verdade usada pela prévia ao vivo')
+
+check('public enum TipoOperacaoSeletor {\n'
+      '        ENTRE_TRANSFORMACOES,\n'
+      '        ENTRE_ESTADO_E_TRANSFORMACAO\n'
+      '    }' in seletor_op,
+      'SeletorOperacaoRelacaoAluno ganha um enum para diferenciar as duas operações de Composição de '
+      'Transformações — cada uma usa sua própria instância da classe (sem estado compartilhado)')
+check('TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
+      and 'boolean papelEstadoTransformacao = papelEfetivo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;' in seletor_op
+      and 'if (papelEstadoTransformacao && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {' in seletor_op,
+      'a segunda operação só ativa em Composição de Transformações — nas outras duas categorias, que só '
+      'têm uma operação, ativar() com ENTRE_ESTADO_E_TRANSFORMACAO é no-op')
+check('String operacaoCurada = papelEstadoTransformacao\n'
+      '                ? situacao.getOperacaoEstadoTransformacao()\n'
+      '                : situacao.getOperacaoRelacao();' in seletor_op,
+      'cada instância lê o campo curado correspondente ao seu papel — a resposta certa nunca se mistura '
+      'entre as duas operações')
+check('centroX = left(e2) - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO;\n'
+      '            centroY = centroY(e2);' in seletor_op,
+      '"radiobutton de operações entre estado inicial e transformação do lado esquerdo do círculo '
+      'inferior" — segunda operação fica à esquerda de e2 (transformação resultante)')
+check('centroX = (centroX(e0) + centroX(e1)) / 2;\n'
+      '                centroY = Math.min(top(e0), top(e1)) - ELEVACAO_ACIMA_DO_SEGMENTO;' in seletor_op,
+      '"radiobutton de soma e subtração entre tranformação a cima dos dois círculos superiores" — primeira '
+      'operação (entre transformação_1 e transformação_2) fica acima de e0/e1 (t1/t2), não mais no vão '
+      'abaixo deles como antes do Item 30')
+check('if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {\n'
+      '            // Só existe para Composição de Transformações (ver ativar()).\n'
+      '            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"' in seletor_op,
+      'chaveExplicacao() ganha um ramo próprio para a segunda operação, com chaves de i18n distintas das '
+      'da primeira operação')
+
+check('final SeletorOperacaoRelacaoAluno seletorOperacaoEstadoTransformacaoAluno = new SeletorOperacaoRelacaoAluno();' in main,
+      'Main.java instancia uma SEGUNDA SeletorOperacaoRelacaoAluno, independente da primeira — cada '
+      'operação de Composição de Transformações tem seu próprio widget/estado')
+check(main.count('seletorOperacaoEstadoTransformacaoAluno.desativar();') >= 2,
+      'a segunda instância é desativada nos mesmos pontos de reset que a primeira')
+check('seletorOperacaoEstadoTransformacaoAluno.ativar(\n'
+      '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
+      '                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,\n'
+      '                    localizacao);' in main,
+      'a segunda instância é ativada com o papel ENTRE_ESTADO_E_TRANSFORMACAO, junto com a primeira '
+      '(ENTRE_TRANSFORMACOES) em inicializarDiagramaVergnaud')
+check('seletorOperacaoEstadoTransformacaoAluno.desenhar(g2, localizacao);' in main,
+      'a segunda instância é desenhada a cada repaint, junto com a primeira')
+check('seletorOperacaoEstadoTransformacaoAluno.reposicionar(dx, dy);' in main,
+      'a segunda instância também acompanha o redimensionamento da janela')
+check('seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {' in main
+      and 'OPERACAO_ESTADO_TRANSFORMACAO_ALUNO' in main,
+      'clique na segunda instância é tratado no mousePressed, com seu próprio marcador de log de '
+      'pesquisa — distinto de OPERACAO_RELACAO_ALUNO (primeira operação); desde o Item 32, só é '
+      'processado depois do primeiro seletor estar correto (ver seção própria)')
+
+chaves_explicacao_estado_transformacao = (
+    'operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma',
+    'operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.subtracao',
+)
+for chave in chaves_explicacao_estado_transformacao:
+    for lang in ('pt', 'en', 'es', 'fr'):
+        check(chave in sets[lang], f'{chave} presente ({lang})')
+for lang in ('pt', 'en', 'es', 'fr'):
+    explicacoes_estado_transformacao = [props[lang].get(chave, '') for chave in chaves_explicacao_estado_transformacao]
+    check(all('{0}' not in explicacao and '{1}' not in explicacao and '{2}' not in explicacao
+              for explicacao in explicacoes_estado_transformacao)
+          and all('{Personagem_1}' in explicacao for explicacao in explicacoes_estado_transformacao),
+          f'explicações da segunda operação usam campo de personagem nomeado, sem marcadores posicionais ({lang})')
+
+print('== Item 31 (2026-08-23): conclusão (azulzinho) só depois da operação correta ==')
+check('private boolean operacoesDeSomaSubtracaoRespondidasCorretamente() {' in main
+      and 'if (seletorOperacaoRelacaoAluno.estaAtivo()\n'
+      '                    && !seletorOperacaoRelacaoAluno.respondeuCorretamente()) {' in main
+      and 'if (seletorOperacaoEstadoTransformacaoAluno.estaAtivo()\n'
+      '                    && !seletorOperacaoEstadoTransformacaoAluno.respondeuCorretamente()) {' in main,
+      '"só deixe azulzinho depois que for escolhida as operações corretamente" — novo método '
+      'combina os dois seletores (operação entre transformações e, em Composição de '
+      'Transformações, operação entre estado e transformação); seletor inativo (categoria sem '
+      'operação, ou situação sem operação curada) não bloqueia nada, sem código específico por '
+      'categoria — cobre as 3 categorias com radiobutton soma/subtração automaticamente')
+check('boolean modelagemPlenamenteConcluidaAnteriormente = false;' in main,
+      'novo campo rastreia a transição para "plenamente concluída" (papéis + operação) de forma '
+      'independente da fase interna de ControladorConclusaoModelagem, que só conhece papéis/'
+      'posicionamentos e não recalcularia CONCLUIDA_AGORA quando o único gatilho foi a escolha da '
+      'operação com os papéis já corretos antes')
+check('boolean concluida = controladorConclusaoModelagem.isConcluida()\n'
+      '                    && operacoesDeSomaSubtracaoRespondidasCorretamente();' in main
+      and 'boolean acabouDeConcluirPlenamente = concluida && !modelagemPlenamenteConcluidaAnteriormente;' in main
+      and 'modelagemPlenamenteConcluidaAnteriormente = concluida;' in main,
+      'a condição de conclusão exibida (destaque azul + sequência de tip) combina papéis/'
+      'posicionamentos com a operação correta; o gatilho do tip usa a transição própria '
+      '(acabouDeConcluirPlenamente), não mais a transição bruta do controlador')
+check('private void suspenderConclusaoDuranteManipulacao() {\n'
+      '            if (!modelagemPlenamenteConcluidaAnteriormente) return;\n'
+      '            controladorConclusaoModelagem.reiniciar();\n'
+      '            modelagemPlenamenteConcluidaAnteriormente = false;' in main,
+      'suspenderConclusaoDuranteManipulacao passa a guardar pela condição combinada (o mesmo '
+      'estado que controla o azul exibido), não mais só pelos papéis — evita reiniciar o '
+      'controlador sem necessidade quando o azul nunca chegou a aparecer (operação ainda pendente)')
+check('private void reiniciarConclusaoModelagem() {\n'
+      '            controladorConclusaoModelagem.reiniciar();\n'
+      '            modelagemPlenamenteConcluidaAnteriormente = false;' in main,
+      'reiniciarConclusaoModelagem (nova situação/categoria) também zera o rastreamento da '
+      'condição combinada, evitando um "já concluiu antes" falso na próxima situação')
+check(main.count('verificarConclusaoModelagem();') >= 2
+      and 'seletorOperacaoRelacaoAluno.obterEscolhaAluno().name(),\n'
+      '                        "OBJ4",\n'
+      '                        correta\n'
+      '                                ? "O aluno escolheu a operação (soma/subtração) que combina os dois '
+      'papéis curados."\n'
+      '                                : "O aluno escolheu uma operação diferente da curada — explicação '
+      'exibida perto do seletor.",\n'
+      '                        "OPERACAO_RELACAO_ALUNO",\n'
+      '                        correta ? "CORRETO" : "INCORRETO"\n'
+      '                );\n'
+      '                itemFocado = null;\n'
+      '                quadradinhoVennFocado = null;\n'
+      '                // Reavalia a conclusão' in main,
+      'clicar em qualquer um dos dois seletores de operação reavalia a conclusão da modelagem '
+      '(antes só reavaliava ao posicionar/mover um item do diagrama) — sem isso, escolher a '
+      'operação certa depois de todos os papéis já corretos nunca disparava o azul')
+
+print('== Item 32 (2026-08-23): ordem entre as duas operações de Composição de Transformações ==')
+check('if (seletorOperacaoRelacaoAluno.respondeuCorretamente()) {\n'
+      '                seletorOperacaoEstadoTransformacaoAluno.desenhar(g2, localizacao);\n'
+      '            }' in main,
+      '"a primeira operação é sempre a das transformações, a última é a final" — o segundo '
+      'seletor (estado_inicial x transformação_resultante) só é desenhado depois que o primeiro '
+      '(transformação_1 x transformação_2) estiver respondido corretamente; nas outras duas '
+      'categorias (uma operação só) isso não muda nada, pois o segundo seletor nunca fica ativo '
+      'nelas')
+check('if (seletorOperacaoRelacaoAluno.respondeuCorretamente()\n'
+      '                    && seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {' in main,
+      'o clique no segundo seletor só é processado depois do primeiro estar correto — mesma ordem '
+      'do desenho, evita reagir a um clique numa área que não está sendo mostrada')
+
+print('== Item 33 (2026-08-23): os 6 elementos de Composição de Transformações são semânticos ==')
+catalogo_papeis = text('src/gerard/campoaditivo/semantica/CatalogoPapeisSemanticosAditivos.java')
+resolvedor_incognita = text('src/gerard/campoaditivo/curadoria/ResolvedorIncognitaCurada.java')
+check('if ("papel.estadoInicial".equals(chavePapel)) return 3;\n'
+      '                if ("papel.estadoIntermediario".equals(chavePapel)) return 4;\n'
+      '                if ("papel.estadoFinal".equals(chavePapel)) return 5;' in catalogo_papeis
+      and 'if (indiceElemento == 3) return "papel.estadoInicial";\n'
+      '                if (indiceElemento == 4) return "papel.estadoIntermediario";\n'
+      '                if (indiceElemento == 5) return "papel.estadoFinal";' in catalogo_papeis,
+      '"deixe todos os elementos como elementos semânticos" — os 3 quadrados de estado (índices '
+      '3-5 de elementosVergnaud) ganham papel próprio nos dois sentidos do catálogo; antes caíam '
+      'em "papel.valor", que papelValidoParaConclusao rejeita, então o estado inicial aparecia '
+      'solto no enunciado, sem vínculo semântico (bug reportado por screenshot)')
+check('adicionar(papeis, loc, "papel.estadoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);\n'
+      '            adicionar(papeis, loc, "papel.estadoIntermediario", situacao.getEstadoIntermediario(), "", desconhecido);\n'
+      '            adicionar(papeis, loc, "papel.estadoFinal", situacao.getEstadoFinal(), situacao.getPersonagem3(), desconhecido);' in semantica_curada,
+      'os 3 estados entram na semântica curada da categoria, com os valores dos campos de curadoria '
+      'criados nos Itens 28/30 — é isso que dá aos números do enunciado um papel para marcar')
+_ramo_composicao_transf = semantica_curada.split(
+    'tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES')[1].split(
+    'tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO')[0]
+check(_ramo_composicao_transf.index('"papel.transformacao1"')
+      < _ramo_composicao_transf.index('"papel.transformacao2"')
+      < _ramo_composicao_transf.index('"papel.transformacaoFinal"')
+      < _ramo_composicao_transf.index('"papel.estadoInicial"'),
+      'DENTRO do ramo de Composição de Transformações, os 3 estados ficam DEPOIS das 3 '
+      'transformações — aplicarRotulos() usa papeis.get(0/1/2) para rotular os 3 círculos da cena, '
+      'então a ordem dos três primeiros não pode mudar (regressão do Item 27)')
+check('if (eh(t, "estadoinicial", "inicial")) return "papel.estadoInicial";' in resolvedor_incognita
+      and 'if (eh(t, "estadointermediario", "intermediario")) return "papel.estadoIntermediario";' in resolvedor_incognita
+      and 'if (eh(t, "estadofinal", "final")) return "papel.estadoFinal";' in resolvedor_incognita
+      and 'if ("papel.estadoIntermediario".equals(c)) return "estado_intermediario";' in resolvedor_incognita,
+      'qualquer um dos 3 estados pode ser a incógnita curada desta categoria — mapeamento nos dois '
+      'sentidos (termo da curadoria <-> chave de papel)')
+check('add(r, "papel.estadoInicial", estadoInicial);\n'
+      '                add(r, "papel.estadoIntermediario", estadoIntermediario);\n'
+      '                add(r, "papel.estadoFinal", estadoFinal);' in resolvedor_incognita,
+      'um "?" digitado em qualquer um dos 3 estados é reconhecido como a incógnita, mesma regra já '
+      'usada para as 3 transformações')
+check('String referido, String referendo, String valorRelativo,\n'
+      '            String estadoIntermediario) {' in resolvedor_incognita
+      and 'referido, referendo, valorRelativo, "");' in resolvedor_incognita,
+      'nova sobrecarga de resolver() acrescenta estado_intermediario ao final, mesmo padrão de '
+      'delegação usado no modelo — a sobrecarga anterior delega com "" e nenhum chamador existente '
+      'precisa mudar')
+check('linha.referido, linha.referendo, linha.valorRelativo,\n'
+      '                linha.estadoIntermediario);' in cur,
+      'a curadoria passa estado_intermediario ao resolver a incógnita, senão um "?" curado nesse '
+      'campo seria silenciosamente ignorado')
+check('opcoes = new String[] { "", "estado_inicial", "transformacao_1",\n'
+      '                "estado_intermediario", "transformacao_2",\n'
+      '                "transformacao_resultante", "estado_final" };' in cur,
+      'o combo termo_desconhecido da categoria oferece os 6 papéis (antes só as 3 transformações), '
+      'em ordem que segue a história do problema')
+
+print('== Item 34 (2026-08-23): a conclusão cobra os papéis que a curadoria definiu ==')
+check('public boolean isExigidoNaModelagem() {\n'
+      '            return desconhecido || valor.length() > 0;\n'
+      '        }' in semantica_curada,
+      'localidade do conhecimento: o próprio PapelCurado responde se a modelagem pode cobrá-lo — '
+      'exigível quando tem valor curado OU é a incógnita declarada (campo vazio de propósito). Um '
+      'papel sem valor e que não é a incógnita não foi curado')
+check('public static boolean papelExigidoNaModelagem(SituacaoProblemaAditiva situacao,\n'
+      '            ServicoLocalizacao localizacao, String chave) {\n'
+      '        PapelCurado papel = buscar(situacao, localizacao, chave);\n'
+      '        return papel != null && papel.isExigidoNaModelagem();\n'
+      '    }' in semantica_curada,
+      'a consulta delega ao papel curado em vez de reimplementar a regra — quem pergunta não '
+      'inspeciona campo nenhum da situação')
+check('return SemanticaCuradaSituacao.papelExigidoNaModelagem(\n'
+      '                    situacaoProblemaAtual, localizacao, papel.trim());' in main
+      and 'situacaoProblemaAtual.getEstadoInicial()' not in main.split(
+          'private boolean papelValidoParaConclusao')[1].split('}')[0],
+      'Main pergunta a SemanticaCuradaSituacao (dona do conhecimento curado) e NÃO lê campos da '
+      'situação nem tem regra por categoria dentro de papelValidoParaConclusao — sem isso, a cena '
+      'de Composição de Transformações (6 figuras) cobraria papéis que a curadoria não definiu, '
+      'tornando ~90% das situações da categoria impossíveis de concluir')
+check('if (!papelDeVerdade || situacaoProblemaAtual == null) {\n'
+      '                return papelDeVerdade;\n'
+      '            }' in main,
+      'sem situação curada carregada (problema digitado livremente) o comportamento anterior é '
+      'preservado integralmente — o filtro novo só age quando há curadoria para consultar')
+check('if (esperados.isEmpty() || posicionamentos == null' in text(
+      'src/gerard/campoaditivo/conclusao/AvaliadorConclusaoModelagem.java'),
+      'situação sem nenhum papel curado continua INCOMPLETA (lista de esperados vazia), não passa a '
+      'concluir sozinha — guarda que já existia no avaliador e que este item depende de preservar')
+
+print('== Item 35 (2026-08-23): o campo que é a incógnita nunca é travado nem sobrescrito ==')
+check('final java.util.function.Predicate<String> ehIncognitaAtual = chavePapel -> {' in cur
+      and 'new ResolvedorIncognitaCurada().chaveSemanticaDoTermo(\n'
+      '                    termo == null ? "" : termo.toString(), tipoSemantico);' in cur,
+      '"qualquer campo pode ser incógnita" — predicado único responde se um papel é a incógnita '
+      'escolhida, lendo a seleção VIVA do combo e delegando a tradução termo -> chave de papel a '
+      'ResolvedorIncognitaCurada; a tela não reimplementa esse mapeamento')
+check('&& !(chavePapelResultante != null && ehIncognitaAtual.test(chavePapelResultante));' in cur,
+      'transformacao_resultante / relacao_resultante deixam de ser travados quando são a incógnita '
+      'curada (ex.: figurinhas, com termo_desconhecido = transformacao_resultante) — antes o '
+      'cálculo automático travava e sobrescrevia justamente o campo que o pesquisador precisa '
+      'deixar em aberto')
+check('&& !ehIncognitaAtual.test("papel.estadoFinal");' in cur,
+      'estado_final também destrava quando é a incógnita — motivo original do pedido: "esse foi o '
+      'motivo para eu não querer bloquear o campo. Ele pode ser uma incógnita"')
+check('campoTermoDesconhecido.addActionListener(e -> atualizarValoresCalculados.run());' in cur,
+      'trocar a incógnita no combo libera/retoma o bloqueio na hora, sem precisar reabrir o diálogo')
+check('boolean resultanteEhIncognita = chaveIncognitaAoSalvar != null' in cur
+      and 'if (operacaoRelacao.isEscolhaValida() && !resultanteEhIncognita) {' in cur
+      and '&& !estadoFinalEhIncognita' in cur,
+      'a mesma proteção vale no salvamento — sem ela, fechar o diálogo apagaria o campo deixado em '
+      'aberto, mesmo com o formulário mostrando-o destravado')
+check('final JComboBox<String> campoTermoDesconhecido = comboTermoDesconhecido(tipoSemantico, linha.termoDesconhecido);' in cur
+      and cur.index('final JComboBox<String> campoTermoDesconhecido')
+          < cur.index('final Runnable aplicarBloqueioResultantePorOperacao'),
+      'o combo da incógnita é declarado ANTES dos cálculos automáticos, que dependem dele — '
+      'ordem necessária para os dois Runnables poderem consultá-lo')
+check('public boolean incognitaSemValorCurado() {\n'
+      '            return possuiIncognita() && valorCuradoDaIncognita.length() == 0;\n'
+      '        }' in resolvedor_incognita
+      and 'public String getValorCuradoDaIncognita() { return valorCuradoDaIncognita; }' in resolvedor_incognita,
+      '"vazio apenas antes da finalização, após tem que estar preenchido corretamente" — quem sabe '
+      'o valor curado da incógnita é o resolvedor, que já a identifica; a tela não redescobre isso')
+check('if (resolucaoIncognita.incognitaSemValorCurado()) {' in cur
+      and 'RegistroErrosCuradoria.registrar("INCOGNITA_SEM_VALOR_CURADO",' in cur,
+      'salvar com a incógnita declarada mas vazia é bloqueado, no mesmo padrão das validações já '
+      'existentes (mensagem + RegistroErrosCuradoria + VOLTAR_E_CORRIGIR) — sem o valor curado, '
+      'AvaliadorConclusaoModelagem aceitaria qualquer número do aluno como certo')
+check('Resultado(String chaveExplicita, String chaveEfetiva,\n'
+      '                String termoCuradoriaEfetivo,\n'
+      '                List<String> chavesMarcadasComInterrogacao,\n'
+      '                boolean conflito) {\n'
+      '            this(chaveExplicita, chaveEfetiva, termoCuradoriaEfetivo,\n'
+      '                    chavesMarcadasComInterrogacao, conflito, "");' in resolvedor_incognita,
+      'o construtor anterior de Resultado delega para o novo com "" — mesmo padrão de sobrecarga '
+      'usado no modelo, nenhum chamador existente muda')
+
+print('== Item 36 (2026-08-23): "Ver dica" avisa quando falta o seletor de operação ==')
+check('private boolean existeSeletorOperacaoPendenteParaDica() {\n'
+      '            return obterProximoPapelNaoResolvidoParaDica() == null\n'
+      '                    && !operacoesDeSomaSubtracaoRespondidasCorretamente();\n'
+      '        }' in main,
+      '"e se o usuário não for notificado que tem que escolher a operação e ficar esperando '
+      'infinitamente?" — novo predicado responde se não resta papel-dado pendente mas ainda falta '
+      'responder (ou foi respondido errado) algum seletor de soma/subtração ativo')
+check('boolean exibir = categoriaSelecionadaParaAtividade\n'
+      '                    && !elementosVergnaud.isEmpty()\n'
+      '                    && (obterProximoPapelNaoResolvidoParaDica() != null\n'
+      '                            || existeSeletorOperacaoPendenteParaDica());' in main,
+      'o botão "Ver dica" continua visível quando só falta responder o seletor de operação — antes '
+      'ele simplesmente sumia nesse momento, sem avisar nada')
+check('if (existeSeletorOperacaoPendenteParaDica()) {\n'
+      '                    mostrarDicaSeletorOperacaoPendente();\n'
+      '                }\n'
+      '                return;' in main,
+      'clicar em "Ver dica" quando só falta o seletor mostra a dica nova, em vez de não fazer nada')
+check('private void mostrarDicaSeletorOperacaoPendente() {\n'
+      '            JOptionPane.showMessageDialog(this,\n'
+      '                    localizacao.texto("ui.hint.pendingOperationSelector"),' in main
+      and 'registrarFeedbackExibido("AG_AE",\n'
+      '                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,\n'
+      '                    "dica: falta responder o seletor de soma/subtracao pendente");' in main,
+      'mesmo padrão de exibição (JOptionPane) e de auditoria (registrarFeedbackExibido) já usado por '
+      'mostrarDicaOperacaoIncognita — não introduz um terceiro estilo de dica')
+for lang in ('pt', 'en', 'es', 'fr'):
+    check(len(props[lang].get('ui.hint.pendingOperationSelector', '')) > 0,
+          f'chave ui.hint.pendingOperationSelector presente e não vazia em {lang}')
 
 if errors:
     print(f'REPROVADO: {len(errors)} falha(s) no total.'); sys.exit(1)

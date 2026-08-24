@@ -9,6 +9,7 @@ import gerard.i18n.ServicoLocalizacao;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,7 +101,10 @@ public final class TesteMensagensOperacaoPersonagensCurados {
         SituacaoProblemaAditiva situacao = criarSituacao(caso);
         List<ElementoVergnaud> elementos = elementosComRotulosNaoSemanticos();
         SeletorOperacaoRelacaoAluno seletor = new SeletorOperacaoRelacaoAluno();
-        seletor.ativar(caso.tipo, situacao, elementos, localizacao);
+        seletor.ativar(caso.tipo, situacao, elementos,
+                Collections.emptyList(),
+                SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                localizacao);
 
         exigir(seletor.estaAtivo(),
                 contexto(idioma, caso) + ": seletor deveria estar ativo");

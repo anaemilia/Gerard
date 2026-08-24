@@ -27,7 +27,6 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
-import gerard.campoaditivo.conclusao.AtualizacaoConclusaoModelagem;
 import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.ControladorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.EstadoPosicionamentoModelagem;
@@ -705,6 +704,14 @@ public class Main extends JFrame {
          * SeletorOperacaoRelacaoAluno.
          */
         final SeletorOperacaoRelacaoAluno seletorOperacaoRelacaoAluno = new SeletorOperacaoRelacaoAluno();
+        /**
+         * Item 30 (2026-08-23): segunda operação, exclusiva de Composição de
+         * Transformações — estado_inicial [op] transformação_resultante =
+         * estado_final. Instância independente da acima (que avalia
+         * transformação_1 [op] transformação_2); ver Javadoc de
+         * SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.
+         */
+        final SeletorOperacaoRelacaoAluno seletorOperacaoEstadoTransformacaoAluno = new SeletorOperacaoRelacaoAluno();
         final FornecedorCursoresPickup fornecedorCursoresPickup = new FornecedorCursoresPickupSwing();
         final RenderizadorPickup renderizadorPickup = new RenderizadorPickupElevado();
         final ControladorArrasteElastico controladorArrasteElastico =
@@ -729,6 +736,20 @@ public class Main extends JFrame {
                 new PoliticaPreenchimentoIncognita();
         final AplicadorDestaqueConclusaoDiagrama aplicadorDestaqueConclusaoDiagrama =
                 new AplicadorDestaqueConclusaoDiagrama();
+        /**
+         * Segunda condição da conclusão (2026-08-23), independente da malha
+         * de papéis/posicionamentos que ControladorConclusaoModelagem já
+         * avalia: "só deixe azulzinho depois que for escolhida as operações
+         * corretamente" — quando há radiobutton(s) de soma/subtração ativos
+         * (Transformação de Relação, Composição de Relações, Composição de
+         * Transformações — inclusive as DUAS operações desta última), eles
+         * também precisam estar corretos. Rastreada aqui, fora do
+         * controlador, porque ele só conhece papéis/posicionamentos — nunca
+         * saberia recalcular a transição "CONCLUIDA_AGORA" quando o que
+         * mudou foi só a escolha da operação, com os papéis já posicionados
+         * antes. Ver verificarConclusaoModelagem().
+         */
+        boolean modelagemPlenamenteConcluidaAnteriormente = false;
         final SeloConclusaoModelagem seloConclusaoModelagem =
                 new SeloConclusaoModelagem();
         final TipConclusaoModelagem tipConclusaoModelagem =
@@ -2576,6 +2597,15 @@ public class Main extends JFrame {
          * existe ao menos um papel-dado não resolvido — a mesma condição
          * de obterProximoPapelNaoResolvidoParaDica(), sem gerar o evento
          * (só decide visibilidade, não conta como exibição de dica).
+         *
+         * Também fica visível quando todos os papéis-dado já foram
+         * posicionados corretamente mas ainda falta responder (ou foi
+         * respondido errado) algum seletor de soma/subtração ativo — ver
+         * existeSeletorOperacaoPendenteParaDica(). Sem isso o botão
+         * simplesmente sumia nesse momento e o aluno ficava sem saber que
+         * a etapa pendente virou o seletor, não mais o diagrama (Item 36,
+         * 2026-08-23: "e se o usuário não for notificado que tem que
+         * escolher a operação e ficar esperando infinitamente?").
          */
         private void reposicionarBotaoVerDicaPosicionamento(Rectangle area) {
             if (botaoVerDicaPosicionamento == null || area == null) {
@@ -2583,7 +2613,8 @@ public class Main extends JFrame {
             }
             boolean exibir = categoriaSelecionadaParaAtividade
                     && !elementosVergnaud.isEmpty()
-                    && obterProximoPapelNaoResolvidoParaDica() != null;
+                    && (obterProximoPapelNaoResolvidoParaDica() != null
+                            || existeSeletorOperacaoPendenteParaDica());
             botaoVerDicaPosicionamento.setVisible(exibir);
             botaoVerDicaPosicionamento.setEnabled(exibir);
             if (exibir) {
@@ -4735,6 +4766,7 @@ public class Main extends JFrame {
             limparGraficoInteiros();
             paineisEixosRelacoes.desativar();
             seletorOperacaoRelacaoAluno.desativar();
+            seletorOperacaoEstadoTransformacaoAluno.desativar();
             desabilitarSincronizacaoEstadoFinal();
             estadoSemanticoCompartilhado.limpar(tipoSituacaoSelecionada);
             layoutTextoInicializado = false;
@@ -5708,6 +5740,7 @@ public class Main extends JFrame {
             alvoRealcadoPorProximidade = null;
             paineisEixosRelacoes.desativar();
             seletorOperacaoRelacaoAluno.desativar();
+            seletorOperacaoEstadoTransformacaoAluno.desativar();
 
             itensArrastaveis.clear();
             marcadoresFixosTexto.clear();
@@ -5843,9 +5876,36 @@ public class Main extends JFrame {
                     quantidadePassosTransformacaoComposta);
         }
 
+        /**
+         * Um papel entra na avaliação da conclusão quando (1) é um papel de
+         * verdade (não o genérico "papel.valor") e (2) a curadoria da
+         * situação atual de fato o definiu.
+         *
+         * A segunda condição (2026-08-23) não é decidida aqui: quem sabe se
+         * existe curadoria para um papel é o papel curado
+         * (SemanticaCuradaSituacao.papelExigidoNaModelagem ->
+         * PapelCurado.isExigidoNaModelagem). Esta tela só pergunta; não lê
+         * campo nenhum da situação nem tem regra por categoria.
+         *
+         * Motivo: a cena de uma categoria pode desenhar mais figuras do que
+         * a curadoria preencheu — Composição de Transformações desenha 6
+         * papéis (3 transformações + 3 estados) e boa parte da base só tem
+         * os 3 primeiros curados. Cobrar um papel sem curadoria tornaria a
+         * situação impossível de concluir: não há o que o aluno colocar ali
+         * nem com o que conferir. Quando a curadoria for completada, os
+         * papéis restantes passam a ser exigidos sozinhos, sem mudar código.
+         *
+         * Sem situação curada carregada (problema digitado livremente), o
+         * comportamento anterior é preservado integralmente: vale só (1).
+         */
         private boolean papelValidoParaConclusao(String papel) {
-            return papel != null && papel.trim().length() > 0
+            boolean papelDeVerdade = papel != null && papel.trim().length() > 0
                     && !"papel.valor".equals(papel.trim());
+            if (!papelDeVerdade || situacaoProblemaAtual == null) {
+                return papelDeVerdade;
+            }
+            return SemanticaCuradaSituacao.papelExigidoNaModelagem(
+                    situacaoProblemaAtual, localizacao, papel.trim());
         }
 
         private java.util.List<String> capturarPapeisEsperadosConclusao() {
@@ -6003,6 +6063,9 @@ public class Main extends JFrame {
                 mostrarDicaPosicionamentoPersistente = false;
                 elementoDicaPosicionamentoPersistente = null;
                 papelDicaPosicionamentoAtual = null;
+                if (existeSeletorOperacaoPendenteParaDica()) {
+                    mostrarDicaSeletorOperacaoPendente();
+                }
                 return;
             }
             int indice = obterIndiceElementoVergnaudPorPapel(papel);
@@ -6030,6 +6093,23 @@ public class Main extends JFrame {
                     "papel=" + papel + "; action_id=" + actionId,
                     "O participante solicitou a dica de posicionamento (AG_AE).");
             repaint();
+        }
+
+        /**
+         * Item 36 (2026-08-23) — true quando não resta mais nenhum
+         * papel-dado pendente de posicionar (obterProximoPapelNaoResolvidoParaDica()
+         * == null) mas ainda existe um seletor de soma/subtração ativo que
+         * o aluno não respondeu ou respondeu errado
+         * (operacoesDeSomaSubtracaoRespondidasCorretamente() == false).
+         * Existe para o botão "Ver dica" continuar útil depois que o
+         * diagrama já está todo posicionado corretamente — antes deste
+         * item, esse era exatamente o momento em que o botão sumia sem
+         * avisar nada, deixando o aluno sem saber que a etapa pendente
+         * virou o seletor.
+         */
+        private boolean existeSeletorOperacaoPendenteParaDica() {
+            return obterProximoPapelNaoResolvidoParaDica() == null
+                    && !operacoesDeSomaSubtracaoRespondidasCorretamente();
         }
 
         /**
@@ -6544,11 +6624,73 @@ public class Main extends JFrame {
                             + ") + dica de escolher soma ou subtração");
         }
 
+        /**
+         * Item 36 (2026-08-23) — "Ver dica" quando todos os papéis-dado já
+         * estão posicionados corretamente, mas ainda falta responder (ou foi
+         * respondido errado) algum seletor de soma/subtração — sem isso, o
+         * aluno clicava em "Ver dica" e nada acontecia, sem saber que a
+         * etapa pendente não era mais o diagrama, e sim o seletor. Mesmo
+         * padrão de exibição (JOptionPane) já usado por
+         * mostrarDicaOperacaoIncognita — não introduz um terceiro estilo de
+         * dica. Não nomeia a categoria nem a operação certa (o seletor já
+         * mostra sua própria explicação quando o aluno erra) — só aponta
+         * onde olhar, mesma função de scaffolding (manutenção da direção)
+         * do resto do botão "Ver dica".
+         */
+        private void mostrarDicaSeletorOperacaoPendente() {
+            JOptionPane.showMessageDialog(this,
+                    localizacao.texto("ui.hint.pendingOperationSelector"),
+                    localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
+            registrarFeedbackExibido("AG_AE",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "dica: falta responder o seletor de soma/subtracao pendente");
+        }
+
+        /**
+         * "Só deixe azulzinho depois que for escolhida as operações
+         * corretamente" — quando algum seletor de soma/subtração está ativo
+         * para a situação atual, ele também precisa estar respondido
+         * corretamente para a modelagem contar como concluída. Seletor
+         * inativo (categoria sem operação, ou situação antiga sem operação
+         * curada) não bloqueia nada — mesmo critério já usado por
+         * estaAtivo()/respondeuCorretamente() no clique (mousePressed).
+         * Cobre as 3 categorias que já tinham o seletor (Transformação de
+         * Relação, Composição de Relações, Composição de Transformações)
+         * mais a segunda operação de Composição de Transformações (Item 30),
+         * sem precisar de nenhum código específico por categoria — os dois
+         * widgets já sabem sozinhos quando estão ativos.
+         */
+        private boolean operacoesDeSomaSubtracaoRespondidasCorretamente() {
+            if (seletorOperacaoRelacaoAluno.estaAtivo()
+                    && !seletorOperacaoRelacaoAluno.respondeuCorretamente()) {
+                return false;
+            }
+            if (seletorOperacaoEstadoTransformacaoAluno.estaAtivo()
+                    && !seletorOperacaoEstadoTransformacaoAluno.respondeuCorretamente()) {
+                return false;
+            }
+            return true;
+        }
+
         private void verificarConclusaoModelagem() {
-            AtualizacaoConclusaoModelagem atualizacao = controladorConclusaoModelagem.atualizar(
+            // O retorno (AtualizacaoConclusaoModelagem) não é mais usado aqui
+            // — ver comentário abaixo sobre por que a transição precisou de
+            // rastreamento próprio. A chamada continua necessária pelo efeito
+            // colateral: atualiza a fase interna do controlador.
+            controladorConclusaoModelagem.atualizar(
                     capturarPapeisEsperadosConclusao(),
                     capturarPosicionamentosConclusao());
-            boolean concluida = controladorConclusaoModelagem.isConcluida();
+            // controladorConclusaoModelagem só conhece papéis/posicionamentos
+            // — a segunda condição (operação escolhida certa) é combinada
+            // aqui, com detecção de transição própria
+            // (modelagemPlenamenteConcluidaAnteriormente), já que a
+            // transição CONCLUIDA_AGORA do controlador não é recalculada
+            // quando o único gatilho da chamada foi a escolha da operação
+            // (papéis já estavam iguais à chamada anterior).
+            boolean concluida = controladorConclusaoModelagem.isConcluida()
+                    && operacoesDeSomaSubtracaoRespondidasCorretamente();
+            boolean acabouDeConcluirPlenamente = concluida && !modelagemPlenamenteConcluidaAnteriormente;
+            modelagemPlenamenteConcluidaAnteriormente = concluida;
             if (!concluida) {
                 aplicadorDestaqueConclusaoDiagrama.aplicar(
                         false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
@@ -6557,7 +6699,7 @@ public class Main extends JFrame {
 
             if (!concluida) {
                 sequenciadorFeedbackConclusao.cancelar();
-            } else if (atualizacao == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA
+            } else if (acabouDeConcluirPlenamente
                     && controladorConclusaoModelagem.deveApresentarTip()) {
                 sequenciadorFeedbackConclusao.iniciar();
                 registrarLogComputador(
@@ -6572,8 +6714,9 @@ public class Main extends JFrame {
         }
 
         private void suspenderConclusaoDuranteManipulacao() {
-            if (!controladorConclusaoModelagem.isConcluida()) return;
+            if (!modelagemPlenamenteConcluidaAnteriormente) return;
             controladorConclusaoModelagem.reiniciar();
+            modelagemPlenamenteConcluidaAnteriormente = false;
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                     quadradinhosVenn);
@@ -6582,6 +6725,7 @@ public class Main extends JFrame {
 
         private void reiniciarConclusaoModelagem() {
             controladorConclusaoModelagem.reiniciar();
+            modelagemPlenamenteConcluidaAnteriormente = false;
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                     quadradinhosVenn);
@@ -7204,6 +7348,18 @@ public class Main extends JFrame {
             );
             paineisEixosRelacoes.desenharLupas(g2);
             seletorOperacaoRelacaoAluno.desenhar(g2, localizacao);
+            // Ordem pedagógica (2026-08-23, pedido da usuária): "a primeira
+            // operação é sempre a das transformações, a última é a final" —
+            // em Composição de Transformações, o segundo seletor (estado x
+            // transformação) só aparece depois que o primeiro (transformação
+            // x transformação) estiver respondido corretamente. Nas outras
+            // duas categorias (uma operação só) isto é irrelevante: o
+            // segundo seletor nunca fica ativo nelas (ver
+            // SeletorOperacaoRelacaoAluno.ativar), então a condição abaixo
+            // não muda nada para elas.
+            if (seletorOperacaoRelacaoAluno.respondeuCorretamente()) {
+                seletorOperacaoEstadoTransformacaoAluno.desenhar(g2, localizacao);
+            }
         }
 
         /**
@@ -8890,7 +9046,13 @@ public class Main extends JFrame {
             removerInterrogacoesPreenchidasAutomaticamenteNoDiagrama();
             aplicarSubtitulosPersonagensNoDiagramaVergnaud();
             seletorOperacaoRelacaoAluno.ativar(
-                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud, localizacao);
+                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
+                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                    localizacao);
+            seletorOperacaoEstadoTransformacaoAluno.ativar(
+                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
+                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,
+                    localizacao);
         }
 
         /**
@@ -8964,6 +9126,8 @@ public class Main extends JFrame {
                     }
                 }
             }
+            seletorOperacaoRelacaoAluno.reposicionar(dx, dy);
+            seletorOperacaoEstadoTransformacaoAluno.reposicionar(dx, dy);
 
             deslocamentoCentroXAplicadoDiagramaVergnaud = novoDeslocamentoCentroX;
             deslocamentoCentroYAplicadoDiagramaVergnaud = novoDeslocamentoCentroY;
@@ -11620,7 +11784,43 @@ public class Main extends JFrame {
                 );
                 itemFocado = null;
                 quadradinhoVennFocado = null;
-                repaint();
+                // Reavalia a conclusão: "só deixe azulzinho depois que for
+                // escolhida as operações corretamente" — a escolha da
+                // operação pode ser o último requisito pendente (papéis já
+                // posicionados antes). verificarConclusaoModelagem() já
+                // chama repaint() ao final.
+                verificarConclusaoModelagem();
+                return;
+            }
+
+            // Mesma ordem pedagógica do desenho (ver comentário em
+            // paintComponent): o clique no segundo seletor só é processado
+            // depois do primeiro estar correto — evita registrar clique numa
+            // área que, àquela altura, nem está sendo desenhada.
+            if (seletorOperacaoRelacaoAluno.respondeuCorretamente()
+                    && seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {
+                boolean correta = seletorOperacaoEstadoTransformacaoAluno.respondeuCorretamente();
+                if (!correta) {
+                    scaffoldingFeedbackMultissensorialErro.emitirApenasSom();
+                }
+                registrarLogUsuario(
+                        "Escolher a operação (soma/subtração) entre estado inicial e transformação",
+                        "-",
+                        "Seletor de operação à esquerda do círculo inferior do diagrama",
+                        "Operação entre estado inicial e transformação resultante",
+                        seletorOperacaoEstadoTransformacaoAluno.obterEscolhaAluno().name(),
+                        "OBJ4",
+                        correta
+                                ? "O aluno escolheu a operação (soma/subtração) que combina estado inicial e transformação resultante."
+                                : "O aluno escolheu uma operação diferente da curada — explicação exibida perto do seletor.",
+                        "OPERACAO_ESTADO_TRANSFORMACAO_ALUNO",
+                        correta ? "CORRETO" : "INCORRETO"
+                );
+                itemFocado = null;
+                quadradinhoVennFocado = null;
+                // Ver comentário equivalente no bloco de
+                // seletorOperacaoRelacaoAluno acima.
+                verificarConclusaoModelagem();
                 return;
             }
 

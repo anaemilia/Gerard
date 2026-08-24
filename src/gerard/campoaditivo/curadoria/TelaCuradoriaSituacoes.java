@@ -7,8 +7,10 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.curadoria.sinal.ControladorSinaisCuradoria;
 import gerard.campoaditivo.curadoria.sinal.ModoPersistenciaSinalCuradoria;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
+import gerard.campoaditivo.curadoria.sinal.OpcaoSinalCuradoria;
 import gerard.campoaditivo.curadoria.sinal.PainelValorComSinalCuradoria;
 import gerard.campoaditivo.curadoria.sinal.PapelSinalCuradoria;
+import gerard.campoaditivo.curadoria.sinal.PoliticaSinalCuradoria;
 import gerard.campoaditivo.servico.ClassificadorTipoSituacaoAditiva;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.servico.RegistroErrosCuradoria;
@@ -556,6 +558,13 @@ public class TelaCuradoriaSituacoes extends JPanel {
         final JTextField campoEstadoInicial = campoTexto(linha.estadoInicial);
         final JTextField campoTransformacao = campoTexto(linha.transformacao);
         final JTextField campoEstadoFinal = campoTexto(linha.estadoFinal);
+        // Estado intermediário (2026-08-23): só existe em Composição de
+        // Transformações, onde há dois estados "internos" — o resultado de
+        // aplicar a primeira transformação, que também recebe a segunda.
+        // Regra da usuária: "quadrado é estado, inicial, intermediário e
+        // final" — reaproveita campoEstadoInicial/campoEstadoFinal (já
+        // existentes, medida, sem painel de sinal) para os outros dois.
+        final JTextField campoEstadoIntermediario = campoTexto(linha.estadoIntermediario);
         final JTextField campoQuantidade1 = campoTexto(linha.quantidade1);
         final JTextField campoQuantidade2 = campoTexto(linha.quantidade2);
         final JTextField campoResultado = campoTexto(linha.resultado);
@@ -633,6 +642,27 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         PapelSinalCuradoria.RELACAO_RESULTANTE,
                         ModoPersistenciaSinalCuradoria.EMBUTIDO_NO_VALOR,
                         campoResultado, "") : null;
+        // Declarado antes dos cálculos automáticos porque eles precisam saber
+        // qual papel é a incógnita — "qualquer campo pode ser incógnita", e o
+        // campo que for a incógnita nunca é travado nem sobrescrito (ver
+        // ehIncognitaAtual abaixo).
+        final JComboBox<String> campoTermoDesconhecido = comboTermoDesconhecido(tipoSemantico, linha.termoDesconhecido);
+        /**
+         * O papel indicado é a incógnita atualmente escolhida na curadoria?
+         *
+         * Lê a escolha VIVA do combo (não o valor salvo em linha), porque o
+         * pesquisador pode trocar a incógnita durante a edição e espera que o
+         * bloqueio libere na hora. A tradução termo -> chave de papel é
+         * delegada a ResolvedorIncognitaCurada, dona dessa correspondência —
+         * a tela não reimplementa o mapeamento.
+         */
+        final java.util.function.Predicate<String> ehIncognitaAtual = chavePapel -> {
+            Object termo = campoTermoDesconhecido.getSelectedItem();
+            String chaveIncognita = new ResolvedorIncognitaCurada().chaveSemanticaDoTermo(
+                    termo == null ? "" : termo.toString(), tipoSemantico);
+            return chaveIncognita != null && chaveIncognita.length() > 0
+                    && chaveIncognita.equals(chavePapel);
+        };
         // Operação (soma/subtração). Em composição de relações e composição
         // de transformações, o papel resultante continua calculado a partir
         // dos dois papéis-dado. Em transformação de relação, relacao_final é
@@ -660,17 +690,145 @@ public class TelaCuradoriaSituacoes extends JPanel {
                 composicaoRelacoes ? painelSinalRelacaoResultante
                 : composicaoTransformacoes ? painelSinalTransformacaoResultante
                 : null;
+        // Chave do papel que o cálculo acima produz — usada só para perguntar
+        // se ELE é a incógnita (ver ehIncognitaAtual).
+        final String chavePapelResultante =
+                composicaoRelacoes ? "papel.relacaoFinal"
+                : composicaoTransformacoes ? "papel.transformacaoFinal"
+                : null;
+        // Os dois papéis-dado da operação, na mesma categoria do resultante
+        // acima — usados tanto para recalcular o valor mostrado (preview,
+        // ver atualizarValorResultantePorOperacao) quanto, já antes, no
+        // cálculo feito em aplicarCamposDaCuradoriaDetalhada no salvamento.
+        final PainelValorComSinalCuradoria entradaAPorOperacao =
+                composicaoRelacoes ? painelSinalRelacao1
+                : composicaoTransformacoes ? painelSinalTransformacao1
+                : null;
+        final PainelValorComSinalCuradoria entradaBPorOperacao =
+                composicaoRelacoes ? painelSinalRelacao2
+                : composicaoTransformacoes ? painelSinalTransformacao2
+                : null;
         final String dicaOperacaoCalculada = localizacao.texto("curadoria.operacao.calculadoTooltip");
+        // "A tranformação resultante deveria dar -7" — o campo resultante
+        // mostrava um valor salvo anteriormente porque só era recalculado
+        // no fechamento do diálogo (Salvar e fechar), nunca enquanto o
+        // pesquisador ainda editava os dois papéis-dado ou a operação. Este
+        // Runnable atualiza a PRÉVIA exibida a cada mudança relevante; o
+        // cálculo definitivo no salvamento (calcularResultadoOperacaoRelacao)
+        // continua sendo a fonte da verdade persistida.
         final Runnable aplicarBloqueioResultantePorOperacao = () -> {
             if (painelResultantePorOperacao == null) return;
             Object selecionado = campoOperacaoRelacao.getSelectedItem();
+            // "Qualquer campo pode ser incógnita" (2026-08-23): quando o
+            // próprio resultante é a incógnita curada, ele NÃO é travado nem
+            // sobrescrito — é justamente o campo que o pesquisador precisa
+            // deixar em aberto (ou marcar com "?") para o aluno resolver.
+            // Ex.: figurinhas, onde termo_desconhecido = transformacao_resultante.
             boolean bloqueado = selecionado instanceof OpcaoOperacaoCuradoria
-                    && ((OpcaoOperacaoCuradoria) selecionado).isEscolhaValida();
+                    && ((OpcaoOperacaoCuradoria) selecionado).isEscolhaValida()
+                    && !(chavePapelResultante != null && ehIncognitaAtual.test(chavePapelResultante));
             painelResultantePorOperacao.definirHerdado(bloqueado, dicaOperacaoCalculada);
+            if (!bloqueado || entradaAPorOperacao == null || entradaBPorOperacao == null) {
+                return;
+            }
+            OpcaoOperacaoCuradoria operacao = (OpcaoOperacaoCuradoria) selecionado;
+            String magnitudeA = entradaAPorOperacao.obterMagnitude();
+            String magnitudeB = entradaBPorOperacao.obterMagnitude();
+            if (SimboloDesconhecido.eh(magnitudeA) || SimboloDesconhecido.eh(magnitudeB)) {
+                return;
+            }
+            try {
+                int a = Integer.parseInt(entradaAPorOperacao.obterValorAssinado());
+                int b = Integer.parseInt(entradaBPorOperacao.obterValorAssinado());
+                Integer resultado = operacao.aplicar(a, b);
+                if (resultado == null) return;
+                // Define o sinal diretamente pelo valor calculado — nunca
+                // por inferência de texto (Integer.toString(3) não carrega
+                // "+"; ver javadoc de calcularResultadoOperacaoRelacao para
+                // o mesmo problema já corrigido na gravação).
+                painelResultantePorOperacao.getCampoMagnitude().setText(
+                        String.valueOf(Math.abs(resultado)));
+                painelResultantePorOperacao.getSeletorSinal().setSelectedItem(
+                        sinalDoInteiro(resultado));
+            } catch (NumberFormatException ex) {
+                // Campo ainda não numérico (ex.: vazio, meio de digitação) —
+                // mantém o que já estava mostrado até virar um número válido.
+            }
         };
-        campoOperacaoRelacao.addActionListener(e -> aplicarBloqueioResultantePorOperacao.run());
-        aplicarBloqueioResultantePorOperacao.run();
-        final JComboBox<String> campoTermoDesconhecido = comboTermoDesconhecido(tipoSemantico, linha.termoDesconhecido);
+        // Segunda operação, exclusiva de Composição de Transformações:
+        // estado_inicial [operação] transformação_resultante = estado_final.
+        // É conceitualmente distinta da operação acima (entre as duas
+        // transformações) — a usuária notou que "a operação está sendo feita
+        // entre as transformações" quando também precisava de uma operação
+        // entre o estado inicial e a transformação final. campoEstadoFinal
+        // não tem painel de sinal próprio nesta categoria (é medida, texto
+        // simples com sinal embutido), por isso o bloqueio usa
+        // configurarCampoHerdado (mesmo mecanismo do modo tradução) em vez de
+        // PainelValorComSinalCuradoria.definirHerdado.
+        final JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao =
+                new JComboBox<OpcaoOperacaoCuradoria>(OpcaoOperacaoCuradoria.values());
+        campoOperacaoEstadoTransformacao.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                Component componente = super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+                if (value instanceof OpcaoOperacaoCuradoria) {
+                    setText(((OpcaoOperacaoCuradoria) value).rotulo(localizacao));
+                }
+                return componente;
+            }
+        });
+        campoOperacaoEstadoTransformacao.setSelectedItem(
+                OpcaoOperacaoCuradoria.aPartirDoEstado(linha.operacaoEstadoTransformacao));
+        final String dicaOperacaoEstadoCalculada =
+                localizacao.texto("curadoria.operacao.calculadoTooltip");
+        final Runnable aplicarBloqueioEstadoFinalPorOperacao = () -> {
+            if (!composicaoTransformacoes) return;
+            Object selecionado = campoOperacaoEstadoTransformacao.getSelectedItem();
+            // Mesma regra do resultante acima: se estado_final é a incógnita
+            // curada, não é travado nem sobrescrito.
+            boolean bloqueado = selecionado instanceof OpcaoOperacaoCuradoria
+                    && ((OpcaoOperacaoCuradoria) selecionado).isEscolhaValida()
+                    && !ehIncognitaAtual.test("papel.estadoFinal");
+            configurarCampoHerdado(campoEstadoFinal, dicaOperacaoEstadoCalculada, bloqueado);
+            if (!bloqueado) return;
+            OpcaoOperacaoCuradoria operacao = (OpcaoOperacaoCuradoria) selecionado;
+            String estadoInicialTexto = campoEstadoInicial.getText().trim();
+            if (SimboloDesconhecido.eh(estadoInicialTexto)) return;
+            try {
+                int estadoInicial = Integer.parseInt(estadoInicialTexto);
+                int transformacaoResultante =
+                        Integer.parseInt(painelSinalTransformacaoResultante.obterValorAssinado());
+                Integer resultado = operacao.aplicar(estadoInicial, transformacaoResultante);
+                if (resultado == null) return;
+                campoEstadoFinal.setText(String.valueOf(resultado));
+            } catch (NumberFormatException ex) {
+                // Estado inicial ou transformação resultante ainda não
+                // numérico — mantém o que já estava mostrado.
+            }
+        };
+        // Roda as duas operações em sequência: a segunda depende do
+        // resultado calculado pela primeira (transformação_resultante).
+        final Runnable atualizarValoresCalculados = () -> {
+            aplicarBloqueioResultantePorOperacao.run();
+            aplicarBloqueioEstadoFinalPorOperacao.run();
+        };
+        campoOperacaoRelacao.addActionListener(e -> atualizarValoresCalculados.run());
+        if (entradaAPorOperacao != null) {
+            entradaAPorOperacao.getSeletorSinal().addActionListener(e -> atualizarValoresCalculados.run());
+            adicionarOuvinteTexto(entradaAPorOperacao.getCampoMagnitude(), atualizarValoresCalculados);
+        }
+        if (entradaBPorOperacao != null) {
+            entradaBPorOperacao.getSeletorSinal().addActionListener(e -> atualizarValoresCalculados.run());
+            adicionarOuvinteTexto(entradaBPorOperacao.getCampoMagnitude(), atualizarValoresCalculados);
+        }
+        campoOperacaoEstadoTransformacao.addActionListener(e -> atualizarValoresCalculados.run());
+        adicionarOuvinteTexto(campoEstadoInicial, atualizarValoresCalculados);
+        // Trocar a incógnita libera/retoma o bloqueio na hora: o campo que
+        // vira incógnita destrava, e o que deixa de ser volta a ser calculado.
+        campoTermoDesconhecido.addActionListener(e -> atualizarValoresCalculados.run());
+        atualizarValoresCalculados.run();
         final AvisoTermoDesconhecidoVazio avisoTermoDesconhecido =
                 new AvisoTermoDesconhecidoVazio(
                         campoTermoDesconhecido,
@@ -729,10 +887,25 @@ public class TelaCuradoriaSituacoes extends JPanel {
             y = adicionarCampo(formulario, gbc, y, "valor_relativo", painelSinalValorRelativo);
             y = adicionarCampo(formulario, gbc, y, "referido", campoReferido);
         } else if (tipoSemantico == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            // Ordem segue a história: estado_inicial recebe transformacao_1,
+            // vira estado_intermediario, recebe transformacao_2 — regra da
+            // usuária: "quadrado é estado, inicial, intermediário e final.
+            // Círculo é transformação, primeira e segunda [e a resultante]."
+            // Duas operações distintas (2026-08-23, pedido da usuária —
+            // "a operação está sendo feita entre as tranformações [...] vai
+            // ter que diferenciar dois tipos de operações"): operação entre
+            // as duas transformações produz transformacao_resultante;
+            // operação entre estado_inicial e essa resultante produz
+            // estado_final, por isso ele aparece por último, como valor
+            // derivado.
+            y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);
+            y = adicionarCampo(formulario, gbc, y, "estado_intermediario", campoEstadoIntermediario);
             y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);
-            y = adicionarCampo(formulario, gbc, y, "operacao", campoOperacaoRelacao);
+            y = adicionarCampo(formulario, gbc, y, "operacao_transformacao", campoOperacaoRelacao);
             y = adicionarCampo(formulario, gbc, y, "transformacao_resultante", painelSinalTransformacaoResultante);
+            y = adicionarCampo(formulario, gbc, y, "operacao_estado_transformacao", campoOperacaoEstadoTransformacao);
+            y = adicionarCampo(formulario, gbc, y, "estado_final", campoEstadoFinal);
         } else if (tipoSemantico == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             y = adicionarCampo(formulario, gbc, y, "relacao_inicial", painelSinalRelacaoInicial);
             y = adicionarCampo(formulario, gbc, y, "transformacao", painelSinalTransformacao);
@@ -814,11 +987,12 @@ public class TelaCuradoriaSituacoes extends JPanel {
             if (painelSinalRelacaoFinal == null) {
                 configurarCampoHerdado(campoEstadoFinal, dicaHerdado, semanticaHerdada);
             }
+            configurarCampoHerdado(campoEstadoIntermediario, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferido, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferendo, dicaHerdado, semanticaHerdada);
             controladorSinais.definirSemanticaHerdada(semanticaHerdada, dicaHerdado);
             if (!semanticaHerdada) {
-                aplicarBloqueioResultantePorOperacao.run();
+                atualizarValoresCalculados.run();
             }
             if (painelSinalTransformacao == null) {
                 configurarCampoHerdado(campoTransformacao, dicaHerdado, semanticaHerdada);
@@ -883,7 +1057,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                             campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                             campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
                             campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                            campoOperacaoRelacao);
+                            campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
                     modelo.atualizarLinha(linhaModelo);
 
                     // A área de tradução é um editor independente do formulário principal.
@@ -954,7 +1128,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                     campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
                     campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                    campoOperacaoRelacao);
+                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
             IdiomaSituacao idiomaSelecionadoTraducao = (IdiomaSituacao) campoIdiomaTraducao.getSelectedItem();
             String idiomaDestino = idiomaSelecionadoTraducao == null ? "" : idiomaSelecionadoTraducao.getCodigo();
             String textoTraduzido = UnicodeTexto.normalizarNfc(campoTextoTraducao.getText() == null ? "" : campoTextoTraducao.getText().trim());
@@ -1351,6 +1525,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         if (SimboloDesconhecido.eh(linha.estadoInicial)) encontrados.add("estado_inicial");
         if (SimboloDesconhecido.eh(linha.transformacao)) encontrados.add("transformacao");
         if (SimboloDesconhecido.eh(linha.estadoFinal)) encontrados.add("estado_final");
+        if (SimboloDesconhecido.eh(linha.estadoIntermediario)) encontrados.add("estado_intermediario");
         if (SimboloDesconhecido.eh(linha.quantidade1)) encontrados.add("quantidade_1");
         if (SimboloDesconhecido.eh(linha.quantidade2)) encontrados.add("quantidade_2");
         if (SimboloDesconhecido.eh(linha.resultado)) encontrados.add("resultado");
@@ -1403,6 +1578,29 @@ public class TelaCuradoriaSituacoes extends JPanel {
             RegistroErrosCuradoria.registrar("INCOGNITA_CURADA_INCONSISTENTE",
                     linha.id, linha.situacaoGrupoId,
                     resolucaoIncognita.mensagemInconsistencia(),
+                    "VOLTAR_E_CORRIGIR");
+            return false;
+        }
+        // "Vazio apenas antes da finalização; após, tem que estar preenchido
+        // corretamente" (2026-08-23). O campo da incógnita não é travado nem
+        // calculado automaticamente (Item 35), mas ao finalizar ele precisa
+        // conter a resposta: é com ela que o app confere o valor digitado
+        // pelo aluno. Sem valor curado, AvaliadorConclusaoModelagem aceita
+        // qualquer número como correto — de propósito, para não bloquear
+        // problemas sem curadoria, o que aqui viraria um falso positivo.
+        if (resolucaoIncognita.incognitaSemValorCurado()) {
+            String termoDaIncognita = resolucaoIncognita.getTermoCuradoriaEfetivo();
+            JOptionPane.showMessageDialog(dialogo,
+                    "O campo \"" + (termoDaIncognita.length() > 0
+                            ? termoDaIncognita : resolucaoIncognita.getChaveEfetiva())
+                    + "\" está marcado como a incógnita, mas está vazio.\n\n"
+                    + "Informe nele o valor correto da resposta. Ele não é mostrado ao aluno "
+                    + "(o diagrama exibe \"?\"), mas é o que permite conferir o que ele digitar. "
+                    + "Sem esse valor, qualquer número seria aceito como certo.",
+                    "Incógnita sem valor curado", JOptionPane.WARNING_MESSAGE);
+            RegistroErrosCuradoria.registrar("INCOGNITA_SEM_VALOR_CURADO",
+                    linha.id, linha.situacaoGrupoId,
+                    "Incógnita " + resolucaoIncognita.getChaveEfetiva() + " sem valor curado",
                     "VOLTAR_E_CORRIGIR");
             return false;
         }
@@ -1658,6 +1856,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.representacaoVisual = origem.representacaoVisual;
         destino.observacoes = origem.observacoes;
         destino.operacaoRelacao = origem.operacaoRelacao;
+        destino.estadoIntermediario = origem.estadoIntermediario;
+        destino.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
     }
 
     private LinhaSituacao copiarLinha(LinhaSituacao origem) {
@@ -1680,6 +1880,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         copia.fragmentoTexto3 = origem.fragmentoTexto3; copia.fragmentoTexto4 = origem.fragmentoTexto4;
         copia.fragmentoTexto5 = origem.fragmentoTexto5; copia.fragmentoTexto6 = origem.fragmentoTexto6;
         copia.operacaoRelacao = origem.operacaoRelacao;
+        copia.estadoIntermediario = origem.estadoIntermediario;
+        copia.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
         return copia;
     }
 
@@ -1702,6 +1904,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.fragmentoTexto3 = origem.fragmentoTexto3; destino.fragmentoTexto4 = origem.fragmentoTexto4;
         destino.fragmentoTexto5 = origem.fragmentoTexto5; destino.fragmentoTexto6 = origem.fragmentoTexto6;
         destino.operacaoRelacao = origem.operacaoRelacao;
+        destino.estadoIntermediario = origem.estadoIntermediario;
+        destino.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
     }
 
     private void configurarCampoHerdado(JTextField campo, String dica, boolean herdado) {
@@ -1810,7 +2014,13 @@ public class TelaCuradoriaSituacoes extends JPanel {
         } else if (tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             opcoes = new String[] { "", "referendo", "valor_relativo", "referido" };
         } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            opcoes = new String[] { "", "transformacao_1", "transformacao_2", "transformacao_resultante" };
+            // Os 6 elementos da cena são papéis semânticos (2026-08-23):
+            // qualquer um deles pode ser a incógnita curada. Ordem segue a
+            // história do problema (estado -> transformação -> estado ...),
+            // não a ordem interna de elementosVergnaud.
+            opcoes = new String[] { "", "estado_inicial", "transformacao_1",
+                "estado_intermediario", "transformacao_2",
+                "transformacao_resultante", "estado_final" };
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             opcoes = new String[] { "", "relacao_inicial", "transformação", "relacao_final" };
         } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
@@ -1858,7 +2068,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
             ControladorSinaisCuradoria controladorSinais, JComboBox<String> campoTermoDesconhecido, JTextField campoRepresentacao, JTextField campoObservacoes,
             JTextField campoFragmentoTexto1, JTextField campoFragmentoTexto2, JTextField campoFragmentoTexto3,
             JTextField campoFragmentoTexto4, JTextField campoFragmentoTexto5, JTextField campoFragmentoTexto6,
-            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao) {
+            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoEstadoIntermediario,
+            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao) {
         linha.validada = campoValidada.isSelected();
         linha.enunciado = UnicodeTexto.normalizarNfc(areaEnunciado.getText() == null ? "" : areaEnunciado.getText().trim());
         linha.id = campoId.getText().trim();
@@ -1906,6 +2117,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
             linha.estadoFinal = controladorSinais.obterValorParaPersistencia(
                     PapelSinalCuradoria.RELACAO_FINAL,
                     campoEstadoFinal.getText());
+            linha.estadoIntermediario = campoEstadoIntermediario.getText().trim();
             linha.quantidade1 = controladorSinais.obterValorParaPersistencia(
                     PapelSinalCuradoria.RELACAO_1,
                     controladorSinais.obterValorParaPersistencia(
@@ -1925,12 +2137,24 @@ public class TelaCuradoriaSituacoes extends JPanel {
             // categorias de composição continuam calculados; relacao_final,
             // em transformação de relação, preserva exatamente a curadoria
             // informada pelo pesquisador.
+            // "Qualquer campo pode ser incógnita" (2026-08-23): o papel que
+            // for a incógnita curada não é sobrescrito por nenhum cálculo
+            // automático abaixo — mesma regra aplicada ao vivo no formulário
+            // (ver ehIncognitaAtual). Sem isso, salvar apagaria justamente o
+            // campo que o pesquisador deixou em aberto para o aluno.
+            Object termoParaIncognita = campoTermoDesconhecido.getSelectedItem();
+            String chaveIncognitaAoSalvar = new ResolvedorIncognitaCurada().chaveSemanticaDoTermo(
+                    termoParaIncognita == null ? "" : termoParaIncognita.toString(), linha.tipo);
+            boolean resultanteEhIncognita = chaveIncognitaAoSalvar != null
+                    && (chaveIncognitaAoSalvar.equals("papel.transformacaoFinal")
+                        || chaveIncognitaAoSalvar.equals("papel.relacaoFinal"));
+            boolean estadoFinalEhIncognita = "papel.estadoFinal".equals(chaveIncognitaAoSalvar);
             Object operacaoSelecionada = campoOperacaoRelacao.getSelectedItem();
             OpcaoOperacaoCuradoria operacaoRelacao = operacaoSelecionada instanceof OpcaoOperacaoCuradoria
                     ? (OpcaoOperacaoCuradoria) operacaoSelecionada
                     : OpcaoOperacaoCuradoria.NAO_SELECIONADO;
             linha.operacaoRelacao = operacaoRelacao.getValorCanonico();
-            if (operacaoRelacao.isEscolhaValida()) {
+            if (operacaoRelacao.isEscolhaValida() && !resultanteEhIncognita) {
                 PainelValorComSinalCuradoria relacao1 = controladorSinais.obter(PapelSinalCuradoria.RELACAO_1);
                 PainelValorComSinalCuradoria relacao2 = controladorSinais.obter(PapelSinalCuradoria.RELACAO_2);
                 if (relacao1 != null && relacao2 != null
@@ -1944,6 +2168,34 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         && !SimboloDesconhecido.eh(linha.resultado)) {
                     linha.resultado = calcularResultadoOperacaoRelacao(
                             transformacao1, transformacao2, operacaoRelacao, linha.resultado);
+                }
+            }
+            // Segunda operação (2026-08-23): estado_inicial [operação]
+            // transformacao_resultante = estado_final. Distinta da operação
+            // acima (entre transformação_1 e transformação_2) — existe
+            // apenas em Composição de Transformações; nas demais categorias
+            // que usam estadoFinal (transformação de medidas/relação), o
+            // valor continua sendo curadoria direta do pesquisador.
+            Object operacaoEstadoSelecionada = campoOperacaoEstadoTransformacao.getSelectedItem();
+            OpcaoOperacaoCuradoria operacaoEstadoTransformacao = operacaoEstadoSelecionada instanceof OpcaoOperacaoCuradoria
+                    ? (OpcaoOperacaoCuradoria) operacaoEstadoSelecionada
+                    : OpcaoOperacaoCuradoria.NAO_SELECIONADO;
+            linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorCanonico();
+            if (operacaoEstadoTransformacao.isEscolhaValida()
+                    && !estadoFinalEhIncognita
+                    && !SimboloDesconhecido.eh(linha.estadoInicial)
+                    && !SimboloDesconhecido.eh(linha.resultado)) {
+                try {
+                    int estadoInicialValor = Integer.parseInt(linha.estadoInicial.trim());
+                    int transformacaoResultanteValor = Integer.parseInt(linha.resultado.trim());
+                    Integer estadoFinalCalculado = operacaoEstadoTransformacao.aplicar(
+                            estadoInicialValor, transformacaoResultanteValor);
+                    if (estadoFinalCalculado != null) {
+                        linha.estadoFinal = String.valueOf(estadoFinalCalculado);
+                    }
+                } catch (NumberFormatException ex) {
+                    // Estado inicial ou transformação resultante ainda não
+                    // numérico — preserva o valor já presente em estadoFinal.
                 }
             }
             linha.referido = campoReferido.getText().trim();
@@ -1977,11 +2229,41 @@ public class TelaCuradoriaSituacoes extends JPanel {
         }
     }
 
+    /** Dispara {@code acao} a cada alteração do texto de {@code campo} — mesmo padrão já usado para id/grupo. */
+    private void adicionarOuvinteTexto(JTextField campo, Runnable acao) {
+        campo.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { acao.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { acao.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { acao.run(); }
+        });
+    }
+
+    /**
+     * Sinal canônico de um inteiro já calculado — usado para reconstruir a
+     * escolha de sinal do resultante sem depender de inferência a partir de
+     * texto (ver bug abaixo).
+     */
+    private static OpcaoSinalCuradoria sinalDoInteiro(int valor) {
+        if (valor > 0) return OpcaoSinalCuradoria.POSITIVO;
+        if (valor < 0) return OpcaoSinalCuradoria.NEGATIVO;
+        return OpcaoSinalCuradoria.NEUTRO;
+    }
+
     /**
      * Calcula o valor assinado do papel resultante a partir dos dois
      * papéis-dado e da operação escolhida na curadoria. Se algum dos dois
      * campos de entrada ainda não tem um valor numérico válido, o valor
      * atual é preservado (nada é sobrescrito com lixo).
+     *
+     * O valor devolvido usa o mesmo formato assinado canônico do resto da
+     * curadoria (PoliticaSinalCuradoria.aplicarSinal: "+3", "-7", "0"), não
+     * Integer.toString() puro — Integer.toString(3) devolve "3" sem o "+",
+     * e "3" sem prefixo explícito não é reconhecido como positivo ao
+     * recarregar o painel de sinal (OpcaoSinalCuradoria.aPartirDoEstado só
+     * infere POSITIVO/NEGATIVO a partir de um prefixo "+"/"-" já presente —
+     * de propósito, para não presumir positivo em texto digitado sem sinal
+     * explícito). Um resultado calculado por aqui, ao contrário de texto
+     * digitado, já tem sinal certo — por isso este método sempre prefixa.
      */
     private String calcularResultadoOperacaoRelacao(PainelValorComSinalCuradoria entradaA,
             PainelValorComSinalCuradoria entradaB, OpcaoOperacaoCuradoria operacao,
@@ -1990,7 +2272,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
             int a = Integer.parseInt(entradaA.obterValorAssinado());
             int b = Integer.parseInt(entradaB.obterValorAssinado());
             Integer resultado = operacao.aplicar(a, b);
-            return resultado == null ? valorAtual : resultado.toString();
+            if (resultado == null) return valorAtual;
+            return PoliticaSinalCuradoria.aplicarSinal(
+                    String.valueOf(Math.abs(resultado)), sinalDoInteiro(resultado));
         } catch (NumberFormatException ex) {
             return valorAtual;
         }
@@ -2004,13 +2288,22 @@ public class TelaCuradoriaSituacoes extends JPanel {
             linha.transformacao = "";
             linha.sinalTransformacao = "";
         }
+        // Composição de Transformações também usa estadoInicial/estadoFinal
+        // (2026-08-23, campos de estado reaproveitados — ver adicionarCampo
+        // "estado_inicial"/"estado_final" naquela categoria) — sem essa
+        // exceção, o valor curado seria apagado a cada salvamento.
         if (t != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                && t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             linha.estadoInicial = "";
         }
         if (t != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+                && t != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                && t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             linha.estadoFinal = "";
+        }
+        if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            linha.estadoIntermediario = "";
         }
         boolean usaQuantidades = t == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
                 || t == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
@@ -2032,6 +2325,11 @@ public class TelaCuradoriaSituacoes extends JPanel {
         if (!usaOperacaoRelacao) {
             linha.operacaoRelacao = "";
         }
+        // Segunda operação (estado_inicial [operação] transformação_resultante
+        // = estado_final): só existe em Composição de Transformações.
+        if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            linha.operacaoEstadoTransformacao = "";
+        }
     }
 
     private ResolvedorIncognitaCurada.Resultado resolverIncognitaCurada(
@@ -2043,7 +2341,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                 linha.tipo, linha.termoDesconhecido,
                 linha.estadoInicial, linha.transformacao, linha.estadoFinal,
                 linha.quantidade1, linha.quantidade2, linha.resultado,
-                linha.referido, linha.referendo, linha.valorRelativo);
+                linha.referido, linha.referendo, linha.valorRelativo,
+                linha.estadoIntermediario);
     }
 
     /**
@@ -2222,6 +2521,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         String fragmentoTexto5;
         String fragmentoTexto6;
         String operacaoRelacao;
+        String estadoIntermediario;
+        String operacaoEstadoTransformacao;
     }
 
     static class ModeloTabelaSituacoes extends AbstractTableModel {
@@ -2277,6 +2578,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     l.fragmentoTexto5 = s.getFragmentoTexto5();
                     l.fragmentoTexto6 = s.getFragmentoTexto6();
                     l.operacaoRelacao = s.getOperacaoRelacao();
+                    l.estadoIntermediario = s.getEstadoIntermediario();
+                    l.operacaoEstadoTransformacao = s.getOperacaoEstadoTransformacao();
                     linhas.add(l);
                     i++;
                 }
@@ -2321,6 +2624,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
             l.fragmentoTexto5 = "";
             l.fragmentoTexto6 = "";
             l.operacaoRelacao = "";
+            l.estadoIntermediario = "";
+            l.operacaoEstadoTransformacao = "";
             linhas.add(l);
             int i = linhas.size() - 1;
             fireTableRowsInserted(i, i);
@@ -2373,7 +2678,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                         l.termoDesconhecido, l.representacaoVisual, l.observacoes,
                         l.personagem1, l.personagem2, l.personagem3,
                         l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
-                        l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao));
+                        l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao,
+                        l.estadoIntermediario, l.operacaoEstadoTransformacao));
                 i++;
             }
             return situacoes;

@@ -41,6 +41,8 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     private final String fragmentoTexto5;
     private final String fragmentoTexto6;
     private final String operacaoRelacao;
+    private final String estadoIntermediario;
+    private final String operacaoEstadoTransformacao;
 
     public SituacaoProblemaAditiva(TipoSituacaoAditiva tipo, IdiomaInterface idioma, String enunciado) {
         this("", false, tipo, idioma, enunciado, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
@@ -238,6 +240,70 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
             String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
             String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6,
             String operacaoRelacao) {
+        this(id, situacaoGrupoId, tipoVersao, versaoOrigemId, validada, tipo, codigoIdioma,
+                enunciado, contexto, fonte, subtipo, estadoInicial, transformacao,
+                sinalTransformacao, estadoFinal, quantidade1, quantidade2, resultado,
+                referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido,
+                representacaoVisual, observacoes, personagem1, personagem2, personagem3,
+                fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4,
+                fragmentoTexto5, fragmentoTexto6, operacaoRelacao, "");
+    }
+
+    /**
+     * Construtor completo com o estado intermediário (2026-08-23) — usado
+     * apenas por Composição de Transformações, onde há dois estados
+     * "internos" além do inicial: o resultado de aplicar a primeira
+     * transformação, que também recebe a segunda. Nas demais categorias
+     * fica vazio. O overload anterior (sem esse parâmetro) delega pra este
+     * com "", preservando todos os chamadores existentes sem alteração —
+     * mesmo padrão já usado para introduzir operacaoRelacao.
+     */
+    public SituacaoProblemaAditiva(
+            String id, String situacaoGrupoId, String tipoVersao, String versaoOrigemId,
+            boolean validada, TipoSituacaoAditiva tipo, String codigoIdioma, String enunciado,
+            String contexto, String fonte, String subtipo, String estadoInicial,
+            String transformacao, String sinalTransformacao, String estadoFinal,
+            String quantidade1, String quantidade2, String resultado, String referido,
+            String referendo, String valorRelativo, String sinalValorRelativo,
+            String termoDesconhecido, String representacaoVisual, String observacoes,
+            String personagem1, String personagem2, String personagem3,
+            String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
+            String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6,
+            String operacaoRelacao, String estadoIntermediario) {
+        this(id, situacaoGrupoId, tipoVersao, versaoOrigemId, validada, tipo, codigoIdioma,
+                enunciado, contexto, fonte, subtipo, estadoInicial, transformacao,
+                sinalTransformacao, estadoFinal, quantidade1, quantidade2, resultado,
+                referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido,
+                representacaoVisual, observacoes, personagem1, personagem2, personagem3,
+                fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4,
+                fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "");
+    }
+
+    /**
+     * Construtor completo com a segunda operação (2026-08-23) — "a operação
+     * está sendo feita entre as transformações. Acho que vai ter que
+     * diferenciar dois tipos de operações": operacaoRelacao (já existente)
+     * é a operação ENTRE AS DUAS TRANSFORMAÇÕES (transformação_1 e
+     * transformação_2, que produz transformação_resultante);
+     * operacaoEstadoTransformacao é a operação ENTRE O ESTADO INICIAL E A
+     * TRANSFORMAÇÃO RESULTANTE (que produz estado_final). Só relevante em
+     * Composição de Transformações; nas demais categorias fica vazio. O
+     * overload anterior (sem esse parâmetro) delega pra este com "",
+     * preservando todos os chamadores existentes sem alteração.
+     */
+    public SituacaoProblemaAditiva(
+            String id, String situacaoGrupoId, String tipoVersao, String versaoOrigemId,
+            boolean validada, TipoSituacaoAditiva tipo, String codigoIdioma, String enunciado,
+            String contexto, String fonte, String subtipo, String estadoInicial,
+            String transformacao, String sinalTransformacao, String estadoFinal,
+            String quantidade1, String quantidade2, String resultado, String referido,
+            String referendo, String valorRelativo, String sinalValorRelativo,
+            String termoDesconhecido, String representacaoVisual, String observacoes,
+            String personagem1, String personagem2, String personagem3,
+            String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
+            String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6,
+            String operacaoRelacao, String estadoIntermediario,
+            String operacaoEstadoTransformacao) {
         this.id = limpar(id);
         this.situacaoGrupoId = limpar(situacaoGrupoId).isEmpty() ? limpar(id) : limpar(situacaoGrupoId);
         this.codigoIdioma = IdiomaSituacao.normalizarCodigo(codigoIdioma);
@@ -277,6 +343,8 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
         this.fragmentoTexto5 = limpar(fragmentoTexto5);
         this.fragmentoTexto6 = limpar(fragmentoTexto6);
         this.operacaoRelacao = limpar(operacaoRelacao);
+        this.estadoIntermediario = limpar(estadoIntermediario);
+        this.operacaoEstadoTransformacao = limpar(operacaoEstadoTransformacao);
     }
 
     private static String limpar(String texto) {
@@ -319,4 +387,6 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     public String getFragmentoTexto5() { return fragmentoTexto5; }
     public String getFragmentoTexto6() { return fragmentoTexto6; }
     public String getOperacaoRelacao() { return operacaoRelacao; }
+    public String getEstadoIntermediario() { return estadoIntermediario; }
+    public String getOperacaoEstadoTransformacao() { return operacaoEstadoTransformacao; }
 }

@@ -14,13 +14,21 @@ public class RenderizadorComposicaoTransformacoes extends RenderizadorDiagramaAd
         List<ConectorDiagrama> cons = conectores();
         String descricao = ServicoLocalizacao.getInstancia().texto("diag.desc.composicao_transformacoes");
 
+        // Regra da usuária (2026-08-23): quadrado é estado (inicial,
+        // intermediário, final); círculo é transformação (primeira,
+        // segunda, e a resultante — rotulo1/2/3, vindos de
+        // SemanticaCuradaSituacao.aplicarRotulos). Os 3 rótulos de estado
+        // são papéis estruturais fixos desta categoria, não curados por
+        // situação — por isso vêm direto da localização, mesmo padrão já
+        // usado aqui embaixo para a descrição da cena.
+        ServicoLocalizacao loc = ServicoLocalizacao.getInstancia();
         FiguraDiagrama t1 = transformacao(area.x + 218, area.y + 75, definicao.getRotulo1(), valor(valores, 0));
         FiguraDiagrama t2 = transformacao(area.x + 495, area.y + 75, definicao.getRotulo2(), valor(valores, 1));
         FiguraDiagrama tr = transformacao(area.x + 357, area.y + 348, definicao.getRotulo3(), valor(valores, 2));
 
-        FiguraDiagrama inicial = medida(area.x + 51, area.y + 177, "", 0);
-        FiguraDiagrama intermediario = medida(area.x + 378, area.y + 177, "", 0);
-        FiguraDiagrama fin = medida(area.x + 705, area.y + 177, "", 0);
+        FiguraDiagrama inicial = medida(area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0);
+        FiguraDiagrama intermediario = medida(area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0);
+        FiguraDiagrama fin = medida(area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0);
 
         figs.add(t1);
         figs.add(t2);

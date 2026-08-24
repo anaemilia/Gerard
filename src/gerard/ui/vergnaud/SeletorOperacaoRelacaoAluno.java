@@ -1,6 +1,7 @@
 package gerard.ui.vergnaud;
 
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
+import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -44,17 +45,62 @@ import java.util.List;
  * própria explicação, logo abaixo dos dois botões — mais simples e sem
  * mexer na cadeia de prioridade de tooltips já existente, já bastante
  * carregada. Localidade do conhecimento: o widget cuida do próprio feedback.
+ *
+ * Duas operações distintas em Composição de Transformações (2026-08-23,
+ * pedido explícito da usuária: "a operação está sendo feita entre as
+ * tranformações. Acho que vai ter que diferenciar dois tipos de
+ * operações"): transformação_1 [op] transformação_2 = transformação_
+ * resultante, e estado_inicial [op] transformação_resultante = estado_final.
+ * Cada operação usa sua PRÓPRIA instância desta classe — não há estado
+ * compartilhado entre elas — diferenciadas pelo parâmetro
+ * {@link TipoOperacaoSeletor} passado a {@link #ativar}. Nas outras duas
+ * categorias (Transformação de Relação, Composição de Relações) só existe
+ * uma operação; passar ENTRE_ESTADO_E_TRANSFORMACAO nelas é a no-op.
  */
 public final class SeletorOperacaoRelacaoAluno {
 
     private static final int RAIO_BOTAO = 9;
-    private static final int ESPACAMENTO_BOTOES = 92;
+    // Distância mínima para caber os dois rótulos ("Soma" e "Subtração", o
+    // mais largo dos dois em Arial Bold 13) lado a lado sem se tocarem —
+    // reduzido de 92 (espaço em excesso reportado pela usuária) para o
+    // mínimo que ainda separa os textos.
+    private static final int ESPACAMENTO_BOTOES = 70;
     private static final int LARGURA_EXPLICACAO = 360;
-    private static final int DESLOCAMENTO_VERTICAL_PADRAO = RAIO_BOTAO * 6;
-    private static final int DISTANCIA_VERTICAL_DA_SETA = RAIO_BOTAO * 4;
     private static final int ESPACO_BOTAO_SINAL = 4;
     private static final int ESPACO_ENTRE_SINAL_E_NOME = 1;
     private static final int ESPACO_ROTULO_EXPLICACAO = 10;
+    // Deslocamento horizontal da haste/vertical da chave em relação ao x1
+    // armazenado no conector — replica o "+18" fixo em
+    // ConectorVergnaud.desenharChaveVertical (o traço vertical real da
+    // chave, não a marca de início da haste horizontal). Sem isso, o ponto
+    // usado para centralizar o seletor fica 18px à esquerda da linha
+    // realmente desenhada, e o rótulo "Soma" acaba caindo em cima dela.
+    private static final int DESLOCAMENTO_TRACO_CHAVE = 18;
+    // O seletor fica ACIMA do segmento/haste, não em cima dele. A distância
+    // precisa cobrir o círculo do botão (2×RAIO_BOTAO) MAIS as duas linhas
+    // de rótulo desenhadas abaixo dele (sinal + nome da operação, ver
+    // desenharBotao) — só descontar o raio deixava o texto "Soma"/
+    // "Subtração" cruzando a linha (reportado pela usuária: "tem que subir
+    // mais"). RAIO_BOTAO*7 cobre círculo + as duas linhas de texto em Arial
+    // 13 + uma folga visível acima da linha.
+    private static final int ELEVACAO_ACIMA_DO_SEGMENTO = RAIO_BOTAO * 7;
+    // Distância horizontal do centro do seletor até a borda esquerda do
+    // círculo inferior (transformação resultante), para a segunda operação
+    // de Composição de Transformações — "do lado esquerdo do círculo
+    // inferior". Precisa caber os dois botões + rótulos ("Subtração" é o
+    // mais largo) sem tocar o círculo; primeira estimativa, sujeita a
+    // ajuste por captura de tela como já ocorreu com ELEVACAO_ACIMA_DO_SEGMENTO.
+    private static final int DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO = 110;
+
+    /**
+     * Qual das duas operações de Composição de Transformações esta instância
+     * avalia — ver Javadoc da classe. Nas demais categorias, que só têm uma
+     * operação, use sempre ENTRE_TRANSFORMACOES.
+     */
+    public enum TipoOperacaoSeletor {
+        ENTRE_TRANSFORMACOES,
+        ENTRE_ESTADO_E_TRANSFORMACAO
+    }
 
     private boolean ativo;
     private Rectangle areaSoma;
@@ -96,45 +142,98 @@ public final class SeletorOperacaoRelacaoAluno {
     }
 
     /**
-     * Ativa o seletor para a situação atual. Em Transformação de Relação, a
-     * posição deriva da linha da seta entre a relação inicial e a final. Nas
-     * demais categorias, preserva o centróide dos 3 primeiros elementos — os
-     * 3 papéis da categoria, já com o deslocamento de centralização aplicado.
-     * Em ambos os casos usa a geometria dos elementos que o diagrama já
-     * possui, sem duplicar coordenadas de layout.
+     * Ativa o seletor para a situação atual. A posição vem, sempre que
+     * possível, do próprio segmento de reta que o diagrama já desenha em
+     * direção ao papel "relação final" — em Transformação de Relação, a seta
+     * entre relação inicial e final; em Composição de Relações, a haste da
+     * chave vertical que liga as duas relações somadas até a relação final
+     * (ver RenderizadorTransformacaoRelacao/RenderizadorComposicaoRelacoes).
+     * Não há coordenada própria duplicada: o seletor lê a geometria que o
+     * diagrama já calculou (elementos e conectores), a mesma fonte usada
+     * pelo resto do diagrama e por reposicionar(int,int) — por isso a
+     * posição acompanha corretamente redimensionamento de janela e qualquer
+     * mudança futura de layout dos renderizadores.
+     *
+     * Composição de Transformações tem DUAS instâncias independentes desta
+     * classe (ver Javadoc da classe): a de ENTRE_TRANSFORMACOES fica acima
+     * dos dois círculos superiores (transformação_1 e transformação_2); a de
+     * ENTRE_ESTADO_E_TRANSFORMACAO fica à esquerda do círculo inferior
+     * (transformação resultante) — nenhuma das duas usa o segmento único das
+     * outras categorias, já que os 3 conectores da cena ligam as figuras de
+     * medida entre si, nenhum liga os papéis de transformação entre si.
      */
     public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,
-            List<ElementoVergnaud> elementos, ServicoLocalizacao localizacao) {
+            List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,
+            TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {
         desativar();
         if (!aplicavel(tipo) || situacao == null || elementos == null || elementos.size() < 3) {
             return;
         }
+        TipoOperacaoSeletor papelEfetivo = papel == null ? TipoOperacaoSeletor.ENTRE_TRANSFORMACOES : papel;
+        boolean papelEstadoTransformacao = papelEfetivo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
+        if (papelEstadoTransformacao && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            // A segunda operação só existe em Composição de Transformações.
+            return;
+        }
         ServicoLocalizacao loc = localizacao == null ? ServicoLocalizacao.getInstancia() : localizacao;
-        escolhaCorreta = OpcaoOperacaoCuradoria.aPartirDoEstado(situacao.getOperacaoRelacao());
+        String operacaoCurada = papelEstadoTransformacao
+                ? situacao.getOperacaoEstadoTransformacao()
+                : situacao.getOperacaoRelacao();
+        escolhaCorreta = OpcaoOperacaoCuradoria.aPartirDoEstado(operacaoCurada);
         if (!escolhaCorreta.isEscolhaValida()) {
             // Situação sem operação curada (base antiga) — nada a perguntar.
             escolhaCorreta = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
             return;
         }
 
-        String chaveExplicacao = chaveExplicacao(tipo, escolhaCorreta);
+        String chaveExplicacao = chaveExplicacao(tipo, papelEfetivo, escolhaCorreta);
         textoExplicacaoCorreta = chaveExplicacao == null ? ""
                 : preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao);
 
         ElementoVergnaud e0 = elementos.get(0);
         ElementoVergnaud e1 = elementos.get(1);
         ElementoVergnaud e2 = elementos.get(2);
-        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-            // A seta liga a relação inicial à relação final. O seletor fica
-            // centralizado e afastado a partir dessa geometria real.
-            centroX = (centroX(e0) + centroX(e2)) / 2;
-            int yDaSeta = (centroY(e0) + centroY(e2)) / 2;
-            centroY = yDaSeta + DISTANCIA_VERTICAL_DA_SETA;
+
+        if (papelEstadoTransformacao) {
+            // "radiobutton de operações entre estado inicial e transformação
+            // do lado esquerdo do círculo inferior" — e2 é a transformação
+            // resultante (círculo inferior, ver ordem de elementosVergnaud
+            // em COMPOSICAO_TRANSFORMACOES).
+            centroX = left(e2) - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO;
+            centroY = centroY(e2);
         } else {
-            // Preserva o posicionamento já usado pelas demais categorias.
-            centroX = (centroX(e0) + centroX(e1) + centroX(e2)) / 3;
-            centroY = (centroY(e0) + centroY(e1) + centroY(e2)) / 3
-                    + DESLOCAMENTO_VERTICAL_PADRAO;
+            ConectorVergnaud conectorParaRelacaoFinal = (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                    || tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES)
+                    && conectores != null && !conectores.isEmpty() ? conectores.get(0) : null;
+
+            if (conectorParaRelacaoFinal != null) {
+                // Ponto médio da seta (sem alvo, Transformação de Relação) ou
+                // da haste da chave até a relação final (com alvo,
+                // Composição de Relações) — mesmo segmento que o diagrama já
+                // desenha.
+                int meioX = (conectorParaRelacaoFinal.x1 + conectorParaRelacaoFinal.x2) / 2;
+                int meioY = (conectorParaRelacaoFinal.y1 + conectorParaRelacaoFinal.y2) / 2;
+                if (conectorParaRelacaoFinal.temAlvo()) {
+                    // Chave vertical: o traço real fica DESLOCAMENTO_TRACO_CHAVE
+                    // à direita do x1/x2 armazenado (ver desenharChaveVertical).
+                    meioX += DESLOCAMENTO_TRACO_CHAVE;
+                    centroX = (meioX + conectorParaRelacaoFinal.xAlvo) / 2;
+                    centroY = (meioY + conectorParaRelacaoFinal.yAlvo) / 2;
+                } else {
+                    centroX = meioX;
+                    centroY = meioY;
+                }
+                // Acima do segmento, não sobre ele.
+                centroY -= ELEVACAO_ACIMA_DO_SEGMENTO;
+            } else {
+                // Composição de Transformações, primeira operação (entre as
+                // duas transformações de entrada): "radiobutton de soma e
+                // subtração entre transformação a cima dos dois círculos
+                // superiores" — acima de e0/e1 (t1/t2), não no vão abaixo
+                // deles.
+                centroX = (centroX(e0) + centroX(e1)) / 2;
+                centroY = Math.min(top(e0), top(e1)) - ELEVACAO_ACIMA_DO_SEGMENTO;
+            }
         }
 
         areaSoma = new Rectangle(centroX - ESPACAMENTO_BOTOES / 2 - RAIO_BOTAO,
@@ -142,6 +241,28 @@ public final class SeletorOperacaoRelacaoAluno {
         areaSubtracao = new Rectangle(centroX + ESPACAMENTO_BOTOES / 2 - RAIO_BOTAO,
                 centroY - RAIO_BOTAO, RAIO_BOTAO * 2, RAIO_BOTAO * 2);
         ativo = true;
+    }
+
+    /**
+     * Translada a posição já calculada por (dx,dy) — chamado quando a janela
+     * é redimensionada e o diagrama inteiro (elementosVergnaud,
+     * conectoresVergnaud) é deslocado sem ser reconstruído do zero. Sem
+     * isso, o seletor ficava para trás, "fixo", enquanto o resto do
+     * diagrama acompanhava a nova área — o mesmo padrão já usado para
+     * ElementoVergnaud/ConectorVergnaud em reposicionarDiagramaVergnaudParaAreaAtua().
+     */
+    public void reposicionar(int dx, int dy) {
+        if (!ativo || (dx == 0 && dy == 0)) {
+            return;
+        }
+        centroX += dx;
+        centroY += dy;
+        if (areaSoma != null) {
+            areaSoma.translate(dx, dy);
+        }
+        if (areaSubtracao != null) {
+            areaSubtracao.translate(dx, dy);
+        }
     }
 
     private static String textoOu(String valor) {
@@ -159,8 +280,14 @@ public final class SeletorOperacaoRelacaoAluno {
                 .replace("{Personagem_3}", personagem3);
     }
 
-    private static String chaveExplicacao(TipoSituacaoAditiva tipo, OpcaoOperacaoCuradoria operacao) {
+    private static String chaveExplicacao(TipoSituacaoAditiva tipo, TipoOperacaoSeletor papel,
+            OpcaoOperacaoCuradoria operacao) {
         boolean soma = operacao == OpcaoOperacaoCuradoria.SOMA;
+        if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {
+            // Só existe para Composição de Transformações (ver ativar()).
+            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"
+                    : "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.subtracao";
+        }
         if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             return soma ? "operacao.explicacao.transformacaoRelacao.soma"
                     : "operacao.explicacao.transformacaoRelacao.subtracao";
@@ -182,6 +309,14 @@ public final class SeletorOperacaoRelacaoAluno {
 
     private static int centroY(ElementoVergnaud e) {
         return e.y + e.altura / 2;
+    }
+
+    private static int left(ElementoVergnaud e) {
+        return e.x;
+    }
+
+    private static int top(ElementoVergnaud e) {
+        return e.y;
     }
 
     /**

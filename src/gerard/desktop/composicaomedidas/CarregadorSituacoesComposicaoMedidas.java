@@ -12,15 +12,14 @@ import java.util.List;
 
 /**
  * Fonte dos dados: o log curado situacoes_vergnaud.tsv, filtrado por
- * tipo = COMPOSICAO_MEDIDAS e idioma = PORTUGUES, conforme instruído.
- * As colunas quantidade_1/quantidade_2/resultado ainda estão vazias
- * (dados não anotados); os valores são extraídos do próprio enunciado.
+ * tipo = COMPOSICAO_MEDIDAS e idioma português, conforme a curadoria.
+ * O carregador legado extrai do enunciado apenas os números necessários à
+ * tela de composição; não altera nem completa o arquivo curado.
  */
 public final class CarregadorSituacoesComposicaoMedidas {
 
     private static final String[] CAMINHOS_CANDIDATOS = {
         "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
-        "dados/situacoes_vergnaud.tsv",
         "../src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
     };
     private static final String RECURSO_CLASSPATH =
@@ -46,7 +45,7 @@ public final class CarregadorSituacoesComposicaoMedidas {
             if (campos.length <= Math.max(idxEnunciado, Math.max(idxTipo, idxIdioma))) {
                 continue;
             }
-            if (!"PORTUGUES".equals(campos[idxIdioma].trim())
+            if (!ehPortugues(campos[idxIdioma])
                     || !"COMPOSICAO_MEDIDAS".equals(campos[idxTipo].trim())) {
                 continue;
             }
@@ -59,6 +58,13 @@ public final class CarregadorSituacoesComposicaoMedidas {
             }
         }
         return resultado;
+    }
+
+    private static boolean ehPortugues(String codigoIdioma) {
+        String codigo = codigoIdioma == null ? "" : codigoIdioma.trim();
+        return "PORTUGUES".equalsIgnoreCase(codigo)
+                || "pt-BR".equalsIgnoreCase(codigo)
+                || "pt".equalsIgnoreCase(codigo);
     }
 
     /**
