@@ -77,6 +77,8 @@ import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
+import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
+import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.aplicacao.adaptacao.ContextoRegistroAjuda;
@@ -514,13 +516,10 @@ public class Main extends JFrame {
         // iniciarQuizCategoria/clicarAtalhoCategoria.
         TipoSituacaoAditiva categoriaSorteioOculta;
         boolean aguardandoAdivinhacaoCategoria = false;
-        // Circuit-breaker do quiz de adivinhação de categoria — contagem e
-        // limite vivem em LimiteErrosConsecutivosCategoria (gerard.agente.zdp),
-        // não soltos aqui na Main (usuária pediu explicitamente para não
-        // deixar essa lógica solta, 2026-07-30). Ver clicarAtalhoCategoria/
-        // avaliarRespostaConfirmacaoCategoriaErrada/acionarTimeoutCategoria.
-        final gerard.agente.zdp.LimiteErrosConsecutivosCategoria limiteErrosCategoria =
-                new gerard.agente.zdp.LimiteErrosConsecutivosCategoria(3);
+        // A tentativa é o menor agregado que conhece a situação classificada,
+        // a escolha do participante e a sequência de rejeições. A Main apenas
+        // conserva a referência do fluxo corrente e materializa seu desfecho.
+        TentativaClassificacaoCategoriaAditiva tentativaClassificacaoCategoriaAtual;
         RepositorioSituacoesAditivas repositorioSituacoesAditivas = new RepositorioSituacoesAditivas();
         CadastroIdiomasSituacao cadastroIdiomasSituacao = new CadastroIdiomasSituacao();
         CatalogoDefinicoesAditivas catalogoDefinicoesAditivas = new CatalogoDefinicoesAditivas();
@@ -3709,6 +3708,9 @@ public class Main extends JFrame {
             SituacaoProblemaAditiva situacao = contexto.getSituacao();
             boolean situacaoCuradaDisponivel = contexto.possuiSituacaoExibivel();
             situacaoProblemaAtual = situacaoCuradaDisponivel ? situacao : null;
+            tentativaClassificacaoCategoriaAtual = situacaoCuradaDisponivel
+                    ? new TentativaClassificacaoCategoriaAditiva(situacaoProblemaAtual)
+                    : null;
             textoProblemaEhMensagemSistema = !situacaoCuradaDisponivel;
             textoProblema = normalizarTextoProblemaParaRenderizacao(
                     situacaoCuradaDisponivel ? situacao.getEnunciado() : textoAusenciaSituacaoCurada());
@@ -3748,15 +3750,6 @@ public class Main extends JFrame {
         }
 
         /**
-         * Tarefa usada pelo ZDP/Modelador para a escolha de categoria — mesma
-         * convenção "papel.xxx" das tarefas de posicionamento
-         * (papel.parte1, papel.todo, ...), embora não corresponda a um papel
-         * dentro do diagrama: é a categoria da situação-problema como um
-         * todo, escolhida antes de qualquer posicionamento existir.
-         */
-        private static final String CHAVE_PAPEL_CATEGORIA = "papel.categoria";
-
-        /**
          * Ponto de entrada único dos 6 ícones de atalho de categoria
          * (criarBotaoAtalhoCategoria). Fora do modo de adivinhação, se
          * comporta como sempre (seleção direta, selecionarCategoria). Durante
@@ -3776,36 +3769,54 @@ public class Main extends JFrame {
          */
         private void clicarAtalhoCategoria(TipoSituacaoAditiva tipo) {
             if (aguardandoAdivinhacaoCategoria) {
-                TipoSituacaoAditiva categoriaReal = categoriaSorteioOculta;
+                if (tentativaClassificacaoCategoriaAtual == null) {
+                    return;
+                }
+                ContextoAcaoInstrumental contextoInstrumental =
+                        new ContextoAcaoInstrumental(
+                                "Adivinhar a categoria da situação-problema sorteada",
+                                "Selecionar um ícone de categoria",
+                                "Faixa de ícones de categoria",
+                                "Classificar a estrutura da situação-problema",
+                                TentativaClassificacaoCategoriaAditiva.ALVO_ESCOLHA,
+                                "SELECAO_CATEGORIA",
+                                "categoria_escolhida=" + tipo.name(),
+                                "Categoria selecionada para validação",
+                                Collections.<String>emptyList());
+                RegistroAcaoClassificacaoCategoria registro =
+                        tentativaClassificacaoCategoriaAtual.avaliarEscolha(
+                                tipo, contextoInstrumental);
                 if (agentAuditService != null) {
                     agentAuditService.iniciarAcao(
                             new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
                                     loggerInteracaoGerard.getUsuarioAtual(),
                                     situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                    textoProblema, String.valueOf(categoriaReal), null),
+                                    textoProblema, String.valueOf(registro.getCategoriaEsperada()), null,
+                                    registro.getActionId(), registro.getRejectionSequenceId()),
                             new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                    "select", String.valueOf(tipo), null, null, CHAVE_PAPEL_CATEGORIA, null, null, null, null),
-                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA, categoriaReal);
+                                    "select", String.valueOf(tipo), null, null,
+                                    TentativaClassificacaoCategoriaAditiva.ALVO_ESCOLHA,
+                                    null, null, null, null),
+                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA,
+                            registro.getCategoriaEsperada());
                 }
-                boolean correto = agenteMonitor.avaliarCategoria(tipo, categoriaReal);
-                String chaveIdempotenciaCategoria =
-                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
-                gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
-                        loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CATEGORIA, correto,
-                        chaveIdempotenciaCategoria);
-                conectorVereditoModelador.registrarVeredito(
-                        loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CATEGORIA,
-                        estrategia, "SELECIONAR", chaveIdempotenciaCategoria);
+                loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+                conectorVereditoModelador.registrarAcaoInstrumental(
+                        loggerInteracaoGerard.getUsuarioAtual(), registro,
+                        gerard.agente.modelousuario.NivelSuporte.NENHUM,
+                        registro.getActionId());
                 if (agentAuditService != null) {
                     agentAuditService.finalizarAcao();
                 }
-                if (correto) {
-                    limiteErrosCategoria.registrarAcerto(loggerInteracaoGerard.getUsuarioAtual());
+                if (registro.getDesfecho()
+                        == RegistroAcaoClassificacaoCategoria.Desfecho.ACEITAR_CATEGORIA) {
                     confirmarCategoriaAdivinhada(tipo);
-                } else if (limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
-                    acionarTimeoutCategoria(categoriaReal);
+                } else if (registro.getDesfecho()
+                        == RegistroAcaoClassificacaoCategoria.Desfecho
+                                .REEXPLICAR_CATEGORIA_APOS_LIMITE) {
+                    acionarTimeoutCategoria(registro.getCategoriaEsperada());
                 } else {
-                    mostrarQuestionamentoCategoriaErrada(tipo, categoriaReal);
+                    mostrarQuestionamentoCategoriaErrada(tipo);
                 }
                 return;
             }
@@ -3820,17 +3831,6 @@ public class Main extends JFrame {
          * e rodar a cauda comum de inicialização de diagrama/texto.
          */
         private void confirmarCategoriaAdivinhada(TipoSituacaoAditiva tipo) {
-            registrarLogUsuario(
-                    "Adivinhar a categoria da situação-problema sorteada",
-                    "C",
-                    "Faixa de ícones de categoria",
-                    "Ícone " + localizacao.rotuloBotaoTipo(tipo),
-                    "Representar a estrutura escolhida para o problema",
-                    "OBJ8",
-                    "O sujeito identifica corretamente a categoria oculta da situação sorteada.",
-                    "ADIVINHACAO_CATEGORIA_CORRETA",
-                    "categoria=" + tipo.name()
-            );
             tipoSituacaoSelecionada = tipo;
             categoriaSelecionadaParaAtividade = true;
             aguardandoAdivinhacaoCategoria = false;
@@ -3846,36 +3846,15 @@ public class Main extends JFrame {
             finalizarCarregamentoSituacao();
         }
 
-        /**
-         * Tarefa usada pelo ZDP/Modelador para a resposta ao diálogo de
-         * confirmação — sinal distinto de CHAVE_PAPEL_CATEGORIA (o clique no
-         * ícone): a pessoa pode reconhecer o erro no clique mas insistir
-         * nele quando questionada diretamente ("Sim, essa definição se
-         * aplica"), ou vice-versa. Contagem de erros consecutivos separada
-         * no ZDP para cada um dos dois sinais.
-         */
-        private static final String CHAVE_PAPEL_CONFIRMACAO_CATEGORIA = "papel.categoria.confirmacao";
-
-        private void mostrarQuestionamentoCategoriaErrada(TipoSituacaoAditiva tipo, final TipoSituacaoAditiva categoriaReal) {
-            registrarLogUsuario(
-                    "Adivinhar a categoria da situação-problema sorteada",
-                    "E",
-                    "Faixa de ícones de categoria",
-                    "Ícone " + localizacao.rotuloBotaoTipo(tipo),
-                    "Representar a estrutura escolhida para o problema",
-                    "OBJ8",
-                    "O sujeito escolhe uma categoria diferente da categoria oculta da situação sorteada.",
-                    "ADIVINHACAO_CATEGORIA_INCORRETA",
-                    "categoriaClicada=" + tipo.name()
-            );
+        private void mostrarQuestionamentoCategoriaErrada(TipoSituacaoAditiva tipo) {
             String pergunta = localizacao.texto("ui.question.category." + tipo.name().toLowerCase());
             mostrarDialogoConfirmacaoSimNao(pergunta, new Runnable() {
                 public void run() {
-                    avaliarRespostaConfirmacaoCategoriaErrada(true, categoriaReal);
+                    avaliarRespostaConfirmacaoCategoriaErrada(true);
                 }
             }, new Runnable() {
                 public void run() {
-                    avaliarRespostaConfirmacaoCategoriaErrada(false, categoriaReal);
+                    avaliarRespostaConfirmacaoCategoriaErrada(false);
                 }
             });
         }
@@ -3889,39 +3868,61 @@ public class Main extends JFrame {
          * = insiste no erro; "Não" = reconhece corretamente que a definição
          * errada não se aplica.
          */
-        private void avaliarRespostaConfirmacaoCategoriaErrada(boolean concordou, TipoSituacaoAditiva categoriaReal) {
-            boolean correto = agenteMonitor.avaliarConfirmacaoCategoriaErrada(concordou);
-            registrarLogUsuario(
-                    "Confirmar se a definição da categoria clicada se aplica à situação-problema",
-                    correto ? "C" : "E",
-                    "Diálogo de confirmação",
-                    concordou ? "Botão Sim" : "Botão Não",
-                    "Reconhecer (ou não) o próprio erro de categorização",
-                    "OBJ8",
-                    "Concordar com a definição da categoria errada é insistir no erro; discordar é reconhecê-lo.",
-                    "CONFIRMACAO_CATEGORIA_ERRADA",
-                    "concordou=" + concordou
-            );
-            gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
-                    loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CONFIRMACAO_CATEGORIA, correto);
-            conectorVereditoModelador.registrarVeredito(
-                    loggerInteracaoGerard.getUsuarioAtual(), categoriaReal, CHAVE_PAPEL_CONFIRMACAO_CATEGORIA,
-                    estrategia, "SELECIONAR");
-            // "Não" (correto) não reseta o contador: a categoria ainda não
-            // foi acertada, só o próprio erro é que a pessoa reconheceu.
-            // Só o acerto do ícone (clicarAtalhoCategoria) zera de fato —
-            // ver LimiteErrosConsecutivosCategoria.registrarAcerto.
-            if (!correto && limiteErrosCategoria.registrarErro(loggerInteracaoGerard.getUsuarioAtual())) {
-                acionarTimeoutCategoria(categoriaReal);
+        private void avaliarRespostaConfirmacaoCategoriaErrada(boolean concordou) {
+            if (tentativaClassificacaoCategoriaAtual == null) {
+                return;
+            }
+            ContextoAcaoInstrumental contextoInstrumental =
+                    new ContextoAcaoInstrumental(
+                            "Confirmar se a definição da categoria escolhida se aplica à situação-problema",
+                            "Responder ao questionamento de categorização",
+                            "Diálogo de confirmação",
+                            "Reconhecer ou reafirmar uma classificação divergente",
+                            TentativaClassificacaoCategoriaAditiva.ALVO_CONFIRMACAO,
+                            "CONFIRMACAO_CATEGORIA_DIVERGENTE",
+                            "concordou=" + concordou,
+                            "Resposta à confirmação de categoria registrada",
+                            Collections.<String>emptyList());
+            RegistroAcaoClassificacaoCategoria registro =
+                    tentativaClassificacaoCategoriaAtual
+                            .avaliarConfirmacaoCategoriaDivergente(
+                                    concordou, contextoInstrumental);
+            if (agentAuditService != null) {
+                agentAuditService.iniciarAcao(
+                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                loggerInteracaoGerard.getUsuarioAtual(),
+                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                textoProblema, String.valueOf(registro.getCategoriaEsperada()), null,
+                                registro.getActionId(), registro.getRejectionSequenceId()),
+                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                "select", concordou ? "SIM" : "NAO", null, null,
+                                TentativaClassificacaoCategoriaAditiva.ALVO_CONFIRMACAO,
+                                null, null, null, null),
+                        gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA,
+                        registro.getCategoriaEsperada());
+            }
+            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+            conectorVereditoModelador.registrarAcaoInstrumental(
+                    loggerInteracaoGerard.getUsuarioAtual(), registro,
+                    gerard.agente.modelousuario.NivelSuporte.PARCIAL,
+                    registro.getActionId());
+            if (agentAuditService != null) {
+                agentAuditService.finalizarAcao();
+            }
+            // "Não" é uma ação correta, mas não encerra a sequência: a
+            // categoria da situação ainda não foi acertada. Esse estado
+            // permanece no agregado, não na interface.
+            if (registro.atingiuLimite()) {
+                acionarTimeoutCategoria(registro.getCategoriaEsperada());
             }
         }
 
         /**
-         * Disparado por LimiteErrosConsecutivosCategoria (gerard.agente.zdp)
-         * ao atingir o limite de erros consecutivos (ícone errado +
+         * Disparado pela tentativa semântica de classificação ao atingir o
+         * limite de erros consecutivos (ícone errado +
          * confirmação "Sim", somados): para a adivinhação — em vez de
-         * deixar a pessoa clicando infinitamente — e reexplica as 3
-         * categorias de uma vez. Reflete a intervenção que a própria
+         * deixar a pessoa clicando infinitamente — e reexplica a categoria
+         * curada da situação. Reflete a intervenção que a própria
          * usuária fazia manualmente como pesquisadora nos experimentos em
          * papel: parar a ação e explicar novamente cada categoria.
          */
@@ -4782,6 +4783,7 @@ public class Main extends JFrame {
             categoriaSelecionadaParaAtividade = false;
             aguardandoAdivinhacaoCategoria = false;
             categoriaSorteioOculta = null;
+            tentativaClassificacaoCategoriaAtual = null;
             situacaoProblemaAtual = null;
             textoProblema = "";
             textoProblemaEhMensagemSistema = false;

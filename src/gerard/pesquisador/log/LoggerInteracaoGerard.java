@@ -1,7 +1,7 @@
 package gerard.pesquisador.log;
 
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
-import gerard.dominio.atividade.RegistroAcaoInstrumental;
+import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 import gerard.i18n.ServicoLocalizacao;
 
 import java.io.BufferedReader;
@@ -601,7 +601,7 @@ public class LoggerInteracaoGerard {
      * Reenvios do mesmo {@code action_id} são idempotentes.
      */
     public synchronized boolean registrarAcaoInstrumentalUsuario(
-            RegistroAcaoInstrumental registro) {
+            RegistroFactualAcaoInstrumental registro) {
         if (registro == null) {
             throw new IllegalArgumentException("registro instrumental é obrigatório");
         }
@@ -616,14 +616,11 @@ public class LoggerInteracaoGerard {
         acrescentarDetalhe(detalhes, "participantes_semanticos",
                 juntarParticipantes(registro));
         acrescentarDetalhe(detalhes, "valor_proposto",
-                registro.getValorProposto() == null ? ""
-                        : registro.getValorProposto().formatar(true));
+                registro.getValorPropostoFactual());
         acrescentarDetalhe(detalhes, "valor_esperado",
-                registro.getValorEsperado() == null ? ""
-                        : registro.getValorEsperado().formatar(true));
+                registro.getValorEsperadoFactual());
         acrescentarDetalhe(detalhes, "diagnostico_factual",
-                registro.getDiagnostico().isPresent()
-                        ? registro.getDiagnostico().get().getTipo().name() : "");
+                registro.getTipoDiagnosticoFactual());
 
         registrarUsuarioComIdentidade(
                 registro.getTarefaInteracao().name(),
@@ -647,7 +644,7 @@ public class LoggerInteracaoGerard {
         detalhes.append(chave).append('=').append(valor == null ? "" : valor);
     }
 
-    private static String juntarParticipantes(RegistroAcaoInstrumental registro) {
+    private static String juntarParticipantes(RegistroFactualAcaoInstrumental registro) {
         StringBuilder participantes = new StringBuilder();
         for (String participante : registro.getParticipantesSemanticos()) {
             if (participantes.length() > 0) { participantes.append(','); }

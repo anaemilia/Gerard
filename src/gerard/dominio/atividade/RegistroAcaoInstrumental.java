@@ -3,6 +3,7 @@ package gerard.dominio.atividade;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
 import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
+import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
 import gerard.semantica.numero.ValorNumerico;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.Set;
  * Registro factual único produzido pelo proprietário semântico da ação.
  * Participantes adicionais são referências no mesmo {@code action_id}.
  */
-public final class RegistroAcaoInstrumental {
+public final class RegistroAcaoInstrumental implements RegistroFactualAcaoInstrumental {
     private final IdentidadeAcaoInstrumentalPapel identidade;
     private final TarefaInteracao tarefaInteracao;
     private final TipoSituacaoAditiva categoria;
@@ -88,6 +89,7 @@ public final class RegistroAcaoInstrumental {
 
     public IdentidadeAcaoInstrumentalPapel getIdentidade() { return identidade; }
     public String getActionId() { return identidade.getActionId(); }
+    public OrigemAcao getOrigemAcao() { return identidade.getOrigem(); }
     public TarefaInteracao getTarefaInteracao() { return tarefaInteracao; }
     public TipoSituacaoAditiva getCategoria() { return categoria; }
     public String getProprietarioSemantico() { return proprietarioSemantico; }
@@ -96,8 +98,17 @@ public final class RegistroAcaoInstrumental {
     public Optional<DiagnosticoErroPapel> getDiagnostico() {
         return Optional.ofNullable(diagnostico);
     }
+    public String getTipoDiagnosticoFactual() {
+        return diagnostico == null ? "" : diagnostico.getTipo().name();
+    }
     public ValorNumerico getValorProposto() { return valorProposto; }
     public ValorNumerico getValorEsperado() { return valorEsperado; }
+    public String getValorPropostoFactual() {
+        return valorProposto == null ? "" : valorProposto.formatar(true);
+    }
+    public String getValorEsperadoFactual() {
+        return valorEsperado == null ? "" : valorEsperado.formatar(true);
+    }
     public String getRegraSemantica() { return regraSemantica; }
     public ContextoAcaoInstrumental getContexto() { return contexto; }
     public Optional<ResultadoRegistroTentativaPapel> getResultadoTentativa() {

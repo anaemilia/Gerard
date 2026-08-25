@@ -72,12 +72,10 @@ os eventos de limite e de apresentação das ajudas já existentes carregam o
 `LoggerInteracaoGerard` apenas transporta essas identidades produzidas pelo
 proprietário semântico.
 
-A descrição da P2.5A acima registra o piloto mantido em outra linha de
-implementação. Enquanto `RegistroAcaoInstrumental` e
-`IncognitaQuantitativa` não forem consolidados nesta branch, ela não deve ser
-usada como prova de que a integração adaptativa da P4 já está ativa. A P3.1
-entrega somente a identidade correta e a persistência compatível do primeiro
-protocolo.
+A descrição da P2.5A foi consolidada na branch arquitetural pela P4.1 em
+2026-08-25. `RegistroAcaoInstrumental` e `IncognitaQuantitativa` estão ligados
+ao fluxo `TEXTO` real; a identidade correta da P3.1 permanece a base dessa
+integração.
 
 ### Restauração como ação própria — P3.2, 2026-08-24
 
@@ -99,6 +97,24 @@ de restauração fica vazio. As sequências encerradas permanecem como contexto
 factual no payload/detalhes do registro, permitindo reconstrução posterior sem
 fundir identidade de ação e identidade de sequência. A restauração não recebe
 C/E matemático.
+
+### Classificação da situação como ação própria — P5.1, 2026-08-25
+
+`RegistroFactualAcaoInstrumental` é o contrato comum que permite ao logger e
+ao Modelador receber registros produzidos por proprietários diferentes sem
+reinterpretá-los. O registro numérico da incógnita continua tipado como
+`RegistroAcaoInstrumental`; a classificação usa
+`RegistroAcaoClassificacaoCategoria`, sem fingir que categoria é um papel
+quantitativo.
+
+`TentativaClassificacaoCategoriaAditiva` produz uma ação para cada escolha de
+categoria e outra para cada resposta ao questionamento de confirmação. Clique
+errado e concordância com a definição errada são rejeições distintas. Ações
+corretas não carregam `rejection_sequence_id`; discordar corretamente da
+definição errada conserva internamente a sequência anterior, pois ainda falta
+classificar a situação. No terceiro erro, o mesmo registro informa o limite e
+a interface materializa a reexplicação existente. Monitor, ZDP e persistência
+não calculam C/E nesse fluxo.
 
 ## Esquema de captura (Quadro 4.55)
 

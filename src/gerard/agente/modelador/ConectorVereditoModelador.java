@@ -4,11 +4,11 @@ import gerard.agente.modelousuario.DiagnosticoTarefa;
 import gerard.agente.modelousuario.NivelSuporte;
 import gerard.agente.zdp.CamadaEstrategiaZDP;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
-import gerard.dominio.atividade.RegistroAcaoInstrumental;
+import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 
 /**
  * Porta de entrada de casos no Agente Modelador. O caminho arquitetural
- * vigente recebe diretamente o {@link RegistroAcaoInstrumental} produzido
+ * vigente recebe diretamente o {@link RegistroFactualAcaoInstrumental} produzido
  * pelo proprietário semântico e apenas o projeta para o Modelo do Usuário,
  * sem recalcular C/E ou diagnóstico.
  *
@@ -60,7 +60,7 @@ public class ConectorVereditoModelador {
      */
     public void registrarAcaoInstrumental(
             String idUsuario,
-            RegistroAcaoInstrumental registro,
+            RegistroFactualAcaoInstrumental registro,
             NivelSuporte suporteFactual,
             String idempotencyKey) {
         if (idUsuario == null || registro == null || registro.getCategoria() == null) {
@@ -72,8 +72,8 @@ public class ConectorVereditoModelador {
         diagnostico.setSuporte(suporteFactual);
         diagnostico.setActionId(registro.getActionId());
         diagnostico.setAvaliacao(registro.getResultado().name());
-        diagnostico.setTipoErro(registro.getDiagnostico().isPresent()
-                ? registro.getDiagnostico().get().getTipo().name() : null);
+        diagnostico.setTipoErro(registro.getTipoDiagnosticoFactual().length() == 0
+                ? null : registro.getTipoDiagnosticoFactual());
         diagnostico.setParticipantesSemanticos(registro.getParticipantesSemanticos());
         String chaveIdempotencia = idempotencyKey == null
                 || idempotencyKey.trim().length() == 0

@@ -193,19 +193,40 @@ do proprietário em relação a Swing/AWT.
 
 **Complexidade:** alta. **Risco de comportamento:** alto.
 
-Os agentes legados ainda são instanciados em `Main.java` e participam de
-quatro famílias de fluxo:
+Os agentes legados ainda são instanciados em `Main.java`. Depois da P5.1,
+permanecem consumidores operacionais em três famílias de fluxo:
 
-- seleção/confirmação de categoria;
 - posicionamento;
 - sinal do número relativo;
 - observação e painéis de auditoria/replay.
 
 As chamadas reais permanecem, entre outros pontos, nas regiões de
-`Main.java` próximas a 3710, 3813, 6430, 12428, 13405 e 13502. Migrar uma
-família por vez para seu menor proprietário semântico ou relacional. Os
+`Main.java` relativas a posicionamento, sinal e observação. Migrar uma família
+por vez para seu menor proprietário semântico ou relacional. Os
 painéis, ouvintes e classes legados só devem ser removidos depois que não
 houver consumidor e que replay, logs e regressão continuem aprovados.
+
+**Status P5.1 em 2026-08-25: seleção/confirmação de categoria concluída.**
+`TentativaClassificacaoCategoriaAditiva` referencia a situação curada, compara
+a categoria escolhida com a categoria da própria situação, avalia a resposta
+ao questionamento sobre uma escolha divergente e possui a sequência de
+rejeições. Cada clique ou resposta constitui uma ação distinta, com
+`action_id` próprio; somente as rejeições compartilham
+`rejection_sequence_id`. Discordar da definição errada é ação correta, mas não
+apaga a sequência, pois a categoria da situação ainda não foi acertada.
+
+`Main.java` solicita a avaliação, entrega o registro factual uma vez ao logger
+e uma vez ao Modelador e materializa o desfecho existente. Monitor, ZDP e
+`LimiteErrosConsecutivosCategoria` deixaram de participar dessa família. O
+questionamento após escolha divergente e a reexplicação no terceiro erro foram
+preservados como comportamento já fundamentado pelas observações de campo; a
+escolha da categoria registra suporte anterior `NENHUM`, e a resposta ao
+questionamento registra suporte factual `PARCIAL`.
+
+A verificação determinística aprovou o grafo de 19 skills e o verificador
+arquitetural completo. A linha de base compilou 520 fontes e 88 harnesses:
+84 foram executados com sucesso, quatro permaneceram apenas compilados por
+exigirem ambiente gráfico e nenhum teste foi reprovado.
 
 **Aceite:** somente `AgenteModelador` permanece como agente operacional;
 nenhum objeto ou interface central substitui os proprietários semânticos na

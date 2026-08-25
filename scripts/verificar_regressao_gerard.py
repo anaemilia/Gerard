@@ -177,6 +177,34 @@ check(all(token not in incognita_rica for token in
           ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
       'proprietário semântico permanece independente de Swing, AWT, Monitor e ZDP')
 
+print('== P5.1: classificação de categoria sem Monitor/ZDP ==')
+inicio_fluxo_categoria=main.find('private void clicarAtalhoCategoria(')
+fim_fluxo_categoria=main.find('private void acionarTimeoutCategoria(',
+                               inicio_fluxo_categoria)
+fluxo_categoria=(main[inicio_fluxo_categoria:fim_fluxo_categoria]
+                 if inicio_fluxo_categoria >= 0 and fim_fluxo_categoria > inicio_fluxo_categoria
+                 else '')
+check(bool(fluxo_categoria),'fluxo de seleção/confirmação de categoria localizado na Main')
+check('tentativaClassificacaoCategoriaAtual.avaliarEscolha(' in fluxo_categoria
+      and '.avaliarConfirmacaoCategoriaDivergente(' in fluxo_categoria,
+      'tentativa semântica avalia escolha e confirmação de categoria')
+check(fluxo_categoria.count('registrarAcaoInstrumentalUsuario(registro)') == 2,
+      'cada um dos dois atos de categoria entrega um único registro ao log')
+check(fluxo_categoria.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 2,
+      'os mesmos registros de categoria chegam uma vez ao Modelador')
+check(all(token not in fluxo_categoria for token in
+          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(',
+           'LimiteErrosConsecutivosCategoria')),
+      'Monitor, ZDP e o limite legado não participam do fluxo de categoria')
+tentativa_categoria=text(
+    'src/gerard/dominio/campoaditivo/TentativaClassificacaoCategoriaAditiva.java')
+check('situacao.getTipo()' in tentativa_categoria
+      and 'LIMITE_REJEICOES_CONSECUTIVAS = 3' in tentativa_categoria,
+      'tentativa usa a categoria curada da situação e possui a sequência de rejeições')
+check(all(token not in tentativa_categoria for token in
+          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
+      'proprietário da classificação independe de Swing, AWT, Monitor e ZDP')
+
 print('== Main compositora e roteadora: ratchet dos protocolos de interação ==')
 # Estes limites são a fotografia da versão arquitetural corrente. Eles não
 # medem o tamanho total de Main.java: novas categorias podem acrescentar UI sem

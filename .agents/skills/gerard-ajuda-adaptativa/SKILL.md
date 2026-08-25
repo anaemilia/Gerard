@@ -280,6 +280,36 @@ e do caso, rastreabilidade da decisão e estabilidade da fotografia. O verificad
 Monitor/ZDP no ramo `TEXTO` e a independência do proprietário em relação a
 Swing/AWT.
 
+### Estado de integração — P5.1, 2026-08-25
+
+A família de seleção/confirmação de categoria foi retirada do Monitor e do
+ZDP. A categoria curada continua pertencendo à `SituacaoProblemaAditiva`; o
+menor agregado que conhece essa situação, a escolha do participante e o curso
+da interação é `TentativaClassificacaoCategoriaAditiva`. Ele produz os
+registros factuais da escolha e da resposta ao questionamento, com um
+`action_id` novo para cada ato.
+
+Clique em categoria divergente e concordância com essa categoria são
+rejeições distintas da mesma sequência. Discordar da categoria divergente é
+uma ação correta e não recebe `rejection_sequence_id`, mas não zera a
+sequência: a categoria da situação ainda precisa ser acertada. O terceiro erro
+encerra a tentativa e solicita a reexplicação já existente, decisão sustentada
+pelas observações de campo e já confirmada pela usuária; não é uma nova regra
+inventada durante a migração.
+
+`Main.java` somente fornece contexto instrumental, persiste o mesmo registro,
+encaminha-o ao Modelador e materializa o desfecho. A escolha inicial registra
+suporte anterior `NENHUM`; a resposta ao questionamento registra suporte
+factual `PARCIAL`. A materialização narrativa posterior continua sendo um
+fluxo de compatibilidade já existente e não autoriza ampliar o repertório de
+seis códigos nem fabricar uma regra adaptativa publicada.
+
+O harness `TesteP5_1ClassificacaoCategoria` protege a separação entre ações,
+a sequência compartilhada somente por rejeições, a idempotência do logger e
+do Modelador e a aceitação da categoria curada. Em 2026-08-25, a linha de base
+compilou 520 fontes e 88 harnesses, executou 84 sem falhas e manteve quatro
+testes gráficos compilados para execução em ambiente com display.
+
 ## Histórico da proposta teórica e da implementação anterior
 
 O conteúdo histórico abaixo vem do material de pesquisa/tese do usuário e de
