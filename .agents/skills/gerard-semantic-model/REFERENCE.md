@@ -249,6 +249,14 @@ distintos e são correlacionadas por `rejection_sequence_id`. Gestos sem ação
 não entram na sequência. Acionar o botão "restaurar" também constitui outra
 ação separada.
 
+> **Status de implementação (P3.2, 2026-08-24):** os dois comandos Restaurar
+> da interface são tipos distintos de ação da tentativa/modelagem e recebem
+> novo `action_id`. A ação de restauração encerra sequências anteriores, mas
+> não recebe o `rejection_sequence_id` encerrado como se fosse uma quarta
+> rejeição; essas identidades permanecem somente no contexto factual do
+> registro. `TentativaModelagemAditiva` é o proprietário semântico da ação, e
+> os papéis envolvidos aplicam apenas sua mudança local.
+
 Isso introduz um novo campo, `action_id`, que correlaciona os eventos de
 uma mesma ação — distinto de `event_id` (o identificador de cada evento
 individual; hoje é `id_acao`, cuja renomeação para `event_id` é

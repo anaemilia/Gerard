@@ -2089,16 +2089,15 @@ public class Main extends JFrame {
             configurarBotaoAcaoContextual(botaoRestaurar, localizacao.texto("ui.tooltip.restore.elements"));
             botaoRestaurar.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    registrarLogUsuario(
+                    registrarAcaoRestauracao(
+                            gerard.dominio.campoaditivo.TipoRestauracaoModelagem.ELEMENTOS_FORA_DO_DIAGRAMA,
                             "Restaurar elementos fora do diagrama",
-                            "-",
                             "Botão Restaurar",
                             "Botão Restaurar do enunciado",
                             "Repor elementos móveis que ficaram fora do modelo",
                             "OBJ8",
                             "A restauração permite retomar a modelagem sem alterar o problema.",
-                            "RESTAURAR_TEXTO",
-                            ""
+                            "RESTAURAR_TEXTO"
                     );
                     restaurarElementosForaDoDiagrama();
                     requestFocusInWindow();
@@ -2526,16 +2525,15 @@ public class Main extends JFrame {
             );
             botaoRestaurarDiagrama.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    registrarLogUsuario(
+                    registrarAcaoRestauracao(
+                            gerard.dominio.campoaditivo.TipoRestauracaoModelagem.DIAGRAMA_COMPLETO,
                             "Restaurar a área do diagrama",
-                            "-",
                             "Botão Restaurar",
                             "Botão Restaurar da área do diagrama",
                             "Limpar a modelagem e permitir nova tentativa",
                             "OBJ8",
                             "O sujeito pode recomeçar a construção do diagrama.",
-                            "RESTAURAR_DIAGRAMA",
-                            ""
+                            "RESTAURAR_DIAGRAMA"
                     );
                     restaurarModelagemDiagrama();
                     requestFocusInWindow();
@@ -5666,7 +5664,6 @@ public class Main extends JFrame {
         }
 
         private void restaurarElementosForaDoDiagrama() {
-            restaurarTentativasIncognitaAtual();
             handlerItemTextoArrastavel.cancelar();
             handlerElementoTextoMovel.cancelar();
             handlerQuadradinhoVenn.cancelar();
@@ -5724,7 +5721,6 @@ public class Main extends JFrame {
          * é a única operação autorizada a limpar o estado dos diagramas.
          */
         private void restaurarModelagemDiagrama() {
-            restaurarTentativasIncognitaAtual();
             cancelarEfeitosArraste();
             reiniciarConclusaoModelagem();
             controladorEstadoAtividade.registrar(AcaoAtividade.RESTAURAR);
@@ -6274,17 +6270,37 @@ public class Main extends JFrame {
         }
 
         /**
-         * Aciona "restaurar" no fluxo de tentativas (REFERENCE.md §4.8):
-         * chamado pelos dois botões "Restaurar" já existentes em produção
-         * (botaoRestaurar e botaoRestaurarDiagrama) — nenhum foi desenhado
-         * especificamente para este fluxo, mas ambos já reiniciam a
-         * interação com o item de alguma forma, e não há um terceiro botão
-         * dedicado. Sem efeito se nenhuma tentativa foi registrada ainda.
+         * Solicita ao agregado da tentativa uma única ação de restauração e
+         * entrega o registro já constituído à infraestrutura. A tela conhece
+         * o botão e materializa o efeito visual; não cria action_id, não
+         * associa a restauração à sequência rejeitada e não reinventa a regra
+         * de encerramento pertencente ao domínio.
          */
-        private void restaurarTentativasIncognitaAtual() {
-            if (tentativasIncognitaAtual != null) {
-                tentativasIncognitaAtual.restaurar();
-            }
+        private void registrarAcaoRestauracao(
+                gerard.dominio.campoaditivo.TipoRestauracaoModelagem tipo,
+                String tarefa,
+                String instrumentoOrganizacao,
+                String instrumentoArtefato,
+                String funcaoDoArtefato,
+                String objeto,
+                String regras,
+                String origemEvento) {
+            gerard.dominio.campoaditivo.TentativaModelagemAditiva tentativa =
+                    new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
+                            loggerInteracaoGerard.getTentativaAtualId());
+            gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem registro =
+                    tentativa.restaurar(tipo, OrigemAcao.ORIGEM_USUARIO,
+                            tentativasIncognitaAtual);
+            String detalhes = "tipo_restauracao=" + registro.getTipo().name()
+                    + "; tentativa_id=" + registro.getTentativaId()
+                    + "; papeis_participantes=" + registro.getPapeisParticipantes()
+                    + "; sequencias_rejeicao_encerradas="
+                    + registro.getSequenciasRejeicaoEncerradas();
+            registrarLogUsuarioComIdentidade(
+                    "SELECIONAR", tarefa, "-", instrumentoOrganizacao,
+                    instrumentoArtefato, funcaoDoArtefato, objeto, regras,
+                    origemEvento, detalhes, registro.getActionId(),
+                    registro.getRejectionSequenceId());
         }
 
         /**
@@ -12421,7 +12437,25 @@ public class Main extends JFrame {
                 String detalhes,
                 String actionId,
                 String rejectionSequenceId) {
-            loggerInteracaoGerard.registrarUsuarioComIdentidade("TEXTO", tarefa, ce,
+            registrarLogUsuarioComIdentidade("TEXTO", tarefa, ce,
+                    instrumentoOrganizacao, instrumentoArtefato,
+                    funcaoDoArtefato, objeto, regras, origemEvento, detalhes,
+                    actionId, rejectionSequenceId);
+        }
+
+        private void registrarLogUsuarioComIdentidade(String tipoAcao,
+                String tarefa,
+                String ce,
+                String instrumentoOrganizacao,
+                String instrumentoArtefato,
+                String funcaoDoArtefato,
+                String objeto,
+                String regras,
+                String origemEvento,
+                String detalhes,
+                String actionId,
+                String rejectionSequenceId) {
+            loggerInteracaoGerard.registrarUsuarioComIdentidade(tipoAcao, tarefa, ce,
                     instrumentoOrganizacao, instrumentoArtefato,
                     funcaoDoArtefato, objeto, regras, origemEvento, detalhes,
                     actionId, rejectionSequenceId);

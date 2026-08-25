@@ -438,13 +438,38 @@ check('"action_id",' in evento_log
       and 'campo(campos, 32)' in evento_log,
       'log de ações acrescenta identidades ao final e lê linhas antigas')
 check('registrarUsuarioComIdentidade' in main
-      and 'registrarUsuarioComIdentidade("TEXTO", tarefa' in main
+      and 'registrarLogUsuarioComIdentidade("TEXTO", tarefa' in main
       and 'resultado.getActionId()' in main
       and 'resultado.getRejectionSequenceId()' in main,
       'protocolo TEXTO persiste a identidade produzida pelo papel semântico')
 check('gesture_id identifica o gesto físico' in identificacao_auditoria
       and 'rejectionSequenceId' in identificacao_auditoria,
       'auditoria não define gesture_id e action_id como a mesma identidade')
+
+print('== Restauração como ação própria da tentativa (P3.2) ==')
+tentativa_modelagem=text('src/gerard/dominio/campoaditivo/TentativaModelagemAditiva.java')
+registro_restauracao=text('src/gerard/dominio/campoaditivo/RegistroAcaoRestauracaoModelagem.java')
+tipo_restauracao=text('src/gerard/dominio/campoaditivo/TipoRestauracaoModelagem.java')
+check('class TentativaModelagemAditiva' in tentativa_modelagem
+      and 'UUID.randomUUID().toString()' in tentativa_modelagem
+      and 'papel.restaurar()' in tentativa_modelagem,
+      'agregado da tentativa constitui uma ação e coordena a restauração local dos participantes')
+check('ELEMENTOS_FORA_DO_DIAGRAMA' in tipo_restauracao
+      and 'DIAGRAMA_COMPLETO' in tipo_restauracao,
+      'os dois comandos Restaurar permanecem semanticamente distintos')
+check('getRejectionSequenceId() { return ""; }' in registro_restauracao
+      and 'getSequenciasRejeicaoEncerradas()' in registro_restauracao,
+      'a restauração encerra sequências anteriores sem se tornar parte delas')
+check(all(token not in tentativa_modelagem + registro_restauracao + tipo_restauracao
+          for token in ('java.awt', 'javax.swing', 'MouseEvent', 'JButton')),
+      'domínio da restauração permanece independente da tecnologia de interface')
+check('registrarAcaoRestauracao(' in main
+      and 'TipoRestauracaoModelagem.ELEMENTOS_FORA_DO_DIAGRAMA' in main
+      and 'TipoRestauracaoModelagem.DIAGRAMA_COMPLETO' in main
+      and 'registrarLogUsuarioComIdentidade(\n                    "SELECIONAR"' in main,
+      'tela solicita a ação tipada e persiste a identidade produzida pelo agregado')
+check('restaurarTentativasIncognitaAtual' not in main,
+      'tela não restaura diretamente o estado local pertencente ao domínio')
 
 print('== Handler local do elemento textual ==')
 handler_elemento_texto=text('src/gerard/interacao/arraste/HandlerInteracaoElementoTextoMovel.java')

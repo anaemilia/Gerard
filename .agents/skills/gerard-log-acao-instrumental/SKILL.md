@@ -79,6 +79,27 @@ usada como prova de que a integração adaptativa da P4 já está ativa. A P3.1
 entrega somente a identidade correta e a persistência compatível do primeiro
 protocolo.
 
+### Restauração como ação própria — P3.2, 2026-08-24
+
+Os dois comandos já existentes, “Restaurar elementos fora do diagrama” e
+“Restaurar diagrama”, constituem ações instrumentais distintas. Cada clique
+produz um novo `action_id`, mesmo quando nenhuma rejeição ocorreu antes.
+
+Como a restauração coordena a tentativa/modelagem e pode envolver vários
+papéis, seu proprietário não é o botão Swing nem um `PapelQuantitativo`
+isolado. `TentativaModelagemAditiva` produz um único
+`RegistroAcaoRestauracaoModelagem`, referencia os papéis participantes e manda
+cada papel aplicar somente sua mudança local de contagem/bloqueio. A interface
+solicita a ação, persiste o registro já constituído e materializa o efeito
+visual existente.
+
+A restauração encerra a sequência de rejeições anterior, mas não é uma
+rejeição dessa sequência. Portanto, o campo `rejection_sequence_id` da linha
+de restauração fica vazio. As sequências encerradas permanecem como contexto
+factual no payload/detalhes do registro, permitindo reconstrução posterior sem
+fundir identidade de ação e identidade de sequência. A restauração não recebe
+C/E matemático.
+
 ## Esquema de captura (Quadro 4.55)
 
 Cada ação instrumental registrada deve poder responder:

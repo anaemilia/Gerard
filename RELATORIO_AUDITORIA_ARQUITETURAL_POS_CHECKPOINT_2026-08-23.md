@@ -117,6 +117,15 @@ derivados da terceira rejeição conservam as duas identidades e o log de gestos
 permanece sem avaliação ou correlação de ação. Evidências e limites estão em
 `RELATORIO_P3_1_IDENTIDADE_SEQUENCIA_REJEICOES_2026-08-24.md`.
 
+**Atualização de 2026-08-24 — P3.2 concluída nos dois comandos Restaurar.**
+`TentativaModelagemAditiva` constitui uma única ação por comando, distingue a
+restauração dos elementos externos da restauração integral do diagrama e
+coordena os papéis participantes. Cada restauração recebe novo `action_id` e
+encerra as sequências anteriores sem integrar nenhuma delas; o
+`rejection_sequence_id` da própria restauração permanece vazio. A interface
+somente solicita, persiste e materializa. Evidências e limites estão em
+`RELATORIO_P3_2_RESTAURACAO_COMO_ACAO_2026-08-24.md`.
+
 O diagnóstico abaixo descreve o estado encontrado antes da P3.1 e é mantido
 como histórico da auditoria.
 

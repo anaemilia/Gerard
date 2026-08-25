@@ -259,10 +259,14 @@ public final class PapelQuantitativo {
     }
 
     /**
-     * Aciona "restaurar" (REFERENCE.md §4.8): encerra o bloqueio, se houver,
-     * e zera a contagem — a próxima tentativa rejeitada abre uma sequência
-     * nova. Não altera valorAtual nem publica evento: acionar
-     * "restaurar" não é, em si, uma tentativa de posicionamento.
+     * Participação local do papel numa restauração da tentativa: encerra o
+     * bloqueio, se houver, e zera a contagem. A próxima rejeição abre outra
+     * sequência. Não altera {@code valorAtual}.
+     *
+     * A restauração é uma ação instrumental própria, mas coordena a tentativa
+     * e pode envolver vários papéis. Por isso, sua identidade e seu registro
+     * são produzidos por {@link TentativaModelagemAditiva}; este método apenas
+     * aplica ao papel a parte local da mudança.
      */
     public void restaurar() {
         ultimoActionId = null;

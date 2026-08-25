@@ -4,8 +4,11 @@ import gerard.dominio.campoaditivo.FabricaPapeisComparacaoMedidas;
 import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
+import gerard.dominio.campoaditivo.TentativaModelagemAditiva;
 import gerard.dominio.campoaditivo.TipoErroPapel;
+import gerard.dominio.campoaditivo.TipoRestauracaoModelagem;
 import gerard.dominio.campoaditivo.evento.EventoDominio;
 import gerard.dominio.campoaditivo.evento.EventoPapelQuantitativo;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
@@ -73,12 +76,46 @@ public class TestePilotoTentativasRejeitadas {
 
         System.out.println("=== Restaurar encerra a sequência; a próxima rejeição abre outra ===");
         String primeiraSequencia = r1.getRejectionSequenceId();
-        papel.restaurar();
+        TentativaModelagemAditiva tentativa = new TentativaModelagemAditiva("tentativa-1");
+        RegistroAcaoRestauracaoModelagem restauracao = tentativa.restaurar(
+                TipoRestauracaoModelagem.ELEMENTOS_FORA_DO_DIAGRAMA,
+                OrigemAcao.ORIGEM_USUARIO, papel);
+        exigir(restauracao.getActionId() != null
+                        && !actionIds.contains(restauracao.getActionId()),
+                "Restaurar deve constituir uma ação própria.");
+        exigir(restauracao.getRejectionSequenceId().length() == 0,
+                "A restauração não deve integrar a sequência rejeitada que encerra.");
+        exigir(restauracao.getSequenciasRejeicaoEncerradas().contains(primeiraSequencia),
+                "O registro deve preservar como contexto a sequência encerrada.");
+        exigir(restauracao.getTipo() == TipoRestauracaoModelagem.ELEMENTOS_FORA_DO_DIAGRAMA,
+                "O escopo da restauração de elementos deve permanecer explícito.");
         exigir(papel.getRejectionSequenceIdAtual() == null,
                 "Restaurar deve encerrar a sequência corrente.");
         ResultadoRegistroTentativaPapel nova = rejeitar(papel, incorreto, contexto, 9);
         exigir(!primeiraSequencia.equals(nova.getRejectionSequenceId()),
                 "Uma rejeição após restaurar deve abrir sequência nova.");
+
+        System.out.println("=== Uma restauração pode referenciar vários papéis sem duplicar a ação ===");
+        PapelQuantitativo outroPapel = FabricaPapeisComparacaoMedidas.referido(publicador);
+        ResultadoRegistroTentativaPapel rejeicaoOutro = rejeitar(
+                outroPapel, incorreto, contexto, 4);
+        RegistroAcaoRestauracaoModelagem restauracaoDiagrama = tentativa.restaurar(
+                TipoRestauracaoModelagem.DIAGRAMA_COMPLETO,
+                OrigemAcao.ORIGEM_USUARIO, papel, outroPapel, papel);
+        exigir(!restauracao.getActionId().equals(restauracaoDiagrama.getActionId()),
+                "Cada comando Restaurar deve receber novo action_id.");
+        exigir(restauracaoDiagrama.getPapeisParticipantes().size() == 2,
+                "Papéis repetidos devem ser referências na mesma ação, sem duplicação.");
+        exigir(restauracaoDiagrama.getSequenciasRejeicaoEncerradas().contains(
+                        nova.getRejectionSequenceId())
+                        && restauracaoDiagrama.getSequenciasRejeicaoEncerradas().contains(
+                                rejeicaoOutro.getRejectionSequenceId()),
+                "Uma restauração integral deve preservar todas as sequências encerradas.");
+        exigir(restauracaoDiagrama.getTipo() == TipoRestauracaoModelagem.DIAGRAMA_COMPLETO,
+                "Restaurar o diagrama deve permanecer distinto de restaurar elementos.");
+        exigir(papel.getTentativasRejeitadasConsecutivas() == 0
+                        && outroPapel.getTentativasRejeitadasConsecutivas() == 0,
+                "O agregado deve aplicar a restauração local a todos os participantes.");
 
         System.out.println("=== Acerto é nova ação e encerra rejeições anteriores ===");
         eventos.clear();
