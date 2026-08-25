@@ -109,6 +109,17 @@ informados pelo pesquisador, inclusive `relacao_final`.
 
 **Complexidade:** média. **Risco semântico:** alto.
 
+**Atualização de 2026-08-24 — P3.1 concluída no protocolo `TEXTO` da
+incógnita.** `PapelQuantitativo` agora produz um `action_id` por submissão e
+um `rejection_sequence_id` separado para correlacionar rejeições consecutivas.
+O TSV ganhou os dois campos ao final com leitura retrocompatível, os eventos
+derivados da terceira rejeição conservam as duas identidades e o log de gestos
+permanece sem avaliação ou correlação de ação. Evidências e limites estão em
+`RELATORIO_P3_1_IDENTIDADE_SEQUENCIA_REJEICOES_2026-08-24.md`.
+
+O diagnóstico abaixo descreve o estado encontrado antes da P3.1 e é mantido
+como histórico da auditoria.
+
 A implementação versionada ainda conserva a regra supersedida segundo a qual
 várias tentativas rejeitadas compartilham o mesmo `action_id`:
 

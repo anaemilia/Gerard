@@ -646,9 +646,9 @@ public class Main extends JFrame {
         // retirada progressiva) a partir do veredito do Monitor, antes do
         // Modelador armazenar o caso — ver AgenteZDP.decidirEstrategia.
         final gerard.agente.zdp.AgenteZDP agenteZDP = new gerard.agente.zdp.AgenteZDP();
-        // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8, cardinalidade
-        // ação:evento, Alternativa B; TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md,
-        // 2026-08-07): só a contagem de tentativas/action_id
+        // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8;
+        // TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md): contagem,
+        // action_id por submissão e rejection_sequence_id por sequência
         // (PapelQuantitativo.registrarTentativa), nunca armazenamento de
         // valor real — isso continua exclusivamente com
         // estadoSemanticoCompartilhado. Recriado sempre que o papel da
@@ -983,7 +983,7 @@ public class Main extends JFrame {
         boolean mostrarDicaPosicionamentoPersistente = false;
         String papelDicaPosicionamentoAtual = null;
         ElementoVergnaud elementoDicaPosicionamentoPersistente = null;
-        // Correlação ação:evento (REFERENCE.md §4.8, Alternativa B, 1:N) e
+        // Correlação ação:evento (REFERENCE.md §4.8, 1:N) e
         // "qual o próximo papel resolvido/não resolvido" são regras
         // semânticas, não de interface (gerard-domain-model-first,
         // gerard-knowledge-locality-principle) — vivem em
@@ -6343,7 +6343,21 @@ public class Main extends JFrame {
          *         o conteúdo pedagógico específico da ajuda continua uma
          *         decisão futura, não tomada aqui.
          */
-        private boolean registrarTentativaIncognita(String papelAlvo, boolean correto, ItemTextoArrastavel item) {
+        /** Compatibilidade do protocolo e dos harnesses anteriores à P3.1. */
+        private boolean registrarTentativaIncognita(
+                String papelAlvo, boolean correto, ItemTextoArrastavel item) {
+            garantirTentativasIncognitaAtual(papelAlvo);
+            gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidade =
+                    tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                            gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+            return registrarTentativaIncognita(papelAlvo, correto, item,
+                    identidade, false).isLimiteAtingidoAgora();
+        }
+
+        private gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel registrarTentativaIncognita(
+                String papelAlvo, boolean correto, ItemTextoArrastavel item,
+                gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao,
+                boolean registrarAcaoDoProtocoloTexto) {
             garantirTentativasIncognitaAtual(papelAlvo);
             Integer valorNumerico = item == null ? null : converterTextoParaInteiro(item.valor);
             gerard.semantica.numero.ValorNumerico valorProposto = valorNumerico == null
@@ -6354,11 +6368,28 @@ public class Main extends JFrame {
                             gerard.dominio.campoaditivo.TipoErroPapel.VALOR_INCORRETO,
                             "erro.papel.valorIncorreto", "feedback.papel.valorIncorreto",
                             "correcao.papel.valorIncorreto"));
-            boolean limiteAtingidoAgora = tentativasIncognitaAtual.registrarTentativa(
-                    diagnostico, gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO,
-                    gerard.dominio.campoaditivo.ContextoAcao.NAO_INFORMADO, valorProposto);
-            if (limiteAtingidoAgora) {
-                registrarLogComputador(
+            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultado =
+                    tentativasIncognitaAtual.registrarTentativaComIdentidade(
+                            identidadeAcao, diagnostico,
+                            gerard.dominio.campoaditivo.ContextoAcao.NAO_INFORMADO,
+                            valorProposto);
+            if (registrarAcaoDoProtocoloTexto) {
+                registrarLogUsuarioComIdentidade(
+                        "Substituir incógnita por número",
+                        correto ? "C" : "E",
+                        "Caixa de texto editável",
+                        "Item arrastável no diagrama",
+                        "Informar valor numérico para elemento previamente marcado como incógnita",
+                        "OBJ8",
+                        correto
+                                ? "O valor informado satisfaz a relação estrutural da situação."
+                                : "O valor informado não satisfaz a relação estrutural da situação.",
+                        "EDICAO_ITEM",
+                        "valor=" + (item == null ? "" : item.valor),
+                        resultado.getActionId(), resultado.getRejectionSequenceId());
+            }
+            if (resultado.isLimiteAtingidoAgora()) {
+                registrarLogComputadorComIdentidade(
                         "Limite de tentativas rejeitadas atingido",
                         "Fluxo de tentativas (REFERENCE.md §4.8)",
                         "3ª rejeição consecutiva do mesmo item",
@@ -6366,7 +6397,8 @@ public class Main extends JFrame {
                         "Mecanismo implementado; conteúdo específico da ajuda pedagógica é decisão "
                                 + "futura, não tomada aqui — ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md",
                         "LIMITE_TENTATIVAS_ATINGIDO",
-                        "papel=" + papelAlvo + "; action_id=" + tentativasIncognitaAtual.getActionIdAtual());
+                        "papel=" + papelAlvo,
+                        resultado.getActionId(), resultado.getRejectionSequenceId());
                 // AG_EMCME (material concreto): é exatamente neste instante
                 // que deveExibirDiagramaComplementar() passa a devolver
                 // true — a modalidade é MANIPULATIVA (interativa), então o
@@ -6377,9 +6409,10 @@ public class Main extends JFrame {
                 // disponibilidade já existe a partir daqui.
                 registrarFeedbackExibido("AG_EMCME (material concreto)",
                         gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.MANIPULATIVA,
-                        "diagrama complementar passou a estar disponível");
+                        "diagrama complementar passou a estar disponível",
+                        resultado.getActionId(), resultado.getRejectionSequenceId());
             }
-            return limiteAtingidoAgora;
+            return resultado;
         }
 
         /**
@@ -6396,14 +6429,17 @@ public class Main extends JFrame {
          * uma validação pedagógica definitiva; a lógica de seleção do
          * repertório de Scaffolding em dois eixos continua não decidida.
          */
-        private void mostrarAvisoLimiteTentativasAtingido() {
+        private void mostrarAvisoLimiteTentativasAtingido(
+                gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultado) {
             String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
             String mensagem = localizacao.formatar("ui.notice.attemptLimitReached", nomePapel);
             JOptionPane.showMessageDialog(this, mensagem,
                     localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
             registrarFeedbackExibido("AG_EMCME (mensagem)",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "aviso do limite de tentativas, com dica de revisar a relação entre quantidades");
+                    "aviso do limite de tentativas, com dica de revisar a relação entre quantidades",
+                    resultado == null ? null : resultado.getActionId(),
+                    resultado == null ? null : resultado.getRejectionSequenceId());
         }
 
         /**
@@ -6435,26 +6471,27 @@ public class Main extends JFrame {
         }
 
         /**
-         * Variante com correlação explícita de ação (REFERENCE.md §4.8,
-         * cardinalidade ação:evento, Alternativa B — 1:N): quando
-         * {@code actionId} não é nulo, várias exibições de FEEDBACK_EXIBIDO
-         * que pertencem à mesma ação pedagógica (ex.: pedir a mesma dica de
-         * posicionamento mais de uma vez, enquanto o papel continua não
-         * resolvido) carregam o mesmo `action_id` no log — não são eventos
-         * avulsos e desconectados, são o mesmo padrão já adotado para
-         * tentativas rejeitadas, aplicado aqui à automatização de passos
-         * (AG_AE). Os 5 pontos de disparo pré-existentes (AG_EMS/EME/EMLQ/
-         * EMCME) continuam usando a variante de 3 argumentos — cada um é,
-         * por natureza, um evento único (não uma série correlacionada) —
-         * então nenhum deles muda de comportamento.
+         * Variante com correlação explícita: eventos derivados de uma única
+         * ação carregam o mesmo action_id. Na P3.1, os feedbacks apresentados
+         * em consequência da terceira rejeição também carregam o
+         * rejection_sequence_id daquela sequência. Uma nova solicitação do
+         * participante constitui outra ação e não deve reutilizar action_id.
+         * Os pontos antigos que não fornecem identidade continuam compatíveis.
          */
         private void registrarFeedbackExibido(String estiloScaffolding,
                 gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding modalidade,
                 String detalhesExtra, String actionId) {
+            registrarFeedbackExibido(estiloScaffolding, modalidade, detalhesExtra,
+                    actionId, null);
+        }
+
+        private void registrarFeedbackExibido(String estiloScaffolding,
+                gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding modalidade,
+                String detalhesExtra, String actionId, String rejectionSequenceId) {
             String criterio = modalidade.ehPassiva()
                     ? "renderizado (modalidade passiva)"
                     : "affordance ativada (modalidade interativa)";
-            registrarLogComputador(
+            registrarLogComputadorComIdentidade(
                     "Exibir apoio pedagógico (Scaffolding)",
                     "Repertório de Scaffolding (REFERENCE.md §4.8)",
                     estiloScaffolding,
@@ -6465,7 +6502,8 @@ public class Main extends JFrame {
                     "estilo=" + estiloScaffolding + "; modalidade=" + modalidade
                             + "; criterio=" + criterio
                             + (detalhesExtra == null || detalhesExtra.length() == 0 ? "" : "; " + detalhesExtra)
-                            + (actionId == null || actionId.length() == 0 ? "" : "; action_id=" + actionId));
+                            + (actionId == null || actionId.length() == 0 ? "" : "; action_id=" + actionId),
+                    actionId, rejectionSequenceId);
         }
 
         /**
@@ -6480,7 +6518,19 @@ public class Main extends JFrame {
          *         curado disponível, ou o valor já bate); false sempre que
          *         houver divergência, independente da resposta do usuário.
          */
+        /** Compatibilidade dos demais protocolos que também concluem uma incógnita. */
         private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item) {
+            String papelAlvo = obterPapelIncognitaAtual();
+            garantirTentativasIncognitaAtual(papelAlvo);
+            gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidade =
+                    tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                            gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+            return confirmarValorIncognitaAceito(item, identidade, false);
+        }
+
+        private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item,
+                gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao,
+                boolean registrarAcaoDoProtocoloTexto) {
             // Mesma comparação de incognitaAguardandoConfirmacaoDeValor, mas
             // sem perder a distinção "não aplicável" (null) de "correto"
             // (true) — precisamos das duas pra decidir se notifica os
@@ -6490,18 +6540,21 @@ public class Main extends JFrame {
             if (item != null && item.representaIncognitaOriginal() && item.isPreenchidoPeloProtocoloMouseTexto()) {
                 correto = valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor);
             }
-            boolean limiteTentativasAtingidoAgora = false;
+            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa = null;
             if (correto != null) {
                 registrarPapeisDadoModificadosSeHouver();
                 String papelAlvo = obterPapelIncognitaAtual();
-                limiteTentativasAtingidoAgora =
-                        registrarTentativaIncognita(papelAlvo, correto.booleanValue(), item);
+                resultadoTentativa = registrarTentativaIncognita(
+                        papelAlvo, correto.booleanValue(), item, identidadeAcao,
+                        registrarAcaoDoProtocoloTexto);
                 if (agentAuditService != null) {
                     agentAuditService.iniciarAcao(
                             new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
                                     loggerInteracaoGerard.getUsuarioAtual(),
                                     situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo),
+                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo,
+                                    resultadoTentativa.getActionId(),
+                                    resultadoTentativa.getRejectionSequenceId()),
                             new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
                                     "type", papelAlvo, item == null ? null : item.valor, null, papelAlvo,
                                     null, null, null, null),
@@ -6531,13 +6584,13 @@ public class Main extends JFrame {
             if (correto == null || correto.booleanValue()) {
                 return true;
             }
-            if (limiteTentativasAtingidoAgora) {
+            if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
                 // 3ª rejeição consecutiva do mesmo item: encerra a ação e
                 // bloqueia novas tentativas (ver registrarTentativaIncognita)
                 // — mostra o aviso mínimo em vez do diálogo normal de
                 // confirmação/dica, já que novas tentativas ficam bloqueadas
                 // até "restaurar" mesmo que o participante confirme.
-                mostrarAvisoLimiteTentativasAtingido();
+                mostrarAvisoLimiteTentativasAtingido(resultadoTentativa);
                 return false;
             }
             String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
@@ -12357,6 +12410,38 @@ public class Main extends JFrame {
                     instrumentoArtefato, funcaoDoArtefato, null, regras, origemEvento, detalhes);
         }
 
+        private void registrarLogUsuarioComIdentidade(String tarefa,
+                String ce,
+                String instrumentoOrganizacao,
+                String instrumentoArtefato,
+                String funcaoDoArtefato,
+                String objeto,
+                String regras,
+                String origemEvento,
+                String detalhes,
+                String actionId,
+                String rejectionSequenceId) {
+            loggerInteracaoGerard.registrarUsuarioComIdentidade("TEXTO", tarefa, ce,
+                    instrumentoOrganizacao, instrumentoArtefato,
+                    funcaoDoArtefato, objeto, regras, origemEvento, detalhes,
+                    actionId, rejectionSequenceId);
+        }
+
+        private void registrarLogComputadorComIdentidade(String tarefa,
+                String instrumentoOrganizacao,
+                String instrumentoArtefato,
+                String funcaoDoArtefato,
+                String regras,
+                String origemEvento,
+                String detalhes,
+                String actionId,
+                String rejectionSequenceId) {
+            loggerInteracaoGerard.registrarComputadorComIdentidade(tarefa,
+                    instrumentoOrganizacao, instrumentoArtefato,
+                    funcaoDoArtefato, regras, origemEvento, detalhes,
+                    actionId, rejectionSequenceId);
+        }
+
         /**
          * Ponto único de despacho do log de interação, tipado pela origem da
          * ação (gerard.dominio.campoaditivo.OrigemAcao) — no lugar da
@@ -13967,13 +14052,24 @@ public class Main extends JFrame {
                 entrada = entrada.trim();
 
                 if (entrada.matches("[0-9]+")) {
+                    ElementoVergnaud numeroRelativo = encontrarNumeroRelativoPorItem(item);
+                    boolean preenchimentoDeInterrogacao = SimboloDesconhecido.eh(item.origemValor)
+                            || SimboloDesconhecido.eh(scaffoldingNumeroRelativo.removerSinal(item.valor));
+                    gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao = null;
+                    if (preenchimentoDeInterrogacao && numeroRelativo == null) {
+                        String papelIncognita = obterPapelIncognitaAtual();
+                        garantirTentativasIncognitaAtual(papelIncognita);
+                        identidadeAcao = tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                                gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+                    }
                     // Correção rodada 3 (2026-07-31): a checagem de posição
                     // abaixo e a checagem de valor em
                     // confirmarValorIncognitaAceito (mais adiante, só no
                     // ramo de preenchimento de incógnita) são duas
                     // perguntas do MESMO gesto do usuário ("digitar e
-                    // confirmar um número") — reservarProximoGesto faz as
-                    // duas compartilharem gesture_id/action_id.
+                    // confirmar um número"). O gesto conserva gesture_id e
+                    // todos os eventos da ação conservam o action_id emitido
+                    // pelo proprietário semântico; são identidades distintas.
                     // A posição já foi validada quando o item foi
                     // solto/arrastado até aqui (evento SOLTURA_USUARIO
                     // anterior); reconferir agora é reavaliação de
@@ -13981,7 +14077,8 @@ public class Main extends JFrame {
                     // pedagógica, não mexe em ZDP/Modelador de novo), não
                     // um gesto canônico novo.
                     if (agentAuditService != null) {
-                        agentAuditService.reservarProximoGesto();
+                        agentAuditService.reservarProximoGesto(
+                                identidadeAcao == null ? null : identidadeAcao.getActionId());
                     }
                     String ceIncognita = "-";
                     String regrasIncognita = "A ação não foi avaliada como acerto ou erro matemático.";
@@ -13993,24 +14090,23 @@ public class Main extends JFrame {
                                 ? "O valor foi associado ao elemento do modelo que representa sua função no problema."
                                 : "O valor deve ser associado ao elemento do modelo que representa sua função no problema.";
                     }
-                    registrarLogUsuario(
-                            "Substituir incógnita por número",
-                            ceIncognita,
-                            "Caixa de texto editável",
-                            "Item arrastável no diagrama",
-                            "Informar valor numérico para elemento previamente marcado como incógnita",
-                            "OBJ8",
-                            regrasIncognita,
-                            "EDICAO_ITEM",
-                            "valor=" + entrada
-                    );
-                    registrarAcaoGranular("TEXTO", "Substituir texto da incógnita", "Caixa de texto editável",
-                            "Item arrastável", "Modificar texto", "valor=" + entrada, "Texto da incógnita modificado.");
-                    registrarAcaoGranular("QUANTIFICAR", "Especificar valor da incógnita", "Caixa de texto editável",
-                            "Item arrastável", "Especificar valor numérico", "valor=" + entrada, "Valor numérico informado.");
-                    ElementoVergnaud numeroRelativo = encontrarNumeroRelativoPorItem(item);
-                    boolean preenchimentoDeInterrogacao = SimboloDesconhecido.eh(item.origemValor)
-                            || SimboloDesconhecido.eh(scaffoldingNumeroRelativo.removerSinal(item.valor));
+                    if (identidadeAcao == null) {
+                        registrarLogUsuario(
+                                "Substituir incógnita por número",
+                                ceIncognita,
+                                "Caixa de texto editável",
+                                "Item arrastável no diagrama",
+                                "Informar valor numérico para elemento previamente marcado como incógnita",
+                                "OBJ8",
+                                regrasIncognita,
+                                "EDICAO_ITEM",
+                                "valor=" + entrada
+                        );
+                        registrarAcaoGranular("TEXTO", "Substituir texto da incógnita", "Caixa de texto editável",
+                                "Item arrastável", "Modificar texto", "valor=" + entrada, "Texto da incógnita modificado.");
+                        registrarAcaoGranular("QUANTIFICAR", "Especificar valor da incógnita", "Caixa de texto editável",
+                                "Item arrastável", "Especificar valor numérico", "valor=" + entrada, "Valor numérico informado.");
+                    }
                     if (numeroRelativo != null) {
                         // Fluxo de sinal, não de confirmação de valor da
                         // incógnita — não há 2º subevento vindo, libera a
@@ -14035,7 +14131,8 @@ public class Main extends JFrame {
                             // mais vai consumir a reserva.
                             agentAuditService.liberarReservaDeGesto();
                         }
-                        if (preenchimentoDeInterrogacao && !confirmarValorIncognitaAceito(item)) {
+                        if (preenchimentoDeInterrogacao
+                                && !confirmarValorIncognitaAceito(item, identidadeAcao, true)) {
                             // Usuário respondeu "Não" à pergunta de confirmação:
                             // volta a pedir o valor em vez de propagar um valor
                             // que o próprio usuário disse não ter certeza.

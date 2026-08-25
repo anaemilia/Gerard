@@ -536,6 +536,46 @@ public class LoggerInteracaoGerard {
         registrar("S", tarefa, ce, instrumentoOrganizacao, instrumentoArtefato, funcaoDoArtefato, objeto, regras, origemEvento, detalhes, tipo, descreverPropriedade(tipo), "");
     }
 
+    /**
+     * Registra uma única ação já identificada pelo proprietário semântico.
+     * O logger apenas transporta as identidades e não as cria nem as avalia.
+     */
+    public synchronized void registrarUsuarioComIdentidade(String tarefa,
+                                              String ce,
+                                              String instrumentoOrganizacao,
+                                              String instrumentoArtefato,
+                                              String funcaoDoArtefato,
+                                              String objeto,
+                                              String regras,
+                                              String origemEvento,
+                                              String detalhes,
+                                              String actionId,
+                                              String rejectionSequenceId) {
+        String tipo = inferirTipoAcao(tarefa, origemEvento, detalhes);
+        registrarUsuarioComIdentidade(tipo, tarefa, ce, instrumentoOrganizacao,
+                instrumentoArtefato, funcaoDoArtefato, objeto, regras,
+                origemEvento, detalhes, actionId, rejectionSequenceId);
+    }
+
+    public synchronized void registrarUsuarioComIdentidade(String tipoAcao,
+                                              String tarefa,
+                                              String ce,
+                                              String instrumentoOrganizacao,
+                                              String instrumentoArtefato,
+                                              String funcaoDoArtefato,
+                                              String objeto,
+                                              String regras,
+                                              String origemEvento,
+                                              String detalhes,
+                                              String actionId,
+                                              String rejectionSequenceId) {
+        String tipo = normalizarTipoAcao(tipoAcao);
+        registrarComIdentidade("S", tarefa, ce, instrumentoOrganizacao,
+                instrumentoArtefato, funcaoDoArtefato, objeto, regras,
+                origemEvento, detalhes, tipo, descreverPropriedade(tipo), "",
+                actionId, rejectionSequenceId);
+    }
+
     public synchronized void registrarAcaoGranularUsuario(String tipoAcao,
                                                            String tarefa,
                                                            String instrumentoOrganizacao,
@@ -560,6 +600,21 @@ public class LoggerInteracaoGerard {
                                                  String origemEvento,
                                                  String detalhes) {
         registrar("C", tarefa, "", instrumentoOrganizacao, instrumentoArtefato, funcaoDoArtefato, "", regras, origemEvento, detalhes, "", "", "");
+    }
+
+    public synchronized void registrarComputadorComIdentidade(String tarefa,
+                                                 String instrumentoOrganizacao,
+                                                 String instrumentoArtefato,
+                                                 String funcaoDoArtefato,
+                                                 String regras,
+                                                 String origemEvento,
+                                                 String detalhes,
+                                                 String actionId,
+                                                 String rejectionSequenceId) {
+        registrarComIdentidade("C", tarefa, "", instrumentoOrganizacao,
+                instrumentoArtefato, funcaoDoArtefato, "", regras,
+                origemEvento, detalhes, "", "", "", actionId,
+                rejectionSequenceId);
     }
 
     public synchronized void registrar(String agente,
@@ -588,6 +643,27 @@ public class LoggerInteracaoGerard {
                                        String tipoAcaoInteracao,
                                        String propriedadeAcao,
                                        String mudancaObservavel) {
+        registrarComIdentidade(agente, tarefa, ce, instrumentoOrganizacao,
+                instrumentoArtefato, funcaoDoArtefato, objeto, regras,
+                origemEvento, detalhes, tipoAcaoInteracao, propriedadeAcao,
+                mudancaObservavel, "", "");
+    }
+
+    private void registrarComIdentidade(String agente,
+                                       String tarefa,
+                                       String ce,
+                                       String instrumentoOrganizacao,
+                                       String instrumentoArtefato,
+                                       String funcaoDoArtefato,
+                                       String objeto,
+                                       String regras,
+                                       String origemEvento,
+                                       String detalhes,
+                                       String tipoAcaoInteracao,
+                                       String propriedadeAcao,
+                                       String mudancaObservavel,
+                                       String actionId,
+                                       String rejectionSequenceId) {
         EventoLogGerard evento = EventoLogGerard.criar(
                 sessao,
                 usuario,
@@ -618,6 +694,8 @@ public class LoggerInteracaoGerard {
         evento.setInvarianteSimbolico(invarianteSimbolicoAtual);
         evento.setInvarianteObservacao(invarianteObservacaoAtual);
         evento.setInvarianteSugestaoAdotada(invarianteSugestaoAdotadaAtual);
+        evento.setActionId(actionId);
+        evento.setRejectionSequenceId(rejectionSequenceId);
         evento.setNaturezaAcao(classificarNaturezaAcao(tarefa, origemEvento, tipoAcaoInteracao, instrumentoArtefato));
         evento.setEfeitoAcao(classificarEfeitoAcao(tarefa, origemEvento, tipoAcaoInteracao, mudancaObservavel));
         gravar(evento);

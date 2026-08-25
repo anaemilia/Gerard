@@ -49,6 +49,7 @@ public final class TesteRegistroGestoInteracao {
                         && linhas.get(0).contains("destino_geometrico")
                         && !linhas.get(0).contains("\tce\t")
                         && !linhas.get(0).contains("action_id")
+                        && !linhas.get(0).contains("rejection_sequence_id")
                         && !linhas.get(0).contains("diagnostico"),
                 "O esquema de gestos não pode conter avaliação de ações.");
         exigir(linhas.get(1).contains("FORA_DE_ELEMENTO_DO_DIAGRAMA")

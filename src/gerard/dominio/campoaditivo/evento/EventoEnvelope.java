@@ -25,8 +25,8 @@ public final class EventoEnvelope {
     private final long timestampEpocaMillis;
 
     /**
-     * @param actionId correlaciona este evento a outros da mesma ação
-     *        (REFERENCE.md §4.8, cardinalidade ação:evento, Alternativa B).
+     * @param actionId correlaciona este evento a outros da mesma ação.
+     *        A sequência de rejeições usa uma identidade separada no payload.
      *        Nulo quando o evento não participa desse fluxo.
      * @param tipoVersionado tipo semântico do evento com sufixo de versão
      *        embutido (ex.: {@code "papel_quantitativo.valor_posicionado.v1"}),

@@ -66,15 +66,16 @@ public final class PapelQuantitativo {
 
     private ValorNumerico valorAtual;
 
-    // ---- estado do fluxo de tentativas (REFERENCE.md §4.8, cardinalidade
-    // ação:evento, Alternativa B) — conhecimento do próprio papel, não de
+    // ---- estado do fluxo de tentativas (REFERENCE.md §4.8) — conhecimento
+    // do próprio papel, não de
     // quem chama. Ortogonal a valorAtual: registrarTentativa(...) nunca
     // altera o valor armazenado, só contabiliza o resultado de uma
     // avaliação de correção já feita por quem enxerga a relação completa
     // (RelacaoEstruturalX.diagnosticarValorProposto) — PapelQuantitativo
     // sozinho não tem essa informação (ver posicionar(), que só valida
     // domínio, não correção).
-    private String actionIdAtual;
+    private String ultimoActionId;
+    private String rejectionSequenceIdAtual;
     private int tentativasRejeitadasConsecutivas;
     private boolean bloqueadoPorLimiteTentativas;
 
@@ -234,16 +235,38 @@ public final class PapelQuantitativo {
 
     public boolean estaBloqueadoPorLimiteTentativas() { return bloqueadoPorLimiteTentativas; }
     public int getTentativasRejeitadasConsecutivas() { return tentativasRejeitadasConsecutivas; }
-    public String getActionIdAtual() { return actionIdAtual; }
+    /** Última ação concluída; não identifica a sequência de rejeições. */
+    public String getUltimoActionId() { return ultimoActionId; }
+
+    /**
+     * Compatibilidade com consumidores anteriores. O valor agora é a última
+     * ação, e não uma identidade reutilizada durante toda a sequência.
+     */
+    @Deprecated
+    public String getActionIdAtual() { return ultimoActionId; }
+
+    public String getRejectionSequenceIdAtual() { return rejectionSequenceIdAtual; }
+
+    /**
+     * Constitui uma única ação instrumental no proprietário semântico. O
+     * protocolo pode usar esta identidade antes da avaliação para correlacionar
+     * todos os eventos derivados da mesma submissão.
+     */
+    public IdentidadeAcaoInstrumentalPapel iniciarAcaoInstrumental(OrigemAcao origem) {
+        return new IdentidadeAcaoInstrumentalPapel(
+                java.util.UUID.randomUUID().toString(), chave,
+                origem == null ? OrigemAcao.ORIGEM_USUARIO : origem);
+    }
 
     /**
      * Aciona "restaurar" (REFERENCE.md §4.8): encerra o bloqueio, se houver,
-     * e zera a contagem — a próxima tentativa rejeitada abre uma ação nova
-     * (novo action_id). Não altera valorAtual nem publica evento: acionar
+     * e zera a contagem — a próxima tentativa rejeitada abre uma sequência
+     * nova. Não altera valorAtual nem publica evento: acionar
      * "restaurar" não é, em si, uma tentativa de posicionamento.
      */
     public void restaurar() {
-        actionIdAtual = null;
+        ultimoActionId = null;
+        rejectionSequenceIdAtual = null;
         tentativasRejeitadasConsecutivas = 0;
         bloqueadoPorLimiteTentativas = false;
     }
@@ -261,11 +284,10 @@ public final class PapelQuantitativo {
      * chama ainda precisa chamar posicionar(...) separadamente para de fato
      * armazenar o valor; este método só encerra a ação em contagem.
      *
-     * Implementa a cardinalidade ação:evento da REFERENCE.md §4.8
-     * (Alternativa B): a primeira tentativa rejeitada de uma sequência abre
-     * uma ação nova (novo action_id); tentativas seguintes, ainda
-     * rejeitadas, correlacionam ao mesmo action_id; ao atingir
-     * LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS, a ação se encerra e o
+     * Implementa a identidade vigente da REFERENCE.md §4.8: cada tentativa
+     * semanticamente constituída recebe um action_id próprio. Rejeições
+     * consecutivas são correlacionadas por rejection_sequence_id; ao atingir
+     * LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS, a sequência se encerra e o
      * papel fica bloqueado (estaBloqueadoPorLimiteTentativas()) até
      * restaurar() ser chamado — quem chama deve, então, mostrar alguma
      * ajuda ao participante (conteúdo concreto ainda não decidido, ver
@@ -294,25 +316,53 @@ public final class PapelQuantitativo {
         if (origem != OrigemAcao.ORIGEM_USUARIO) {
             return false;
         }
+        IdentidadeAcaoInstrumentalPapel identidade = iniciarAcaoInstrumental(origem);
+        return registrarTentativaComIdentidade(identidade, diagnostico, contexto, valorProposto)
+                .isLimiteAtingidoAgora();
+    }
+
+    /**
+     * Conclui a ação já constituída e produz as duas identidades necessárias:
+     * action_id exclusivo da submissão e rejection_sequence_id compartilhado
+     * somente entre rejeições consecutivas.
+     */
+    public ResultadoRegistroTentativaPapel registrarTentativaComIdentidade(
+            IdentidadeAcaoInstrumentalPapel identidade,
+            Optional<DiagnosticoErroPapel> diagnostico, ContextoAcao contexto,
+            ValorNumerico valorProposto) {
+        if (identidade == null || identidade.getOrigem() != OrigemAcao.ORIGEM_USUARIO) {
+            return ResultadoRegistroTentativaPapel.ignorada(tentativasRejeitadasConsecutivas);
+        }
+        if (!chave.equals(identidade.getPapelSemantico())) {
+            throw new IllegalArgumentException("A ação pertence a outro papel semântico");
+        }
+        ultimoActionId = identidade.getActionId();
         String estado = descreverEstadoAtual();
         if (bloqueadoPorLimiteTentativas) {
             DiagnosticoErroPapel bloqueio = new DiagnosticoErroPapel(
                     TipoErroPapel.BLOQUEADO_AGUARDANDO_RESTAURACAO,
                     "erro.papel.bloqueadoAguardandoRestauracao", null,
                     "correcao.papel.acionarRestaurar");
-            publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, origem, contexto, chave,
+            publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO,
+                    identidade.getOrigem(), contexto, chave,
                     estado, estado, formatarValorProposto(valorProposto),
-                    ResultadoAcao.REJEITADO, bloqueio, actionIdAtual));
-            return false;
+                    ResultadoAcao.REJEITADO, bloqueio, ultimoActionId, null));
+            return new ResultadoRegistroTentativaPapel(true, false, true, false,
+                    tentativasRejeitadasConsecutivas, ultimoActionId, null);
         }
         boolean correto = diagnostico == null || !diagnostico.isPresent();
         if (correto) {
-            actionIdAtual = null;
+            publicar(new EventoPapelQuantitativo(TipoEventoPapel.TENTATIVA_AVALIADA,
+                    identidade.getOrigem(), contexto, chave, estado, estado,
+                    formatarValorProposto(valorProposto), ResultadoAcao.ACEITO,
+                    null, ultimoActionId, null));
+            rejectionSequenceIdAtual = null;
             tentativasRejeitadasConsecutivas = 0;
-            return false;
+            return new ResultadoRegistroTentativaPapel(true, true, false, false,
+                    0, ultimoActionId, null);
         }
-        if (actionIdAtual == null) {
-            actionIdAtual = java.util.UUID.randomUUID().toString();
+        if (rejectionSequenceIdAtual == null) {
+            rejectionSequenceIdAtual = java.util.UUID.randomUUID().toString();
             tentativasRejeitadasConsecutivas = 0;
         }
         tentativasRejeitadasConsecutivas++;
@@ -320,10 +370,14 @@ public final class PapelQuantitativo {
         if (atingiuLimiteAgora) {
             bloqueadoPorLimiteTentativas = true;
         }
-        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO, origem, contexto, chave,
+        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO,
+                identidade.getOrigem(), contexto, chave,
                 estado, estado, formatarValorProposto(valorProposto),
-                ResultadoAcao.REJEITADO, diagnostico.get(), actionIdAtual));
-        return atingiuLimiteAgora;
+                ResultadoAcao.REJEITADO, diagnostico.get(), ultimoActionId,
+                rejectionSequenceIdAtual));
+        return new ResultadoRegistroTentativaPapel(true, false, false,
+                atingiuLimiteAgora, tentativasRejeitadasConsecutivas,
+                ultimoActionId, rejectionSequenceIdAtual);
     }
 
     private String descreverEstadoAtual() {

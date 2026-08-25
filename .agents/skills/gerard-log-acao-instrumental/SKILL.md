@@ -56,6 +56,29 @@ Arquivos antigos com 11 ou 15 colunas continuam válidos. Este estado vale
 somente para `TEXTO` da incógnita; os demais protocolos ainda não devem ser
 descritos como migrados.
 
+### Identidade da sequência de rejeições — P3.1, 2026-08-24
+
+Na branch arquitetural integrada, `PapelQuantitativo` passou a emitir um
+`action_id` novo para cada submissão semanticamente constituída da incógnita.
+As rejeições consecutivas são correlacionadas por um identificador separado,
+`rejection_sequence_id`. Assim, três rejeições produzem três ações distintas e
+uma única sequência; o identificador da sequência nunca integra o log factual
+de gestos.
+
+`EventoLogGerard` acrescenta `action_id` e `rejection_sequence_id` ao final do
+TSV, mantendo a leitura das linhas anteriores. No protocolo `TEXTO` migrado,
+os eventos de limite e de apresentação das ajudas já existentes carregam o
+`action_id` da terceira ação e a mesma sequência, mas não originam novas ações.
+`LoggerInteracaoGerard` apenas transporta essas identidades produzidas pelo
+proprietário semântico.
+
+A descrição da P2.5A acima registra o piloto mantido em outra linha de
+implementação. Enquanto `RegistroAcaoInstrumental` e
+`IncognitaQuantitativa` não forem consolidados nesta branch, ela não deve ser
+usada como prova de que a integração adaptativa da P4 já está ativa. A P3.1
+entrega somente a identidade correta e a persistência compatível do primeiro
+protocolo.
+
 ## Esquema de captura (Quadro 4.55)
 
 Cada ação instrumental registrada deve poder responder:

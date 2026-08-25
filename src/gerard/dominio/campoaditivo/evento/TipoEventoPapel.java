@@ -17,6 +17,7 @@ package gerard.dominio.campoaditivo.evento;
 public enum TipoEventoPapel {
     VALOR_POSICIONADO,
     VALOR_REJEITADO,
+    TENTATIVA_AVALIADA,
     FEEDBACK_EXIBIDO;
 
     /**

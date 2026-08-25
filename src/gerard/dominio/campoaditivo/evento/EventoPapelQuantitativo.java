@@ -31,13 +31,15 @@ public final class EventoPapelQuantitativo implements EventoDominio {
     private final String valorProposto;
     private final ResultadoAcao resultado;
     private final DiagnosticoErroPapel diagnostico; // null quando resultado == ACEITO ou tipo == FEEDBACK_EXIBIDO
+    private final String rejectionSequenceId;
     private final String estiloScaffolding; // ex.: "AG_EMLQ" — só para FEEDBACK_EXIBIDO
     private final ModalidadeEntregaScaffolding modalidadeEntrega; // idem
 
     /**
-     * @param actionId correlaciona esta e outras tentativas da mesma ação
-     *        (REFERENCE.md §4.8, cardinalidade ação:evento, Alternativa B —
-     *        ver PapelQuantitativo.registrarTentativa). Nulo quando o
+     * @param actionId correlaciona os eventos derivados de uma única ação.
+     *        Tentativas diferentes recebem action_id diferentes; rejeições
+     *        consecutivas usam rejectionSequenceId para formar uma sequência.
+     *        Nulo quando o
      *        evento não participa desse fluxo (ex.: os dois eventos
      *        publicados por posicionar(...), que são um conceito
      *        ortogonal — validade de domínio, não a sequência de
@@ -48,7 +50,15 @@ public final class EventoPapelQuantitativo implements EventoDominio {
                                     String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
                                     String actionId) {
         this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
-                valorProposto, resultado, diagnostico, actionId, null, null);
+                valorProposto, resultado, diagnostico, actionId, null, null, null);
+    }
+
+    public EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
+                                    String papelSemantico, String estadoAnterior, String estadoPosterior,
+                                    String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
+                                    String actionId, String rejectionSequenceId) {
+        this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
+                valorProposto, resultado, diagnostico, actionId, rejectionSequenceId, null, null);
     }
 
     /** Compatibilidade: eventos que não participam do fluxo de tentativas (ver actionId). */
@@ -56,13 +66,13 @@ public final class EventoPapelQuantitativo implements EventoDominio {
                                     String papelSemantico, String estadoAnterior, String estadoPosterior,
                                     String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico) {
         this(tipo, origemAcao, contexto, papelSemantico, estadoAnterior, estadoPosterior,
-                valorProposto, resultado, diagnostico, null, null, null);
+                valorProposto, resultado, diagnostico, null, null, null, null);
     }
 
     private EventoPapelQuantitativo(TipoEventoPapel tipo, OrigemAcao origemAcao, ContextoAcao contexto,
                                      String papelSemantico, String estadoAnterior, String estadoPosterior,
                                      String valorProposto, ResultadoAcao resultado, DiagnosticoErroPapel diagnostico,
-                                     String actionId, String estiloScaffolding,
+                                     String actionId, String rejectionSequenceId, String estiloScaffolding,
                                      ModalidadeEntregaScaffolding modalidadeEntrega) {
         this.envelope = new EventoEnvelope(actionId, tipo.chaveVersionada(), origemAcao);
         this.tipo = tipo;
@@ -73,6 +83,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
         this.valorProposto = valorProposto;
         this.resultado = resultado;
         this.diagnostico = diagnostico;
+        this.rejectionSequenceId = rejectionSequenceId;
         this.estiloScaffolding = estiloScaffolding;
         this.modalidadeEntrega = modalidadeEntrega;
     }
@@ -93,7 +104,16 @@ public final class EventoPapelQuantitativo implements EventoDominio {
                                     String papelSemantico, String estiloScaffolding,
                                     ModalidadeEntregaScaffolding modalidadeEntrega, String actionId) {
         return new EventoPapelQuantitativo(TipoEventoPapel.FEEDBACK_EXIBIDO, origemAcao, contexto,
-                papelSemantico, null, null, null, null, null, actionId,
+                papelSemantico, null, null, null, null, null, actionId, null,
+                estiloScaffolding, modalidadeEntrega);
+    }
+
+    public static EventoPapelQuantitativo feedbackExibido(OrigemAcao origemAcao, ContextoAcao contexto,
+                                    String papelSemantico, String estiloScaffolding,
+                                    ModalidadeEntregaScaffolding modalidadeEntrega, String actionId,
+                                    String rejectionSequenceId) {
+        return new EventoPapelQuantitativo(TipoEventoPapel.FEEDBACK_EXIBIDO, origemAcao, contexto,
+                papelSemantico, null, null, null, null, null, actionId, rejectionSequenceId,
                 estiloScaffolding, modalidadeEntrega);
     }
 
@@ -109,6 +129,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
     public EventoEnvelope getEnvelope() { return envelope; }
     public String getIdAcao() { return envelope.getEventId(); }
     public String getActionId() { return envelope.getActionId(); }
+    public String getRejectionSequenceId() { return rejectionSequenceId; }
     public OrigemAcao getOrigemAcao() { return envelope.getOrigemAcao(); }
     public ContextoAcao getContexto() { return contexto; }
     public String getPapelSemantico() { return papelSemantico; }
@@ -123,6 +144,7 @@ public final class EventoPapelQuantitativo implements EventoDominio {
         Map<String, Object> mapa = new LinkedHashMap<>();
         mapa.put("id_acao", envelope.getEventId());
         mapa.put("action_id", envelope.getActionId());
+        mapa.put("rejection_sequence_id", rejectionSequenceId);
         mapa.put("tipo", getTipo());
         mapa.put("tipo_versionado", envelope.getTipoVersionado());
         mapa.put("origem_da_acao", envelope.getOrigemAcao() == null ? null : envelope.getOrigemAcao().name());

@@ -103,6 +103,7 @@ public final class AgentAuditEvent {
         m.put("session_id", identificacao.getSessionId());
         m.put("gesture_id", identificacao.getGestureId());
         m.put("action_id", identificacao.getActionId());
+        m.put("rejection_sequence_id", identificacao.getRejectionSequenceId());
         m.put("evaluation_id", identificacao.getEvaluationId());
         m.put("step_user", identificacao.getStepUser());
         m.put("step_internal", identificacao.getStepInternal());
@@ -211,6 +212,7 @@ public final class AgentAuditEvent {
         Map<String, Object> entrada = new LinkedHashMap<String, Object>();
         entrada.put("gesture_id", identificacao == null ? null : identificacao.getGestureId());
         entrada.put("action_id", identificacao == null ? null : identificacao.getActionId());
+        entrada.put("rejection_sequence_id", identificacao == null ? null : identificacao.getRejectionSequenceId());
         entrada.put("evaluation_id", identificacao == null ? null : identificacao.getEvaluationId());
         entrada.put("origin", classificacao == null || classificacao.getOrigem() == null
                 ? null : classificacao.getOrigem().paraTexto());
@@ -265,6 +267,7 @@ public final class AgentAuditEvent {
         Map<String, Object> entrada = new LinkedHashMap<String, Object>();
         entrada.put("gesture_id", identificacao == null ? null : identificacao.getGestureId());
         entrada.put("action_id", identificacao == null ? null : identificacao.getActionId());
+        entrada.put("rejection_sequence_id", identificacao == null ? null : identificacao.getRejectionSequenceId());
         entrada.put("canonical", classificacao != null && classificacao.isCanonical());
         entrada.put("event", zdp.getEventoRecebido());
         entrada.put("evaluation", zdp.getAvaliacao());
@@ -321,6 +324,7 @@ public final class AgentAuditEvent {
         Map<String, Object> entrada = new LinkedHashMap<String, Object>();
         entrada.put("gesture_id", identificacao == null ? null : identificacao.getGestureId());
         entrada.put("action_id", identificacao == null ? null : identificacao.getActionId());
+        entrada.put("rejection_sequence_id", identificacao == null ? null : identificacao.getRejectionSequenceId());
         entrada.put("evaluation_id", identificacao == null ? null : identificacao.getEvaluationId());
         entrada.put("canonical", classificacao != null && classificacao.isCanonical());
         entrada.put("idempotency_key", classificacao == null ? null : classificacao.getIdempotencyKey());
@@ -400,6 +404,7 @@ public final class AgentAuditEvent {
         m.put("case_base", caso.getCaseBase());
         m.put("gesture_id", identificacao == null ? null : identificacao.getGestureId());
         m.put("action_id", identificacao == null ? null : identificacao.getActionId());
+        m.put("rejection_sequence_id", identificacao == null ? null : identificacao.getRejectionSequenceId());
         m.put("attributes", caso.getAtributos());
         m.put("reason", caso.getMotivoSemSimilaridade());
         return m;

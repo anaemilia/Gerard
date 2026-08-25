@@ -10,9 +10,10 @@ import java.util.List;
  * (replay/monkey), não da sessão ao vivo; ficam null quando ninguém os
  * fornece.
  *
- * gesture_id/action_id identificam o GESTO físico do usuário — o mesmo
- * valor se repete em toda reavaliação reativa originada por ele (só uma
- * avaliação canônica avança pra um gesture_id novo). evaluation_id é único
+ * gesture_id identifica o gesto físico; action_id identifica o comando
+ * semanticamente constituído. Eles podem se correlacionar, mas não são a
+ * mesma identidade. rejection_sequence_id agrupa ações rejeitadas
+ * consecutivas sem fundi-las. evaluation_id é único
  * por CHAMADA (canônica ou reativa) — é o que diferencia reavaliações entre
  * si. step_user conta só gestos canônicos; step_internal conta toda
  * chamada (canônica + reativa).
@@ -24,6 +25,7 @@ public final class IdentificacaoEvento {
     private final String sessionId;
     private final String gestureId;
     private final String actionId;
+    private final String rejectionSequenceId;
     private final String evaluationId;
     private final Integer stepUser;
     private final Integer stepInternal;
@@ -42,12 +44,24 @@ public final class IdentificacaoEvento {
             String timestamp, String userId, String problemId, String situacaoProblema, String categoriaEsperada,
             String papelDesconhecido, String systemVersion, String rulesBaseVersion,
             List<String> executionSequence) {
+        this(schemaVersion, eventId, episodeId, sessionId, gestureId, actionId,
+                evaluationId, stepUser, stepInternal, timestamp, userId,
+                problemId, situacaoProblema, categoriaEsperada, papelDesconhecido,
+                systemVersion, rulesBaseVersion, executionSequence, null);
+    }
+
+    public IdentificacaoEvento(String schemaVersion, String eventId, String episodeId, String sessionId,
+            String gestureId, String actionId, String evaluationId, Integer stepUser, Integer stepInternal,
+            String timestamp, String userId, String problemId, String situacaoProblema, String categoriaEsperada,
+            String papelDesconhecido, String systemVersion, String rulesBaseVersion,
+            List<String> executionSequence, String rejectionSequenceId) {
         this.schemaVersion = schemaVersion;
         this.eventId = eventId;
         this.episodeId = episodeId;
         this.sessionId = sessionId;
         this.gestureId = gestureId;
         this.actionId = actionId;
+        this.rejectionSequenceId = rejectionSequenceId;
         this.evaluationId = evaluationId;
         this.stepUser = stepUser;
         this.stepInternal = stepInternal;
@@ -74,12 +88,22 @@ public final class IdentificacaoEvento {
                 situacaoProblema, categoriaEsperada, papelDesconhecido, null, null, null);
     }
 
+    /** Conveniência para uma ação cuja identidade veio do proprietário semântico. */
+    public IdentificacaoEvento(String episodeId, String sessionId, String userId, String problemId,
+            String situacaoProblema, String categoriaEsperada, String papelDesconhecido,
+            String actionId, String rejectionSequenceId) {
+        this(null, null, episodeId, sessionId, null, actionId, null, null,
+                null, null, userId, problemId, situacaoProblema, categoriaEsperada,
+                papelDesconhecido, null, null, null, rejectionSequenceId);
+    }
+
     public String getSchemaVersion() { return schemaVersion; }
     public String getEventId() { return eventId; }
     public String getEpisodeId() { return episodeId; }
     public String getSessionId() { return sessionId; }
     public String getGestureId() { return gestureId; }
     public String getActionId() { return actionId; }
+    public String getRejectionSequenceId() { return rejectionSequenceId; }
     public String getEvaluationId() { return evaluationId; }
     public Integer getStepUser() { return stepUser; }
     public Integer getStepInternal() { return stepInternal; }

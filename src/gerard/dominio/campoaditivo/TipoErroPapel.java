@@ -30,7 +30,8 @@ public enum TipoErroPapel {
      * o limite de tentativas rejeitadas consecutivas
      * (PapelQuantitativo.LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS) e está
      * bloqueado até o participante acionar "restaurar" — ver
-     * REFERENCE.md §4.8 (cardinalidade ação:evento, Alternativa B).
+     * REFERENCE.md §4.8. Essa recusa recebe action_id próprio, mas não amplia
+     * a sequência encerrada de rejeições avaliadas.
      * Distinto dos outros três tipos, que sempre avaliam o valor proposto
      * contra o domínio/relação correta.
      */

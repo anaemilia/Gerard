@@ -27,9 +27,9 @@ import java.util.Map;
  *
  * Correção 2026-07-31: distingue gesto canônico do usuário de reavaliação
  * reativa (ver OrigemAvaliacao/ClassificacaoEvento). Só eventos canônicos
- * avançam gesture_id/action_id e alimentam os contadores
- * "canonical_user_action_counters"; eventos reativos herdam o
- * gesture_id/action_id do último canônico da mesma tarefa e só alimentam
+ * avançam gesture_id e alimentam os contadores
+ * "canonical_user_action_counters"; eventos reativos herdam a correlação
+ * pertinente do último canônico da mesma tarefa e só alimentam
  * "technical_evaluation_counters". O GATE real (impedir ZDP/Modelador de
  * mutar estado em evento reativo) é feito em Main.java, não aqui — este
  * serviço só PREENCHE o bloco ZDP/MODELADOR do evento reativo com uma
@@ -172,7 +172,8 @@ public final class AgentAuditService {
     }
 
     /**
-     * Reserva um gesture_id/action_id ANTES de uma ação pedagógica composta
+     * Reserva um gesture_id e, quando informado pelo proprietário semântico,
+     * o action_id da ação pedagógica composta
      * de vários subeventos (rodada 3, 2026-07-31 — ex.: quantificação:
      * verificar posição da interrogação, depois validar o valor digitado).
      * Chamadas subsequentes a {@link #iniciarAcao} (canônicas ou reativas)
@@ -182,12 +183,18 @@ public final class AgentAuditService {
      * para a PRÓXIMA ação do usuário.
      */
     public void reservarProximoGesto() {
+        reservarProximoGesto(null);
+    }
+
+    public void reservarProximoGesto(String actionIdSemantico) {
         if (gestureIdReservado != null) {
             return;
         }
         contadorGestos++;
         gestureIdReservado = "GESTO-" + String.format("%04d", contadorGestos);
-        actionIdReservado = "ACAO-" + String.format("%04d", contadorGestos);
+        actionIdReservado = actionIdSemantico == null || actionIdSemantico.trim().length() == 0
+                ? "ACAO-" + String.format("%04d", contadorGestos)
+                : actionIdSemantico;
     }
 
     public void liberarReservaDeGesto() {
@@ -198,9 +205,9 @@ public final class AgentAuditService {
     /**
      * Marca o início de uma avaliação (canônica ou reativa). tarefaKey
      * identifica a tarefa (idUsuario+categoria+papel-alvo) — mesma
-     * convenção de AgenteZDP.chaveTarefa — usada pra decidir se esta
-     * avaliação herda o gesture_id/action_id de uma canônica anterior ou
-     * inaugura um novo.
+     * convenção de AgenteZDP.chaveTarefa — usada para correlacionar uma
+     * reavaliação ao gesto anterior. Quando o proprietário semântico fornece
+     * action_id, ele tem precedência sobre a identidade técnica legada.
      */
     public void iniciarAcao(IdentificacaoEvento identificacao, AcaoUsuarioAudit acaoUsuario, OrigemAvaliacao origem,
             TipoSituacaoAditiva categoria) {
@@ -218,12 +225,13 @@ public final class AgentAuditService {
 
             String gestureId;
             String actionId;
+            String actionIdInformado = identificacao == null ? null : identificacao.getActionId();
             if (gestureIdReservado != null) {
                 // Subevento de uma acao composta (rodada 3, 2026-07-31 —
                 // ver reservarProximoGesto/liberarReservaDeGesto): todos os
                 // subeventos de UMA acao pedagogica (ex.: quantificacao —
                 // verificar posicao da interrogacao + validar valor
-                // digitado) compartilham o MESMO gesture_id/action_id,
+                // digitado) compartilham as correlações reservadas,
                 // mesmo vindo de chamadas iniciarAcao separadas com origens
                 // diferentes (uma reativa, outra canonica).
                 gestureId = gestureIdReservado;
@@ -259,12 +267,16 @@ public final class AgentAuditService {
                         && gestureIdPorTarefa.get(tarefaKey) != null;
                 if (debounce) {
                     gestureId = gestureIdPorTarefa.get(tarefaKey);
-                    actionId = actionIdPorTarefa.get(tarefaKey);
+                    actionId = actionIdInformado == null || actionIdInformado.trim().length() == 0
+                            ? actionIdPorTarefa.get(tarefaKey)
+                            : actionIdInformado;
                 } else {
                     stepUserAtual++;
                     contadorGestos++;
                     gestureId = "GESTO-" + String.format("%04d", contadorGestos);
-                    actionId = "ACAO-" + String.format("%04d", contadorGestos);
+                    actionId = actionIdInformado == null || actionIdInformado.trim().length() == 0
+                            ? "ACAO-" + String.format("%04d", contadorGestos)
+                            : actionIdInformado;
                     gestureIdPorTarefa.put(tarefaKey, gestureId);
                     actionIdPorTarefa.put(tarefaKey, actionId);
                     avaliacoesPorGesto.put(gestureId, Integer.valueOf(0));
@@ -273,14 +285,18 @@ public final class AgentAuditService {
                 valorUltimaCanonicaPorTarefa.put(tarefaKey, valorAtual);
             } else {
                 gestureId = gestureIdPorTarefa.get(tarefaKey);
-                actionId = actionIdPorTarefa.get(tarefaKey);
+                actionId = actionIdInformado == null || actionIdInformado.trim().length() == 0
+                        ? actionIdPorTarefa.get(tarefaKey)
+                        : actionIdInformado;
                 if (gestureId == null) {
                     // Reavaliação reativa sem gesto canônico anterior pra essa
                     // tarefa (ex.: sincronização no carregamento da tela) — ganha
                     // gesto próprio, só pra não ficar com id nulo no log.
                     contadorGestos++;
                     gestureId = "GESTO-" + String.format("%04d", contadorGestos) + "-ORFAO";
-                    actionId = "ACAO-" + String.format("%04d", contadorGestos) + "-ORFAO";
+                    actionId = actionIdInformado == null || actionIdInformado.trim().length() == 0
+                            ? "ACAO-" + String.format("%04d", contadorGestos) + "-ORFAO"
+                            : actionIdInformado;
                     avaliacoesPorGesto.put(gestureId, Integer.valueOf(0));
                 }
             }
@@ -310,7 +326,8 @@ public final class AgentAuditService {
                     categoria == null ? (identificacao == null ? null : identificacao.getCategoriaEsperada()) : categoria.name(),
                     identificacao == null ? null : identificacao.getPapelDesconhecido(),
                     systemVersion, rulesBaseVersion,
-                    java.util.Arrays.asList("MONITOR", "ZDP", "MODELADOR"));
+                    java.util.Arrays.asList("MONITOR", "ZDP", "MODELADOR"),
+                    identificacao == null ? null : identificacao.getRejectionSequenceId());
             this.acaoEmConstrucao = acaoUsuario;
         } catch (RuntimeException e) {
             falhaLogger.registrar("iniciarAcao", e);

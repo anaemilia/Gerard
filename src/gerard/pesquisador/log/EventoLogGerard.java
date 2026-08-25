@@ -44,7 +44,9 @@ public class EventoLogGerard {
             "invariante_observacao",
             "natureza_acao",
             "efeito_acao",
-            "invariante_sugestao_adotada"
+            "invariante_sugestao_adotada",
+            "action_id",
+            "rejection_sequence_id"
     };
 
     private String timestamp;
@@ -78,6 +80,8 @@ public class EventoLogGerard {
     private String naturezaAcao = "";
     private String efeitoAcao = "";
     private String invarianteSugestaoAdotada = "";
+    private String actionId = "";
+    private String rejectionSequenceId = "";
 
     public EventoLogGerard() {
         this.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
@@ -159,7 +163,7 @@ public class EventoLogGerard {
                 funcaoDoArtefato, objeto, regras, categoria, enunciado,
                 origemEvento, detalhes, tipoAcaoInteracao, propriedadeAcao, mudancaObservavel, tentativaNumeroSituacao,
                 invarianteOrigem, invarianteCodigo, invarianteSimbolico, invarianteObservacao, naturezaAcao, efeitoAcao,
-                invarianteSugestaoAdotada
+                invarianteSugestaoAdotada, actionId, rejectionSequenceId
         };
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < campos.length; i++) {
@@ -222,6 +226,10 @@ public class EventoLogGerard {
         evento.naturezaAcao = campo(campos, 28);
         evento.efeitoAcao = campo(campos, 29);
         evento.invarianteSugestaoAdotada = campo(campos, 30);
+        // Identidades acrescentadas ao final na P3.1. Linhas antigas
+        // continuam válidas e recebem valores vazios.
+        evento.actionId = campo(campos, 31);
+        evento.rejectionSequenceId = campo(campos, 32);
         return evento;
     }
 
@@ -321,4 +329,8 @@ public class EventoLogGerard {
     public void setEfeitoAcao(String valor) { efeitoAcao = valor(valor); }
     public String getInvarianteSugestaoAdotada() { return invarianteSugestaoAdotada; }
     public void setInvarianteSugestaoAdotada(String valor) { invarianteSugestaoAdotada = valor(valor); }
+    public String getActionId() { return actionId; }
+    public void setActionId(String valor) { actionId = valor(valor); }
+    public String getRejectionSequenceId() { return rejectionSequenceId; }
+    public void setRejectionSequenceId(String valor) { rejectionSequenceId = valor(valor); }
 }

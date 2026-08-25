@@ -418,6 +418,34 @@ check('!houveMovimento' in trecho_log_soltura
       and 'avaliarQuestionamentoPosicionamento' not in trecho_log_soltura,
       'ação POSICIONAR só é registrada uma vez quando o comando semântico foi constituído')
 
+print('== Identidade da ação e da sequência de rejeições (P3.1) ==')
+papel_quantitativo=text('src/gerard/dominio/campoaditivo/PapelQuantitativo.java')
+resultado_tentativa=text('src/gerard/dominio/campoaditivo/ResultadoRegistroTentativaPapel.java')
+evento_papel=text('src/gerard/dominio/campoaditivo/evento/EventoPapelQuantitativo.java')
+evento_log=text('src/gerard/pesquisador/log/EventoLogGerard.java')
+identificacao_auditoria=text('src/gerard/pesquisador/auditoria/IdentificacaoEvento.java')
+check('ultimoActionId' in papel_quantitativo
+      and 'rejectionSequenceIdAtual' in papel_quantitativo
+      and 'registrarTentativaComIdentidade' in papel_quantitativo,
+      'papel distingue a ação individual da sequência de rejeições')
+check('getActionId()' in resultado_tentativa
+      and 'getRejectionSequenceId()' in resultado_tentativa
+      and 'rejection_sequence_id' in evento_papel,
+      'resultado e eventos transportam as duas identidades sem fundi-las')
+check('"action_id",' in evento_log
+      and '"rejection_sequence_id"' in evento_log
+      and 'campo(campos, 31)' in evento_log
+      and 'campo(campos, 32)' in evento_log,
+      'log de ações acrescenta identidades ao final e lê linhas antigas')
+check('registrarUsuarioComIdentidade' in main
+      and 'registrarUsuarioComIdentidade("TEXTO", tarefa' in main
+      and 'resultado.getActionId()' in main
+      and 'resultado.getRejectionSequenceId()' in main,
+      'protocolo TEXTO persiste a identidade produzida pelo papel semântico')
+check('gesture_id identifica o gesto físico' in identificacao_auditoria
+      and 'rejectionSequenceId' in identificacao_auditoria,
+      'auditoria não define gesture_id e action_id como a mesma identidade')
+
 print('== Handler local do elemento textual ==')
 handler_elemento_texto=text('src/gerard/interacao/arraste/HandlerInteracaoElementoTextoMovel.java')
 geometria_enunciado=text('src/gerard/ui/enunciado/GeometriaAreaEnunciado.java')
