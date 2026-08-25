@@ -1,5 +1,9 @@
 package gerard.agente.modelousuario;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Dimensão 5 do Modelo do Usuário (Quadro 5.60): diagnóstico de uma tentativa
  * de tarefa. É a entrada principal usada pelo Agente Modelador para inferir
@@ -37,6 +41,10 @@ public class DiagnosticoTarefa {
     private String invarianteCodigo;
     private String invarianteSimbolico;
     private String invarianteObservacao;
+    private String actionId;
+    private String avaliacao;
+    private String tipoErro;
+    private List<String> participantesSemanticos = Collections.emptyList();
 
     public DiagnosticoTarefa(String tarefa) {
         this.tarefa = tarefa;
@@ -181,5 +189,32 @@ public class DiagnosticoTarefa {
 
     public void setInvarianteObservacao(String invarianteObservacao) {
         this.invarianteObservacao = invarianteObservacao;
+    }
+
+    public String getActionId() { return actionId; }
+    public void setActionId(String actionId) { this.actionId = limpar(actionId); }
+    public String getAvaliacao() { return avaliacao; }
+    public void setAvaliacao(String avaliacao) { this.avaliacao = limpar(avaliacao); }
+    public String getTipoErro() { return tipoErro; }
+    public void setTipoErro(String tipoErro) { this.tipoErro = limpar(tipoErro); }
+    public List<String> getParticipantesSemanticos() { return participantesSemanticos; }
+
+    public void setParticipantesSemanticos(List<String> participantes) {
+        List<String> copia = new ArrayList<String>();
+        if (participantes != null) {
+            for (String participante : participantes) {
+                String normalizado = limpar(participante);
+                if (normalizado != null && !copia.contains(normalizado)) {
+                    copia.add(normalizado);
+                }
+            }
+        }
+        participantesSemanticos = Collections.unmodifiableList(copia);
+    }
+
+    private static String limpar(String valor) {
+        if (valor == null) { return null; }
+        String normalizado = valor.trim();
+        return normalizado.length() == 0 ? null : normalizado;
     }
 }

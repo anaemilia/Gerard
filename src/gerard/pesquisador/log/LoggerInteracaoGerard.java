@@ -1,5 +1,7 @@
 package gerard.pesquisador.log;
 
+import gerard.dominio.atividade.ContextoAcaoInstrumental;
+import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.i18n.ServicoLocalizacao;
 
 import java.io.BufferedReader;
@@ -61,6 +63,8 @@ public class LoggerInteracaoGerard {
     private String invarianteSimbolicoAtual = "";
     private String invarianteObservacaoAtual = "";
     private String invarianteSugestaoAdotadaAtual = "";
+    private final Set<String> actionIdsInstrumentaisRegistrados =
+            new HashSet<String>();
 
     private LoggerInteracaoGerard() {
         sessao = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -590,6 +594,66 @@ public class LoggerInteracaoGerard {
                 funcaoDoArtefato, objeto,
                 "Registro granular de técnica de interação; não corresponde, isoladamente, a acerto ou erro matemático.",
                 origemEvento, detalhes, tipo, descreverPropriedade(tipo), mudancaObservavel);
+    }
+
+    /**
+     * Persiste, sem reinterpretar, o registro produzido pelo proprietário.
+     * Reenvios do mesmo {@code action_id} são idempotentes.
+     */
+    public synchronized boolean registrarAcaoInstrumentalUsuario(
+            RegistroAcaoInstrumental registro) {
+        if (registro == null) {
+            throw new IllegalArgumentException("registro instrumental é obrigatório");
+        }
+        if (!actionIdsInstrumentaisRegistrados.add(registro.getActionId())) {
+            return false;
+        }
+        ContextoAcaoInstrumental contexto = registro.getContexto();
+        StringBuilder detalhes = new StringBuilder(contexto.getDetalhes());
+        acrescentarDetalhe(detalhes, "proprietario_semantico",
+                registro.getProprietarioSemantico());
+        acrescentarDetalhe(detalhes, "alvo_semantico", registro.getAlvoSemantico());
+        acrescentarDetalhe(detalhes, "participantes_semanticos",
+                juntarParticipantes(registro));
+        acrescentarDetalhe(detalhes, "valor_proposto",
+                registro.getValorProposto() == null ? ""
+                        : registro.getValorProposto().formatar(true));
+        acrescentarDetalhe(detalhes, "valor_esperado",
+                registro.getValorEsperado() == null ? ""
+                        : registro.getValorEsperado().formatar(true));
+        acrescentarDetalhe(detalhes, "diagnostico_factual",
+                registro.getDiagnostico().isPresent()
+                        ? registro.getDiagnostico().get().getTipo().name() : "");
+
+        registrarUsuarioComIdentidade(
+                registro.getTarefaInteracao().name(),
+                contexto.getTarefa(),
+                registro.getResultado().getCodigoCe(),
+                contexto.getInstrumentoOrganizacao(),
+                contexto.getInstrumentoArtefato(),
+                contexto.getFuncaoArtefato(),
+                contexto.getObjeto(),
+                registro.getRegraSemantica(),
+                contexto.getOrigemEvento(),
+                detalhes.toString(),
+                registro.getActionId(),
+                registro.getRejectionSequenceId());
+        return true;
+    }
+
+    private static void acrescentarDetalhe(
+            StringBuilder detalhes, String chave, String valor) {
+        if (detalhes.length() > 0) { detalhes.append(';'); }
+        detalhes.append(chave).append('=').append(valor == null ? "" : valor);
+    }
+
+    private static String juntarParticipantes(RegistroAcaoInstrumental registro) {
+        StringBuilder participantes = new StringBuilder();
+        for (String participante : registro.getParticipantesSemanticos()) {
+            if (participantes.length() > 0) { participantes.append(','); }
+            participantes.append(participante);
+        }
+        return participantes.toString();
     }
 
     public synchronized void registrarComputador(String tarefa,

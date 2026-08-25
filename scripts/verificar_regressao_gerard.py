@@ -143,6 +143,40 @@ for key in ('ui.tooltip.restore.elements','ui.tooltip.correctCuration','ui.integ
 print('== Estrutura atual ==')
 main=text('src/Main.java'); repo=text('src/gerard/campoaditivo/servico/RepositorioSituacoesAditivas.java')
 
+print('== P4.1: fluxo TEXTO distribuído da incógnita ==')
+inicio_fluxo_texto=main.find('private boolean confirmarValorIncognitaTexto(')
+fim_fluxo_texto=main.find('private java.util.List<String> participantesSemanticosDaSituacaoAtual()',
+                          inicio_fluxo_texto)
+fluxo_texto=(main[inicio_fluxo_texto:fim_fluxo_texto]
+             if inicio_fluxo_texto >= 0 and fim_fluxo_texto > inicio_fluxo_texto
+             else '')
+check(bool(fluxo_texto),'fluxo TEXTO distribuído localizado na Main')
+check('incognita.avaliarAcaoTexto(' in fluxo_texto,
+      'proprietário semântico avalia a ação TEXTO')
+check(fluxo_texto.count('registrarAcaoInstrumentalUsuario(registro)') == 1,
+      'uma ação TEXTO produz um único registro factual no log')
+check(fluxo_texto.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 1,
+      'o mesmo registro chega uma única vez ao Modelador')
+check('executorAjudaIncognita.executar(' in fluxo_texto,
+      'a interface materializa a decisão local de ajuda')
+check(all(token not in fluxo_texto for token in
+          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(')),
+      'Monitor e ZDP não participam do fluxo TEXTO migrado')
+check('sessaoAdaptativaUsuario.iniciarNoLogin(idEscolhido)' in main
+      and 'projetorContextoIncognita.projetarPara(' in main,
+      'fotografia do Modelo do Usuário é carregada no login e projetada à incógnita')
+check('sessaoAdaptativaUsuario.encerrarNoLogout()' in main
+      and 'getUsuarioId()' in main,
+      'troca de perfil encerra a fotografia anterior antes do novo login')
+incognita_rica=text('src/gerard/dominio/campoaditivo/IncognitaQuantitativa.java')
+check('correspondeAoEsperado' in incognita_rica
+      and 'diagnosticoValorIncorreto' in incognita_rica
+      and 'selecionarAjuda' in incognita_rica,
+      'incógnita concentra avaliação, diagnóstico e seleção no repertório local')
+check(all(token not in incognita_rica for token in
+          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
+      'proprietário semântico permanece independente de Swing, AWT, Monitor e ZDP')
+
 print('== Main compositora e roteadora: ratchet dos protocolos de interação ==')
 # Estes limites são a fotografia da versão arquitetural corrente. Eles não
 # medem o tamanho total de Main.java: novas categorias podem acrescentar UI sem

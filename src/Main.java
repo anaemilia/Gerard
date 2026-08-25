@@ -20,6 +20,7 @@ import gerard.agente.modelador.AgenteModelador;
 import gerard.agente.modelador.InferenciaRegrasModelador;
 import gerard.agente.modelador.RepositorioRegrasInferidas;
 import gerard.agente.modelador.ConectorVereditoModelador;
+import gerard.agente.modelador.RepositorioRegrasAdaptativasPublicadas;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
@@ -75,9 +76,18 @@ import gerard.interpretacao.modelo.CategoriaProblema;
 import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
 import gerard.dominio.campoaditivo.OrigemAcao;
+import gerard.dominio.campoaditivo.IncognitaQuantitativa;
+import gerard.dominio.atividade.ContextoAcaoInstrumental;
+import gerard.dominio.atividade.RegistroAcaoInstrumental;
+import gerard.aplicacao.adaptacao.ContextoRegistroAjuda;
+import gerard.aplicacao.adaptacao.ExecutorAjudaIncognita;
+import gerard.aplicacao.adaptacao.ProjetorContextoAdaptativoIncognita;
+import gerard.aplicacao.adaptacao.ResultadoContextualizacaoIncognita;
+import gerard.aplicacao.adaptacao.ResultadoExecucaoAjudaIncognita;
 import gerard.dominio.campoaditivo.ajuda.FormatoAjudaNarrativaVisual;
 import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
+import gerard.semantica.numero.NumeroInteiro;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
 import gerard.interpretacao.modelo.NumeroEncontrado;
@@ -128,6 +138,7 @@ import gerard.Scaffolding.arraste.OuvinteArrasteElastico;
 import gerard.pesquisador.TelaVisaoPesquisador;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import gerard.pesquisador.log.LoggerGestosInteracaoGerard;
+import gerard.pesquisador.log.RegistradorEventosAjudaLogGerard;
 import gerard.aplicacao.AcaoAtividade;
 import gerard.aplicacao.ControladorEstadoAtividade;
 import gerard.aplicacao.ContextoCarregamentoAtividade;
@@ -145,6 +156,7 @@ import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;
 import gerard.ui.vergnaud.AdaptadorMovimentoConectorVergnaud;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
 import gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria;
+import gerard.ui.swing.adaptacao.MaterializadorDecisaoAjudaSwing;
 import gerard.ui.janela.ConfiguradorJanelaPrincipal;
 import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
@@ -637,14 +649,9 @@ public class Main extends JFrame {
         ScaffoldingNumeroRelativo scaffoldingNumeroRelativo = new ScaffoldingNumeroRelativo();
         ScaffoldingProximidade scaffoldingProximidade = new ScaffoldingProximidade();
         ScaffoldingQuestionamento scaffoldingQuestionamento = new ScaffoldingQuestionamento();
-        // Extração nomeada do veredito certo/errado já existente (ver
-        // gerard-ajuda-adaptativa/references/agente-monitor.md e
-        // instrucao-indicador-agente-monitor.pdf). Não substitui
-        // scaffoldingQuestionamento, delega para ele.
+        // Componentes legados ainda usados pelos protocolos não migrados. O
+        // ramo TEXTO da incógnita não passa por Monitor ou ZDP (P4.1).
         final AgenteMonitor agenteMonitor = new AgenteMonitor(scaffoldingQuestionamento);
-        // Agente ZDP (agente-zdp.md): decide a camada de estratégia (N0-N2 +
-        // retirada progressiva) a partir do veredito do Monitor, antes do
-        // Modelador armazenar o caso — ver AgenteZDP.decidirEstrategia.
         final gerard.agente.zdp.AgenteZDP agenteZDP = new gerard.agente.zdp.AgenteZDP();
         // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8;
         // TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md): contagem,
@@ -658,18 +665,26 @@ public class Main extends JFrame {
         // precisa ser atualizado para não dizer mais "único ponto").
         private gerard.dominio.campoaditivo.PapelQuantitativo tentativasIncognitaAtual;
         private String papelDaTentativaAtual;
-        // Modelo do Usuário (ver gerard-modelo-usuario/SKILL.md) e Agente
-        // Modelador (agente-modelador.md): ação 1 (armazenar caso) conectada
-        // e já recebe a estratégia do Agente ZDP — ver ConectorVereditoModelador.
-        // repositorioModeloUsuario extraído como variável própria (em vez de
-        // inline) para ser compartilhado também com o DialogoUsuario — ver
-        // criarBotaoUsuario.
+        // O Modelador escreve o Modelo do Usuário e publica regras; a sessão
+        // congela uma fotografia no login e entrega apenas a projeção pedida
+        // por cada proprietário semântico. O diálogo de usuário compartilha o
+        // mesmo repositório, não a fotografia mutável.
         final gerard.agente.modelousuario.RepositorioModeloUsuario repositorioModeloUsuario =
                 new gerard.agente.modelousuario.RepositorioModeloUsuario();
-        final AgenteModelador agenteModelador = new AgenteModelador(repositorioModeloUsuario);
+        final RepositorioRegrasAdaptativasPublicadas repositorioRegrasPublicadas =
+                new RepositorioRegrasAdaptativasPublicadas();
+        final gerard.adaptacao.sessao.SessaoAdaptativaUsuario sessaoAdaptativaUsuario =
+                new gerard.adaptacao.sessao.SessaoAdaptativaUsuario(
+                        repositorioModeloUsuario, repositorioRegrasPublicadas);
+        final ProjetorContextoAdaptativoIncognita projetorContextoIncognita =
+                new ProjetorContextoAdaptativoIncognita(sessaoAdaptativaUsuario);
+        private ResultadoContextualizacaoIncognita contextoIncognitaAtual =
+                projetorContextoIncognita.projetarPara(null);
+        final AgenteModelador agenteModelador = new AgenteModelador(
+                repositorioModeloUsuario, repositorioRegrasPublicadas);
         final ConectorVereditoModelador conectorVereditoModelador = new ConectorVereditoModelador(agenteModelador);
-        // Log estruturado de auditoria dos 3 agentes (ver
-        // gerard.pesquisador.auditoria.AgentAuditService) — null por padrão:
+        // Log estruturado de auditoria, ainda retrocompatível com os três
+        // agentes da arquitetura anterior — null por padrão:
         // só existe quando quem instancia TelaGerard anexa um serviço (ver
         // TesteMonkeyGuiadoPorCasosReais), igual GravadorAtividadeAgentes já
         // funciona hoje. Não force-liga no app ao vivo por padrão.
@@ -761,6 +776,19 @@ public class Main extends JFrame {
         final MarcadorOrigemArraste marcadorOrigemArraste =
                 new MarcadorOrigemArrasteTracejado();
         LoggerInteracaoGerard loggerInteracaoGerard = LoggerInteracaoGerard.getInstancia();
+        final RegistradorEventosAjudaLogGerard registradorEventosAjuda =
+                new RegistradorEventosAjudaLogGerard(loggerInteracaoGerard);
+        final MaterializadorDecisaoAjudaSwing materializadorDecisaoAjuda =
+                new MaterializadorDecisaoAjudaSwing(
+                        this, localizacao, new Runnable() {
+                            public void run() {
+                                revalidate();
+                                repaint();
+                            }
+                        });
+        final ExecutorAjudaIncognita executorAjudaIncognita =
+                new ExecutorAjudaIncognita(
+                        materializadorDecisaoAjuda, registradorEventosAjuda);
         final PublicadorGestoInteracao publicadorGestosInteracao =
                 LoggerGestosInteracaoGerard.paraSessao(loggerInteracaoGerard);
         ControladorContextoSituacao controladorContextoSituacao = new ControladorContextoSituacao(loggerInteracaoGerard);
@@ -1043,6 +1071,18 @@ public class Main extends JFrame {
                 }
             });
             timer.start();
+        }
+
+        private void atualizarContextoAdaptativoIncognitaAtual() {
+            SituacaoProblemaAditiva situacaoContextualizavel =
+                    categoriaSelecionadaParaAtividade ? situacaoProblemaAtual : null;
+            if (situacaoContextualizavel == null) {
+                contextoIncognitaAtual = projetorContextoIncognita.projetarPara(null);
+                return;
+            }
+            garantirTentativasIncognitaAtual(obterPapelIncognitaAtual());
+            contextoIncognitaAtual = projetorContextoIncognita.projetarPara(
+                    situacaoContextualizavel, tentativasIncognitaAtual);
         }
 
         private void configurarFeedbackConclusaoModelagem() {
@@ -2298,6 +2338,7 @@ public class Main extends JFrame {
             textoProblemaEhMensagemSistema = false;
             textoProblema = normalizarTextoProblemaParaRenderizacao(versao.getEnunciado());
             resultadoInterpretacao = construtorResultadoCurado.construir(versao, textoProblema);
+            atualizarContextoAdaptativoIncognitaAtual();
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
             estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
@@ -3161,6 +3202,16 @@ public class Main extends JFrame {
                                 proprietario, repositorioModeloUsuario);
                         String idEscolhido = dialogo.mostrarESelecionar();
                         if (idEscolhido != null) {
+                            if (sessaoAdaptativaUsuario.fotografiaAtual().isPresent()
+                                    && !idEscolhido.equals(sessaoAdaptativaUsuario
+                                            .fotografiaAtual().get().getUsuarioId())) {
+                                // Trocar o perfil ativo constitui uma nova
+                                // sessão: descarta a fotografia anterior antes
+                                // de carregar a do novo login.
+                                sessaoAdaptativaUsuario.encerrarNoLogout();
+                            }
+                            sessaoAdaptativaUsuario.iniciarNoLogin(idEscolhido);
+                            atualizarContextoAdaptativoIncognitaAtual();
                             loggerInteracaoGerard.definirUsuario(idEscolhido);
                             criarMenuPrincipal();
                         }
@@ -4697,6 +4748,7 @@ public class Main extends JFrame {
             textoProblemaEhMensagemSistema = false;
             textoProblema = normalizarTextoProblemaParaRenderizacao(versao.getEnunciado());
             resultadoInterpretacao = construtorResultadoCurado.construir(versao, textoProblema);
+            atualizarContextoAdaptativoIncognitaAtual();
             definicaoDiagramaAtual = SemanticaCuradaSituacao.aplicarRotulos(
                     catalogoDefinicoesAditivas.obter(tipoSituacaoSelecionada),
                     situacaoProblemaAtual,
@@ -4734,6 +4786,7 @@ public class Main extends JFrame {
             textoProblema = "";
             textoProblemaEhMensagemSistema = false;
             resultadoInterpretacao = null;
+            atualizarContextoAdaptativoIncognitaAtual();
             definicaoDiagramaAtual = null;
             cenaDiagramaAtual = null;
             cenaDiagramaVennAtual = null;
@@ -4849,6 +4902,7 @@ public class Main extends JFrame {
          * foram atribuídos pelo chamador.
          */
         private void finalizarCarregamentoSituacao() {
+            atualizarContextoAdaptativoIncognitaAtual();
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
             estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
@@ -4928,6 +4982,7 @@ public class Main extends JFrame {
                 inicializarElementosTexto();
             }
 
+            atualizarContextoAdaptativoIncognitaAtual();
             definicaoDiagramaAtual = SemanticaCuradaSituacao.aplicarRotulos(
                     contexto.getDefinicao(), situacaoProblemaAtual, localizacao);
             atualizarRotulosDiagramaVergnaudSemReposicionar();
@@ -6171,7 +6226,19 @@ public class Main extends JFrame {
             if (digitado == null) {
                 return null;
             }
-            return Boolean.valueOf(digitado.intValue() == alvo.intValue());
+            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
+            if (incognita == null) {
+                return null;
+            }
+            return incognita.correspondeAoEsperado(
+                    new NumeroInteiro(digitado.intValue()),
+                    new NumeroInteiro(alvo.intValue()));
+        }
+
+        private IncognitaQuantitativa obterIncognitaSemanticaAtual() {
+            return contextoIncognitaAtual == null
+                    || !contextoIncognitaAtual.getIncognita().isPresent()
+                            ? null : contextoIncognitaAtual.getIncognita().get();
         }
 
         /**
@@ -6547,6 +6614,9 @@ public class Main extends JFrame {
         private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item,
                 gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao,
                 boolean registrarAcaoDoProtocoloTexto) {
+            if (registrarAcaoDoProtocoloTexto) {
+                return confirmarValorIncognitaTexto(item, identidadeAcao);
+            }
             // Mesma comparação de incognitaAguardandoConfirmacaoDeValor, mas
             // sem perder a distinção "não aplicável" (null) de "correto"
             // (true) — precisamos das duas pra decidir se notifica os
@@ -6621,6 +6691,145 @@ public class Main extends JFrame {
                 mostrarDicaOperacaoIncognita();
             }
             return false;
+        }
+
+        /**
+         * Primeiro fluxo adaptativo distribuído completo. A tela entrega os
+         * fatos observáveis do protocolo TEXTO à incógnita; o proprietário
+         * semântico avalia, diagnostica, atualiza a sequência e constitui um
+         * único registro. A infraestrutura apenas persiste o registro,
+         * encaminha o mesmo caso ao Modelador e materializa a ajuda que o
+         * próprio proprietário selecionou a partir da fotografia do login e
+         * das regras publicadas.
+         */
+        private boolean confirmarValorIncognitaTexto(
+                ItemTextoArrastavel item,
+                gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao) {
+            if (item == null || !item.representaIncognitaOriginal()
+                    || !item.isPreenchidoPeloProtocoloMouseTexto()) {
+                if (agentAuditService != null) {
+                    agentAuditService.liberarReservaDeGesto();
+                }
+                return true;
+            }
+
+            String papelAlvo = obterPapelIncognitaAtual();
+            garantirTentativasIncognitaAtual(papelAlvo);
+            atualizarContextoAdaptativoIncognitaAtual();
+            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
+            if (incognita == null) {
+                if (agentAuditService != null) {
+                    agentAuditService.liberarReservaDeGesto();
+                }
+                return true;
+            }
+            if (identidadeAcao == null) {
+                identidadeAcao = tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                        gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+            }
+
+            registrarPapeisDadoModificadosSeHouver();
+            Integer valorProposto = converterTextoParaInteiro(item.valor);
+            Integer valorEsperado = obterValorAlvoParaPapel(papelAlvo);
+            ContextoAcaoInstrumental contextoInstrumental =
+                    new ContextoAcaoInstrumental(
+                            "Substituir incógnita por número",
+                            "Caixa de texto editável",
+                            "Item arrastável no diagrama",
+                            "Informar valor numérico para o papel designado como incógnita",
+                            papelAlvo,
+                            "EDICAO_ITEM",
+                            "valor=" + (item.valor == null ? "" : item.valor),
+                            "Valor numérico informado para a incógnita",
+                            participantesSemanticosDaSituacaoAtual());
+            RegistroAcaoInstrumental registro = incognita.avaliarAcaoTexto(
+                    identidadeAcao,
+                    valorProposto == null ? null : new NumeroInteiro(valorProposto.intValue()),
+                    valorEsperado == null ? null : new NumeroInteiro(valorEsperado.intValue()),
+                    contextoInstrumental);
+            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
+                    registro.getResultadoTentativa().isPresent()
+                            ? registro.getResultadoTentativa().get() : null;
+
+            if (agentAuditService != null) {
+                agentAuditService.iniciarAcao(
+                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
+                                loggerInteracaoGerard.getUsuarioAtual(),
+                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
+                                textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo,
+                                registro.getActionId(), registro.getRejectionSequenceId()),
+                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                "type", papelAlvo, item.valor, null, papelAlvo,
+                                null, null, null, null),
+                        gerard.pesquisador.auditoria.OrigemAvaliacao.QUANTIFICACAO,
+                        tipoSituacaoSelecionada);
+            }
+
+            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+            String chaveIdempotencia = agentAuditService == null
+                    ? registro.getActionId()
+                    : agentAuditService.obterChaveIdempotenciaAtual();
+            conectorVereditoModelador.registrarAcaoInstrumental(
+                    loggerInteracaoGerard.getUsuarioAtual(), registro, null,
+                    chaveIdempotencia);
+
+            ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
+            if (registro.foiErrada() && resultadoTentativa != null
+                    && registro.getDiagnostico().isPresent()) {
+                resultadoAjuda = executorAjudaIncognita.executar(
+                        contextoIncognitaAtual,
+                        registro.getDiagnostico().get(),
+                        resultadoTentativa.getRejeicoesConsecutivas(),
+                        new ContextoRegistroAjuda(
+                                registro.getActionId(),
+                                registro.getRejectionSequenceId()));
+            }
+
+            if (agentAuditService != null) {
+                agentAuditService.finalizarAcao();
+                agentAuditService.liberarReservaDeGesto();
+            }
+            if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
+                return true;
+            }
+            if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
+                return false;
+            }
+            if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
+                mostrarAvisoLimiteTentativasAtingido(resultadoTentativa);
+                return false;
+            }
+
+            String nomePapel = localizacao.texto(papelAlvo);
+            String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
+            int opcao = JOptionPane.showConfirmDialog(
+                    this, pergunta, localizacao.texto("ui.dialog.confirm"),
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            registrarFeedbackExibido("AG_EMLQ",
+                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                    "pergunta de confirmação de valor divergente",
+                    registro.getActionId(), registro.getRejectionSequenceId());
+            if (opcao == JOptionPane.YES_OPTION) {
+                mostrarDicaOperacaoIncognita();
+            }
+            return false;
+        }
+
+        /**
+         * Lista referências semânticas da situação, nunca novos registros de
+         * ação. Os papéis vêm do mapeamento semântico da cena e não da posição
+         * visual ocupada pelos elementos.
+         */
+        private java.util.List<String> participantesSemanticosDaSituacaoAtual() {
+            java.util.LinkedHashSet<String> participantes =
+                    new java.util.LinkedHashSet<String>();
+            for (int i = 0; i < elementosVergnaud.size(); i++) {
+                String papel = obterPapelElementoParaConclusao(i);
+                if (papel != null && papel.trim().length() > 0) {
+                    participantes.add(papel.trim());
+                }
+            }
+            return new java.util.ArrayList<String>(participantes);
         }
 
         /**

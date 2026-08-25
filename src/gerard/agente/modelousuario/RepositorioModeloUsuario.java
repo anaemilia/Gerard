@@ -19,7 +19,9 @@ import java.util.Map;
 /**
  * Repositório compartilhado de Modelo do Usuário mencionado em
  * gerard-ajuda-adaptativa/SKILL.md ("Repositórios de dados compartilhados"):
- * escrito pelo Agente Modelador, consultado pelo Agente ZDP.
+ * escrito pelo Agente Modelador e fotografado no login para projeções de
+ * leitura dos proprietários semânticos. O Agente ZDP é apenas consumidor
+ * legado enquanto seus protocolos ainda não forem migrados.
  *
  * Guarda em memória, por id de usuário (mesmo identificador do campo
  * "usuario" do log — ver gerard-log-acao-instrumental/SKILL.md).
@@ -57,7 +59,8 @@ public class RepositorioModeloUsuario {
     private static final String CABECALHO_DIAGNOSTICOS = "usuario_id\ttarefa\tregra_de_acao\tsuporte\t"
             + "internalizado\tprobabilidade_saber_conteudo\tdificuldade_autorrelatada\texplicacao_elemento\t"
             + "explicacao_geral\tnivel_conceitual_estimado\tnivel_conceitual_curado\t"
-            + "invariante_origem\tinvariante_codigo\tinvariante_simbolico\tinvariante_observacao";
+            + "invariante_origem\tinvariante_codigo\tinvariante_simbolico\tinvariante_observacao\t"
+            + "action_id\tavaliacao\ttipo_erro\tparticipantes_semanticos";
 
     private final Map<String, ModeloUsuario> modelosPorId = new LinkedHashMap<String, ModeloUsuario>();
     private final File arquivoPerfis;
@@ -335,6 +338,13 @@ public class RepositorioModeloUsuario {
                     diagnostico.setInvarianteSimbolico(campos[13].length() == 0 ? null : desescapar(campos[13]));
                     diagnostico.setInvarianteObservacao(campos[14].length() == 0 ? null : desescapar(campos[14]));
                 }
+                if (campos.length >= 19) {
+                    diagnostico.setActionId(campos[15].length() == 0 ? null : desescapar(campos[15]));
+                    diagnostico.setAvaliacao(campos[16].length() == 0 ? null : desescapar(campos[16]));
+                    diagnostico.setTipoErro(campos[17].length() == 0 ? null : desescapar(campos[17]));
+                    diagnostico.setParticipantesSemanticos(
+                            desserializarParticipantes(desescapar(campos[18])));
+                }
                 obterOuCriar(usuarioId).adicionarDiagnostico(diagnostico);
             }
         } catch (IOException | IllegalArgumentException ex) {
@@ -397,6 +407,15 @@ public class RepositorioModeloUsuario {
                     escritor.write(escapar(diagnostico.getInvarianteSimbolico()));
                     escritor.write("\t");
                     escritor.write(escapar(diagnostico.getInvarianteObservacao()));
+                    escritor.write("\t");
+                    escritor.write(escapar(diagnostico.getActionId()));
+                    escritor.write("\t");
+                    escritor.write(escapar(diagnostico.getAvaliacao()));
+                    escritor.write("\t");
+                    escritor.write(escapar(diagnostico.getTipoErro()));
+                    escritor.write("\t");
+                    escritor.write(escapar(serializarParticipantes(
+                            diagnostico.getParticipantesSemanticos())));
                     escritor.newLine();
                 }
             }
@@ -433,6 +452,29 @@ public class RepositorioModeloUsuario {
             sb.append(atual);
         }
         return sb.toString();
+    }
+
+    private static String serializarParticipantes(List<String> participantes) {
+        if (participantes == null || participantes.isEmpty()) { return ""; }
+        StringBuilder resultado = new StringBuilder();
+        for (String participante : participantes) {
+            if (participante == null || participante.trim().length() == 0) { continue; }
+            if (resultado.length() > 0) { resultado.append(','); }
+            resultado.append(participante.trim());
+        }
+        return resultado.toString();
+    }
+
+    private static List<String> desserializarParticipantes(String serializado) {
+        List<String> participantes = new ArrayList<String>();
+        if (serializado == null || serializado.trim().length() == 0) { return participantes; }
+        for (String participante : serializado.split(",")) {
+            String normalizado = participante.trim();
+            if (normalizado.length() > 0 && !participantes.contains(normalizado)) {
+                participantes.add(normalizado);
+            }
+        }
+        return participantes;
     }
 
     private void fechar(java.io.Closeable recurso) {

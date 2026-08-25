@@ -4,34 +4,23 @@ import gerard.agente.modelousuario.DiagnosticoTarefa;
 import gerard.agente.modelousuario.NivelSuporte;
 import gerard.agente.zdp.CamadaEstrategiaZDP;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.atividade.RegistroAcaoInstrumental;
 
 /**
- * Ponte entre a Estratégia Pedagógica do Agente ZDP (percepção formal do
- * Agente Modelador, ver agente-modelador.md) e o Agente Modelador (armazena
- * "casos" no Modelo do Usuário).
+ * Porta de entrada de casos no Agente Modelador. O caminho arquitetural
+ * vigente recebe diretamente o {@link RegistroAcaoInstrumental} produzido
+ * pelo proprietário semântico e apenas o projeta para o Modelo do Usuário,
+ * sem recalcular C/E ou diagnóstico.
  *
- * Preenche os campos "tarefa", "suporte" e "regraDeAcao" do
- * DiagnosticoTarefa. "suporte" vem da camada de estratégia decidida pelo
- * Agente ZDP (QUESTIONAMENTO_LEVE/AJUDA_ESPECIFICA viram PARCIAL;
- * CONDUCAO_MINIMA/RETIRADA_PROGRESSIVA viram NENHUM; nenhuma camada
- * implementada hoje produz TOTAL, que corresponde a ajuda
- * concreta/automatização — ver camadas N3+ em agente-zdp.md, ainda não
- * decididas). "regraDeAcao" usa o mesmo vocabulário de Tarefa de Interação
- * de Shneiderman já usado no log (SELECIONAR, POSICIONAR, ...; ver
- * gerard-log-acao-instrumental).
- *
- * Dois métodos, porque nem toda ação instrumental tem veredito certo/errado
- * (ver AgenteMonitor.perceberAcao): registrarVeredito é para ações
- * avaliáveis (POSICIONAR, hoje); registrarAcaoNeutra é para ações sem
- * papel-alvo ainda, como SELECIONAR — sempre suporte=NENHUM, sem passar
- * pela camada do ZDP (que pressupõe recorrência de erro/acerto,
- * inaplicável aqui).
+ * Os métodos que recebem {@link CamadaEstrategiaZDP} são compatibilidade dos
+ * protocolos ainda não migrados. Eles não definem a arquitetura-alvo e devem
+ * desaparecer gradualmente, um protocolo por vez.
  *
  * Os campos "internalizado" e "probabilidadeSaberConteudo" seguem no valor
  * padrão (false/0.0) de propósito: dependem do teorema de Bayes e de uma
  * leitura de estabilização ao longo de várias tentativas (ver "Entrada
  * empírica para a ação 2" em agente-modelador.md) — cálculos distintos da
- * inferência via J48.PART + APRIORI (essa parte da ação 2 já existe, ver
+ * inferência via J48/PART + Apriori (essa parte da ação 2 já existe, ver
  * InferenciaRegrasModelador e a aba de Modelo do Usuário na Visão de
  * Pesquisador), e que ainda não têm quem os calcule. Decisão confirmada com
  * o usuário em 2026-07-21 e reafirmada em 2026-07-22.
@@ -63,6 +52,33 @@ public class ConectorVereditoModelador {
         diagnostico.setSuporte(mapearSuporte(estrategia));
         diagnostico.setRegraDeAcao(regraDeAcao);
         agenteModelador.armazenarCaso(idUsuario, diagnostico, idempotencyKey);
+    }
+
+    /**
+     * Recebe o mesmo registro produzido pelo proprietário semântico, sem
+     * solicitar veredito ao Monitor nem estratégia ao ZDP.
+     */
+    public void registrarAcaoInstrumental(
+            String idUsuario,
+            RegistroAcaoInstrumental registro,
+            NivelSuporte suporteFactual,
+            String idempotencyKey) {
+        if (idUsuario == null || registro == null || registro.getCategoria() == null) {
+            return;
+        }
+        DiagnosticoTarefa diagnostico = new DiagnosticoTarefa(
+                registro.getCategoria().name() + ":" + registro.getAlvoSemantico());
+        diagnostico.setRegraDeAcao(registro.getTarefaInteracao().name());
+        diagnostico.setSuporte(suporteFactual);
+        diagnostico.setActionId(registro.getActionId());
+        diagnostico.setAvaliacao(registro.getResultado().name());
+        diagnostico.setTipoErro(registro.getDiagnostico().isPresent()
+                ? registro.getDiagnostico().get().getTipo().name() : null);
+        diagnostico.setParticipantesSemanticos(registro.getParticipantesSemanticos());
+        String chaveIdempotencia = idempotencyKey == null
+                || idempotencyKey.trim().length() == 0
+                        ? registro.getActionId() : idempotencyKey;
+        agenteModelador.armazenarCaso(idUsuario, diagnostico, chaveIdempotencia);
     }
 
     public void registrarAcaoNeutra(String idUsuario, TipoSituacaoAditiva categoria, String regraDeAcao) {

@@ -30,8 +30,9 @@ import weka.core.Instances;
  *
  * Atributos usados: "tarefa" (categoria:papel-alvo), "regraDeAcao" (Tarefa
  * de Interação de Shneiderman — hoje POSICIONAR ou SELECIONAR, ver
- * ConectorVereditoModelador) e "suporte" (NivelSuporte, classe fixa do
- * PART). "internalizado" e "probabilidadeSaberConteudo" não entram ainda
+ * ConectorVereditoModelador), "avaliacao" (resultado factual produzido pelo
+ * proprietário semântico) e "suporte" (NivelSuporte, classe fixa do PART).
+ * "internalizado" e "probabilidadeSaberConteudo" não entram ainda
  * porque nenhum outro agente os preenche hoje — treinar sobre uma coluna
  * constante não produziria regra nenhuma.
  *
@@ -141,6 +142,7 @@ public final class InferenciaRegrasModelador {
     }
 
     private static final String SEM_INVARIANTE = "SEM_INVARIANTE";
+    private static final String SEM_AVALIACAO = "NAO_INFORMADA";
 
     private Instances construirDataset(List<DiagnosticoTarefa> diagnosticos) {
         Set<String> tarefasDistintas = new LinkedHashSet<String>();
@@ -156,6 +158,11 @@ public final class InferenciaRegrasModelador {
         ArrayList<String> valoresTarefa = new ArrayList<String>(tarefasDistintas);
         ArrayList<String> valoresRegraDeAcao = new ArrayList<String>(regrasDeAcaoDistintas);
         ArrayList<String> valoresInvariante = new ArrayList<String>(invariantesDistintos);
+        ArrayList<String> valoresAvaliacao = new ArrayList<String>();
+        valoresAvaliacao.add("CORRETA");
+        valoresAvaliacao.add("ERRADA");
+        valoresAvaliacao.add("NAO_APLICAVEL");
+        valoresAvaliacao.add(SEM_AVALIACAO);
         ArrayList<String> valoresSuporte = new ArrayList<String>();
         for (NivelSuporte nivel : NivelSuporte.values()) {
             valoresSuporte.add(nivel.name());
@@ -164,12 +171,14 @@ public final class InferenciaRegrasModelador {
         Attribute atributoTarefa = new Attribute("tarefa", valoresTarefa);
         Attribute atributoRegraDeAcao = new Attribute("regraDeAcao", valoresRegraDeAcao);
         Attribute atributoInvariante = new Attribute("invarianteCodigo", valoresInvariante);
+        Attribute atributoAvaliacao = new Attribute("avaliacao", valoresAvaliacao);
         Attribute atributoSuporte = new Attribute("suporte", valoresSuporte);
 
         ArrayList<Attribute> atributos = new ArrayList<Attribute>();
         atributos.add(atributoTarefa);
         atributos.add(atributoRegraDeAcao);
         atributos.add(atributoInvariante);
+        atributos.add(atributoAvaliacao);
         atributos.add(atributoSuporte);
 
         Instances dados = new Instances("diagnosticosModeloUsuario", atributos, diagnosticos.size());
@@ -179,6 +188,8 @@ public final class InferenciaRegrasModelador {
             instancia.setValue(atributoTarefa, d.getTarefa() == null ? "" : d.getTarefa());
             instancia.setValue(atributoRegraDeAcao, d.getRegraDeAcao() == null ? "" : d.getRegraDeAcao());
             instancia.setValue(atributoInvariante, valorInvarianteOu(d, SEM_INVARIANTE));
+            instancia.setValue(atributoAvaliacao,
+                    d.getAvaliacao() == null ? SEM_AVALIACAO : d.getAvaliacao());
             NivelSuporte suporte = d.getSuporte();
             instancia.setValue(atributoSuporte, suporte == null ? NivelSuporte.NENHUM.name() : suporte.name());
             dados.add(instancia);

@@ -252,6 +252,34 @@ Esta é uma migração por fluxo. Seleção de categoria, posicionamento, sinal 
 outros protocolos ainda podem atravessar Monitor/ZDP no legado e devem ser
 migrados separadamente, sem remoção em massa.
 
+### Estado de integração — P4.1, 2026-08-25
+
+O fluxo `TEXTO` da incógnita está conectado à interface de produção. A
+`IncognitaQuantitativa` reutiliza o mesmo `PapelQuantitativo` que já possui a
+identidade da ação e a sequência de rejeições; a projeção adaptativa não cria
+outra contagem. A ausência de fotografia ou de regra publicada impede somente
+a seleção adaptativa, não a avaliação factual da ação.
+
+Nesse ramo, `Main.confirmarValorIncognitaTexto` entrega os valores e o contexto
+instrumental ao proprietário. Não chama Monitor, ZDP nem o conector legado de
+veredito. O `RegistroAcaoInstrumental` retornado é entregue uma vez ao
+`LoggerInteracaoGerard` e uma vez ao `ConectorVereditoModelador`; os demais
+papéis da situação permanecem referências no mesmo `action_id`.
+
+Quando há rejeição e fotografia ativa, `ExecutorAjudaIncognita` solicita a
+seleção local e a interface Swing apenas materializa a `DecisaoAjuda`. Sem regra
+publicada aplicável, o resultado explícito é `SEM_REGRA_APLICAVEL` e o apoio
+visual anterior permanece como fallback de compatibilidade. Uma publicação do
+Modelador feita durante a sessão só se torna elegível depois de logout e novo
+login.
+
+O harness `TesteP4_1FluxoTextoIncognita` verifica ação única, múltiplos
+participantes por referência, diagnóstico local, sequência, idempotência do log
+e do caso, rastreabilidade da decisão e estabilidade da fotografia. O verificador
+`scripts/verificar_regressao_gerard.py` protege deterministamente a ausência de
+Monitor/ZDP no ramo `TEXTO` e a independência do proprietário em relação a
+Swing/AWT.
+
 ## Histórico da proposta teórica e da implementação anterior
 
 O conteúdo histórico abaixo vem do material de pesquisa/tese do usuário e de

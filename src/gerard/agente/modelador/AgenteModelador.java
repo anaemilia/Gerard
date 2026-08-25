@@ -4,28 +4,27 @@ import gerard.agente.modelousuario.DiagnosticoTarefa;
 import gerard.agente.modelousuario.ModeloUsuario;
 import gerard.agente.modelousuario.NivelConceitualExplicacao;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
+import gerard.adaptacao.RegraAdaptativaPublicada;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Agente Reativo Simples descrito em gerard-ajuda-adaptativa/references/
- * agente-modelador.md: mantém o Modelo do Usuário atualizado.
+ * Único agente da arquitetura-alvo: mantém o Modelo do Usuário atualizado e
+ * concentra a aprendizagem computacional.
  *
- * Implementa as ações 1 (armazenar o novo caso) e 2 (inferir regras via
- * PART + Apriori — dependência Weka adicionada em 2026-07-22, ver lib/ e
- * InferenciaRegrasModelador). Uma parte da especificação segue de fora de
- * propósito:
- *
- *  - A percepção formal "Estratégia Pedagógica": vem do Agente ZDP. O ZDP
- *    hoje só decide a camada (ver gerard.agente.zdp.AgenteZDP), não uma
- *    estratégia pedagógica completa; por isso armazenarCaso recebe o
- *    DiagnosticoTarefa já pronto (com suporte preenchido a partir da
- *    camada), em vez de deliberar a partir de uma estratégia mais rica.
+ * Implementa o armazenamento de casos, a inferência via PART e Apriori e a
+ * publicação editorial de regras explicáveis. Não avalia a ação instrumental
+ * e não escolhe a ajuda: recebe o registro factual do proprietário semântico;
+ * os próprios proprietários aplicam as regras publicadas em seus repertórios
+ * locais. Entradas vindas do antigo Monitor/ZDP permanecem somente enquanto
+ * os demais protocolos ainda não forem migrados.
  */
 public class AgenteModelador {
     private final RepositorioModeloUsuario repositorio;
+    private final RepositorioRegrasAdaptativasPublicadas repositorioRegrasPublicadas;
     private final InferenciaRegrasModelador inferenciaRegras = new InferenciaRegrasModelador();
     private final AnalisadorNivelConceitual analisadorNivelConceitual = new AnalisadorNivelConceitual();
     // Contador global de novos casos, para o gatilho automático de mineração
@@ -44,7 +43,25 @@ public class AgenteModelador {
     private final Set<String> chavesDeIdempotenciaProcessadas = new HashSet<String>();
 
     public AgenteModelador(RepositorioModeloUsuario repositorio) {
+        this(repositorio, new RepositorioRegrasAdaptativasPublicadas());
+    }
+
+    public AgenteModelador(
+            RepositorioModeloUsuario repositorio,
+            RepositorioRegrasAdaptativasPublicadas repositorioRegrasPublicadas) {
+        if (repositorio == null || repositorioRegrasPublicadas == null) {
+            throw new IllegalArgumentException(
+                    "repositórios do modelo e das regras são obrigatórios");
+        }
         this.repositorio = repositorio;
+        this.repositorioRegrasPublicadas = repositorioRegrasPublicadas;
+    }
+
+    /** Publicação editorial explícita, elegível somente em login posterior. */
+    public void publicarRegrasAdaptativas(
+            String idUsuario,
+            List<RegraAdaptativaPublicada> regras) throws IOException {
+        repositorioRegrasPublicadas.publicarPara(idUsuario, regras);
     }
 
     public void adicionarOuvinte(OuvinteCasoAgenteModelador ouvinte) {
@@ -128,6 +145,11 @@ public class AgenteModelador {
         atributos.put("regraDeAcao", diagnostico == null ? null : diagnostico.getRegraDeAcao());
         atributos.put("suporte", diagnostico == null || diagnostico.getSuporte() == null
                 ? null : diagnostico.getSuporte().name());
+        atributos.put("action_id", diagnostico == null ? null : diagnostico.getActionId());
+        atributos.put("avaliacao", diagnostico == null ? null : diagnostico.getAvaliacao());
+        atributos.put("tipo_erro", diagnostico == null ? null : diagnostico.getTipoErro());
+        atributos.put("participantes_semanticos",
+                diagnostico == null ? null : diagnostico.getParticipantesSemanticos());
         CaseInsertionAudit casoInserido = new CaseInsertionAudit(false, null, "diagnosticos_tarefa.tsv", atributos,
                 "reactive_evaluation_does_not_create_case — evento reativo, não persistido.");
         ModeladorAuditData dados = new ModeladorAuditData(
@@ -155,6 +177,13 @@ public class AgenteModelador {
         atributos.put("regraDeAcao", diagnostico == null ? null : diagnostico.getRegraDeAcao());
         atributos.put("suporte", diagnostico == null || diagnostico.getSuporte() == null
                 ? null : diagnostico.getSuporte().name());
+        atributos.put("action_id", diagnostico == null ? null : diagnostico.getActionId());
+        atributos.put("avaliacao", diagnostico == null ? null : diagnostico.getAvaliacao());
+        atributos.put("tipo_erro", diagnostico == null ? null : diagnostico.getTipoErro());
+        atributos.put("participantes_semanticos",
+                diagnostico == null ? null : diagnostico.getParticipantesSemanticos());
+        boolean produzidoPorProprietarioSemantico = diagnostico != null
+                && diagnostico.getActionId() != null;
         String caseId = duplicado ? null
                 : idUsuario + "#" + (diagnostico == null ? "?" : diagnostico.getTarefa()) + "#" + idempotencyKey;
         String motivo = duplicado
@@ -165,7 +194,9 @@ public class AgenteModelador {
         CaseInsertionAudit casoInserido = new CaseInsertionAudit(erro == null && !duplicado, caseId,
                 "diagnosticos_tarefa.tsv", atributos, motivo);
         return new ModeladorAuditData(
-                "MONITOR_ZDP_PROCESSADOS",
+                produzidoPorProprietarioSemantico
+                        ? "REGISTRO_PROPRIETARIO_SEMANTICO_PROCESSADO"
+                        : "MONITOR_ZDP_PROCESSADOS",
                 null,
                 null,
                 diagnostico == null ? null : diagnostico.getRegraDeAcao(),

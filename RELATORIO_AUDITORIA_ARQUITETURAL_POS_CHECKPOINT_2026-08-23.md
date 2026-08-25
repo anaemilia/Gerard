@@ -173,15 +173,30 @@ no login; a interface apenas materializa a ajuda selecionada.
 números na `Main`, produz um único registro por ação e conserva a decisão
 adaptativa rastreável à regra publicada e à versão da fotografia.
 
+**Status em 2026-08-25: concluída.** A migração foi seletiva: trouxe somente
+as abstrações necessárias ao fluxo `TEXTO`; o
+`PapelQuantitativoPosicionavel`, pertencente a outro protocolo, não foi
+incorporado. `IncognitaQuantitativa` avalia e diagnostica o valor, atualiza a
+mesma sequência de rejeições já mantida por `PapelQuantitativo` e produz um
+`RegistroAcaoInstrumental`. O logger e o Modelador recebem esse mesmo registro
+de forma idempotente. A fotografia e as regras publicadas são carregadas no
+login; a interface materializa a decisão local e mantém o apoio anterior como
+fallback somente quando não há regra aplicável.
+
+O build Ant compilou 517 fontes. A linha de base compilou 87 harnesses, executou
+83 com aprovação e classificou quatro como gráficos. O harness
+`TesteP4_1FluxoTextoIncognita` passou com 12 verificações. O verificador
+estrutural protege a ausência de Monitor/ZDP no ramo migrado e a independência
+do proprietário em relação a Swing/AWT.
+
 ### P5 — retirar Monitor e ZDP incrementalmente dos demais protocolos
 
 **Complexidade:** alta. **Risco de comportamento:** alto.
 
 Os agentes legados ainda são instanciados em `Main.java` e participam de
-cinco famílias de fluxo:
+quatro famílias de fluxo:
 
 - seleção/confirmação de categoria;
-- preenchimento da incógnita;
 - posicionamento;
 - sinal do número relativo;
 - observação e painéis de auditoria/replay.
