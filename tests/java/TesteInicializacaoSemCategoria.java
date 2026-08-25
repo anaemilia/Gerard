@@ -93,7 +93,7 @@ public class TesteInicializacaoSemCategoria {
         String cabecalho = linhas.get(0);
         String situacao = null;
         for (String linha : linhas) {
-            if (linha.contains("\tPORTUGUES\tCOMPOSICAO_MEDIDAS\t")) {
+            if (linha.contains("\tpt-BR\tCOMPOSICAO_MEDIDAS\t")) {
                 situacao = linha.replace("\toriginal\t\tfalse\t", "\toriginal\t\ttrue\t");
                 break;
             }
