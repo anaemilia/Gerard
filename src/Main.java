@@ -78,7 +78,9 @@ import gerard.interpretacao.simbolo.SimboloDesconhecido;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
+import gerard.dominio.campoaditivo.RegistroAcaoEscolhaSinalPapelQuantitativo;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
+import gerard.dominio.campoaditivo.TentativaEscolhaSinalPapelQuantitativo;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.aplicacao.adaptacao.ContextoRegistroAjuda;
@@ -90,6 +92,7 @@ import gerard.dominio.campoaditivo.ajuda.FormatoAjudaNarrativaVisual;
 import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
 import gerard.semantica.numero.NumeroInteiro;
+import gerard.semantica.numero.OpcaoSinalNumeroInteiro;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
 import gerard.interpretacao.modelo.NumeroEncontrado;
@@ -520,6 +523,10 @@ public class Main extends JFrame {
         // a escolha do participante e a sequência de rejeições. A Main apenas
         // conserva a referência do fluxo corrente e materializa seu desfecho.
         TentativaClassificacaoCategoriaAditiva tentativaClassificacaoCategoriaAtual;
+        // Um proprietário por papel inteiro curado. A Main conserva somente
+        // as referências da atividade corrente e encaminha cada seleção.
+        Map<String, TentativaEscolhaSinalPapelQuantitativo>
+                tentativasEscolhaSinalAtual = Collections.emptyMap();
         RepositorioSituacoesAditivas repositorioSituacoesAditivas = new RepositorioSituacoesAditivas();
         CadastroIdiomasSituacao cadastroIdiomasSituacao = new CadastroIdiomasSituacao();
         CatalogoDefinicoesAditivas catalogoDefinicoesAditivas = new CatalogoDefinicoesAditivas();
@@ -4739,6 +4746,9 @@ public class Main extends JFrame {
                 // Atualiza apenas a camada textual, mantendo o estado dos diagramas.
                 aplicarIdiomaSelecionadoMantendoEstadoTela();
             }
+            // A curadoria normativa pode ter sido corrigida. Recria somente
+            // os proprietários de sinal; a modelagem visual continua intacta.
+            reiniciarTentativasEscolhaSinalAtual();
             atualizarTextosFixosDaInterface();
             repaint();
         }
@@ -4784,6 +4794,7 @@ public class Main extends JFrame {
             aguardandoAdivinhacaoCategoria = false;
             categoriaSorteioOculta = null;
             tentativaClassificacaoCategoriaAtual = null;
+            tentativasEscolhaSinalAtual = Collections.emptyMap();
             situacaoProblemaAtual = null;
             textoProblema = "";
             textoProblemaEhMensagemSistema = false;
@@ -4904,6 +4915,7 @@ public class Main extends JFrame {
          * foram atribuídos pelo chamador.
          */
         private void finalizarCarregamentoSituacao() {
+            reiniciarTentativasEscolhaSinalAtual();
             atualizarContextoAdaptativoIncognitaAtual();
             transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
             quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
@@ -4940,6 +4952,12 @@ public class Main extends JFrame {
             }
 
             repaint();
+        }
+
+        private void reiniciarTentativasEscolhaSinalAtual() {
+            tentativasEscolhaSinalAtual =
+                    SemanticaCuradaSituacao.criarTentativasEscolhaSinal(
+                            situacaoProblemaAtual, localizacao);
         }
 
 
@@ -6279,21 +6297,79 @@ public class Main extends JFrame {
         }
 
         /**
-         * @return null quando não há valor curado disponível pra conferir o
-         *         sinal (mesmo critério de valorDigitadoCorrespondeAoCurado:
-         *         problema digitado livremente, sem situação curada
-         *         carregada, ou papel sem valor numérico); caso contrário, se
-         *         o sinal escolhido (“+”/“-”) bate com o sinal do valor
-         *         curado do papel indicado.
+         * Encaminha a seleção ao proprietário do papel. A Main cria somente o
+         * contexto observável e materializa o registro já avaliado; não lê o
+         * valor curado nem compara sinais.
+         *
+         * @return o registro factual, ou null quando a situação/papel não
+         *         possui critério curado aplicável (comportamento legado das
+         *         situações digitadas livremente e das incógnitas sem valor).
          */
-        private Boolean sinalEscolhidoCorrespondeAoCurado(String papel, String sinalEscolhido) {
-            Integer curado = obterValorCuradoParaPapel(papel);
-            if (curado == null) {
+        private RegistroAcaoEscolhaSinalPapelQuantitativo
+                avaliarEscolhaSinalNumeroRelativo(
+                        String papel, String sinalEscolhido, String base) {
+            TentativaEscolhaSinalPapelQuantitativo tentativa =
+                    papel == null ? null : tentativasEscolhaSinalAtual.get(papel);
+            if (tentativa == null) {
                 return null;
             }
-            boolean curadoNegativo = curado.intValue() < 0;
-            boolean escolhidoNegativo = "-".equals(sinalEscolhido);
-            return Boolean.valueOf(curadoNegativo == escolhidoNegativo);
+
+            ContextoAcaoInstrumental contextoInstrumental =
+                    new ContextoAcaoInstrumental(
+                            "Escolher sinal do número relativo",
+                            "Selecionar uma opção de sinal",
+                            "Menu de radio buttons",
+                            "Representar perda ou ganho com sinal",
+                            papel + ".sinal",
+                            "MENU_SINAL",
+                            "valor=" + base + "; sinal=" + sinalEscolhido,
+                            "Sinal selecionado para o papel quantitativo",
+                            participantesSemanticosDaSituacaoAtual());
+            RegistroAcaoEscolhaSinalPapelQuantitativo registro =
+                    tentativa.avaliarEscolha(
+                            OpcaoSinalNumeroInteiro.doSimbolo(sinalEscolhido),
+                            contextoInstrumental);
+
+            if (agentAuditService != null) {
+                agentAuditService.iniciarAcao(
+                        new gerard.pesquisador.auditoria.IdentificacaoEvento(
+                                null, null,
+                                loggerInteracaoGerard.getUsuarioAtual(),
+                                situacaoProblemaAtual == null
+                                        ? null : situacaoProblemaAtual.getId(),
+                                textoProblema, String.valueOf(registro.getCategoria()),
+                                papel, registro.getActionId(),
+                                registro.getRejectionSequenceId()),
+                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
+                                "select", papel, sinalEscolhido, null, papel,
+                                null, null, null, null),
+                        gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
+                        registro.getCategoria());
+            }
+            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+            conectorVereditoModelador.registrarAcaoInstrumental(
+                    loggerInteracaoGerard.getUsuarioAtual(), registro,
+                    gerard.agente.modelousuario.NivelSuporte.NENHUM,
+                    registro.getActionId());
+            if (agentAuditService != null) {
+                agentAuditService.finalizarAcao();
+            }
+            return registro;
+        }
+
+        /** Compatibilidade para uma seleção sem critério normativo curado. */
+        private void registrarEscolhaSinalSemCriterio(String base, String sinal) {
+            registrarLogUsuario(
+                    "Escolher sinal do número relativo",
+                    "C",
+                    "Menu de radio buttons",
+                    "Número relativo do diagrama",
+                    "Representar perda ou ganho com sinal",
+                    "OBJ4",
+                    "O número relativo deve ser informado com sinal de mais ou de menos.",
+                    "MENU_SINAL",
+                    "valor=" + base + "; sinal=" + sinal
+            );
         }
 
         /**
@@ -13825,7 +13901,7 @@ public class Main extends JFrame {
          * mostrarLimiteQuantidadeQuestionado (desenharAnotacaoMouseOver),
          * limpo só quando o menu for reaberto para o mesmo item/elemento
          * (ver limparSinalDivergentePersistente, chamado no início de cada
-         * sinalEscolhido). Antes desta correção, sinalEscolhidoCorrespondeAoCurado
+         * sinalEscolhido). Antes desta correção, a comparação de sinal
          * calculava a divergência só para o log de pesquisa (C/E), sem
          * nenhum feedback visível ao participante — bug relatado pela
          * usuária ao testar Composição de relações: sinal "+3" aceito sem
@@ -13871,7 +13947,7 @@ public class Main extends JFrame {
 
         /**
          * Ver informarSuspeitaSinalIncorretoNumeroRelativo. Chamado no
-         * início de cada sinalEscolhido (antes de recalcular sinalCorreto)
+         * início de cada sinalEscolhido (antes da avaliação do proprietário)
          * para que reabrir o menu do mesmo item/elemento sempre substitua o
          * aviso anterior — seja porque o novo sinal já está certo (some), seja
          * porque ainda está errado (informarSuspeitaSinalIncorretoNumeroRelativo
@@ -13918,47 +13994,15 @@ public class Main extends JFrame {
                             }
                             elemento.textoEditavel = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
                             String chavePapelSinal = obterChavePapelDoNumeroRelativo(elemento);
-                            Boolean sinalCorreto = sinalEscolhidoCorrespondeAoCurado(chavePapelSinal, sinal);
-                            if (sinalCorreto != null) {
-                                if (agentAuditService != null) {
-                                    agentAuditService.iniciarAcao(
-                                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                                    loggerInteracaoGerard.getUsuarioAtual(),
-                                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), chavePapelSinal),
-                                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                                    "select", chavePapelSinal, sinal, null, chavePapelSinal,
-                                                    null, null, null, null),
-                                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
-                                            tipoSituacaoSelecionada);
-                                }
-                                agenteMonitor.avaliarSinalNumeroRelativo(sinalCorreto.booleanValue());
-                                String chaveIdempotenciaSinal =
-                                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
-                                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaSinal = agenteZDP.decidirEstrategia(
-                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
-                                        chavePapelSinal, sinalCorreto.booleanValue(), chaveIdempotenciaSinal);
-                                conectorVereditoModelador.registrarVeredito(
-                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
-                                        chavePapelSinal, estrategiaSinal, "SELECIONAR", chaveIdempotenciaSinal);
-                                if (agentAuditService != null) {
-                                    agentAuditService.finalizarAcao();
-                                }
-                            }
-                            if (sinalCorreto != null && !sinalCorreto.booleanValue()) {
+                            RegistroAcaoEscolhaSinalPapelQuantitativo registroSinal =
+                                    avaliarEscolhaSinalNumeroRelativo(
+                                            chavePapelSinal, sinal, base);
+                            if (registroSinal != null && registroSinal.foiErrada()) {
                                 informarSuspeitaSinalIncorretoNumeroRelativo(null, elemento, sinal);
                             }
-                            registrarLogUsuario(
-                                    "Escolher sinal do número relativo",
-                                    (sinalCorreto == null || sinalCorreto.booleanValue()) ? "C" : "E",
-                                    "Menu de radio buttons",
-                                    "Número relativo do diagrama",
-                                    "Representar perda ou ganho com sinal",
-                                    "OBJ4",
-                                    "O número relativo deve ser informado com sinal de mais ou de menos.",
-                                    "MENU_SINAL",
-                                    "valor=" + base + "; sinal=" + sinal
-                            );
+                            if (registroSinal == null) {
+                                registrarEscolhaSinalSemCriterio(base, sinal);
+                            }
                             propagarTextoEntrePassosTransformacaoComposta(elemento, elemento.textoEditavel);
                             registrarEscolhaGraficoInteiros(null, elemento, base, sinal);
                             reagirConsistenciaAPartirDoElemento(
@@ -14015,47 +14059,15 @@ public class Main extends JFrame {
                                 item.registrarPreenchimentoPeloProtocoloMouseTexto();
                             }
                             String chavePapelSinal = obterChavePapelDoNumeroRelativo(numeroRelativoFinal);
-                            Boolean sinalCorreto = sinalEscolhidoCorrespondeAoCurado(chavePapelSinal, sinal);
-                            if (sinalCorreto != null) {
-                                if (agentAuditService != null) {
-                                    agentAuditService.iniciarAcao(
-                                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                                    loggerInteracaoGerard.getUsuarioAtual(),
-                                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), chavePapelSinal),
-                                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                                    "select", chavePapelSinal, sinal, null, chavePapelSinal,
-                                                    null, null, null, null),
-                                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
-                                            tipoSituacaoSelecionada);
-                                }
-                                agenteMonitor.avaliarSinalNumeroRelativo(sinalCorreto.booleanValue());
-                                String chaveIdempotenciaSinal =
-                                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
-                                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaSinal = agenteZDP.decidirEstrategia(
-                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
-                                        chavePapelSinal, sinalCorreto.booleanValue(), chaveIdempotenciaSinal);
-                                conectorVereditoModelador.registrarVeredito(
-                                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada,
-                                        chavePapelSinal, estrategiaSinal, "SELECIONAR", chaveIdempotenciaSinal);
-                                if (agentAuditService != null) {
-                                    agentAuditService.finalizarAcao();
-                                }
-                            }
-                            if (sinalCorreto != null && !sinalCorreto.booleanValue()) {
+                            RegistroAcaoEscolhaSinalPapelQuantitativo registroSinal =
+                                    avaliarEscolhaSinalNumeroRelativo(
+                                            chavePapelSinal, sinal, base);
+                            if (registroSinal != null && registroSinal.foiErrada()) {
                                 informarSuspeitaSinalIncorretoNumeroRelativo(item, numeroRelativoFinal, sinal);
                             }
-                            registrarLogUsuario(
-                                    "Escolher sinal do número relativo",
-                                    (sinalCorreto == null || sinalCorreto.booleanValue()) ? "C" : "E",
-                                    "Menu de radio buttons",
-                                    "Número relativo do diagrama",
-                                    "Representar perda ou ganho com sinal",
-                                    "OBJ4",
-                                    "O número relativo deve ser informado com sinal de mais ou de menos.",
-                                    "MENU_SINAL",
-                                    "valor=" + base + "; sinal=" + sinal
-                            );
+                            if (registroSinal == null) {
+                                registrarEscolhaSinalSemCriterio(base, sinal);
+                            }
                             ajustarTamanhoDoItem(item);
                             centralizarItemNoNumeroRelativoSeNecessario(item);
                             registrarEscolhaGraficoInteiros(item, numeroRelativoFinal, base, sinal);

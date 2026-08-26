@@ -310,6 +310,38 @@ do Modelador e a aceitação da categoria curada. Em 2026-08-25, a linha de base
 compilou 520 fontes e 88 harnesses, executou 84 sem falhas e manteve quatro
 testes gráficos compilados para execução em ambiente com display.
 
+### Estado de integração — P5.2, 2026-08-25
+
+A seleção do sinal de números relativos e transformações foi retirada do
+Monitor e do ZDP. `SemanticaCuradaSituacao` cria um proprietário para cada
+papel inteiro que possui valor normativo; o papel mantém sua tentativa, e o
+`NumeroInteiro` esperado responde qual opção da representação binária
+corresponde ao valor. A opção MAIS representa o zero na sintaxe atual de duas
+opções sem classificá-lo matematicamente como positivo.
+
+Cada clique em `+` ou `-` constitui uma ação `SELECIONAR`, com novo
+`action_id`. Somente escolhas divergentes consecutivas para o mesmo papel
+compartilham `rejection_sequence_id`; um acerto encerra a sequência. Este
+fluxo não introduz o limite de três erros, porque tal intervenção não fazia
+parte do comportamento de sinal confirmado. O diagnóstico factual é
+`SINAL_DIVERGENTE_DO_PAPEL`.
+
+`Main.java` fornece o contexto instrumental, entrega o mesmo registro uma vez
+ao logger e uma vez ao Modelador e materializa o questionamento persistente já
+existente. A precedência da validação de posição, a proteção contra
+quantidades negativas, o som, o tremor, a confirmação da incógnita e a
+sincronização entre representações permanecem inalterados. Quando não há
+critério curado, o caminho de compatibilidade anterior permanece ativo e não
+produz veredito pelo proprietário.
+
+O harness `TesteP5_2EscolhaSinalPapelQuantitativo` protege sinal positivo,
+negativo e zero, sequências, ausência de bloqueio no terceiro erro e
+idempotência no logger e no Modelador. O verificador estrutural protege a
+ausência de Monitor/ZDP e de comparação do sinal na `Main` nesse fluxo.
+Na verificação de 2026-08-25, a linha de base compilou 523 fontes e 89
+harnesses, executou 85 sem falhas e manteve quatro testes gráficos compilados
+para execução em ambiente com display.
+
 ## Histórico da proposta teórica e da implementação anterior
 
 O conteúdo histórico abaixo vem do material de pesquisa/tese do usuário e de

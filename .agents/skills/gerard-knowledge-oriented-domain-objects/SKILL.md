@@ -122,6 +122,19 @@ tentativa, enquanto a fotografia do Modelo do Usuário permanece estável.
 
 Mensagens devem ser representadas por chaves de internacionalização, não por texto final embutido no domínio.
 
+## Número inteiro e sinal representado — P5.2
+
+`NumeroInteiro` possui a correspondência entre seu valor e a opção de sinal
+da representação binária. O papel curado fornece o número normativo e mantém
+a tentativa da ação; nem a tela nem o logger inspecionam o inteiro para
+decidir C/E. Na sintaxe atual, que oferece somente `+` e `-`, zero corresponde
+à opção MAIS. Isso é uma decisão de representação compatível com a interface
+existente, não a afirmação conceitual de que zero é positivo.
+
+Quando o valor curado está ausente, é `?` ou não é inteiro, não há critério de
+avaliação de sinal. A ausência de critério não autoriza a interface a inferir
+um valor esperado pelo texto, pela posição ou por outro elemento visual.
+
 ## Representação
 
 O objeto pode fornecer um descritor abstrato com forma conceitual, símbolo e chave de rótulo. Ele não deve desenhar a si próprio nem conhecer tecnologia de renderização.

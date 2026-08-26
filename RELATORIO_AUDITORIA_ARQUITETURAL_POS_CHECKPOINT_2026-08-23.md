@@ -193,15 +193,14 @@ do proprietário em relação a Swing/AWT.
 
 **Complexidade:** alta. **Risco de comportamento:** alto.
 
-Os agentes legados ainda são instanciados em `Main.java`. Depois da P5.1,
-permanecem consumidores operacionais em três famílias de fluxo:
+Os agentes legados ainda são instanciados em `Main.java`. Depois da P5.2,
+permanecem consumidores operacionais em duas famílias de fluxo:
 
 - posicionamento;
-- sinal do número relativo;
 - observação e painéis de auditoria/replay.
 
 As chamadas reais permanecem, entre outros pontos, nas regiões de
-`Main.java` relativas a posicionamento, sinal e observação. Migrar uma família
+`Main.java` relativas a posicionamento e observação. Migrar uma família
 por vez para seu menor proprietário semântico ou relacional. Os
 painéis, ouvintes e classes legados só devem ser removidos depois que não
 houver consumidor e que replay, logs e regressão continuem aprovados.
@@ -227,6 +226,28 @@ A verificação determinística aprovou o grafo de 19 skills e o verificador
 arquitetural completo. A linha de base compilou 520 fontes e 88 harnesses:
 84 foram executados com sucesso, quatro permaneceram apenas compilados por
 exigirem ambiente gráfico e nenhum teste foi reprovado.
+
+**Status P5.2 em 2026-08-25: seleção do sinal concluída.**
+`SemanticaCuradaSituacao` cria uma tentativa para cada papel inteiro com valor
+normativo. O papel possui a ação e sua sequência de rejeições; o
+`NumeroInteiro` possui a correspondência entre o valor e a opção de sinal.
+`Main.java` não lê mais o valor curado para comparar `+`/`-` e não chama
+Monitor, ZDP nem o conector legado nessa família.
+
+Cada escolha tem `action_id` próprio e somente erros consecutivos do mesmo
+papel compartilham `rejection_sequence_id`. O fluxo não ganhou um limite de
+três erros. Segurança das quantidades, precedência da posição, questionamento
+persistente, feedback multissensorial, confirmação e sincronização foram
+preservados. O caso sem critério curado permanece no caminho de compatibilidade
+anterior. O harness `TesteP5_2EscolhaSinalPapelQuantitativo` e a checagem
+estrutural correspondente protegem essas fronteiras.
+
+A linha de base nova compilou 523 fontes e 89 harnesses, executou 85 com
+sucesso, manteve quatro testes gráficos apenas compilados e não registrou
+falhas. Todas as asserções estruturais da P5.2 foram aprovadas. O empacotamento
+Ant não pôde limpar `dist/lib/bounce-0.18.jar` enquanto uma instância do Gérard
+executada pelo IntelliJ mantinha o arquivo aberto; a compilação isolada em
+diretório temporário não reutilizou esse artefato e foi aprovada.
 
 **Aceite:** somente `AgenteModelador` permanece como agente operacional;
 nenhum objeto ou interface central substitui os proprietários semânticos na

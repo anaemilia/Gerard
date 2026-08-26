@@ -205,6 +205,69 @@ check(all(token not in tentativa_categoria for token in
           ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
       'proprietário da classificação independe de Swing, AWT, Monitor e ZDP')
 
+print('== P5.2: escolha de sinal no proprietário semântico ==')
+inicio_avaliacao_sinal=main.find(
+    'private RegistroAcaoEscolhaSinalPapelQuantitativo\n'
+    '                avaliarEscolhaSinalNumeroRelativo(')
+fim_avaliacao_sinal=main.find(
+    'private String obterChavePapelDoNumeroRelativo(', inicio_avaliacao_sinal)
+avaliacao_sinal=(main[inicio_avaliacao_sinal:fim_avaliacao_sinal]
+                 if inicio_avaliacao_sinal >= 0
+                 and fim_avaliacao_sinal > inicio_avaliacao_sinal else '')
+inicio_callbacks_sinal=main.find(
+    'private void solicitarSinalNumeroRelativoParaTexto(')
+fim_callbacks_sinal=main.find(
+    'private void centralizarItemNoNumeroRelativoSeNecessario(',
+    inicio_callbacks_sinal)
+callbacks_sinal=(main[inicio_callbacks_sinal:fim_callbacks_sinal]
+                 if inicio_callbacks_sinal >= 0
+                 and fim_callbacks_sinal > inicio_callbacks_sinal else '')
+check(bool(avaliacao_sinal) and bool(callbacks_sinal),
+      'avaliação e os dois callbacks de sinal foram localizados')
+check('tentativa.avaliarEscolha(' in avaliacao_sinal,
+      'a Main encaminha a opção ao proprietário do papel')
+check(avaliacao_sinal.count('registrarAcaoInstrumentalUsuario(registro)') == 1
+      and avaliacao_sinal.count(
+          'conectorVereditoModelador.registrarAcaoInstrumental(') == 1,
+      'o mesmo registro de sinal chega uma vez ao log e ao Modelador')
+check(callbacks_sinal.count('avaliarEscolhaSinalNumeroRelativo(') == 2,
+      'os dois caminhos de seleção usam o mesmo ponto de encaminhamento')
+check(all(token not in avaliacao_sinal + callbacks_sinal for token in
+          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(',
+           'sinalEscolhidoCorrespondeAoCurado')),
+      'Monitor, ZDP e comparação semântica na Main não participam do fluxo')
+check(all(token in callbacks_sinal for token in
+          ('valorRelativoPreservaQuantidadesNaoNegativas(',
+           'informarSuspeitaSinalIncorretoNumeroRelativo(',
+           'reagirConsistenciaAPartirDoElemento(',
+           'sincronizarTodasAsRepresentacoesAPartirDoVergnaud(',
+           'confirmarValorIncognitaAceito(')),
+      'segurança, feedback, confirmação e sincronização foram preservados')
+tentativa_sinal=text(
+    'src/gerard/dominio/campoaditivo/TentativaEscolhaSinalPapelQuantitativo.java')
+registro_sinal=text(
+    'src/gerard/dominio/campoaditivo/RegistroAcaoEscolhaSinalPapelQuantitativo.java')
+numero_inteiro=text('src/gerard/semantica/numero/NumeroInteiro.java')
+semantica_curada=text(
+    'src/gerard/campoaditivo/curadoria/SemanticaCuradaSituacao.java')
+check('numeroEsperado.correspondeAoSinalRepresentado(' in tentativa_sinal
+      and 'rejectionSequenceId' in tentativa_sinal
+      and 'LIMITE_' not in tentativa_sinal,
+      'papel e número avaliam o sinal sem introduzir limite de três erros')
+check('sinalParaRepresentacaoBinaria' in numero_inteiro
+      and 'valor < 0' in numero_inteiro,
+      'NumeroInteiro possui a regra binária de representação do sinal')
+check('criarTentativasEscolhaSinal' in semantica_curada
+      and 'papelPermiteSinal' in semantica_curada
+      and 'converterNumeroInteiroCurado' in semantica_curada,
+      'curadoria cria proprietários somente para papéis inteiros com critério')
+check('SINAL_DIVERGENTE_DO_PAPEL' in registro_sinal
+      and 'TarefaInteracao.SELECIONAR' in registro_sinal,
+      'registro factual tipa o diagnóstico e o protocolo de seleção')
+check(all(token not in tentativa_sinal + registro_sinal + numero_inteiro for token in
+          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
+      'proprietário e número permanecem independentes de UI, Monitor e ZDP')
+
 print('== Main compositora e roteadora: ratchet dos protocolos de interação ==')
 # Estes limites são a fotografia da versão arquitetural corrente. Eles não
 # medem o tamanho total de Main.java: novas categorias podem acrescentar UI sem

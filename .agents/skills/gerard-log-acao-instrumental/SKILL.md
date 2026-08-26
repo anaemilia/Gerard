@@ -116,6 +116,22 @@ classificar a situação. No terceiro erro, o mesmo registro informa o limite e
 a interface materializa a reexplicação existente. Monitor, ZDP e persistência
 não calculam C/E nesse fluxo.
 
+### Seleção de sinal como ação própria — P5.2, 2026-08-25
+
+Cada clique numa opção `+` ou `-` do número relativo constitui uma única ação
+instrumental `SELECIONAR`. O papel quantitativo proprietário produz
+`RegistroAcaoEscolhaSinalPapelQuantitativo`; o `NumeroInteiro` esperado
+fornece a correspondência de sinal, e logger/Modelador recebem o mesmo
+registro sem recalcular C/E.
+
+Toda seleção recebe novo `action_id`. Somente sinais divergentes consecutivos
+do mesmo papel compartilham `rejection_sequence_id`; um acerto encerra essa
+sequência. O fluxo não adota bloqueio após três erros. O diagnóstico factual
+é `SINAL_DIVERGENTE_DO_PAPEL`, o valor proposto é a opção escolhida e o valor
+esperado é a opção correspondente ao número curado. Papéis sem valor
+normativo não fabricam diagnóstico; continuam no caminho de compatibilidade
+sem critério.
+
 ## Esquema de captura (Quadro 4.55)
 
 Cada ação instrumental registrada deve poder responder:

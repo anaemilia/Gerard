@@ -3,12 +3,18 @@ package gerard.campoaditivo.curadoria;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.campoaditivo.TentativaEscolhaSinalPapelQuantitativo;
 import gerard.i18n.ServicoLocalizacao;
+import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
+import gerard.semantica.numero.NumeroInteiro;
+import gerard.semantica.papel.CatalogoPapeisSemanticos;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Fonte única dos papéis semânticos associados a uma situação curada.
@@ -19,6 +25,11 @@ import java.util.Locale;
  * codificada diretamente na tela ou nos renderizadores.
  */
 public final class SemanticaCuradaSituacao {
+
+    private static final CatalogoPapeisSemanticos CATALOGO_PAPEIS =
+            new CatalogoPapeisSemanticos();
+    private static final ConversorTextoParaInteiroSemantico CONVERSOR_INTEIRO =
+            new ConversorTextoParaInteiroSemantico();
 
     public static final class PapelCurado {
         private final String chave;
@@ -124,6 +135,46 @@ public final class SemanticaCuradaSituacao {
     }
 
     /**
+     * Cria os proprietários de avaliação de sinal para os papéis inteiros que
+     * possuem valor normativo na situação curada.
+     *
+     * <p>A curadoria apenas converte seus dados em objetos de domínio. A
+     * comparação posterior pertence ao papel e ao {@link NumeroInteiro}; a
+     * interface não recebe nem interpreta o valor esperado. Papéis sem valor
+     * numérico, inclusive a incógnita marcada com {@code ?}, permanecem sem
+     * critério, preservando o comportamento atual.</p>
+     */
+    public static Map<String, TentativaEscolhaSinalPapelQuantitativo>
+            criarTentativasEscolhaSinal(
+                    SituacaoProblemaAditiva situacao,
+                    ServicoLocalizacao localizacao) {
+        if (situacao == null || situacao.getTipo() == null) {
+            return Collections.emptyMap();
+        }
+        String situacaoGrupoId = primeiroNaoVazio(
+                situacao.getSituacaoGrupoId(), situacao.getId());
+        if (situacaoGrupoId.length() == 0) {
+            return Collections.emptyMap();
+        }
+        Map<String, TentativaEscolhaSinalPapelQuantitativo> tentativas =
+                new LinkedHashMap<String, TentativaEscolhaSinalPapelQuantitativo>();
+        for (PapelCurado papel : mapear(situacao, localizacao)) {
+            if (!CATALOGO_PAPEIS.papelPermiteSinal(papel.getChave())) {
+                continue;
+            }
+            NumeroInteiro numero = converterNumeroInteiroCurado(
+                    papel.getValor(), situacao);
+            if (numero != null) {
+                tentativas.put(papel.getChave(),
+                        new TentativaEscolhaSinalPapelQuantitativo(
+                                situacaoGrupoId, situacao.getTipo(),
+                                papel.getChave(), numero));
+            }
+        }
+        return Collections.unmodifiableMap(tentativas);
+    }
+
+    /**
      * A modelagem pode cobrar este papel do aluno? Delega a decisão ao
      * próprio papel curado (ver PapelCurado.isExigidoNaModelagem) — quem
      * pergunta não inspeciona campo nenhum da situação.
@@ -218,6 +269,16 @@ public final class SemanticaCuradaSituacao {
     private static String primeiroNaoVazio(String principal, String alternativa) {
         String p = limpar(principal).trim();
         return p.length() > 0 ? p : limpar(alternativa).trim();
+    }
+
+    private static NumeroInteiro converterNumeroInteiroCurado(String valor,
+            SituacaoProblemaAditiva situacao) {
+        String texto = limpar(valor).trim();
+        if (texto.length() == 0 || "?".equals(texto)) {
+            return null;
+        }
+        Integer inteiro = CONVERSOR_INTEIRO.converter(texto, situacao);
+        return inteiro == null ? null : new NumeroInteiro(inteiro.intValue());
     }
 
     private static String limpar(String texto) {

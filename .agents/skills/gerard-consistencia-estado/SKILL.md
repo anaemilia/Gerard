@@ -37,6 +37,15 @@ Isto não é uma especificação para implementar do zero. É a documentação d
    fim do protocolo. Componentes que materializam esse fluxo podem variar por
    representação, mas devem preservar a separação entre digitar e confirmar.
 
+8. **Seleção do sinal — migração P5.2 confirmada em 2026-08-25.** A avaliação
+   C/E da opção `+`/`-` pertence agora ao papel e ao `NumeroInteiro`, mas essa
+   mudança não altera a ordem do protocolo. A interface continua validando
+   primeiro a posição, depois protege as quantidades contra resultados
+   negativos, aplica o sinal localmente, materializa o questionamento quando
+   necessário e só então executa as mesmas rotinas de propagação e confirmação
+   já existentes. Não usar a migração do veredito como autorização para
+   recalcular, desfazer ou antecipar a sincronização.
+
 ## Termo desconhecido / incógnita — corrigido
 
 `termo_desconhecido` **não é** a fonte única de verdade para a incógnita. `gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada` mostra que dois mecanismos coexistem por design: o símbolo "?" digitado diretamente no campo do papel semântico, e o campo `termo_desconhecido`. Quando eles divergem, a classe sinaliza um conflito curatorial (`mensagemInconsistencia`) em vez de escolher um como autoritativo. Ao mexer nessa área: não presuma que gravar em `termo_desconhecido` basta, e não crie uma regra permanente que "resolve" a divergência escolhendo um lado — trate como o conflito que `ResolvedorIncognitaCurada` já modela, e corrija a inconsistência na origem dos dados quando possível.
