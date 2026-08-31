@@ -1,0 +1,12 @@
+# Contexto Docker: só precisamos de src/, lib/ e web-poc/ para a imagem web.
+*
+!Dockerfile
+!src/**
+!lib/**
+!web-poc/**
+web-poc/node_modules/
+web-poc/dist/
+**/*.class
+build/
+dist/
+out/

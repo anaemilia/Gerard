@@ -54,3 +54,6 @@ distribuicao_windows/saida_local_com_dados_pesquisador/
 # publicar — dados pessoais/de pesquisa, ver Main.semearDadosPesquisadorSeNecessario).
 # Redundante com distribuicao_windows/app/ acima, mas explícito de propósito.
 **/Gerard_seed/
+
+# Node (web-poc)
+node_modules/
