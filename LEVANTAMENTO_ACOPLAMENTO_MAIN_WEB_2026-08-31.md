@@ -288,6 +288,21 @@ registrados acima.
   há nenhum consumidor para confirmar a semântica pretendida, decidir o
   valor certo aqui seria adivinhar — fica registrado para quem for desenhar
   o protocolo `REVELAR_EIXO`/`OCULTAR_EIXO`.
+  - Atualização em 2026-09-01: o campo ganhou consumidor —
+    `web-poc/src/cena-gerard/FiguraCenaGerard.tsx` usa `figura.lupa_habilitada`
+    para acrescentar a classe CSS `scene-magnifier-enabled` ao ícone da lupa
+    (`aria-label="Eixo numérico em desenvolvimento"`). Isso não decide a
+    semântica pendente — o consumidor é só estilo visual do ícone, a
+    interação de revelar/ocultar ainda não existe no cliente web — mas
+    confirma que manter `Boolean.FALSE` hoje está correto: o protocolo
+    `REVELAR_EIXO`/`OCULTAR_EIXO` genuinamente não está disponível no
+    cliente web ainda, então "desabilitado" é o valor real, não um
+    placeholder esquecido. Ligar este campo a `ControleVisibilidadeEixoPapel`
+    (ver "Corte: estado revelado/fechado do eixo extraído para fora de Swing",
+    ao final deste documento) sem primeiro construir a interação
+    correspondente no cliente web produziria um valor sempre falso de
+    qualquer forma, já que toda projeção de cena ocorre antes de qualquer
+    revelação — não há atalho aqui.
 - **Não validado por compilação nem pela bateria de regressão** — apenas
   por inspeção (balanceamento de chaves/parênteses e ausência de referência
   pendente contra o HEAD). Ambos os métodos alterados são curtos e a lógica
@@ -386,3 +401,36 @@ registrados acima.
 - A tela conserva somente a proporção e a geometria do controle.
 - `Main.java` compilou; passaram `TestePilotoComparacaoMedidas`, ampliado com
   a projeção de módulo, e `TesteComparacaoBarrasCuradoria`.
+
+## Corte: estado revelado/fechado do eixo extraído para fora de Swing (2026-09-01)
+
+Este corte não estava registrado neste levantamento — encontrado só ao investigar
+por que o verificador estrutural (`scripts/verificar_regressao_gerard.py`) ainda
+falhava depois de compilar e rodar a bateria completa pela primeira vez nesta
+máquina (ver "Próxima fronteira recomendada" acima, que já havia mapeado este
+exato ponto como o candidato de menor risco).
+
+- O campo booleano `revelado`, antes solto dentro de `PaineisEixosRelacoes.Painel`,
+  saiu para `gerard.interacao.eixo.ControleVisibilidadeEixoPapel`: um enum
+  `FECHADO`/`REVELADO` com `podeRevelar()`/`revelar()`/`ocultar()`, sem Swing,
+  AWT, geometria ou conhecimento de qual mecanismo de eixo (novo ou legado) o
+  está usando.
+- `Painel.estaRevelado()` passou a delegar a esse objeto; os oito pontos do
+  coordenador que antes liam `painel.revelado` diretamente (desenho, hit-test,
+  arraste, botão de esconder) passaram a chamar `painel.estaRevelado()`.
+- Isso é exatamente o "estado fechado/revelado por papel" que a fronteira
+  recomendada apontava como pré-requisito do protocolo portátil
+  `REVELAR_EIXO`/`OCULTAR_EIXO` — a pergunta de design que ficou em aberto
+  (unificar com o mecanismo antigo do eixo de inteiros, ou manter os dois
+  protocolos) **continua em aberto**; este corte só move o estado do papel
+  novo (Relações) para um objeto portátil, não decide a unificação.
+- Verificação: `TesteControleVisibilidadeEixoPapel` (já existente, não
+  documentado aqui) cobre transição de estado; a bateria completa (105/105
+  testes) e o verificador estrutural (agora com todas as ~2000 checagens
+  alcançadas, não só as anteriores a um `sys.exit` antecipado) passaram nesta
+  sessão — a primeira verificação real deste corte desde que foi escrito.
+- Também corrigido nesta sessão: o Javadoc de `PaineisEixosRelacoes.ativar`
+  ainda descrevia o critério antigo (`elemento.tipo == TipoFiguraDiagrama.ELIPSE`,
+  inferência geométrica) — desatualizado desde que o critério virou o
+  descritor semântico `elemento.exibirLupa`. Comentário corrigido e import
+  não utilizado de `TipoFiguraDiagrama` removido.
