@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 
-/** Verifica a P5.2 sem depender de Swing, Monitor ou ZDP. */
+/** Verifica a avaliação local da P5.2 sem depender de Swing. */
 public final class TesteP5_2EscolhaSinalPapelQuantitativo {
     private static int verificacoes;
 

@@ -2,7 +2,6 @@ package gerard.agente.modelador;
 
 import gerard.agente.modelousuario.DiagnosticoTarefa;
 import gerard.agente.modelousuario.NivelSuporte;
-import gerard.agente.zdp.CamadaEstrategiaZDP;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 
@@ -11,10 +10,6 @@ import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
  * vigente recebe diretamente o {@link RegistroFactualAcaoInstrumental} produzido
  * pelo proprietário semântico e apenas o projeta para o Modelo do Usuário,
  * sem recalcular C/E ou diagnóstico.
- *
- * Os métodos que recebem {@link CamadaEstrategiaZDP} são compatibilidade dos
- * protocolos ainda não migrados. Eles não definem a arquitetura-alvo e devem
- * desaparecer gradualmente, um protocolo por vez.
  *
  * Os campos "internalizado" e "probabilidadeSaberConteudo" seguem no valor
  * padrão (false/0.0) de propósito: dependem do teorema de Bayes e de uma
@@ -32,31 +27,9 @@ public class ConectorVereditoModelador {
         this.agenteModelador = agenteModelador;
     }
 
-    public void registrarVeredito(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
-                                   CamadaEstrategiaZDP estrategia, String regraDeAcao) {
-        registrarVeredito(idUsuario, categoria, chavePapelAlvo, estrategia, regraDeAcao, null);
-    }
-
-    /**
-     * Versão com chave de idempotência (ver AgenteModelador.armazenarCaso) —
-     * usada pelos pontos de chamada canônicos de Main.java (2026-07-31), pra
-     * garantir no máximo um caso por gesto real do usuário.
-     */
-    public void registrarVeredito(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
-                                   CamadaEstrategiaZDP estrategia, String regraDeAcao, String idempotencyKey) {
-        if (idUsuario == null || categoria == null || chavePapelAlvo == null) {
-            return;
-        }
-        String tarefa = categoria.name() + ":" + chavePapelAlvo;
-        DiagnosticoTarefa diagnostico = new DiagnosticoTarefa(tarefa);
-        diagnostico.setSuporte(mapearSuporte(estrategia));
-        diagnostico.setRegraDeAcao(regraDeAcao);
-        agenteModelador.armazenarCaso(idUsuario, diagnostico, idempotencyKey);
-    }
-
     /**
      * Recebe o mesmo registro produzido pelo proprietário semântico, sem
-     * solicitar veredito ao Monitor nem estratégia ao ZDP.
+     * recalcular o veredito produzido pelo proprietário semântico.
      */
     public void registrarAcaoInstrumental(
             String idUsuario,
@@ -92,11 +65,4 @@ public class ConectorVereditoModelador {
         agenteModelador.armazenarCaso(idUsuario, diagnostico);
     }
 
-    private NivelSuporte mapearSuporte(CamadaEstrategiaZDP estrategia) {
-        if (estrategia == CamadaEstrategiaZDP.QUESTIONAMENTO_LEVE
-                || estrategia == CamadaEstrategiaZDP.AJUDA_ESPECIFICA) {
-            return NivelSuporte.PARCIAL;
-        }
-        return NivelSuporte.NENHUM;
-    }
 }

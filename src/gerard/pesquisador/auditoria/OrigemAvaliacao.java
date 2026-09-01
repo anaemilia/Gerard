@@ -2,7 +2,7 @@ package gerard.pesquisador.auditoria;
 
 /**
  * Vocabulário controlado de origem de uma avaliação (ver PROMPT de correção
- * 2026-07-31) — de onde veio a chamada que gerou esta avaliação do Monitor.
+ * 2026-07-31) — de onde veio a chamada que gerou a avaliação factual.
  * Só {@link #SOLTURA_USUARIO}, {@link #SELECAO_CATEGORIA},
  * {@link #SELECAO_SINAL}, {@link #QUANTIFICACAO} e
  * {@link #SOLICITACAO_AJUDA} representam uma decisão efetiva e observável

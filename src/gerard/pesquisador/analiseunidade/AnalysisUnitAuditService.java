@@ -1,16 +1,11 @@
 package gerard.pesquisador.analiseunidade;
 
-import gerard.agente.modelador.ModeladorAuditData;
-import gerard.agente.monitor.MonitorAuditData;
-import gerard.agente.zdp.ZdpAuditData;
+import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 import gerard.pesquisador.auditoria.AcaoUsuarioAudit;
-import gerard.pesquisador.auditoria.AgentAuditEvent;
-import gerard.pesquisador.auditoria.ClassificacaoEvento;
 import gerard.pesquisador.auditoria.EscritorJsonSimples;
 import gerard.pesquisador.auditoria.FalhaAuditoriaLogger;
 import gerard.pesquisador.auditoria.IdentificacaoEvento;
 import gerard.pesquisador.auditoria.OrigemAvaliacao;
-import gerard.pesquisador.auditoria.OuvinteUnidadeAnalise;
 import gerard.pesquisador.tentativa.ItemExplicacaoModelagem;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -30,13 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Serviço da unidade de análise A-B-C-D (rodada 5, 2026-07-31,
- * PROMPT_CLAUDE_UNIDADE_ANALISE_ABCD_EXPLICACOES_OPCIONAIS.md). Observa
- * (não decide) o que {@link gerard.pesquisador.auditoria.AgentAuditService}
- * já produziu (A+B, via {@link OuvinteUnidadeAnalise}) e o que
- * {@code TelaArtefatoExplicativo} reporta do seu próprio ciclo de vida
- * (C+D) — nunca reprocessa MONITOR/ZDP/MODELADOR, nunca decide protocolo ou
- * avaliação sozinho.
+ * Serviço da unidade de análise A-B-C-D. Observa o registro factual já
+ * produzido pelo proprietário semântico (A+B) e o que
+ * {@code TelaArtefatoExplicativo} reporta do próprio ciclo de vida (C+D).
+ * Não reavalia a ação e não decide protocolo ou ajuda.
  *
  * Cada unidade fica "aberta" (em memória, ainda não gravada em
  * unidades_analise.jsonl) enquanto for a MAIS RECENTE para sua tarefa
@@ -46,7 +38,7 @@ import java.util.Set;
  * canônica chega para a MESMA tarefa, (b) a tela de explicações fecha para
  * essa tarefa (salva ou cancelada), ou (c) o episódio termina.
  */
-public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
+public final class AnalysisUnitAuditService {
     private final Writer unidadesDestino;
     private final Writer acoesDestino;
     private final Writer eventosDestino;
@@ -99,21 +91,26 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
         this.disponibilidadeBotaoAtual = disponivel;
     }
 
-    public void aoFinalizarAvaliacao(AgentAuditEvent evento) {
+    public void registrarAcaoInstrumental(
+            IdentificacaoEvento identificacao,
+            AcaoUsuarioAudit acao,
+            OrigemAvaliacao origem,
+            RegistroFactualAcaoInstrumental registro,
+            boolean casoInserido) {
         try {
-            ClassificacaoEvento classificacao = evento.getClassificacao();
-            IdentificacaoEvento identificacao = evento.getIdentificacao();
-            if (classificacao == null || identificacao == null) {
+            if (identificacao == null || registro == null) {
                 return;
             }
-            String tarefaKey = chaveTarefa(identificacao, evento.getAcaoUsuario());
-            if (classificacao.isCanonical()) {
-                processarAcaoCanonica(evento, tarefaKey);
-            } else {
-                registrarEventoTecnico(evento, tarefaKey);
-            }
+            processarAcaoFactual(
+                    identificacao,
+                    acao,
+                    origem,
+                    registro,
+                    casoInserido,
+                    chaveTarefa(identificacao, acao));
         } catch (RuntimeException e) {
-            falhaLogger.registrar("AnalysisUnitAuditService.aoFinalizarAvaliacao", e);
+            falhaLogger.registrar(
+                    "AnalysisUnitAuditService.registrarAcaoInstrumental", e);
         }
     }
 
@@ -125,24 +122,18 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
                 + (papelAlvo == null ? "" : papelAlvo);
     }
 
-    private void processarAcaoCanonica(AgentAuditEvent evento, String tarefaKey) {
-        MonitorAuditData monitorVerificacao = evento.getMonitor();
-        if (monitorVerificacao == null || monitorVerificacao.getAvaliacao() == null) {
-            // Gesto canônico sem avaliação C/E aplicável (ex.: origem canônica
-            // mas ResultadoQuestionamento.naoAplicavel() — item que não exige
-            // validação, como um numeral não-curado). A rodada 5 exige que TODA
-            // instância de protocolo B receba exatamente uma avaliação C/E — sem
-            // isso, não é uma instância de protocolo nesta definição, então não
-            // abre nem fecha unidade nenhuma por causa dele.
+    private void processarAcaoFactual(
+            IdentificacaoEvento identificacao,
+            AcaoUsuarioAudit acao,
+            OrigemAvaliacao origem,
+            RegistroFactualAcaoInstrumental registro,
+            boolean casoInserido,
+            String tarefaKey) {
+        if (registro.getResultado() == null) {
             return;
         }
-        IdentificacaoEvento identificacao = evento.getIdentificacao();
-        String protocolInstanceId = "PI-" + identificacao.getGestureId();
+        String protocolInstanceId = "PI-" + registro.getActionId();
         if (!protocolInstancesProcessadas.add(protocolInstanceId)) {
-            // Defesa redundante (rodada 5): AgentAuditService já garante um único
-            // evento canônico por gesto (debounce/idempotência das rodadas 3/4) —
-            // isto só evita, mesmo numa regressão futura, que a MESMA instância de
-            // protocolo produza duas unidades/avaliações aqui.
             return;
         }
 
@@ -152,20 +143,8 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
             unidadesAbertasPorTarefa.remove(tarefaKey);
         }
 
-        AcaoUsuarioAudit acao = evento.getAcaoUsuario();
-        MonitorAuditData monitor = evento.getMonitor();
-        ZdpAuditData zdp = evento.getZdp();
-        ModeladorAuditData modelador = evento.getModelador();
-        OrigemAvaliacao origem = evento.getClassificacao().getOrigem();
         TipoProtocolo tipoProtocolo = TipoProtocolo.deOrigem(origem);
         String motivoSemProtocolo = tipoProtocolo == null ? TipoProtocolo.motivoSemProtocolo(origem) : null;
-
-        String resultado = monitor == null ? null : monitor.getAvaliacao();
-        boolean caseInserted = modelador != null && modelador.getCasoInserido() != null
-                && modelador.getCasoInserido().isInserted();
-        if (evento.getComparacao() != null && Boolean.TRUE.equals(evento.getComparacao().isDivergence())) {
-            divergenciasNoEpisodioAtual++;
-        }
 
         contadorUnidades++;
         String analysisUnitId = "UA-" + (episodeIdAtual == null ? "SESSAO" : episodeIdAtual) + "-"
@@ -176,11 +155,11 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
                 identificacao.getUserId(), tipoProtocolo, motivoSemProtocolo,
                 acao == null ? null : acao.getTipo(), identificacao.getCategoriaEsperada(),
                 acao == null ? null : acao.getElemento(), acao == null ? null : acao.getPapelOrigem(),
-                acao == null ? null : acao.getPapelDestino(), resultado, "protocol_final", true,
-                monitor == null ? null : monitor.getTipoErro(), monitor == null ? null : monitor.getJustificativa(),
-                monitor != null && monitor.getAvaliacao() != null ? 1 : 0, zdp != null ? 1 : 0,
-                modelador != null ? 1 : 0, caseInserted ? 1 : 0, evento.getClassificacao().getIdempotencyKey(),
-                identificacao.getGestureId(), identificacao.getActionId(), identificacao.getTimestamp(),
+                acao == null ? null : acao.getPapelDestino(),
+                registro.getResultado().name(), "semantic_owner", true,
+                registro.getTipoDiagnosticoFactual(), registro.getRegraSemantica(),
+                1, 0, 1, casoInserido ? 1 : 0, registro.getActionId(),
+                identificacao.getGestureId(), registro.getActionId(), identificacao.getTimestamp(),
                 identificacao.getTimestamp());
         escreverAcaoUsuarioProtocolo(b);
 
@@ -194,27 +173,6 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
                 ComponenteC.naoAberto(disponibilidadeBotaoAtual, Collections.<PerguntaExplicativa>emptyList()),
                 ComponenteD.naoAberto());
         unidadesAbertasPorTarefa.put(tarefaKey, unidade);
-    }
-
-    private void registrarEventoTecnico(AgentAuditEvent evento, String tarefaKey) {
-        UnidadeAnalise unidadeAberta = unidadesAbertasPorTarefa.get(tarefaKey);
-        contadorEventosTecnicos++;
-        eventosTecnicosNoEpisodioAtual++;
-        String technicalEventId = "TE-" + (episodeIdAtual == null ? "SESSAO" : episodeIdAtual) + "-"
-                + String.format("%05d", contadorEventosTecnicos);
-        String origem = evento.getClassificacao().getOrigem() == null
-                ? null : evento.getClassificacao().getOrigem().paraTexto();
-        String detalhes = "reavaliacao_reativa_do_agentauditservice;origin=" + origem
-                + ";canonical=false";
-        EventoTecnico eventoTecnico = new EventoTecnico(technicalEventId,
-                unidadeAberta == null ? null : unidadeAberta.getAnalysisUnitId(),
-                unidadeAberta == null ? null : unidadeAberta.getB().getProtocolInstanceId(),
-                evento.getIdentificacao().getEpisodeId(), evento.getIdentificacao().getSessionId(),
-                "reavaliacao_" + origem, evento.getIdentificacao().getTimestamp(), detalhes);
-        if (unidadeAberta != null) {
-            unidadeAberta.getA().adicionarEventoTecnico(technicalEventId);
-        }
-        escreverEventoTecnico(eventoTecnico);
     }
 
     // ---- Ciclo de vida da tela de explicações (C/D) ----------------------
@@ -356,8 +314,7 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
     /**
      * Fecha todas as unidades ainda abertas e devolve o resumo do episódio
      * pra {@code cardinalidade_unidades_analise.tsv} (escrito por quem
-     * chama, mesmo padrão de AgentAuditService.finalizarEpisodio/
-     * EpisodeCardinalityReport das rodadas 3/4 — este serviço só sabe o
+     * chama ao encerrar a situação observada; este serviço só conhece o
      * lado da unidade de análise).
      */
     public synchronized Map<String, Object> finalizarEpisodio() {
@@ -473,11 +430,11 @@ public final class AnalysisUnitAuditService implements OuvinteUnidadeAnalise {
         avaliacao.put("rationale", b.getRationale());
         m.put("evaluation", avaliacao);
         Map<String, Object> efeitos = new LinkedHashMap<String, Object>();
-        efeitos.put("monitor_final_evaluations", b.getMonitorFinalEvaluations());
-        efeitos.put("zdp_effective_decisions", b.getZdpEffectiveDecisions());
+        efeitos.put("semantic_evaluations", b.getSemanticEvaluations());
+        efeitos.put("local_help_decisions", b.getLocalHelpDecisions());
         efeitos.put("modeler_effective_updates", b.getModelerEffectiveUpdates());
         efeitos.put("cases_inserted", b.getCasesInserted());
-        m.put("agent_effects", efeitos);
+        m.put("processing_effects", efeitos);
         m.put("idempotency_key", b.getIdempotencyKey());
         return m;
     }

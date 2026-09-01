@@ -48,13 +48,13 @@ public class TestePilotoTransformacaoMedidas {
                 String.valueOf(FabricaPapeisTransformacaoMedidas.estadoFinal(publicador).ehIncognita()), "true");
 
         System.out.println();
-        System.out.println("=== Testes 1-3: Transformacao aceita positiva, negativa e nula (domínio INTEIROS) ===");
+        System.out.println("=== Testes 1-3: transformação direta aceita sinais positivo e negativo, mas não zero ===");
         PapelQuantitativo t1 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
         checar("transformação positiva (+5) é aceita", String.valueOf(t1.posicionar(new NumeroInteiro(5)).isPresent()), "false");
         PapelQuantitativo t2 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
         checar("transformação negativa (-3) é aceita", String.valueOf(t2.posicionar(new NumeroInteiro(-3)).isPresent()), "false");
         PapelQuantitativo t3 = FabricaPapeisTransformacaoMedidas.transformacao(publicador);
-        checar("transformação nula (0) é aceita", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "false");
+        checar("transformação nula (0) é rejeitada", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "true");
 
         System.out.println();
         System.out.println("=== Teste 10: relação estrutural CONSISTENTE (10 + (-3) = 7) ===");
@@ -224,7 +224,7 @@ public class TestePilotoTransformacaoMedidas {
         System.out.println();
         System.out.println("=== Teste 18: serialização por paraMapa() ===");
         System.out.println("tr2.paraMapa() = " + tr2.paraMapa());
-        checar("mapa serializado traz domínio INTEIROS", String.valueOf(tr2.paraMapa().get("dominio")), "INTEIROS");
+        checar("mapa serializado traz domínio INTEIROS_NAO_NULOS", String.valueOf(tr2.paraMapa().get("dominio")), "INTEIROS_NAO_NULOS");
         checar("mapa serializado traz o valor correto (-3)", String.valueOf(tr2.paraMapa().get("valor_atual")), "-3");
 
         System.out.println();

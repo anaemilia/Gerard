@@ -26,7 +26,7 @@ Decisão da usuária em 2026-08-14: o log da ação instrumental pertence ao
 Objeto Semanticamente Rico ou à relação estrutural que possui o conhecimento
 necessário para constituir e avaliar a ação. Esse proprietário produz o
 registro factual, inclusive C/E quando aplicável, sem delegar a avaliação a um
-Monitor ou a um serviço central.
+serviço central.
 
 Uma ação instrumental produz exatamente um registro e um `action_id`, ainda
 que envolva vários objetos semânticos. Nesse caso, o proprietário é o menor
@@ -113,7 +113,7 @@ errado e concordância com a definição errada são rejeições distintas. Aç�
 corretas não carregam `rejection_sequence_id`; discordar corretamente da
 definição errada conserva internamente a sequência anterior, pois ainda falta
 classificar a situação. No terceiro erro, o mesmo registro informa o limite e
-a interface materializa a reexplicação existente. Monitor, ZDP e persistência
+a interface materializa a reexplicação existente. Persistência e apresentação
 não calculam C/E nesse fluxo.
 
 ### Seleção de sinal como ação própria — P5.2, 2026-08-25

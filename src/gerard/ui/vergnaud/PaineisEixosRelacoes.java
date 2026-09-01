@@ -2,7 +2,6 @@ package gerard.ui.vergnaud;
 
 import gerard.Scaffolding.grafico.ScaffoldingGraficoInteiros;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
-import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,6 +12,7 @@ import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 
 /**
  * Material concreto próprio para as categorias de Relações
@@ -74,14 +74,19 @@ public final class PaineisEixosRelacoes {
          * aparece); vira true ao clicar na lupa, volta a falso ao clicar no
          * botão "esconder" do próprio painel. Ver Javadoc da classe.
          */
-        private boolean revelado;
+        private final ControleVisibilidadeEixoPapel controleVisibilidade =
+                new ControleVisibilidadeEixoPapel();
 
         private Painel(ElementoVergnaud elemento) {
             this.elemento = elemento;
         }
 
         public boolean estaRevelado() {
-            return revelado;
+            return controleVisibilidade.estaRevelado();
+        }
+
+        public ControleVisibilidadeEixoPapel.Estado getEstadoVisibilidade() {
+            return controleVisibilidade.getEstado();
         }
     }
 
@@ -101,13 +106,11 @@ public final class PaineisEixosRelacoes {
      * Cria um painel por elemento número relativo (2026-08-18: regra da
      * usuária generalizada do item 4 — "todo número relativo ou
      * transformação carrega uma lupa. Essa é a regra", não uma lista fixa
-     * de categorias). O critério é estrutural: {@code elemento.tipo ==
-     * TipoFiguraDiagrama.ELIPSE}, o mesmo já usado em Main para decidir
-     * onde o menu de sinal se aplica — só elipses são números relativos
-     * (relação/transformação); quadrados são medidas e nunca ganham
-     * painel/lupa. Elementos não nulos e não elipse (ex.: as âncoras
-     * invisíveis de medida em Composição de Transformações) são
-     * silenciosamente ignorados.
+     * de categorias). O critério é o descritor semântico {@code
+     * elemento.exibirLupa}, publicado pela cena e só materializado aqui —
+     * não a forma geométrica do elemento. Elementos não nulos sem o
+     * descritor (ex.: as âncoras invisíveis de medida em Composição de
+     * Transformações) são silenciosamente ignorados.
      *
      * Não define valor nem posição — isso é responsabilidade de quem
      * chama, logo em seguida, via {@code painel.apresentador.mostrar/
@@ -122,7 +125,7 @@ public final class PaineisEixosRelacoes {
         paineis.clear();
         if (elementos != null) {
             for (ElementoVergnaud elemento : elementos) {
-                if (elemento != null && elemento.tipo == TipoFiguraDiagrama.ELIPSE) {
+                if (elemento != null && elemento.exibirLupa) {
                     paineis.add(new Painel(elemento));
                 }
             }
@@ -141,7 +144,7 @@ public final class PaineisEixosRelacoes {
 
     public boolean estaArrastando() {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.estaArrastando()) {
+            if (painel.estaRevelado() && painel.grafico.estaArrastando()) {
                 return true;
             }
         }
@@ -151,7 +154,7 @@ public final class PaineisEixosRelacoes {
     /** Painel cujo ponto de controle ou painel está sendo arrastado agora, se houver. */
     public Painel encontrarArrastando() {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.estaArrastando()) {
+            if (painel.estaRevelado() && painel.grafico.estaArrastando()) {
                 return painel;
             }
         }
@@ -161,7 +164,7 @@ public final class PaineisEixosRelacoes {
     /** Painel cujo valor mudou por interação e ainda não foi consumido, se houver. */
     public Painel encontrarComAlteracaoPorInteracao() {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.houveAlteracaoValorPorInteracao()) {
+            if (painel.estaRevelado() && painel.grafico.houveAlteracaoValorPorInteracao()) {
                 return painel;
             }
         }
@@ -171,7 +174,7 @@ public final class PaineisEixosRelacoes {
     /** Painel cujo botão "esconder" acabou de ser clicado, se houver — usado para reexibir a lupa dele. */
     public Painel encontrarComOcultacaoPorInteracao() {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.foiOcultadoPorInteracao()) {
+            if (painel.estaRevelado() && painel.grafico.foiOcultadoPorInteracao()) {
                 return painel;
             }
         }
@@ -181,13 +184,13 @@ public final class PaineisEixosRelacoes {
     /** Volta o papel ao estado "só lupa visível" — chamado depois que o próprio painel se escondeu. */
     public void ocultarRevelacao(Painel painel) {
         if (painel != null) {
-            painel.revelado = false;
+            painel.controleVisibilidade.ocultar();
         }
     }
 
     public boolean contemPontoControle(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.contemPontoControle(mouseX, mouseY)) {
+            if (painel.estaRevelado() && painel.grafico.contemPontoControle(mouseX, mouseY)) {
                 return true;
             }
         }
@@ -197,7 +200,7 @@ public final class PaineisEixosRelacoes {
     /** Verdadeiro se o ponto está dentro da área visual de qualquer painel visível. */
     public boolean contemAlgumPainel(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.obterAreaVisualPainel().contains(mouseX, mouseY)) {
+            if (painel.estaRevelado() && painel.grafico.obterAreaVisualPainel().contains(mouseX, mouseY)) {
                 return true;
             }
         }
@@ -216,7 +219,7 @@ public final class PaineisEixosRelacoes {
 
     public boolean contemBotaoEsconder(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.contemBotaoEsconder(mouseX, mouseY)) {
+            if (painel.estaRevelado() && painel.grafico.contemBotaoEsconder(mouseX, mouseY)) {
                 return true;
             }
         }
@@ -232,7 +235,7 @@ public final class PaineisEixosRelacoes {
     public ScaffoldingGraficoInteiros.NaturezaInteracao identificarNaturezaInteracao(
             int mouseX, int mouseY, int larguraTela, int alturaTela, Rectangle areaDiagrama) {
         for (Painel painel : paineis) {
-            if (!painel.revelado) {
+            if (!painel.estaRevelado()) {
                 continue;
             }
             ScaffoldingGraficoInteiros.NaturezaInteracao natureza =
@@ -249,7 +252,7 @@ public final class PaineisEixosRelacoes {
     public boolean processarPressionamento(
             int mouseX, int mouseY, int larguraTela, int alturaTela, Rectangle areaDiagrama) {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.processarPressionamento(
+            if (painel.estaRevelado() && painel.grafico.processarPressionamento(
                     mouseX, mouseY, larguraTela, alturaTela, areaDiagrama)) {
                 return true;
             }
@@ -266,8 +269,9 @@ public final class PaineisEixosRelacoes {
      */
     public Painel processarPressionamentoLupa(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (!painel.revelado && obterAreaLupa(painel).contains(mouseX, mouseY)) {
-                painel.revelado = true;
+            if (painel.controleVisibilidade.podeRevelar()
+                    && obterAreaLupa(painel).contains(mouseX, mouseY)) {
+                painel.controleVisibilidade.revelar();
                 return painel;
             }
         }
@@ -289,7 +293,7 @@ public final class PaineisEixosRelacoes {
 
     public void desenhar(Graphics2D g2, int larguraTela, int alturaTela, Rectangle areaDiagrama) {
         for (Painel painel : paineis) {
-            if (painel.revelado) {
+            if (painel.estaRevelado()) {
                 painel.grafico.desenhar(g2, larguraTela, alturaTela, areaDiagrama);
             }
         }
@@ -297,7 +301,7 @@ public final class PaineisEixosRelacoes {
 
     public void desenharPontosControleEmPrimeiroPlano(Graphics2D g2) {
         for (Painel painel : paineis) {
-            if (painel.revelado && painel.grafico.estaArrastandoPontoControle()) {
+            if (painel.estaRevelado() && painel.grafico.estaArrastandoPontoControle()) {
                 painel.grafico.desenharPontoControleEmPrimeiroPlano(g2);
             }
         }
@@ -305,7 +309,7 @@ public final class PaineisEixosRelacoes {
 
     public void atualizarFocoBotaoEsconder(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (painel.revelado) {
+            if (painel.estaRevelado()) {
                 painel.grafico.atualizarFocoBotaoEsconder(mouseX, mouseY);
             }
         }
@@ -331,7 +335,7 @@ public final class PaineisEixosRelacoes {
             return;
         }
         for (Painel painel : paineis) {
-            if (!painel.revelado) {
+            if (!painel.estaRevelado()) {
                 desenharLupa(g2, obterAreaLupa(painel));
             }
         }
@@ -340,7 +344,7 @@ public final class PaineisEixosRelacoes {
     /** Verdadeiro se o ponto está sobre a lupa de algum papel ainda não revelado — usado para cursor/tooltip. */
     public boolean contemLupa(int mouseX, int mouseY) {
         for (Painel painel : paineis) {
-            if (!painel.revelado && obterAreaLupa(painel).contains(mouseX, mouseY)) {
+            if (!painel.estaRevelado() && obterAreaLupa(painel).contains(mouseX, mouseY)) {
                 return true;
             }
         }

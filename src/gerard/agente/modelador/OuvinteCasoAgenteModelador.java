@@ -5,7 +5,7 @@ import gerard.agente.modelousuario.DiagnosticoTarefa;
 /**
  * Observador de um caso armazenado pelo AgenteModelador (ação 1) a cada
  * chamada de armazenarCaso. Não carrega lógica de negócio — só recebe a
- * notificação (mesmo padrão de OuvinteVeredictoAgenteMonitor).
+ * notificação factual de armazenamento.
  */
 public interface OuvinteCasoAgenteModelador {
     void aoArmazenar(String idUsuario, DiagnosticoTarefa diagnostico);

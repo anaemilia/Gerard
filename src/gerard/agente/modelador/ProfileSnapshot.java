@@ -7,10 +7,8 @@ package gerard.agente.modelador;
  * hoje: {@code ModeloUsuario}/{@code PerfilAluno}/{@code PerfilAprendizagem}
  * não guardam nível global, diagnóstico corrente, estratégia predominante
  * nem confiança de modelo — nenhum agente calcula isso ainda. Os campos que
- * SÃO reais (contagem de erro/acerto) vêm de duas fontes diferentes,
- * documentadas em cada getter: os totais por tarefa que o AgenteZDP mantém
- * de verdade (errosConsecutivos/errosTotais — usados pelas regras
- * R-PED-001/002), e agregados que o próprio serviço de auditoria calcula
+ * SÃO reais (contagem de erro/acerto) vêm dos registros factuais por tarefa
+ * e dos agregados que o serviço de auditoria calcula
  * observando os eventos desta sessão (não um estado que o AgenteModelador
  * guarde internamente).
  */

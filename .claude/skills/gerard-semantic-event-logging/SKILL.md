@@ -138,6 +138,28 @@ Sempre que uma ação modificar, consultar, validar ou interpretar um estado sem
 
 Produza o evento somente com o significado factual conhecido naquele momento.
 
+## Consolidação durante um gesto contínuo
+
+Atualizar uma representação a cada amostra do ponteiro não exige emitir um
+novo evento semântico por pixel. No controle de barras de
+`COMPARACAO_MEDIDAS`, o estado e as representações são propagados a cada
+movimento, mas o evento `CONSISTENCIA_AUTOMATICA` retém somente o último
+`Snapshot` e é gravado no término do gesto. Um novo pressionamento executa
+um descarregamento defensivo caso o término anterior tenha sido interrompido.
+
+Essa é uma política de granularidade do registro, não uma regra matemática
+nem um bloqueio da sincronização visual. A identificação do papel recalculado
+permanece no estado semântico/relação proprietária; a apresentação somente
+retém o fato já produzido. As amostras intermediárias podem integrar o
+registro factual do gesto segundo `gerard-log-gestos-interacao`, mas não se
+transformam automaticamente em ações instrumentais.
+
+Status verificado em 2026-08-30: os métodos
+`registrarLogConsistenciaAutomaticaSeHouve` e
+`flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao` implementam a
+retenção, e o verificador determinístico protege os términos normal e
+defensivo.
+
 ## Anti-padrões
 
 - Logar apenas `mouseClicked(x,y)`.

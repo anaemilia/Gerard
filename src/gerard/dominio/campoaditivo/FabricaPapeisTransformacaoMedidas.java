@@ -6,6 +6,7 @@ import gerard.semantica.numero.DominioNumerico;
 /**
  * Fábrica dos três papéis do esquema Transformação de Medidas
  * (EstadoInicial, Transformacao, EstadoFinal).
+ * A transformação é um inteiro não nulo: ela precisa alterar a medida.
  *
  * Não altera PapelQuantitativo além do que já foi corrigido em conjunto
  * (baseline v2) — esta fábrica só usa o construtor público, que já era
@@ -24,7 +25,7 @@ public final class FabricaPapeisTransformacaoMedidas {
     }
 
     public static PapelQuantitativo transformacao(PublicadorEventoDominio publicador) {
-        return new PapelQuantitativo("papel.transformacao", "Transformação", DominioNumerico.INTEIROS,
+        return new PapelQuantitativo("papel.transformacao", "Transformação", DominioNumerico.INTEIROS_NAO_NULOS,
                 new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacao",
                         "explicacao.papel.transformacao"),
                 publicador);

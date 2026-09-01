@@ -1,7 +1,7 @@
 # Lacuna registrada — manutenção automática de consistência não gera log em produção
 
-Status: **resolvida (2026-08-07).** Ver "Implementação" ao final —
-`RELATORIO_LOG_CONSISTENCIA_AUTOMATICA_IMPLEMENTACAO_2026-08-07.md`.
+Status: **resolvida em duas etapas (2026-08-07 e 2026-08-11).** Ver
+"Implementação" e "Granularidade do arraste contínuo" ao final.
 
 ---
 
@@ -64,8 +64,31 @@ verificação (compilação completa, suíte comparativa de 40 cenários, 7
 harnesses do piloto, suíte temporária dedicada de 10 checagens):
 `RELATORIO_LOG_CONSISTENCIA_AUTOMATICA_IMPLEMENTACAO_2026-08-07.md`.
 
-Caveat conhecido, não resolvido aqui: um ponto de chamada específico
-(controle de barras da Comparação, arraste contínuo) pode gerar uma linha
-de log por passo do arrasto quando o valor dependente muda a cada passo —
-throttling de log durante gesto contínuo é uma decisão de política
-separada, não tomada nesta tarefa.
+## Throttling do controle de barras — resolvido em 2026-08-16
+
+O caveat do arraste contínuo foi resolvido na versão atual. O estado
+semântico e todas as representações continuam sendo atualizados a cada passo
+do arraste; somente a escrita do evento `CONSISTENCIA_AUTOMATICA` é
+consolidada. A interface retém o `Snapshot` mais recente produzido pelo
+`EstadoSemanticoCompartilhado` e grava no máximo um evento quando o gesto
+termina.
+
+Implementação efetivamente presente:
+
+- `registrarLogConsistenciaAutomaticaSeHouve` retém o último fato enquanto
+  `arrastandoControleComparacao` estiver ativo;
+- `flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao` grava o último
+  fato e limpa a retenção;
+- `mouseReleased` executa o término normal; `mousePressed` executa um
+  descarregamento defensivo caso o término anterior tenha sido interrompido;
+- fora desse protocolo, `CONSISTENCIA_AUTOMATICA` continua sendo gravado
+  imediatamente;
+- `EstadoSemanticoCompartilhado.Snapshot` permanece como fonte do papel
+  resolvido automaticamente; a interface não redescobre o fato comparando
+  valores antes e depois.
+
+Essa é uma política de granularidade do registro, não um bloqueio da
+propagação de estado nem uma nova regra matemática. As amostras intermediárias
+do ponteiro não são convertidas em novas ações instrumentais. O verificador
+determinístico protege a retenção do último `Snapshot`, o término normal e o
+término defensivo.

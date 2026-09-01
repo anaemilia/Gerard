@@ -17,7 +17,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.Collections;
 
-/** Verifica a primeira família da P5 sem Monitor nem ZDP. */
+/** Verifica a avaliação local da primeira família da P5. */
 public final class TesteP5_1ClassificacaoCategoria {
     private static int verificacoes;
 

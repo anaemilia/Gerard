@@ -1,6 +1,6 @@
 ---
 name: gerard-log-acao-instrumental
-description: Esquema e formato do log de ação instrumental do Gérard — o que precisa ser capturado a cada interação do usuário (Quadro 4.55 do material de pesquisa). Use sempre que for criar, revisar ou estender qualquer log de ação/erro do Gérard, ou ao decidir o que precisa ser registrado por interação. Esta skill é dona do esquema de captura de dado; NÃO decide comportamento de agente — ver gerard-ajuda-adaptativa/references/agente-monitor.md para quem lê e avalia esse log.
+description: Esquema e formato do log de ação instrumental do Gérard — o que precisa ser capturado a cada interação do usuário (Quadro 4.55 do material de pesquisa). Use sempre que for criar, revisar ou estender qualquer log de ação/erro do Gérard, ou ao decidir o que precisa ser registrado por interação. Esta skill é dona do esquema de captura; a avaliação pertence ao proprietário semântico da regra.
 ---
 
 # Log de Ação Instrumental — Gérard
@@ -20,9 +20,9 @@ O esquema abaixo vem do material de pesquisa (Quadro 4.55, "Análise da tarefa")
 
 Ao estender o log, siga o padrão de "acrescentar campos ao final preservando leitura de logs antigos" já usado em `EventoLogGerard.deTsv()` (comentário: "Os quatro campos de invariante foram acrescentados ao final para preservar a leitura dos logs produzidos pelas versões anteriores") — é a convenção já estabelecida no código real, não uma sugestão nova.
 
-## Por que separado da lógica do Agente Monitor
+## Por que o esquema é separado da avaliação
 
-Logar a ação instrumental é captura de dado (o que aconteceu). Avaliar essa ação como certa/errada é comportamento de decisão (o que o Agente Monitor faz). São responsabilidades diferentes: o log serve a mais coisas além do Monitor — auditoria, os scripts de teste/validação, e a análise qualitativa mencionada no material de pesquisa. Não acoplar o formato do log à lógica de um agente específico.
+Logar a ação instrumental é capturar o que aconteceu. Avaliar a ação como certa/errada exige a regra possuída pelo objeto semanticamente rico ou pela relação estrutural. São responsabilidades distintas: o esquema também serve à auditoria, aos testes e à análise qualitativa. Não acoplar o formato do log a um serviço central de decisão.
 
 ## Esquema de captura (Quadro 4.55)
 

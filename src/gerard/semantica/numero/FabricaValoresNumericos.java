@@ -5,7 +5,7 @@ public final class FabricaValoresNumericos {
 
     public ValorNumerico conhecido(DominioNumerico dominio, int valor) {
         DominioNumerico efetivo = dominio == null ? DominioNumerico.NATURAIS : dominio;
-        if (efetivo == DominioNumerico.INTEIROS) {
+        if (efetivo.aceitaSinalNegativo()) {
             return new NumeroInteiro(valor);
         }
         return new NumeroNatural(valor);

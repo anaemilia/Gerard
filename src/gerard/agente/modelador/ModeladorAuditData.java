@@ -13,8 +13,8 @@ import java.util.List;
  * Não carrega perfil antes/depois: {@code ModeloUsuario} não guarda os
  * contadores agregados que o schema de referência pede (ver
  * {@link ProfileSnapshot}) — quem monta esse retrato é
- * {@code gerard.pesquisador.auditoria.AgentAuditService}, observando o
- * histórico de eventos, não o próprio AgenteModelador.
+ * um consumidor de auditoria, observando o histórico de eventos, não o
+ * próprio AgenteModelador.
  */
 public final class ModeladorAuditData {
     private final String entradaEvento;

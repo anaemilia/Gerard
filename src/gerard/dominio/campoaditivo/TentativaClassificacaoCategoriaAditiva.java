@@ -12,7 +12,7 @@ import java.util.UUID;
  * <p>A situação fornece sua categoria curada. Este agregado possui a
  * comparação com a escolha do participante, a confirmação sobre uma escolha
  * divergente e a sequência corrente de rejeições. Não conhece Swing,
- * persistência, Monitor ou ZDP.</p>
+ * persistência ou serviços externos de decisão.</p>
  */
 public final class TentativaClassificacaoCategoriaAditiva {
 

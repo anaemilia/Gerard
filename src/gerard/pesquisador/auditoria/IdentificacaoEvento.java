@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Identidade de um evento de auditoria multiagente (schema 2.0.0,
+ * Identidade de um evento factual de interação (schema 2.0.0,
  * 2026-07-31) — episode_id/session_id são conceitos do harness de teste
  * (replay/monkey), não da sessão ao vivo; ficam null quando ninguém os
  * fornece.
@@ -80,7 +80,7 @@ public final class IdentificacaoEvento {
     /**
      * Construtor de conveniência pros pontos de chamada em Main.java: só os
      * campos que quem chama realmente sabe. Identidade de gesto/ação/
-     * avaliação e as versões ficam a cargo de AgentAuditService.iniciarAcao.
+     * avaliação e as versões ficam a cargo do serviço factual chamador.
      */
     public IdentificacaoEvento(String episodeId, String sessionId, String userId, String problemId,
             String situacaoProblema, String categoriaEsperada, String papelDesconhecido) {

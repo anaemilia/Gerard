@@ -1,6 +1,7 @@
 package gerard.aplicacao;
 
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
+import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -17,6 +18,8 @@ public final class FachadaCarregamentoAtividade {
     private final RepositorioSituacoesAditivas repositorio;
     private final CatalogoDefinicoesAditivas catalogo;
     private final ConstrutorResultadoCurado construtor;
+    private final MaterializadorEnunciadoCurado materializador =
+            new MaterializadorEnunciadoCurado();
 
     public FachadaCarregamentoAtividade(RepositorioSituacoesAditivas repositorio,
             CatalogoDefinicoesAditivas catalogo,
@@ -45,8 +48,11 @@ public final class FachadaCarregamentoAtividade {
     private ContextoCarregamentoAtividade construirContexto(
             SituacaoProblemaAditiva situacao, TipoSituacaoAditiva tipo) {
         DefinicaoDiagramaAditivo definicao = catalogo.obter(tipo);
+        String enunciadoExibido = situacao != null
+                ? materializador.materializar(situacao) : "";
         ResultadoInterpretacao interpretacao = situacao != null
-                ? construtor.construir(situacao) : null;
-        return new ContextoCarregamentoAtividade(situacao, definicao, interpretacao);
+                ? construtor.construir(situacao, enunciadoExibido) : null;
+        return new ContextoCarregamentoAtividade(
+                situacao, definicao, interpretacao, enunciadoExibido);
     }
 }

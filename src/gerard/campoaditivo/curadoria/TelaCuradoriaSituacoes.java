@@ -86,6 +86,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
     private final JLabel status;
     private final ClassificadorTipoSituacaoAditiva classificador = new ClassificadorTipoSituacaoAditiva();
     private final CadastroIdiomasSituacao cadastroIdiomas = new CadastroIdiomasSituacao();
+    private final RepositorioCuradoriaNarrativaRica repositorioNarrativaRica =
+            new RepositorioCuradoriaNarrativaRica();
 
     public TelaCuradoriaSituacoes(RepositorioSituacoesAditivas repositorio, Runnable aoSalvarCuradoria) {
         this.repositorio = repositorio == null ? new RepositorioSituacoesAditivas() : repositorio;
@@ -1033,6 +1035,15 @@ public class TelaCuradoriaSituacoes extends JPanel {
         JLabel avisoSalvamento = new JLabel("As alterações serão salvas automaticamente ao fechar.");
         avisoSalvamento.setFont(new Font("Arial", Font.PLAIN, 11));
         avisoSalvamento.setForeground(new Color(82, 97, 107));
+        JButton editarNarrativaRica = new JButton("Narrativa rica...");
+        editarNarrativaRica.setEnabled(!versaoTraducaoSomenteTexto);
+        editarNarrativaRica.setToolTipText(versaoTraducaoSomenteTexto
+                ? "A narrativa rica pertence à versão original vinculada."
+                : "Declarar participantes, objetos, eventos e correspondências semânticas.");
+        editarNarrativaRica.getAccessibleContext().setAccessibleName(
+                "Editar narrativa rica da situação-problema");
+        editarNarrativaRica.getAccessibleContext().setAccessibleDescription(
+                "Abre o editor de participantes, objetos, estados, eventos e correspondências declarados pelo pesquisador.");
         JButton fechar = new JButton("Salvar e fechar");
 
         final Runnable fecharESalvar = new Runnable() {
@@ -1176,6 +1187,33 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     "Tradução", JOptionPane.INFORMATION_MESSAGE);
         });
 
+        editarNarrativaRica.addActionListener(e -> {
+            controladorSinais.normalizarCamposExibidos();
+            aplicarCamposDaCuradoriaDetalhada(linha, campoValidada, areaEnunciado, campoId, campoIdiomaVersao, campoSituacaoGrupoId, campoTipoVersao, campoVersaoOrigemId, campoFonte, campoSubtipo, campoPersonagem1, campoPersonagem2, campoPersonagem3,
+                    campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
+                    campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
+                    campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
+                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
+            if (linha.id == null || linha.id.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        dialogo,
+                        "Informe o id da situação antes de editar a narrativa rica.",
+                        "Narrativa rica",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            modelo.atualizarLinha(linhaModelo);
+            SituacaoProblemaAditiva situacaoParaNarrativa =
+                    modelo.paraSituacao(linhaModelo);
+            boolean narrativaSalva = new DialogoCuradoriaNarrativaRica(
+                    dialogo, situacaoParaNarrativa,
+                    repositorioNarrativaRica).exibir(dialogo);
+            if (narrativaSalva) {
+                avisoSalvamento.setText(
+                        "Narrativa rica salva; a situação tabular será salva ao fechar.");
+            }
+        });
+
         fechar.addActionListener(e -> fecharESalvar.run());
         dialogo.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -1183,6 +1221,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
             }
         });
         botoes.add(avisoSalvamento);
+        botoes.add(editarNarrativaRica);
         botoes.add(fechar);
         conteudo.add(botoes, BorderLayout.SOUTH);
 
@@ -2669,20 +2708,33 @@ public class TelaCuradoriaSituacoes extends JPanel {
             List<SituacaoProblemaAditiva> situacoes = new ArrayList<SituacaoProblemaAditiva>();
             int i = 1;
             for (LinhaSituacao l : linhas) {
-                String id = l.id == null || l.id.trim().isEmpty()
-                        ? gerarIdPadrao(i, l.codigoIdioma, l.tipo, l.contexto, l.enunciado)
-                        : l.id.trim();
-                situacoes.add(new SituacaoProblemaAditiva(id, l.situacaoGrupoId, l.tipoVersao, l.versaoOrigemId, Boolean.TRUE.equals(l.validada), l.tipo, l.codigoIdioma, l.enunciado,
-                        l.contexto, l.fonte, l.subtipo, l.estadoInicial, l.transformacao, l.sinalTransformacao, l.estadoFinal,
-                        l.quantidade1, l.quantidade2, l.resultado, l.referido, l.referendo, l.valorRelativo, l.sinalValorRelativo,
-                        l.termoDesconhecido, l.representacaoVisual, l.observacoes,
-                        l.personagem1, l.personagem2, l.personagem3,
-                        l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
-                        l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao,
-                        l.estadoIntermediario, l.operacaoEstadoTransformacao));
+                situacoes.add(paraSituacao(l, i));
                 i++;
             }
             return situacoes;
+        }
+
+        SituacaoProblemaAditiva paraSituacao(int indice) {
+            if (indice < 0 || indice >= linhas.size()) {
+                throw new IllegalArgumentException("linha de situação inválida");
+            }
+            return paraSituacao(linhas.get(indice), indice + 1);
+        }
+
+        private SituacaoProblemaAditiva paraSituacao(
+                LinhaSituacao l, int numeroLinha) {
+            String id = l.id == null || l.id.trim().isEmpty()
+                    ? gerarIdPadrao(numeroLinha, l.codigoIdioma, l.tipo,
+                            l.contexto, l.enunciado)
+                    : l.id.trim();
+            return new SituacaoProblemaAditiva(id, l.situacaoGrupoId, l.tipoVersao, l.versaoOrigemId, Boolean.TRUE.equals(l.validada), l.tipo, l.codigoIdioma, l.enunciado,
+                    l.contexto, l.fonte, l.subtipo, l.estadoInicial, l.transformacao, l.sinalTransformacao, l.estadoFinal,
+                    l.quantidade1, l.quantidade2, l.resultado, l.referido, l.referendo, l.valorRelativo, l.sinalValorRelativo,
+                    l.termoDesconhecido, l.representacaoVisual, l.observacoes,
+                    l.personagem1, l.personagem2, l.personagem3,
+                    l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
+                    l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao,
+                    l.estadoIntermediario, l.operacaoEstadoTransformacao);
         }
 
         public int getRowCount() { return linhas.size(); }

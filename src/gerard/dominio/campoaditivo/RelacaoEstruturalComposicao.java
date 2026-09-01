@@ -31,7 +31,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * KnowledgeLocalityPrinciple que já justificava esta classe antes de ser
  * renomeada continua valendo.
  */
-public final class RelacaoEstruturalComposicao implements RelacaoEstruturalAditiva {
+public final class RelacaoEstruturalComposicao implements RelacaoEstruturalDiagnosticavel {
 
     private RelacaoEstruturalComposicao() { }
 
@@ -41,6 +41,16 @@ public final class RelacaoEstruturalComposicao implements RelacaoEstruturalAditi
 
     /** Descreve a relação estrutural em notação simbólica. Não é uma verbalização de invariante operatório. */
     public String descreverRelacao() { return "Todo = Parte1 + Parte2"; }
+
+    /**
+     * Calcula o Todo a partir das duas partes quando a representação já
+     * fornece os dois valores. Mantém a regra aditiva fora dos adaptadores
+     * visuais (Swing, web ou mobile) e rejeita estouro em vez de publicar um
+     * inteiro semanticamente falso.
+     */
+    public int calcularTodo(int parte1, int parte2) {
+        return Math.addExact(parte1, parte2);
+    }
 
     /**
      * Avalia a relação estrutural formal contra os três papéis.
@@ -294,7 +304,7 @@ public final class RelacaoEstruturalComposicao implements RelacaoEstruturalAditi
      */
     private ResultadoCalculo resultadoDaSoma(PapelQuantitativo alvo, int a, int b, String explicacao) {
         try {
-            return new ResultadoCalculo(alvo, new NumeroInteiro(Math.addExact(a, b)), descreverRelacao(),
+            return new ResultadoCalculo(alvo, new NumeroInteiro(calcularTodo(a, b)), descreverRelacao(),
                     EstadoConsistencia.CONSISTENTE, explicacao, OrigemAcao.ORIGEM_SISTEMA);
         } catch (ArithmeticException estouro) {
             return resultadoNaoRepresentavel();

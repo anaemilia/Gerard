@@ -16,8 +16,8 @@ import java.util.List;
  *
  * "Tarefa" aqui é (Quadro 5.60) uma referência à Ação Instrumental completa
  * (ver gerard-log-acao-instrumental) — regraDeAcao é o primeiro pedaço dessa
- * referência trazido pra cá (a Tarefa de Interação de Shneiderman, ex.:
- * POSICIONAR, SELECIONAR — ver agente-monitor.md).
+ * referência trazido para cá (a Tarefa de Interação de Shneiderman, ex.:
+ * POSICIONAR, SELECIONAR — ver gerard-log-acao-instrumental).
  *
  * "invariante" (o teorema-em-ato mobilizado) — resolvido em 2026-07-23:
  * nenhum agente calcula automaticamente qual invariante uma ação mobiliza

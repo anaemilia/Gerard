@@ -3,7 +3,7 @@ package gerard.pesquisador.auditoria;
 /**
  * Classificação de UMA avaliação como gesto canônico do usuário ou
  * reavaliação reativa — determina se ela pode alterar estado pedagógico
- * real (ZDP/Modelador) ou só aparece no log técnico. Construída a partir
+ * real no Modelador ou só aparece no log técnico. Construída a partir
  * de {@link OrigemAvaliacao#isCanonica()}; counts_for_* são todos iguais a
  * `canonical` nesta versão (não há hoje um caso em que uma avaliação seja
  * canônica pra um efeito e não pra outro).

@@ -10,10 +10,9 @@ import java.util.Map;
  * Repositório de dados compartilhado descrito em gerard-modelo-usuario/
  * SKILL.md (Quadro 5.60): as cinco dimensões armazenadas sobre um usuário.
  *
- * Esta classe só armazena — não decide como as regras são inferidas (Agente
- * Modelador) nem como a estratégia pedagógica é escolhida a partir daqui
- * (Agente ZDP). Nenhum dos dois agentes existe ainda; esta é a estrutura de
- * dados pré-requisito para os dois.
+ * Esta classe armazena a fotografia publicada pelo Agente Modelador. Ela não
+ * infere regras nem escolhe uma intervenção: cada proprietário semântico lê
+ * somente a projeção pertinente e decide dentro de seu repertório local.
  */
 public class ModeloUsuario {
     private final PerfilAluno perfilAluno;

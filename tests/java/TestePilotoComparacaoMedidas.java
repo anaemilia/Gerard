@@ -289,6 +289,19 @@ public class TestePilotoComparacaoMedidas {
                 "NAO_RESOLVIVEL_NESTE_ESTADO");
 
         System.out.println();
+        System.out.println("=== projeção do valor relativo para controles de escala ===");
+        checar("valor relativo assinado pertence à relação",
+                String.valueOf(relacao.calcularValorRelativo(14, 6)), "-8");
+        checar("módulo da diferença pode alimentar uma escala visual",
+                String.valueOf(relacao.calcularModuloValorRelativo(14, 6)), "8");
+        checar("valor relativo conhecido pode ser projetado como módulo",
+                String.valueOf(relacao.calcularModuloDoValorRelativo(-8)), "8");
+        checar("edição do módulo preserva orientação negativa atual",
+                String.valueOf(relacao.aplicarSinalDoValorAtual(-8, 3)), "-3");
+        checar("edição do módulo preserva orientação não negativa atual",
+                String.valueOf(relacao.aplicarSinalDoValorAtual(8, 3)), "3");
+
+        System.out.println();
         System.out.println("=== guarda de estouro de int (2026-08-06): não devolve número errado como CONSISTENTE ===");
         PapelQuantitativo rdO = FabricaPapeisComparacaoMedidas.referido(publicador);
         PapelQuantitativo vrO = FabricaPapeisComparacaoMedidas.valorRelativo(publicador);

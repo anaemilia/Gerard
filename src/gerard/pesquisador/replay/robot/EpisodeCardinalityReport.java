@@ -12,8 +12,7 @@ import java.nio.charset.StandardCharsets;
  * junta as contagens do lado Robot (gestos físicos, falhas de pickup/drop,
  * avaliações não despachadas — vindas de {@link RobotGestureTrace}) com as
  * contagens do lado da auditoria (ações canônicas, avaliações reativas,
- * decisões reais do ZDP/Modelador, casos, duplicados, divergências — já
- * calculadas por {@code AgentAuditService}). Nenhum cálculo de decisão
+ * decisões locais e do Modelador, casos, duplicados e divergências. Nenhum cálculo de decisão
  * pedagógica acontece aqui — só soma o que os dois lados já produziram.
  */
 public final class EpisodeCardinalityReport {
@@ -26,7 +25,7 @@ public final class EpisodeCardinalityReport {
     private final int falhasPickup;
     private final int falhasDrop;
     private final int avaliacoesNaoDisparadas;
-    private final int decisoesZdp;
+    private final int decisoesAjudaLocal;
     private final int atualizacoesModelador;
     private final int casosInseridos;
     private final int duplicadosBloqueados;
@@ -34,7 +33,7 @@ public final class EpisodeCardinalityReport {
 
     public EpisodeCardinalityReport(String episodeId, int gestosFisicos, int acoesPedagogicasCanonicas,
             int subeventosTecnicos, int avaliacoesCanonicas, int avaliacoesReativas, int falhasPickup,
-            int falhasDrop, int avaliacoesNaoDisparadas, int decisoesZdp, int atualizacoesModelador,
+            int falhasDrop, int avaliacoesNaoDisparadas, int decisoesAjudaLocal, int atualizacoesModelador,
             int casosInseridos, int duplicadosBloqueados, int divergencias) {
         this.episodeId = episodeId;
         this.gestosFisicos = gestosFisicos;
@@ -45,17 +44,17 @@ public final class EpisodeCardinalityReport {
         this.falhasPickup = falhasPickup;
         this.falhasDrop = falhasDrop;
         this.avaliacoesNaoDisparadas = avaliacoesNaoDisparadas;
-        this.decisoesZdp = decisoesZdp;
+        this.decisoesAjudaLocal = decisoesAjudaLocal;
         this.atualizacoesModelador = atualizacoesModelador;
         this.casosInseridos = casosInseridos;
         this.duplicadosBloqueados = duplicadosBloqueados;
         this.divergencias = divergencias;
     }
 
-    /** ações pedagógicas canônicas == decisões ZDP == atualizações Modelador == casos inseridos. */
+    /** ações canônicas == decisões locais de ajuda == atualizações do Modelador == casos inseridos. */
     public boolean cardinalidadeConsistente() {
-        return acoesPedagogicasCanonicas == decisoesZdp
-                && decisoesZdp == atualizacoesModelador
+        return acoesPedagogicasCanonicas == decisoesAjudaLocal
+                && decisoesAjudaLocal == atualizacoesModelador
                 && atualizacoesModelador == casosInseridos;
     }
 
@@ -68,7 +67,7 @@ public final class EpisodeCardinalityReport {
         try {
             escritor.println("episode_id\tgestos_fisicos\tacoes_pedagogicas_canonicas\tsubeventos_tecnicos\t"
                     + "avaliacoes_canonicas\tavaliacoes_reativas\tfalhas_pickup\tfalhas_drop\t"
-                    + "avaliacoes_nao_disparadas\tdecisoes_zdp\tatualizacoes_modelador\tcasos_inseridos\t"
+                    + "avaliacoes_nao_disparadas\tdecisoes_ajuda_local\tatualizacoes_modelador\tcasos_inseridos\t"
                     + "duplicados_bloqueados\tdivergencias\tcardinalidade_consistente");
         } finally {
             escritor.close();
@@ -81,7 +80,7 @@ public final class EpisodeCardinalityReport {
         try {
             escritor.println(episodeId + "\t" + gestosFisicos + "\t" + acoesPedagogicasCanonicas + "\t"
                     + subeventosTecnicos + "\t" + avaliacoesCanonicas + "\t" + avaliacoesReativas + "\t"
-                    + falhasPickup + "\t" + falhasDrop + "\t" + avaliacoesNaoDisparadas + "\t" + decisoesZdp
+                    + falhasPickup + "\t" + falhasDrop + "\t" + avaliacoesNaoDisparadas + "\t" + decisoesAjudaLocal
                     + "\t" + atualizacoesModelador + "\t" + casosInseridos + "\t" + duplicadosBloqueados + "\t"
                     + divergencias + "\t" + cardinalidadeConsistente());
         } finally {

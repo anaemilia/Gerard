@@ -21,9 +21,6 @@ import javax.swing.SwingUtilities;
 
 import gerard.agente.modelador.OuvinteCasoAgenteModelador;
 import gerard.agente.modelousuario.DiagnosticoTarefa;
-import gerard.agente.monitor.OuvinteVeredictoAgenteMonitor;
-import gerard.agente.zdp.CamadaEstrategiaZDP;
-import gerard.agente.zdp.OuvinteEstrategiaAgenteZDP;
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
@@ -90,16 +87,15 @@ public class TesteMonkeySemiGuiado {
         System.out.println("Teste iniciado (seed=" + seed + "). NAO mexa no mouse/teclado durante o teste.");
         System.out.println("Log: " + arquivoLog.getAbsolutePath());
 
-        File arquivoAgentes = new File(diretorioLogs,
-                "monkey_agentes_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".tsv");
-        final PrintWriter logAgentes = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(new FileOutputStream(arquivoAgentes), "UTF-8")), true);
-        logAgentes.println("seq\ttMs\tagente\tdetalhe");
-        GravadorAtividadeAgentes gravador = new GravadorAtividadeAgentes(logAgentes, System.currentTimeMillis());
-        tela.agenteMonitor.adicionarOuvinte(gravador);
-        tela.agenteZDP.adicionarOuvinte(gravador);
+        File arquivoModelador = new File(diretorioLogs,
+                "monkey_modelador_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".tsv");
+        final PrintWriter logModelador = new PrintWriter(
+                new BufferedWriter(new OutputStreamWriter(new FileOutputStream(arquivoModelador), "UTF-8")), true);
+        logModelador.println("seq\ttMs\tcomponente\tdetalhe");
+        GravadorAtividadeModelador gravador =
+                new GravadorAtividadeModelador(logModelador, System.currentTimeMillis());
         tela.agenteModelador.adicionarOuvinte(gravador);
-        System.out.println("Log de atividade dos agentes: " + arquivoAgentes.getAbsolutePath());
+        System.out.println("Log de atividade do Modelador: " + arquivoModelador.getAbsolutePath());
 
         Robot robot = new Robot();
         robot.setAutoDelay(12);
@@ -130,45 +126,29 @@ public class TesteMonkeySemiGuiado {
 
         log.println("Fim: " + iteracao + " iteracoes, " + erros + " erros capturados.");
         log.close();
-        tela.agenteMonitor.removerOuvinte(gravador);
-        tela.agenteZDP.removerOuvinte(gravador);
         tela.agenteModelador.removerOuvinte(gravador);
-        logAgentes.close();
+        logModelador.close();
         System.out.println("Teste concluido: " + iteracao + " iteracoes, " + erros + " erros. Log em " + arquivoLog.getAbsolutePath());
-        System.out.println("Eventos de agentes gravados: " + gravador.totalEventos() + " em " + arquivoAgentes.getAbsolutePath());
+        System.out.println("Eventos do Modelador gravados: " + gravador.totalEventos()
+                + " em " + arquivoModelador.getAbsolutePath());
     }
 
     /**
-     * Grava, em ordem cronologica, cada acao percebida pelos tres agentes de
-     * Ajuda Adaptativa durante o teste monkey — mesmas tres interfaces de
-     * observador ja usadas por PainelAtividadeAgentes (ver
-     * gerard-ajuda-adaptativa), so que aqui persistidas em TSV para analise
-     * posterior (ex.: grafo de transicoes entre estados dos agentes).
+     * Grava os casos recebidos pelo Modelador durante o teste visual.
      */
-    private static final class GravadorAtividadeAgentes
-            implements OuvinteVeredictoAgenteMonitor, OuvinteEstrategiaAgenteZDP, OuvinteCasoAgenteModelador {
+    private static final class GravadorAtividadeModelador
+            implements OuvinteCasoAgenteModelador {
         private final PrintWriter destino;
         private final long inicioMs;
         private int sequencia;
 
-        GravadorAtividadeAgentes(PrintWriter destino, long inicioMs) {
+        GravadorAtividadeModelador(PrintWriter destino, long inicioMs) {
             this.destino = destino;
             this.inicioMs = inicioMs;
         }
 
         int totalEventos() {
             return sequencia;
-        }
-
-        @Override
-        public void aoAvaliar(boolean correto) {
-            registrar("Monitor", correto ? "CORRETO" : "ERRADO");
-        }
-
-        @Override
-        public void aoDecidir(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
-                               boolean correto, CamadaEstrategiaZDP estrategia) {
-            registrar("ZDP", String.valueOf(estrategia));
         }
 
         @Override

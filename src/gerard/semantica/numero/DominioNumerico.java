@@ -3,6 +3,7 @@ package gerard.semantica.numero;
 /**
  * Universos numéricos utilizados no campo aditivo do Gérard.
  * NATURAIS representa N0: zero e inteiros positivos.
+ * INTEIROS_NAO_NULOS representa os inteiros negativos e positivos, sem zero.
  */
 public enum DominioNumerico {
     NATURAIS {
@@ -20,6 +21,17 @@ public enum DominioNumerico {
         @Override
         public boolean aceita(int valor) {
             return true;
+        }
+
+        @Override
+        public boolean aceitaSinalNegativo() {
+            return true;
+        }
+    },
+    INTEIROS_NAO_NULOS {
+        @Override
+        public boolean aceita(int valor) {
+            return valor != 0;
         }
 
         @Override

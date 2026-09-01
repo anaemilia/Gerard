@@ -71,6 +71,26 @@ public final class SemanticaCuradaSituacao {
         public boolean isExigidoNaModelagem() {
             return desconhecido || valor.length() > 0;
         }
+
+        /** Valor numérico curado deste papel, ou null quando não materializável. */
+        public Integer getValorInteiro() {
+            return CONVERSOR_INTEIRO.converter(valor);
+        }
+
+        /**
+         * Compara um valor materializado pela atividade com o valor deste
+         * papel na curadoria. A ausência de qualquer um dos dois valores
+         * numéricos produz {@code null}: não há base factual para afirmar que
+         * o estado foi ou não modificado.
+         */
+        public Boolean estadoModificadoPor(String valorAtual) {
+            Integer valorCurado = getValorInteiro();
+            Integer atual = CONVERSOR_INTEIRO.converter(valorAtual);
+            if (valorCurado == null || atual == null) {
+                return null;
+            }
+            return Boolean.valueOf(atual.intValue() != valorCurado.intValue());
+        }
     }
 
     private SemanticaCuradaSituacao() {

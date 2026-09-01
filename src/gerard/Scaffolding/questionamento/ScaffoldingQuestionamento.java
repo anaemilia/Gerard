@@ -3,6 +3,7 @@ package gerard.Scaffolding.questionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.i18n.ServicoLocalizacao;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 
 /**
  * Scaffolding responsável por questionar posicionamentos incompatíveis entre a
@@ -53,30 +54,11 @@ public class ScaffoldingQuestionamento {
     }
 
     public boolean papeisCompativeis(String chavePapelNumeral, String chavePapelAlvo) {
-        String numeral = normalizarChavePapel(chavePapelNumeral);
-        String alvo = normalizarChavePapel(chavePapelAlvo);
-
-        if (numeral.length() == 0 || alvo.length() == 0) {
-            return false;
-        }
-
-        if (numeral.equals(alvo)) {
-            return true;
-        }
-
-        if ("papel.transformacao".equals(numeral) && alvo.startsWith("papel.transformacao")) {
-            return true;
-        }
-
-        if ("papel.relacao".equals(numeral) && alvo.startsWith("papel.relacao")) {
-            return true;
-        }
-
-        if ("papel.parte".equals(numeral) && alvo.startsWith("papel.parte")) {
-            return true;
-        }
-
-        return false;
+        DescritorPapelQuantitativo origem =
+                catalogoPapeis.obterDescritor(chavePapelNumeral);
+        DescritorPapelQuantitativo destino =
+                catalogoPapeis.obterDescritor(chavePapelAlvo);
+        return origem.podeOcupar(destino);
     }
 
     /**

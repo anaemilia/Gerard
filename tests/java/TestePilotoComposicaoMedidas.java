@@ -31,6 +31,16 @@ public class TestePilotoComposicaoMedidas {
 
         System.out.println("=== Piloto: PapelQuantitativo (Composição de Medidas) ===");
         System.out.println("relação estrutural: " + relacao.descreverRelacao());
+        checar("a relação calcula o Todo (6+8=14)",
+                String.valueOf(relacao.calcularTodo(6, 8)), "14");
+        boolean rejeitouEstouro = false;
+        try {
+            relacao.calcularTodo(Integer.MAX_VALUE, 1);
+        } catch (ArithmeticException esperado) {
+            rejeitouEstouro = true;
+        }
+        checar("a relação rejeita um Todo com estouro inteiro",
+                String.valueOf(rejeitouEstouro), "true");
 
         PapelQuantitativo parte1 = PapelQuantitativo.parte1(publicador);
         PapelQuantitativo parte2 = PapelQuantitativo.parte2(publicador);

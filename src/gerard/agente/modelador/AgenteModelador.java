@@ -17,10 +17,9 @@ import java.util.Set;
  *
  * Implementa o armazenamento de casos, a inferência via PART e Apriori e a
  * publicação editorial de regras explicáveis. Não avalia a ação instrumental
- * e não escolhe a ajuda: recebe o registro factual do proprietário semântico;
- * os próprios proprietários aplicam as regras publicadas em seus repertórios
- * locais. Entradas vindas do antigo Monitor/ZDP permanecem somente enquanto
- * os demais protocolos ainda não forem migrados.
+ * e não escolhe a ajuda: recebe o registro factual produzido pelo proprietário
+ * semântico. Os próprios proprietários aplicam as regras publicadas em seus
+ * repertórios locais.
  */
 public class AgenteModelador {
     private final RepositorioModeloUsuario repositorio;

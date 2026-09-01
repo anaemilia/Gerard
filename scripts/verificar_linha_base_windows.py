@@ -26,6 +26,7 @@ TESTES_COM_INTERFACE_GRAFICA = {
     "TesteAbaMontagem",
     "TesteBloqueioDinamicoIdiomaCuradoria",
     "TesteConclusaoAcionaNovaSituacao",
+    "TesteDialogoCuradoriaNarrativaRica",
     "TesteInicializacaoSemCategoria",
 }
 

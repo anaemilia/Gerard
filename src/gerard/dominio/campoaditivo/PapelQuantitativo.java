@@ -138,8 +138,8 @@ public final class PapelQuantitativo {
      * transformação carrega uma lupa. Essa é a regra" — mas a pergunta "eu
      * preciso de lupa?" é comportamento do PRÓPRIO papel, não inferência de
      * quem olha de fora a partir de forma/desenho. A fonte de verdade é
-     * matemática, não visual: {@code dominio == DominioNumerico.INTEIROS}
-     * (ℤ, aceita negativos) é estritamente mais fundamental que
+     * matemática, não visual: {@code dominio.aceitaSinalNegativo()}
+     * (universo que aceita negativos) é estritamente mais fundamental que
      * {@code descritorRepresentacao().getForma() == FIGURA_ELIPTICA} — a
      * elipse é só a escolha visual atual que hoje representa esse domínio;
      * o fato semântico real é o domínio numérico do papel.
@@ -157,7 +157,7 @@ public final class PapelQuantitativo {
      * TipoFiguraDiagrama.ELIPSE), não este método.
      */
     public boolean necessitaRepresentacaoDeSinal() {
-        return dominio == DominioNumerico.INTEIROS;
+        return dominio.aceitaSinalNegativo();
     }
 
     // ---- representação (descritor abstrato, não desenho) ----

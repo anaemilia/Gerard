@@ -1,14 +1,14 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { api } from "./api";
 import type { AcaoDisponivel, EstadoAtividade, EstadoWeb } from "./contratos";
 import { Diagrama } from "./Diagrama";
 import { BarraCategorias } from "./BarraCategorias";
+import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 
 type Mensagem = { texto: string; tipo: "neutra" | "erro" | "sucesso" };
 
 export default function App() {
   const [estado, setEstado] = useState<EstadoWeb | null>(null);
-  const [valor, setValor] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({ texto: "Carregando situação…", tipo: "neutra" });
 
@@ -27,7 +27,6 @@ export default function App() {
     setOcupado(true);
     try {
       setEstado(await api.executar(controle));
-      setValor("");
       setMensagem({ texto: "Escolha a categoria correspondente à situação.", tipo: "neutra" });
     } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
     finally { setOcupado(false); }
@@ -62,29 +61,6 @@ export default function App() {
     if (controle) void executarClassificacao(controle);
   }
 
-  async function submeter(evento: FormEvent) {
-    evento.preventDefault();
-    const numero = Number(valor);
-    if (!Number.isInteger(numero) || numero < 0 || !estado || "modo" in estado) {
-      setMensagem({ texto: "Informe um número natural.", tipo: "erro" }); return;
-    }
-    setOcupado(true);
-    try {
-      const resultado = await api.posicionar({ papel_id: estado.todo.id, valor: numero });
-      setEstado(resultado.estado);
-      setMensagem(resultado.aceita
-        ? { texto: `Resposta aceita pelo domínio. Ação ${resultado.action_id}.`, tipo: "sucesso" }
-        : { texto: `Resposta rejeitada pelo domínio: ${resultado.diagnostico}.`, tipo: "erro" });
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
-    finally { setOcupado(false); }
-  }
-
-  async function reiniciar() {
-    setOcupado(true);
-    try { setEstado(await api.reiniciar()); setValor(""); setMensagem({ texto: "Tentativa reiniciada.", tipo: "neutra" }); }
-    finally { setOcupado(false); }
-  }
-
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
       podeSortearMedidas={Boolean(acao("SORTEAR_MEDIDAS"))}
@@ -99,24 +75,12 @@ export default function App() {
         <span className="help-mark" aria-hidden="true">?</span>
         <h1 id="enunciado">{estado.enunciado}</h1>
       </section>
-      {!("modo" in estado) ? <div className="workspace">
-        <section className="diagram-panel" aria-label="Área do diagrama"><Diagrama estado={estado} /></section>
-        <aside className="response-panel" aria-label="Área de resposta">
-          <div><p className="eyebrow">Composição de medidas</p><h2>Complete o diagrama</h2>
-            <p className="relation">{estado.relacao}</p></div>
-          <form className="answer-form" onSubmit={submeter}><label htmlFor="valor-todo">Valor do Todo</label>
-            <div className="answer-controls"><input id="valor-todo" type="number" min="0" step="1" value={valor}
-              onChange={(e) => setValor(e.target.value)} disabled={ocupado || estado.concluida} required />
-              <button type="submit" disabled={ocupado || estado.concluida}>Confirmar</button></div></form>
-          <p className={`message message-${mensagem.tipo}`} role="status" aria-live="polite">{mensagem.texto}</p>
-          <div className="response-footer"><span className={`status ${estado.concluida ? "status-success" : ""}`}>
-            {estado.concluida ? "Concluída" : "Em andamento"}</span>
-            <button className="secondary" type="button" onClick={reiniciar} disabled={ocupado}>Reiniciar</button></div>
-        </aside>
-      </div> : <div className="workspace workspace-awaiting-category">
-        <section className="diagram-panel" aria-label="Área do diagrama" />
+      <div className="workspace workspace-awaiting-category">
+        <section className="diagram-panel" aria-label="Área do diagrama">
+          {"modo" in estado ? estado.cena && <GeradorCenaGerard cena={estado.cena} /> : <Diagrama estado={estado} />}
+        </section>
         <aside className="response-panel" aria-label="Área complementar" />
-      </div>}
+      </div>
       {"modo" in estado && estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&
         <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="pergunta-categoria">
           <h2 id="pergunta-categoria">Confirme sua escolha</h2><p>{estado.questionamento}</p>

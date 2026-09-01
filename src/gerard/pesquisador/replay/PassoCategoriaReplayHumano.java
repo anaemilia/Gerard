@@ -9,7 +9,7 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
  * posicionamento no diagrama. Não existia até 2026-07-30: os quadros/
  * transcrições sempre tiveram esses cliques, mas foram excluídos de
  * protocolos_reais_replay.tsv porque não havia caminho de código real para
- * avaliá-los (ver AgenteMonitor.avaliarCategoria, criado nesse mesmo dia).
+ * avaliá-los no proprietário semântico da classificação.
  */
 public final class PassoCategoriaReplayHumano {
     public final TipoSituacaoAditiva categoriaEscolhida;

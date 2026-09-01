@@ -70,6 +70,28 @@ public final class ServicoQuantidadeContextual {
         return formatarInteiroLegado(valor, situacao, true);
     }
 
+    public String formatarMagnitudeNumeroRelativo(int valor,
+            ContextoQuantidade situacao) {
+        String formatado = formatarInteiroLegado(valor, situacao, false);
+        return formatado.startsWith("-") || formatado.startsWith("+")
+                ? formatado.substring(1) : formatado;
+    }
+
+    public String sinalNumeroRelativo(int valor) {
+        return valor < 0 ? "-" : "+";
+    }
+
+    public int converterNumeroRelativoLegado(String magnitude, String sinal,
+            ContextoQuantidade situacao) {
+        String base = magnitude == null ? "" : magnitude.trim();
+        while (base.startsWith("+") || base.startsWith("-")) {
+            base = base.substring(1).trim();
+        }
+        Integer convertido = converterParaInteiroLegado(
+                ("-".equals(sinal) ? "-" : "+") + base, situacao);
+        return convertido == null ? 0 : convertido.intValue();
+    }
+
     private Locale localeDaSituacao(ContextoQuantidade situacao) {
         String codigo = situacao == null ? "pt-BR" : situacao.getCodigoIdioma();
         if (codigo == null || codigo.trim().length() == 0) {

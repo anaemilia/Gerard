@@ -70,6 +70,11 @@ coordenador global que leia toda a sessão e escolha em nome dos objetos.
 
 Use infraestrutura para persistir, indexar, transportar, renderizar ou exportar.
 
+A API semântica do Gérard pertence a essa fronteira de infraestrutura enquanto
+HTTP/JSON, serialização e compatibilidade. Ela publica decisões dos proprietários
+semânticos, mas não passa a possuir as regras que transporta. O detalhamento dos
+contratos e de sua maturidade pertence a `gerard-api-semantica`.
+
 Os objetos ricos possuem e produzem os registros factuais que pertencem ao
 seu conhecimento: o objeto representacional registra o gesto que o envolve; o
 objeto semântico ou a relação estrutural registra a ação constituída e seu

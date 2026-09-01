@@ -68,14 +68,8 @@ public final class CatalogoExplicacoesConceituaisPapel {
 
         // Comparação de Medidas: Referendo = Referido + ValorRelativo.
         registrar(mapa, FabricaPapeisComparacaoMedidas.referido(nenhum));
+        registrar(mapa, FabricaPapeisComparacaoMedidas.valorRelativo(nenhum));
         registrar(mapa, FabricaPapeisComparacaoMedidas.referendo(nenhum));
-        // A chave viva em Main.java para ValorRelativo é "papel.diferenca",
-        // não "papel.valorRelativo" (ver Main.obterValorCuradoPorIndiceEChave
-        // e o comentário em FabricaPapeisComparacaoMedidas.valorRelativo) —
-        // registra sob a chave viva.
-        mapa.put("papel.diferenca",
-                FabricaPapeisComparacaoMedidas.valorRelativo(nenhum)
-                        .descritorRepresentacao().getChaveExplicacaoConceitual());
         // "papel.referente" é sinônimo histórico de "papel.referendo" — mesmo
         // papel, nome alternativo vindo de outra via de interpretação (ver
         // CatalogoPapeisSemanticos.registrarNatural("papel.referente",

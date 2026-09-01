@@ -20,8 +20,7 @@ import java.util.Map;
  * Repositório compartilhado de Modelo do Usuário mencionado em
  * gerard-ajuda-adaptativa/SKILL.md ("Repositórios de dados compartilhados"):
  * escrito pelo Agente Modelador e fotografado no login para projeções de
- * leitura dos proprietários semânticos. O Agente ZDP é apenas consumidor
- * legado enquanto seus protocolos ainda não forem migrados.
+ * leitura dos proprietários semânticos.
  *
  * Guarda em memória, por id de usuário (mesmo identificador do campo
  * "usuario" do log — ver gerard-log-acao-instrumental/SKILL.md).

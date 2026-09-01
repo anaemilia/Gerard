@@ -1,6 +1,7 @@
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.ui.vergnaud.PaineisEixosRelacoes;
+import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -134,8 +135,12 @@ public final class TestePaineisEixosRelacoes {
         exigir(painel.grafico.isVisivel(), "registrarEscolha() deveria deixar o painel visível.");
         exigir(!painel.estaRevelado(),
                 "Painel recém-criado não deveria estar revelado ainda (só a lupa aparece).");
+        exigir(painel.getEstadoVisibilidade() == ControleVisibilidadeEixoPapel.Estado.FECHADO,
+                "adaptador Swing deve refletir o estado portátil fechado");
         revelarPainel(coordenador, painel);
         exigir(painel.estaRevelado(), "Depois de clicar na lupa, o painel deveria estar revelado.");
+        exigir(painel.getEstadoVisibilidade() == ControleVisibilidadeEixoPapel.Estado.REVELADO,
+                "adaptador Swing deve refletir o estado portátil revelado");
 
         Rectangle pontoControle = painel.grafico.obterAreaVisualPontoControle();
         int cx = pontoControle.x + pontoControle.width / 2;

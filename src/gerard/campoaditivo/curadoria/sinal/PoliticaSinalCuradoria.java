@@ -40,6 +40,12 @@ public final class PoliticaSinalCuradoria {
             return ResultadoValidacaoSinalCuradoria.valido();
         }
         boolean zero = ehZero(valor);
+        if (zero && papel == PapelSinalCuradoria.TRANSFORMACAO
+                && (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
+                        || tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO)) {
+            return ResultadoValidacaoSinalCuradoria.invalido(
+                    "curadoria.sinal.transformacaoNaoNula");
+        }
         if (zero && opcao != OpcaoSinalCuradoria.NEUTRO) {
             return ResultadoValidacaoSinalCuradoria.invalido(
                     "curadoria.sinal.zeroExigeNeutro");

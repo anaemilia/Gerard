@@ -5,6 +5,7 @@ import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
 import gerard.idioma.IdiomaInterface;
+import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;
 import javax.swing.SwingUtilities;
@@ -12,6 +13,7 @@ import javax.swing.SwingUtilities;
 public final class TesteSinalRelativoSemQuantidadeNegativa {
     public static void main(String[] args) throws Exception {
         testarRegraPura();
+        testarPoliticaRestauracao();
         testarEstadoCompartilhado();
 
         final Throwable[] erro = new Throwable[1];
@@ -44,6 +46,19 @@ public final class TesteSinalRelativoSemQuantidadeNegativa {
                 "Zero deve ser quantidade válida.");
         exigir(!regra.quantidadeEhNaoNegativa(-1),
                 "Quantidade negativa não deve ser válida.");
+    }
+
+    private static void testarPoliticaRestauracao() {
+        PoliticaRestauracaoValorRelativo politica =
+                new PoliticaRestauracaoValorRelativo();
+        exigir(politica.escolherValorSeguro(Integer.valueOf(-6), -10) == -6,
+                "Uma rejeição deve restaurar o valor anterior quando ele existe.");
+        exigir(politica.escolherValorSeguro(null, -10) == 10,
+                "Sem estado anterior, deve preservar o módulo do candidato.");
+        exigir(politica.escolherValorSeguro(null, Integer.MIN_VALUE) == 0,
+                "O menor inteiro não pode produzir um suposto módulo negativo.");
+        exigir(politica.restaurarComoPositivo(-8) == 8,
+                "A restauração positiva deve ser explícita e portátil.");
     }
 
     private static void testarEstadoCompartilhado() {
@@ -87,6 +102,18 @@ public final class TesteSinalRelativoSemQuantidadeNegativa {
                 novaSituacaoComparacao(),
                 new int[] {6, 8, 14});
         ElementoVergnaud relacao = tela.elementosVergnaud.get(1);
+        EstadoSemanticoCompartilhado.Snapshot snapshot =
+                tela.estadoSemanticoCompartilhado.snapshot();
+        exigir(snapshot.isConhecido(0) && snapshot.valorOuZero(0) == 6,
+                "A preparação deve publicar o Referido 6 no estado compartilhado.");
+        exigir(snapshot.isConhecido(1) && snapshot.valorOuZero(1) == 8,
+                "A preparação deve publicar o Valor Relativo 8 no estado compartilhado.");
+        Method indiceVisual = Main.TelaGerard.class.getDeclaredMethod(
+                "obterIndiceVisualPorIdentidadeSemantica", ElementoVergnaud.class);
+        indiceVisual.setAccessible(true);
+        int indice = ((Integer) indiceVisual.invoke(tela, relacao)).intValue();
+        exigir(indice == 1,
+                "A identidade papel.diferenca deve resolver o índice canônico 1.");
 
         Method validar = Main.TelaGerard.class.getDeclaredMethod(
                 "valorRelativoPreservaQuantidadesNaoNegativas",
@@ -156,8 +183,9 @@ public final class TesteSinalRelativoSemQuantidadeNegativa {
         for (int i = 0; i < 3; i++) {
             ElementoVergnaud elemento = new ElementoVergnaud(
                     100 + i * 120, 300, 80, 50,
-                    figuras[i], papeis[i],
-                    new Rectangle(20, 220, 620, 500), false);
+                    figuras[i], "",
+                    new Rectangle(20, 220, 620, 500), false,
+                    i == 1, papeis[i]);
             elemento.textoEditavel = i == 1 && valores[i] >= 0
                     ? "+" + valores[i]
                     : Integer.toString(valores[i]);

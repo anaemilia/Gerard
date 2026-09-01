@@ -57,3 +57,10 @@ distribuicao_windows/saida_local_com_dados_pesquisador/
 
 # Node (web-poc)
 node_modules/
+
+# Python (scripts de verificação)
+__pycache__/
+*.pyc
+
+# Workspace de scratch dos verificadores (scripts/verificar_linha_base_windows.py)
+tmp/

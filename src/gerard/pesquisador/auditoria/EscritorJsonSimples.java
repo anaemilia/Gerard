@@ -9,7 +9,7 @@ import java.util.Map;
  * inverso, parsear). Mesma justificativa: sem lib JSON no classpath do
  * projeto. Serializa Map/List/String/Number/Boolean/null com escape
  * correto (aspas, barra invertida, controle) — usado por
- * JsonlAgentAuditWriter pra transformar AgentAuditEvent.paraMapa() numa
+ * serviços de auditoria para transformar mapas factuais numa
  * linha JSON válida.
  */
 public final class EscritorJsonSimples {

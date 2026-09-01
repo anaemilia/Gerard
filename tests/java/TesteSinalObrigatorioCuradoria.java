@@ -80,10 +80,23 @@ public class TesteSinalObrigatorioCuradoria {
                 PapelSinalCuradoria.TRANSFORMACAO,
                 OpcaoSinalCuradoria.POSITIVO, "0").isValido(),
                 "Zero não pode ser marcado como positivo");
-        ok(politica.validar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+        ResultadoValidacaoSinalCuradoria transformacaoNula = politica.validar(
+                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                PapelSinalCuradoria.TRANSFORMACAO,
+                OpcaoSinalCuradoria.NEUTRO, "0");
+        ok(!transformacaoNula.isValido(),
+                "Transformação direta nula deve ser rejeitada");
+        ok("curadoria.sinal.transformacaoNaoNula".equals(
+                transformacaoNula.getChaveMensagem()),
+                "A rejeição deve explicar que a transformação é não nula");
+        ok(!politica.validar(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 PapelSinalCuradoria.TRANSFORMACAO,
                 OpcaoSinalCuradoria.NEUTRO, "0").isValido(),
-                "Zero deve aceitar sinal neutro");
+                "Transformação de relação nula deve ser rejeitada");
+        ok(politica.validar(TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                PapelSinalCuradoria.VALOR_RELATIVO,
+                OpcaoSinalCuradoria.NEUTRO, "0").isValido(),
+                "Zero continua válido para o valor relativo de uma comparação");
         ok(!politica.validar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                 PapelSinalCuradoria.TRANSFORMACAO,
                 OpcaoSinalCuradoria.NEUTRO, "5").isValido(),

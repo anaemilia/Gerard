@@ -67,7 +67,7 @@ public final class RobotGestureTrace {
                 || ultima.getStatus() == RobotGestureStatus.EVALUATION_NOT_DISPATCHED);
     }
 
-    public boolean chegouAoMonitor() {
+    public boolean chegouAAvaliacaoFactual() {
         RobotGestureAttempt ultima = ultimaTentativa();
         return ultima != null && ultima.getStatus() == RobotGestureStatus.COMPLETED
                 && ultima.isAvaliacaoDisparada();
@@ -90,13 +90,13 @@ public final class RobotGestureTrace {
 
     /**
      * Diagnóstico honesto de fidelidade: compara o que o protocolo esperava
-     * executar com o que de fato chegou à auditoria/ao Monitor — nunca
+     * executar com o que de fato chegou à avaliação factual — nunca
      * assume que "executado pelo Robot" implica "chegou à auditoria".
      */
     public String diagnosticoFidelidade() {
         boolean chegouAuditoria = chegouAAuditoria();
-        boolean chegouMonitor = chegouAoMonitor();
-        if (chegouMonitor) {
+        boolean chegouAvaliacao = chegouAAvaliacaoFactual();
+        if (chegouAvaliacao) {
             return "ok";
         }
         RobotGestureAttempt ultima = ultimaTentativa();
@@ -109,7 +109,7 @@ public final class RobotGestureTrace {
             case EVALUATION_NOT_DISPATCHED: return "avaliacao_nao_despachada_apos_soltura_valida";
             case EXCEPTION: return "excecao_durante_gesto";
             case CANCELLED: return "gesto_cancelado";
-            default: return chegouAuditoria ? "chegou_auditoria_mas_nao_monitor" : "motivo_desconhecido";
+            default: return chegouAuditoria ? "chegou_auditoria_sem_avaliacao_factual" : "motivo_desconhecido";
         }
     }
 

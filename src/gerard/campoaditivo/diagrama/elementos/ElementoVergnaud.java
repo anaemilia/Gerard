@@ -16,6 +16,10 @@ public class ElementoVergnaud {
     public String textoEditavel = "";
     public String subtitulo = "";
     public boolean rotulosAcima = false;
+    /** Decisão portátil da cena; a camada Swing apenas materializa o controle. */
+    public boolean exibirLupa = false;
+    /** Identidade recebida da cena; nunca inferida pelo rótulo ou geometria. */
+    public String chavePapelSemantico = "";
     public Rectangle zonaPermitida;
     public boolean incognitaPrincipal;
     /**
@@ -28,6 +32,21 @@ public class ElementoVergnaud {
     private boolean conclusaoDestacada;
 
     public ElementoVergnaud(int x, int y, int largura, int altura, TipoFiguraDiagrama tipo, String rotulo, Rectangle zonaPermitida, boolean incognitaPrincipal) {
+        this(x, y, largura, altura, tipo, rotulo, zonaPermitida,
+                incognitaPrincipal, tipo == TipoFiguraDiagrama.ELIPSE);
+    }
+
+    public ElementoVergnaud(int x, int y, int largura, int altura,
+            TipoFiguraDiagrama tipo, String rotulo, Rectangle zonaPermitida,
+            boolean incognitaPrincipal, boolean exibirLupa) {
+        this(x, y, largura, altura, tipo, rotulo, zonaPermitida,
+                incognitaPrincipal, exibirLupa, "");
+    }
+
+    public ElementoVergnaud(int x, int y, int largura, int altura,
+            TipoFiguraDiagrama tipo, String rotulo, Rectangle zonaPermitida,
+            boolean incognitaPrincipal, boolean exibirLupa,
+            String chavePapelSemantico) {
         this.x = x;
         this.y = y;
         this.largura = largura;
@@ -36,6 +55,9 @@ public class ElementoVergnaud {
         this.rotulo = rotulo;
         this.zonaPermitida = zonaPermitida;
         this.incognitaPrincipal = incognitaPrincipal;
+        this.exibirLupa = exibirLupa;
+        this.chavePapelSemantico = chavePapelSemantico == null
+                ? "" : chavePapelSemantico.trim();
     }
 
     public boolean contem(int mx, int my) {

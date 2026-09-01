@@ -9,6 +9,15 @@ description: Manutenção da identidade visual do Gérard entre a versão Window
 
 O lado Windows/Swing foi conferido contra `gerard/ui/UITemaGerard.java`. O lado mobile **não pôde ser verificado** — este repositório não contém nenhum código mobile; trate as afirmações sobre o protótipo mobile como relato do usuário, não como algo conferido em código. Duas correções em relação ao rascunho original: a paleta não é "cinza", é neutro quente; e as cores de feedback vivem no mesmo arquivo da paleta neutra, não em módulos separados.
 
+### Verificação da curadoria narrativa rica (2026-08-30)
+
+`TesteDialogoCuradoriaNarrativaRica` protege o contrato visual do editor da
+narrativa rica: sete abas nominais, controle textual de promoção humana,
+tooltip, nome e descrição acessíveis, fundo e texto da paleta neutra quente.
+O teste também confirma que a marca histórica de validação tabular não aparece
+como seleção automática do controle. Essa verificação da materialização visual
+não substitui a validação semântica, que permanece no agregado e no conversor.
+
 ## Escopo desta skill
 
 Cobre apenas a paleta neutra/tokens visuais e a consistência de estilo entre as duas plataformas (Windows/Swing e mobile).

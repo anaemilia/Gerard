@@ -35,7 +35,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * (e só então gerar o evento correspondente) é uma decisão explícita de
  * outra camada, tomada chamando aplicar(...) — nunca automática.
  */
-public final class RelacaoEstruturalComparacao implements RelacaoEstruturalAditiva {
+public final class RelacaoEstruturalComparacao implements RelacaoEstruturalDiagnosticavel {
 
     private RelacaoEstruturalComparacao() { }
 
@@ -44,6 +44,30 @@ public final class RelacaoEstruturalComparacao implements RelacaoEstruturalAditi
     }
 
     public String descreverRelacao() { return "Referendo = Referido + ValorRelativo"; }
+
+    public int calcularValorRelativo(int referido, int referendo) {
+        return Math.subtractExact(referendo, referido);
+    }
+
+    public int calcularModuloValorRelativo(int referido, int referendo) {
+        return moduloExato(calcularValorRelativo(referido, referendo));
+    }
+
+    public int calcularModuloDoValorRelativo(int valorRelativo) {
+        return moduloExato(valorRelativo);
+    }
+
+    public int aplicarSinalDoValorAtual(int valorRelativoAtual, int modulo) {
+        int moduloNaoNegativo = moduloExato(modulo);
+        return valorRelativoAtual < 0 ? -moduloNaoNegativo : moduloNaoNegativo;
+    }
+
+    private static int moduloExato(int valor) {
+        if (valor == Integer.MIN_VALUE) {
+            throw new ArithmeticException("modulo nao representavel como int");
+        }
+        return Math.abs(valor);
+    }
 
     public EstadoConsistencia verificarConsistencia(PapelQuantitativo referido, PapelQuantitativo valorRelativo,
                                                       PapelQuantitativo referendo) {

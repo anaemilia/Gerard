@@ -3,10 +3,8 @@ package gerard.pesquisador.analiseunidade;
 /**
  * Instância de protocolo B — uma ação do usuário já classificada num dos
  * seis tipos (quando aplicável), com exatamente uma avaliação final C/E e os
- * efeitos reais (no máximo um) nos agentes. Construída inteiramente a partir
- * de um {@link gerard.pesquisador.auditoria.AgentAuditEvent} canônico já
- * decidido pelos três agentes reais — esta classe não decide nada, só
- * reempacota o que o AgentAuditService já observou.
+ * efeitos reais do proprietário semântico, da ajuda local e do Modelador.
+ * Esta classe não decide nada; apenas reempacota o registro factual.
  */
 public final class AcaoUsuarioProtocolo {
     private final String protocolInstanceId;
@@ -26,8 +24,8 @@ public final class AcaoUsuarioProtocolo {
     private final boolean effective;
     private final String errorType;
     private final String rationale;
-    private final int monitorFinalEvaluations;
-    private final int zdpEffectiveDecisions;
+    private final int semanticEvaluations;
+    private final int localHelpDecisions;
     private final int modelerEffectiveUpdates;
     private final int casesInserted;
     private final String idempotencyKey;
@@ -40,7 +38,7 @@ public final class AcaoUsuarioProtocolo {
             String userId, TipoProtocolo protocolType, String protocolTypeUnavailableReason, String actionDescription,
             String category, String element, String sourceRole, String targetRole, String evaluationResult,
             String evaluationType, boolean effective, String errorType, String rationale,
-            int monitorFinalEvaluations, int zdpEffectiveDecisions, int modelerEffectiveUpdates, int casesInserted,
+            int semanticEvaluations, int localHelpDecisions, int modelerEffectiveUpdates, int casesInserted,
             String idempotencyKey, String gestureId, String actionId, String startedAt, String finishedAt) {
         this.protocolInstanceId = protocolInstanceId;
         this.analysisUnitId = analysisUnitId;
@@ -59,8 +57,8 @@ public final class AcaoUsuarioProtocolo {
         this.effective = effective;
         this.errorType = errorType;
         this.rationale = rationale;
-        this.monitorFinalEvaluations = monitorFinalEvaluations;
-        this.zdpEffectiveDecisions = zdpEffectiveDecisions;
+        this.semanticEvaluations = semanticEvaluations;
+        this.localHelpDecisions = localHelpDecisions;
         this.modelerEffectiveUpdates = modelerEffectiveUpdates;
         this.casesInserted = casesInserted;
         this.idempotencyKey = idempotencyKey;
@@ -87,8 +85,8 @@ public final class AcaoUsuarioProtocolo {
     public boolean isEffective() { return effective; }
     public String getErrorType() { return errorType; }
     public String getRationale() { return rationale; }
-    public int getMonitorFinalEvaluations() { return monitorFinalEvaluations; }
-    public int getZdpEffectiveDecisions() { return zdpEffectiveDecisions; }
+    public int getSemanticEvaluations() { return semanticEvaluations; }
+    public int getLocalHelpDecisions() { return localHelpDecisions; }
     public int getModelerEffectiveUpdates() { return modelerEffectiveUpdates; }
     public int getCasesInserted() { return casesInserted; }
     public String getIdempotencyKey() { return idempotencyKey; }

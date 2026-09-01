@@ -114,20 +114,11 @@ Nomes recomendados para objetos computacionais:
 - `RelacaoEstruturalTransformacao`;
 - `RelacaoEstruturalComparacao`.
 
-> **Status de implementação (2026-08-04)**: `RelacaoEstruturalComposicao`
-> e `RelacaoEstruturalTransformacao` estão implementadas no pacote
-> piloto, com harness próprio (`TestePilotoPapelQuantitativo` e
-> `TestePilotoTransformacaoMedidas`, respectivamente).
-> `RelacaoEstruturalComparacao`, seguindo esse mesmo padrão isolado por
-> categoria, ainda não foi implementada no pacote piloto. Isso não
-> significa ausência de lógica: a responsabilidade de resolver a
-> terceira quantidade a partir de duas conhecidas, para as três
-> categorias (incluindo Comparação), já é coberta hoje por
-> `gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado`, numa
-> arquitetura mais antiga e genérica, fora do pacote piloto e fora do
-> modelo Domain Model First. Migrar essa responsabilidade para uma
-> `RelacaoEstruturalComparacao` isolada — e decidir a relação entre as
-> duas implementações — é o escopo da tarefa registrada em
+> **Status de implementação (2026-08-29)**: as três relações estão
+> implementadas como objetos de domínio e possuem harnesses executáveis.
+> `RelacaoEstruturalComparacao` preserva
+> `Referendo = Referido + ValorRelativo`; a sincronização de produção delega
+> às relações estruturais, conforme o encerramento registrado em
 > `TAREFA_PENDENTE_COMPARACAO_MEDIDAS.md`.
 
 Evitar nomes como `InvarianteOperatorio` para classes que apenas verificam regras formais do sistema.
@@ -527,11 +518,10 @@ Decisão arquitetural da usuária em 2026-08-11:
 
 O aprendizado de padrões fica concentrado no Modelador; a aplicação das
 regras fica distribuída nos objetos que possuem o conhecimento semântico e o
-repertório correspondente. Como consequência, a arquitetura-alvo possui
-somente um agente: o Agente Modelador, porque a ele pertencem J48/PART,
-Apriori e a publicação das regras aprendidas. Os agentes Monitor e ZDP são
-retirados da sociedade anterior. A Zona de Desenvolvimento Proximal continua
-sendo fundamento pedagógico.
+repertório correspondente. Como consequência, a arquitetura possui somente o
+Agente Modelador, porque a ele pertencem J48/PART, Apriori e a publicação das
+regras aprendidas. A Zona de Desenvolvimento Proximal continua sendo
+fundamento pedagógico, sem se tornar um componente de software.
 
 A autoridade sobre certo/errado e a propriedade do log da ação pertencem ao
 objeto semântico ou à relação estrutural que valida a ação. Esses proprietários
@@ -540,16 +530,13 @@ aplicável. O registro do gesto pertence ao objeto rico da representação, sem
 avaliação semântica. A infraestrutura apenas transporta, persiste e consulta
 esses registros, preservando seus proprietários, e os disponibiliza ao
 Modelador. A seleção da ajuda pertence ao proprietário semântico do repertório
-correspondente. `AgenteMonitor` e
-`AgenteZDP` permanecem apenas como código legado durante a migração
-incremental desses fluxos.
+correspondente. O Agente Modelador é o único agente da arquitetura vigente.
 
-Desde a P2.5A, o protocolo `TEXTO` da incógnita materializa essa fronteira no
-código: `IncognitaQuantitativa` produz um único registro factual e o Modelador
-o recebe diretamente. Monitor e ZDP não participam desse fluxo específico;
-continuam presentes apenas nos protocolos ainda não migrados. A participação
-de vários objetos semânticos é representada no mesmo registro, sem multiplicar
-a ação.
+Os protocolos `TEXTO` e `QUANTIFICAR` da incógnita, a classificação de
+categoria, a escolha de sinal e o posicionamento materializam essa fronteira:
+o proprietário semântico produz um único registro factual e o Modelador o
+recebe diretamente. A participação de vários objetos semânticos é representada
+no mesmo registro, sem multiplicar a ação.
 
 Regras mineradas são artefatos computacionais versionados para adaptação, não
 invariantes operatórios nem hipóteses automáticas sobre conceitos-em-ação. Os
@@ -602,6 +589,203 @@ limiares de progressão.
 > e decisão/apresentação são registradas separadamente. A produção ainda usa
 > fonte vazia de regras publicadas; nesse caso, `SEM_REGRA_APLICAVEL` é
 > registrado e o comportamento visual legado permanece como fallback explícito.
+
+### 4.12 Situação-problema rica e narrativa independente de mídia
+
+Decisão arquitetural da usuária em 2026-08-29: a futura geração de histórias,
+quadrinhos, animações e vídeos deve partir de uma `SituacaoProblema` rica, e
+não do texto final nem dos componentes da interface. O agregado coordena dois
+modelos que preservam suas autoridades próprias:
+
+- a `EstruturaAditiva`, formada pela categoria, pelos papéis quantitativos,
+  pelas relações estruturais e pelo papel que era desconhecido no enunciado;
+- a `NarrativaCurada`, formada pelos participantes nomeados pelo pesquisador,
+  pelos objetos contados, inventários/estados, marcadores temporais e eventos
+  quantitativos ordenados.
+
+A correspondência entre um papel e um fato narrativo é declarada
+explicitamente pela curadoria. Ela nunca pode ser inferida pela posição do
+campo, do personagem, da figura ou do componente. A situação-problema, por
+ser o menor agregado que conhece os dois lados, valida essas correspondências
+sem transferir a regra matemática para a narrativa nem a sintaxe narrativa
+para os papéis.
+
+Um evento narrativo curado descreve uma mudança quantitativa da história; ele
+não é uma ação instrumental do participante na interface. A sequência
+narrativa resultante é um roteiro semântico independente de mídia. Adaptadores
+de texto, quadrinhos, animação ou vídeo apenas realizam essa sequência em suas
+próprias sintaxes e não recalculam valores, redefinem papéis ou corrigem a
+curadoria.
+
+Uma conversão ou geração automática permanece
+`CANDIDATA_NAO_CURADA`. Somente o pesquisador humano pode promover a situação
+para `VALIDADA_PELO_PESQUISADOR`. Uma divergência é diagnosticada e preservada;
+o agregado não sobrescreve a declaração humana silenciosamente.
+
+#### 4.12.1 Ponte explícita a partir da curadoria tabular
+
+O registro tabular existente e o agregado rico coexistem durante a migração.
+`ConversorSituacaoProblemaRica` é um adaptador da camada de curadoria: o
+domínio rico não depende de `SituacaoProblemaAditiva`, do TSV nem de Swing.
+Nesta etapa, a conversão executável cobre as categorias canônicas
+`COMPOSICAO_MEDIDAS`, `TRANSFORMACAO_MEDIDAS`, `COMPARACAO_MEDIDAS`,
+`COMPOSICAO_TRANSFORMACOES`, `TRANSFORMACAO_RELACAO` e
+`COMPOSICAO_RELACOES`; nomes históricos
+presentes em identificadores de proveniência não constituem novas categorias.
+
+##### Composição de transformações
+
+Para essa categoria, a fonte precisa declarar os seis papéis — estado inicial,
+transformação 1, estado intermediário, transformação 2, transformação
+resultante e estado final — e as duas operações: entre as transformações e
+entre o estado inicial e a transformação resultante. As transformações 1 e 2
+são inteiros não nulos com sinal embutido; os estados são naturais. A
+transformação resultante é inteira e pode ser zero quando as componentes se
+anulam, como em `+2 + (-2) = 0`. As relações locais preservadas no agregado
+são:
+
+- transformação 1 [operação curada] transformação 2 = transformação resultante;
+- estado inicial + transformação 1 = estado intermediário;
+- estado intermediário + transformação 2 = estado final;
+- estado inicial [operação curada] transformação resultante = estado final.
+
+##### Transformação de medidas
+
+Para `TRANSFORMACAO_MEDIDAS`, a fonte declara estado inicial e estado final
+como números naturais e a transformação como inteiro não nulo, com sinal
+curado explicitamente. A relação local é
+`EstadoFinal = EstadoInicial + Transformacao`. Como o papel representa uma
+mudança efetiva, uma transformação direta igual a zero — e, portanto,
+`EstadoFinal = EstadoInicial` — não constitui situação dessa categoria.
+
+##### Composição de medidas
+
+Para `COMPOSICAO_MEDIDAS`, a fonte declara parte 1, parte 2 e todo como números
+naturais e a relação local `Todo = Parte1 + Parte2`. Não há operação de
+transformação a inventar. Uma narrativa estática pode conter zero eventos e
+declarar como final o mesmo inventário inicial, desde que os marcadores
+preservem a ordem e a declaração seja validada.
+
+Se a situação curada distinguir variantes de uma mesma família, as partes
+podem apontar nominalmente para objetos contados específicos e o todo pode
+apontar para o total da família. Essa correspondência é apenas uma possibilidade
+explícita de curadoria; não autoriza inferência pelo texto, pela ordem dos
+campos ou pela posição visual.
+
+##### Comparação de medidas
+
+Para `COMPARACAO_MEDIDAS`, a fonte declara Referido e Referendo como números
+naturais e Valor Relativo como inteiro com sinal curado explicitamente. A
+relação local é `Referendo = Referido + ValorRelativo`; por isso, o valor
+relativo pode ser positivo, negativo ou nulo.
+
+Na narrativa estática, cada medida aponta nominalmente para o participante e a
+família de objetos declarados pelo pesquisador. A correspondência do Valor
+Relativo usa uma referência relacional explícita que calcula
+`quantidade(participante do Referendo) - quantidade(participante do Referido)`.
+A ordem dos personagens no registro, no texto, na tela ou em uma coleção nunca
+define essa correspondência. A chave canônica viva do papel é
+`papel.diferenca`; seu nome conceitual permanece **Valor Relativo**.
+
+##### Composição de relações
+
+Para `COMPOSICAO_RELACOES`, Relação 1, Relação 2 e Relação Final são números
+relativos e podem ser positivos, negativos ou nulos. Cada papel aponta para
+uma diferença orientada entre dois participantes nominalmente declarados pela
+curadoria. Os campos `personagem_*`, a ordem do texto e a posição visual não
+definem essas orientações.
+
+`operacao_relacao` declara a operação estrutural curada entre as duas relações
+e também fornece o critério normativo para a escolha de soma ou subtração pelo
+participante. Na configuração encadeada, por exemplo, as relações de A com B e
+de B com C podem ser somadas para obter a relação de A com C. Na configuração
+com referência comum, as relações de A com C e de B com C podem ser subtraídas
+para obter a relação de A com B. O conversor não escolhe a configuração pelos
+sinais nem pelo enunciado: ele exige a operação e as três correspondências
+orientadas declaradas pelo pesquisador.
+
+Como todos os papéis são relativos, relações opostas podem compor uma Relação
+Final igual a zero, como em `+4 + (-4) = 0`. Essa nulidade não representa uma
+transformação sem efeito.
+
+##### Transformação de relação
+
+Para `TRANSFORMACAO_RELACAO`, Relação Inicial e Relação Final são números
+relativos e podem ser zero. A Transformação representa o evento efetivo e é um
+inteiro não nulo. Cada relação narrativa declara nominalmente e em ordem os
+dois participantes comparados; a transformação declara o participante afetado,
+a família de objetos e a chave do evento. Não derive nenhuma dessas identidades
+dos campos `personagem_*`, do texto ou da posição visual.
+
+A relação estrutural orientada adota a orientação da Relação Inicial. Se o
+evento altera o primeiro participante, sua variação atua com o mesmo sinal; se
+altera o segundo, atua com sinal inverso. A Relação Final pode manter ou inverter
+a ordem dos dois participantes, e o objeto relacional converte sua orientação
+antes de verificar a consistência. Por exemplo, uma relação inicial `+3` de
+Julia em relação a Maria, seguida de um acréscimo `+5` para Maria, pode produzir
+uma relação final `+2` de Maria em relação a Julia; na orientação inicial, isso
+corresponde a `+3 + (-5) = -2`. Também é válido obter relação final `0`, como em
+`+2 + (-2) = 0`.
+
+Em `TRANSFORMACAO_RELACAO`, `operacao_relacao` é a resposta curada para o procedimento de soma ou subtração
+pedido ao participante. Ela fica em `CriterioOperacaoModelagem` e não é usada
+como operador da relação estrutural nem para recalcular `relacao_final`. A
+declaração humana divergente é preservada como candidata acompanhada de
+diagnóstico; não é corrigida silenciosamente.
+
+O conversor não extrai participantes, objetos, eventos ou correspondências do
+enunciado. Esses conhecimentos chegam como `NarrativaCurada` e vínculos
+nominais explícitos. A referência do estado intermediário usa a chave do
+evento que produziu esse estado; a posição na tela ou a posição de um
+personagem nunca substitui essa chave.
+
+##### Persistência da narrativa rica
+
+O registro tabular histórico e a narrativa rica são artefatos complementares.
+A tabela continua sendo a fonte dos valores formais, da categoria, das
+operações e da incógnita já curados. Um sidecar XML versionado, identificado
+pelo `id` da situação, preserva nominalmente participantes, famílias, objetos,
+características, marcadores temporais, inventários, eventos e correspondências
+entre papéis e fatos narrativos. O sidecar não redefine as seis categorias nem
+constitui uma nova fonte teórica.
+
+O adaptador de persistência reconstrói somente declarações explícitas do
+pesquisador. Ele rejeita referências nominais inexistentes e formato estrutural
+inválido, mas não corrige uma decisão semântica humana divergente. A ausência do
+sidecar impede a criação da representação rica e produz diagnóstico factual;
+os campos `personagem_*`, a ordem do texto e as posições visuais não são usados
+como alternativa inferencial. XML e caminhos de arquivo permanecem fora dos
+objetos de domínio.
+
+Se faltar um campo obrigatório da respectiva categoria, narrativa ou
+correspondência, ou se as duas declarações da incógnita divergirem, a conversão
+para antes de criar o agregado e devolve diagnóstico factual. Se o agregado puder ser
+construído mas suas relações ou correspondências forem inconsistentes, ele
+permanece candidato acompanhado dos diagnósticos. Mesmo quando o registro
+tabular está marcado como validado, a nova representação continua
+`CANDIDATA_NAO_CURADA` até revisão humana específica.
+
+##### Edição humana da narrativa rica
+
+A tela de curadoria da versão original pode coletar essas declarações em um
+formulário próprio. A identidade de cada participante, família, objeto, evento
+e correspondência é nominal; a ordem das linhas, a coluna `personagem_*`, o
+texto do enunciado e a geometria não substituem identificadores explícitos. A
+tela materializa a entrada e apresenta diagnósticos, enquanto um montador sem
+dependência de Swing constrói o agregado.
+
+Se a declaração puder ser estruturada, mas divergir das relações formais, o
+pesquisador pode preservá-la deliberadamente como candidata depois de ler os
+diagnósticos. Não há correção automática. Versões traduzidas reutilizam a
+narrativa semântica pertencente à original, identificada por
+`versao_origem_id`, e variam somente a realização textual.
+
+A promoção para `VALIDADA_PELO_PESQUISADOR` é outro ato humano explícito,
+persistido no sidecar da versão original. Ela só é aceita quando a conversão
+da estrutura e da narrativa não produz diagnósticos. A validação histórica do
+registro tabular não substitui esse ato. Um sidecar de formato anterior sem
+status editorial é interpretado conservadoramente como
+`CANDIDATA_NAO_CURADA`.
 
 ## 5. Princípios arquiteturais obrigatórios
 

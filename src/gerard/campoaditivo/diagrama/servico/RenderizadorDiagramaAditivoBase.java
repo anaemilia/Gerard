@@ -4,6 +4,7 @@ import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.TipoConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
+import gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,20 +13,31 @@ abstract class RenderizadorDiagramaAditivoBase implements RenderizadorDiagramaAd
     // de Vergnaud") — os originais (42/52/58) deixavam o diagrama pequeno
     // dentro da area disponivel em telas maiores, sem usar o espaco real
     // calculado por Main.obterAreasDiagramasProporcionais().
-    protected FiguraDiagrama medida(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, x, y, 63, 63, rotulo, valor, true);
+    protected FiguraDiagrama medida(String papel, int x, int y, String rotulo, int valor) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO,
+                x, y, 63, 63, rotulo, valor, true,
+                PosicaoRotuloFigura.CENTRO, false, papel);
     }
 
-    protected FiguraDiagrama relacao(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78, rotulo, valor, true);
+    protected FiguraDiagrama medida(String papel, int x, int y, String rotulo, int valor,
+            PosicaoRotuloFigura posicaoRotulo) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO,
+                x, y, 63, 63, rotulo, valor, true, posicaoRotulo, false, papel);
     }
 
-    protected FiguraDiagrama transformacao(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78, rotulo, valor, true);
+    protected FiguraDiagrama relacao(String papel, int x, int y, String rotulo, int valor) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78,
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
     }
 
-    protected FiguraDiagrama relacaoGrande(int x, int y, String rotulo, int valor) {
-        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 87, 87, rotulo, valor, true);
+    protected FiguraDiagrama transformacao(String papel, int x, int y, String rotulo, int valor) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78,
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
+    }
+
+    protected FiguraDiagrama relacaoGrande(String papel, int x, int y, String rotulo, int valor) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 87, 87,
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
     }
 
     protected ConectorDiagrama seta(int x1, int y1, int x2, int y2, String legenda) {

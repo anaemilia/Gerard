@@ -7,7 +7,8 @@ import gerard.semantica.numero.DominioNumerico;
  * Fábrica dos três papéis do esquema Transformação de Relação
  * (RelacaoInicial, Transformacao, RelacaoFinal).
  *
- * Os três são INTEIROS (categoria "Relações" de Vergnaud — números
+ * As relações são inteiras e a transformação é um inteiro não nulo: ela
+ * precisa alterar a relação (categoria "Relações" de Vergnaud — números
  * relativos, não medidas). Forma FIGURA_ELIPTICA nos três — inferida por
  * consistência com a convenção já usada para papéis de transformação/valor
  * relativo nas outras fábricas do pacote, não confirmada contra captura de
@@ -25,7 +26,7 @@ public final class FabricaPapeisTransformacaoDeRelacao {
     }
 
     public static PapelQuantitativo transformacao(PublicadorEventoDominio publicador) {
-        return new PapelQuantitativo("papel.transformacao", "Transformação", DominioNumerico.INTEIROS,
+        return new PapelQuantitativo("papel.transformacao", "Transformação", DominioNumerico.INTEIROS_NAO_NULOS,
                 new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.transformacao",
                         "explicacao.papel.transformacao"),
                 publicador);

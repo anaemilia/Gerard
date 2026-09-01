@@ -69,8 +69,11 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Object analisado = AnalisadorJsonSimples.analisar(corpo);
             Object bruto = ((Map<String, Object>) analisado).get("valor");
+            String papelId = String.valueOf(((Map<String, Object>) analisado).get("papel_id"));
             int valor = ((Number) bruto).intValue();
-            responder(troca, 200, atividade.proporTodo(valor));
+            responder(troca, 200, sorteios.possuiAtividadeComposicaoAtiva()
+                    ? sorteios.proporValor(papelId, valor)
+                    : atividade.proporValor(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -81,7 +84,8 @@ public final class ServidorPrototipoWeb {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
-        responder(troca, 200, atividade.reiniciar());
+        responder(troca, 200, sorteios.possuiAtividadeComposicaoAtiva()
+                ? sorteios.reiniciarAtividadeAtual() : atividade.reiniciar());
     }
 
     private void sortearMedidas(HttpExchange troca) throws IOException {

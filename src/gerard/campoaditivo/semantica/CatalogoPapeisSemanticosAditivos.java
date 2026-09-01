@@ -3,6 +3,7 @@ package gerard.campoaditivo.semantica;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.semantica.numero.DominioNumerico;
 import gerard.semantica.papel.CatalogoPapeisSemanticos;
+import gerard.semantica.papel.DescritorPapelQuantitativo;
 
 /**
  * Fonte única para o mapeamento entre índices visuais e papéis semânticos dos
@@ -184,6 +185,10 @@ public final class CatalogoPapeisSemanticosAditivos {
 
     public DominioNumerico obterDominioNumerico(String chavePapel) {
         return catalogoConceitual.dominioDoPapel(chavePapel);
+    }
+
+    public DescritorPapelQuantitativo obterDescritor(String chavePapel) {
+        return catalogoConceitual.obter(chavePapel);
     }
 
     public boolean papelRepresentaQuantidade(String chavePapel) {

@@ -8,7 +8,7 @@ package gerard.pesquisador.replay;
  * Não existia até 2026-07-30: os quadros do mestrado sempre tiveram esse tipo
  * de ação com C/E já codificado pelo pesquisador, mas foi excluído do
  * catálogo porque não havia caminho de código real para avaliá-la (ver
- * AgenteMonitor.avaliarValorIncognita, criado nesse mesmo dia).
+ * IncognitaQuantitativa, proprietária da avaliação do valor).
  */
 public final class PassoTextoReplayHumano {
     public final String chavePapelAlvo;

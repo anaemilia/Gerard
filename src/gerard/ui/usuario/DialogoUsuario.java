@@ -60,8 +60,7 @@ import javax.imageio.ImageIO;
  * ao selecionar um perfil existente ou cadastrar um novo, devolve o id
  * escolhido. O chamador deve repassar esse id para
  * LoggerInteracaoGerard.definirUsuario — os pontos que já leem
- * loggerInteracaoGerard.getUsuarioAtual() (Agente ZDP via
- * AgenteZDP.decidirEstrategia, Agente Modelador via
+ * loggerInteracaoGerard.getUsuarioAtual() (seleção local de ajuda e Agente Modelador via
  * ConectorVereditoModelador) passam a usar esse id automaticamente, sem
  * nenhuma outra mudança.
  *

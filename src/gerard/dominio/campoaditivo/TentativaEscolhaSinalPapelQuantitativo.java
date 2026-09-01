@@ -13,7 +13,7 @@ import java.util.UUID;
  * <p>O papel identifica o conhecimento em jogo e o {@link NumeroInteiro}
  * esperado decide a correspondência do sinal. O objeto mantém apenas a
  * sequência factual das rejeições desse papel na situação corrente. Não
- * conhece Swing, persistência, Monitor ou ZDP.</p>
+ * conhece Swing, persistência ou serviços externos de decisão.</p>
  */
 public final class TentativaEscolhaSinalPapelQuantitativo {
 

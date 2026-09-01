@@ -22,16 +22,10 @@ public final class FabricaPapeisComparacaoMedidas {
                 publicador);
     }
 
-    /**
-     * Chave "papel.valorRelativo" — o papel VIVO em Main.java para este
-     * mesmo conceito usa a chave "papel.diferenca" (ver
-     * Main.obterValorCuradoPorIndiceEChave). CatalogoExplicacoesConceituaisPapel
-     * registra a chave de explicação desta fábrica sob "papel.diferenca",
-     * não sob "papel.valorRelativo" — só a chave do papel diverge entre a
-     * fábrica (piloto) e o uso real, o conceito é o mesmo.
-     */
+    /** Usa a chave canônica da categoria viva; o nome conceitual continua
+     * sendo Valor Relativo. */
     public static PapelQuantitativo valorRelativo(PublicadorEventoDominio publicador) {
-        return new PapelQuantitativo("papel.valorRelativo", "Valor Relativo", DominioNumerico.INTEIROS,
+        return new PapelQuantitativo("papel.diferenca", "Valor Relativo", DominioNumerico.INTEIROS,
                 new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_ELIPTICA, "", "rotulo.papel.valorRelativo",
                         "explicacao.papel.diferenca"),
                 publicador);

@@ -10,6 +10,8 @@ import gerard.semantica.numero.ValorNumerico;
  */
 public final class ResolvedorRelacoesEstruturaisAditivas {
     private final CatalogoRelacoesEstruturaisAditivas catalogo;
+    private final ConversorValoresEstadoAditivo conversor =
+            new ConversorValoresEstadoAditivo();
 
     public ResolvedorRelacoesEstruturaisAditivas() {
         this(new CatalogoRelacoesEstruturaisAditivas());
@@ -47,6 +49,54 @@ public final class ResolvedorRelacoesEstruturaisAditivas {
                     contexto.recalcularParaConsistencia(indiceAlterado), -1);
         }
         return ResolucaoAutomatica.naoResolvida();
+    }
+
+    /**
+     * Simula uma alteração antes de publicá-la no estado compartilhado e
+     * responde se tanto o papel alterado quanto o eventual papel recalculado
+     * permanecem em seus domínios numéricos.
+     */
+    public boolean tentativaPreservaDominios(TipoSituacaoAditiva tipo,
+            ValorNumerico[] valoresAtuais, int indiceAlterado,
+            Integer valorProposto) {
+        if (tipo == null || indiceAlterado < 0 || indiceAlterado > 2
+                || valorProposto == null) {
+            return true;
+        }
+        ValorNumerico[] tentativa = new ValorNumerico[3];
+        for (int i = 0; i < tentativa.length; i++) {
+            if (i == indiceAlterado) {
+                tentativa[i] = conversor.normalizarEntrada(
+                        tipo, i, valorProposto, true);
+                if (!tentativa[i].ehConhecido()) {
+                    return false;
+                }
+            } else {
+                tentativa[i] = valoresAtuais != null && i < valoresAtuais.length
+                        ? valoresAtuais[i] : conversor.desconhecido(tipo, i);
+            }
+        }
+        ResolucaoAutomatica resolucao = resolver(
+                tipo, tentativa, indiceAlterado);
+        return !resolucao.foiResolvida()
+                || conversor.criarCalculadoOuNull(tipo, resolucao.getIndice(),
+                        resolucao.getValor()) != null;
+    }
+
+    /** Resolve uma relação a partir de valores brutos sem expor conversores. */
+    public ResolucaoAutomatica resolverValores(TipoSituacaoAditiva tipo,
+            Integer[] valoresBrutos, boolean[] conhecidos,
+            int indiceAlterado) {
+        ValorNumerico[] valores = new ValorNumerico[3];
+        for (int i = 0; i < valores.length; i++) {
+            Integer bruto = valoresBrutos != null && i < valoresBrutos.length
+                    ? valoresBrutos[i] : null;
+            boolean conhecido = conhecidos != null && i < conhecidos.length
+                    && conhecidos[i];
+            valores[i] = conversor.normalizarEntrada(
+                    tipo, i, bruto, conhecido);
+        }
+        return resolver(tipo, valores, indiceAlterado);
     }
 
     private static ResolucaoAutomatica converter(

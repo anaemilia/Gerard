@@ -20,7 +20,7 @@ import java.util.List;
  * reais: o Gérard atual não implementa o campo multiplicativo — não existe
  * TipoSituacaoAditiva, ElementoVergnaud nem catálogo de papel semântico para
  * multiplicando/multiplicador/cota/quociente em nenhum lugar do código (ver
- * gerard-ajuda-adaptativa/references/agente-zdp.md, que já apontava essa
+ * gerard-ajuda-adaptativa e gerard-scaffolding-interacao, que apontam essa
  * mesma lacuna a partir de outro documento histórico). Este arquivo existe
  * só para não perder o dado até o dia em que essa infraestrutura for
  * decidida e construída.

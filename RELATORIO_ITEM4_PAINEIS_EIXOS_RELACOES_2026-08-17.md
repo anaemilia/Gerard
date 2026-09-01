@@ -45,8 +45,8 @@ quatro categorias (quadradinhos, barras, processo/funil).
   radio buttons, `ScaffoldingNumeroRelativo.mostrarMenuEscolhaSinal`). Esse
   fluxo é usado por várias categorias (confirmado: também por Comparação
   de Medidas, `sincronizarValorRelativoComparacaoEmTodasAsDirecoes`, não
-  só pelas categorias de Relações) e está amarrado a auditoria de pesquisa
-  (`agentAuditService`), bloqueio de quantidade negativa e log granular —
+  só pelas categorias de Relações) e está amarrado ao registro factual de
+  pesquisa, bloqueio de quantidade negativa e log granular —
   cerca de 25 pontos de integração em `Main.java`.
 - Regeneralizar esse mecanismo único para várias instâncias simultâneas
   arriscaria regressão nesse fluxo já validado, sem forma de compilar/testar

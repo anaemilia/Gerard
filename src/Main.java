@@ -8,14 +8,11 @@ import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.net.URI;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import gerard.agente.monitor.AgenteMonitor;
-import gerard.agente.monitor.IndicadorAgenteMonitor;
 import gerard.agente.modelador.AgenteModelador;
 import gerard.agente.modelador.InferenciaRegrasModelador;
 import gerard.agente.modelador.RepositorioRegrasInferidas;
@@ -28,6 +25,7 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
+import gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas;
 import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.ControladorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.EstadoPosicionamentoModelagem;
@@ -41,6 +39,7 @@ import gerard.campoaditivo.sincronizacao.texto.SincronizadorElementosSemanticosT
 import gerard.campoaditivo.servico.ControladorContextoSituacao;
 import gerard.campoaditivo.curadoria.TelaCuradoriaSituacoes;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
+import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.montagem.TelaMontagemSituacao;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
@@ -59,6 +58,7 @@ import gerard.campoaditivo.venn.mapeamento.MapeamentoPapeisRepresentacaoCompleme
 import gerard.campoaditivo.venn.apresentacao.EstadoVisualUnidadeVenn;
 import gerard.campoaditivo.venn.apresentacao.FabricaRenderizadoresUnidadeVenn;
 import gerard.campoaditivo.venn.apresentacao.RenderizadorUnidadeVenn;
+import gerard.campoaditivo.venn.apresentacao.ProjetorValorPapelDiagramaComplementar;
 import gerard.campoaditivo.representacao.SeletorRepresentacaoComplementar;
 import gerard.campoaditivo.representacao.TipoRepresentacaoComplementar;
 import gerard.campoaditivo.transformacao.processo.PoliticaSinalTransformacaoComplementar;
@@ -72,10 +72,16 @@ import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
 import gerard.idioma.CadastroIdiomasSituacao;
 import gerard.interpretacao.modelo.ResultadoInterpretacao;
+import gerard.interpretacao.modelo.ResolvedorPapelInterpretado;
 import gerard.interpretacao.modelo.CategoriaProblema;
 import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
 import gerard.dominio.campoaditivo.OrigemAcao;
+import gerard.dominio.campoaditivo.RecalculoComparacaoMedidas;
+import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
+import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
+import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
+import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.RegistroAcaoEscolhaSinalPapelQuantitativo;
@@ -92,6 +98,7 @@ import gerard.dominio.campoaditivo.ajuda.FormatoAjudaNarrativaVisual;
 import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 import gerard.semantica.numero.ConversorTextoParaInteiroSemantico;
 import gerard.semantica.numero.NumeroInteiro;
+import gerard.semantica.numero.ValorNumerico;
 import gerard.semantica.numero.OpcaoSinalNumeroInteiro;
 import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
@@ -128,7 +135,6 @@ import gerard.Scaffolding.feedbackerro.ControladorAnotacaoTemporaria;
 import gerard.Scaffolding.conclusao.AplicadorDestaqueConclusaoDiagrama;
 import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
 import gerard.Scaffolding.grafico.ScaffoldingGraficoInteiros;
-import gerard.Scaffolding.reacao.ScaffoldingReacaoRepresentacoes;
 import gerard.Scaffolding.pickup.DesenhavelPickup;
 import gerard.Scaffolding.pickup.FornecedorCursoresPickup;
 import gerard.Scaffolding.pickup.FornecedorCursoresPickupSwing;
@@ -148,6 +154,10 @@ import gerard.aplicacao.AcaoAtividade;
 import gerard.aplicacao.ControladorEstadoAtividade;
 import gerard.aplicacao.ContextoCarregamentoAtividade;
 import gerard.aplicacao.FachadaCarregamentoAtividade;
+import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
+import gerard.aplicacao.PoliticaSorteioSituacoesAditivas.Grupo;
+import gerard.aplicacao.ResolvedorValorEsperadoIncognita;
+import gerard.aplicacao.ServicoAvaliacaoAcaoIncognita;
 import gerard.pesquisador.tentativa.ItemExplicacaoModelagem;
 import gerard.pesquisador.tentativa.TelaArtefatoExplicativo;
 import gerard.ui.menu.ConfiguradorOpcaoComparacaoCategorias;
@@ -159,6 +169,10 @@ import gerard.ui.vergnaud.ApresentadorGraficoInteiros;
 import gerard.ui.vergnaud.PaineisEixosRelacoes;
 import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;
 import gerard.ui.vergnaud.AdaptadorMovimentoConectorVergnaud;
+import gerard.ui.vergnaud.AdaptadorInteracaoEixoInteiros;
+import gerard.ui.vergnaud.FonteGeometriaInteracaoEixoInteiros;
+import gerard.ui.vergnaud.AdaptadorInteracaoPaineisEixosRelacoes;
+import gerard.ui.vergnaud.FonteGeometriaInteracaoPaineisEixosRelacoes;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
 import gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria;
 import gerard.ui.swing.adaptacao.MaterializadorDecisaoAjudaSwing;
@@ -174,6 +188,10 @@ import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
 import gerard.interacao.arraste.HandlerInteracaoArrasteIncremental;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.HandlerInteracaoQuadradinhoVenn;
+import gerard.interacao.arraste.AlvoInteracaoEixoInteiros;
+import gerard.interacao.arraste.HandlerInteracaoEixoInteiros;
+import gerard.interacao.arraste.AlvoInteracaoPaineisEixosRelacoes;
+import gerard.interacao.arraste.HandlerInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
 import gerard.interacao.ContextoRegistroGesto;
 import gerard.interacao.DestinoGeometricoGesto;
@@ -606,11 +624,9 @@ public class Main extends JFrame {
         JButton botaoFerramentaSortearMedidas;
         JButton botaoFerramentaSortearRelacoes;
         boolean abaGerardAtiva = true;
-        IndicadorAgenteMonitor indicadorAgenteMonitor;
-        gerard.pesquisador.IndicadorPulsoAgente indicadorAgenteZDP;
         gerard.pesquisador.IndicadorPulsoAgente indicadorAgenteModelador;
-        JPanel caixaIndicadorAgenteMonitor;
-        gerard.pesquisador.FaixaLateralAtividadeAgentes faixaAtividadeAgentes;
+        JPanel caixaIndicadorAgenteModelador;
+        gerard.pesquisador.FaixaLateralAtividadeModelador faixaAtividadeModelador;
         JButton botaoAtalhoComposicao;
         JButton botaoAtalhoTransformacao;
         JButton botaoAtalhoComparacao;
@@ -649,16 +665,14 @@ public class Main extends JFrame {
         final String URL_SITE_GERARD = "https://anaemilia.github.io/Gerard/";
 
         ConstrutorResultadoCurado construtorResultadoCurado = new ConstrutorResultadoCurado();
+        MaterializadorEnunciadoCurado materializadorEnunciadoCurado =
+                new MaterializadorEnunciadoCurado();
         ResultadoInterpretacao resultadoInterpretacao;
         boolean textoProblemaEhMensagemSistema = false;
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         ScaffoldingNumeroRelativo scaffoldingNumeroRelativo = new ScaffoldingNumeroRelativo();
         ScaffoldingProximidade scaffoldingProximidade = new ScaffoldingProximidade();
         ScaffoldingQuestionamento scaffoldingQuestionamento = new ScaffoldingQuestionamento();
-        // Componentes legados ainda usados pelos protocolos não migrados. O
-        // ramo TEXTO da incógnita não passa por Monitor ou ZDP (P4.1).
-        final AgenteMonitor agenteMonitor = new AgenteMonitor(scaffoldingQuestionamento);
-        final gerard.agente.zdp.AgenteZDP agenteZDP = new gerard.agente.zdp.AgenteZDP();
         // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8;
         // TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md): contagem,
         // action_id por submissão e rejection_sequence_id por sequência
@@ -689,15 +703,7 @@ public class Main extends JFrame {
         final AgenteModelador agenteModelador = new AgenteModelador(
                 repositorioModeloUsuario, repositorioRegrasPublicadas);
         final ConectorVereditoModelador conectorVereditoModelador = new ConectorVereditoModelador(agenteModelador);
-        // Log estruturado de auditoria, ainda retrocompatível com os três
-        // agentes da arquitetura anterior — null por padrão:
-        // só existe quando quem instancia TelaGerard anexa um serviço (ver
-        // TesteMonkeyGuiadoPorCasosReais), igual GravadorAtividadeAgentes já
-        // funciona hoje. Não force-liga no app ao vivo por padrão.
-        gerard.pesquisador.auditoria.AgentAuditService agentAuditService;
-        // Unidade de análise A-B-C-D (rodada 5, 2026-07-31) — mesmo padrão do
-        // campo acima: null por padrão no app ao vivo, só existe quando quem
-        // instancia TelaGerard anexa o serviço (TesteMonkeyGuiadoPorCasosReais).
+        // Unidade de análise A-B-C-D para os registros de pesquisa.
         gerard.pesquisador.analiseunidade.AnalysisUnitAuditService analysisUnitAuditService;
         ScaffoldingFeedbackMultissensorialErro scaffoldingFeedbackMultissensorialErro = new ScaffoldingFeedbackMultissensorialErro();
         ControladorAnotacaoTemporaria controladorAnotacaoTemporaria = new ControladorAnotacaoTemporaria();
@@ -707,7 +713,27 @@ public class Main extends JFrame {
         ScaffoldingGraficoInteiros scaffoldingGraficoInteiros = new ScaffoldingGraficoInteiros();
         final ApresentadorGraficoInteiros apresentadorGraficoInteiros =
                 new ApresentadorGraficoInteiros(scaffoldingGraficoInteiros);
-        ScaffoldingReacaoRepresentacoes scaffoldingReacaoRepresentacoes = new ScaffoldingReacaoRepresentacoes();
+        final AdaptadorInteracaoEixoInteiros adaptadorInteracaoEixoInteiros =
+                new AdaptadorInteracaoEixoInteiros(
+                        scaffoldingGraficoInteiros,
+                        new FonteGeometriaInteracaoEixoInteiros() {
+                            @Override
+                            public int obterLarguraTela() {
+                                return TelaGerard.this.getWidth();
+                            }
+
+                            @Override
+                            public int obterAlturaTela() {
+                                return TelaGerard.this.getHeight();
+                            }
+
+                            @Override
+                            public Rectangle obterAreaDiagrama() {
+                                return obterAreaVisivelDiagramasVergnaud();
+                            }
+                        });
+        PoliticaRestauracaoValorRelativo politicaRestauracaoValorRelativo =
+                new PoliticaRestauracaoValorRelativo();
         /**
          * Item 4 do levantamento de pendências (2026-08-11): material
          * concreto próprio de TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES —
@@ -718,6 +744,26 @@ public class Main extends JFrame {
          * (decisão da usuária, 2026-08-16) — não o modifica.
          */
         final PaineisEixosRelacoes paineisEixosRelacoes = new PaineisEixosRelacoes();
+        final AdaptadorInteracaoPaineisEixosRelacoes
+                adaptadorInteracaoPaineisEixosRelacoes =
+                new AdaptadorInteracaoPaineisEixosRelacoes(
+                        paineisEixosRelacoes,
+                        new FonteGeometriaInteracaoPaineisEixosRelacoes() {
+                            @Override
+                            public int obterLarguraTela() {
+                                return TelaGerard.this.getWidth();
+                            }
+
+                            @Override
+                            public int obterAlturaTela() {
+                                return TelaGerard.this.getHeight();
+                            }
+
+                            @Override
+                            public Rectangle obterAreaDiagrama() {
+                                return obterAreaVisivelDiagramasVergnaud();
+                            }
+                        });
         /**
          * Item 22 (2026-08-18): seletor soma/subtração mostrado ao aluno
          * perto da seta do diagrama, nas 3 categorias de Relações — parte
@@ -806,9 +852,7 @@ public class Main extends JFrame {
         // era o único ponto de reatribuição além deste default (o botão
         // "Teste: ..." que permitia trocar o estilo foi removido junto).
         EstiloInteracao modoFeedbackTeste = EstiloInteracao.SNAP_TO_TARGET;
-        int quantidadePassosTransformacaoComposta = 1;
-        java.util.List<Integer> transformacoesComSinalTransformacaoComposta = new ArrayList<Integer>();
-        java.util.List<Integer> estadosIntermediariosTransformacaoComposta = new ArrayList<Integer>();
+        final int quantidadePassosTransformacaoComposta = 1;
 
         // Paleta única em gerard.ui.UITemaGerard — mudar o tema é editar só aquele
         // arquivo. Os nomes locais são mantidos para não alterar cada uso abaixo.
@@ -920,7 +964,15 @@ public class Main extends JFrame {
         ArrayList<QuadradinhoVenn> quadradinhosCorrespondentesComparacao = new ArrayList<QuadradinhoVenn>();
         ArrayList<ElementoVergnaud> elementosVergnaud = new ArrayList<ElementoVergnaud>();
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
-        final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
+         final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
+        final ResolvedorRelacoesEstruturaisAditivas resolvedorRelacoesEstruturais =
+                new ResolvedorRelacoesEstruturaisAditivas();
+         final ResolvedorValorEsperadoIncognita resolvedorValorEsperadoIncognita =
+                 new ResolvedorValorEsperadoIncognita();
+         final ServicoAvaliacaoAcaoIncognita servicoAvaliacaoAcaoIncognita =
+                 new ServicoAvaliacaoAcaoIncognita();
+        final ProjetorValorPapelDiagramaComplementar projetorValorPapelDiagramaComplementar =
+                new ProjetorValorPapelDiagramaComplementar();
         final SincronizadorElementosSemanticosTexto sincronizadorElementosSemanticosTexto =
                 new SincronizadorElementosSemanticosTextoAditivo();
         final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
@@ -942,8 +994,12 @@ public class Main extends JFrame {
                 new HandlerInteracaoArrasteIncremental<AdaptadorMovimentoConectorVergnaud>();
         final HandlerInteracaoQuadradinhoVenn handlerQuadradinhoVenn =
                 new HandlerInteracaoQuadradinhoVenn();
+        final HandlerInteracaoEixoInteiros handlerEixoInteiros =
+                new HandlerInteracaoEixoInteiros();
+        final HandlerInteracaoPaineisEixosRelacoes
+                handlerPaineisEixosRelacoes =
+                new HandlerInteracaoPaineisEixosRelacoes();
         final GeometriaAreaEnunciado geometriaAreaEnunciado;
-        int ultimoDispatchIndexMouseReleased = 0;
         // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
         // ver mouseReleased: um release na MESMA posicao do pickup nao e
         // um arrasto real (é um clique parado — inclusive cada clique de
@@ -1048,8 +1104,8 @@ public class Main extends JFrame {
                 @Override
                 public void componentResized(java.awt.event.ComponentEvent evento) {
                     reposicionarDiagramaVergnaudParaAreaAtual();
-                    if (faixaAtividadeAgentes != null) {
-                        faixaAtividadeAgentes.reposicionar(getWidth(), getHeight());
+                    if (faixaAtividadeModelador != null) {
+                        faixaAtividadeModelador.reposicionar(getWidth(), getHeight());
                     }
                     reposicionarPainelAtalhoCategoria();
                     repaint();
@@ -1057,8 +1113,8 @@ public class Main extends JFrame {
             });
 
             criarPainelAtalhoCategoria();
-            criarIndicadorAgenteMonitor();
-            criarFaixaAtividadeAgentes();
+            criarIndicadorAgenteModelador();
+            criarFaixaAtividadeModelador();
             criarBotaoRestaurar();
             criarBotaoCorrigirCuradoria();
             criarBotaoIdiomaSituacao();
@@ -1252,8 +1308,7 @@ public class Main extends JFrame {
          * 2026-07-27. "Qual o próximo passo?" é um ícone "?" desabilitado
          * (decisão da usuária em 2026-07-27: sem rótulo de texto, mesmo
          * princípio de comunicabilidade situada já aplicado aos 3 botões
-         * "?" de ajuda contextual — ver "Comunicabilidade" em
-         * gerard-ajuda-adaptativa/references/agente-zdp.md; o tooltip
+         * "?" de ajuda contextual — ver gerard-scaffolding-interacao; o tooltip
          * carrega a própria expressão "Qual o próximo passo?", já que é o
          * scaffolding de automatização de passos, ainda não desenhado — ver
          * gerard-scaffolding-interacao). Sem setas de voltar/avançar
@@ -1267,7 +1322,7 @@ public class Main extends JFrame {
          * O grupo inteiro é centralizado horizontalmente na tela (não fixo
          * à esquerda) — ver reposicionarPainelAtalhoCategoria, chamado aqui
          * uma vez e depois a cada resize da janela, igual ao padrão já
-         * usado por faixaAtividadeAgentes/botaoAjudaTexto.
+         * usado por faixaAtividadeModelador/botaoAjudaTexto.
          */
         private void criarPainelAtalhoCategoria() {
             botaoAtalhoComposicao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, criarIconeCategoriaComposicao());
@@ -1412,7 +1467,7 @@ public class Main extends JFrame {
          * Centraliza horizontalmente o grupo (6 ícones + "próximo passo")
          * dentro da largura atual da tela. Chamado na criação (onde
          * getWidth() ainda pode ser 0, corrigido no primeiro resize real) e
-         * a cada componentResized, junto com faixaAtividadeAgentes.reposicionar.
+         * a cada componentResized, junto com faixaAtividadeModelador.reposicionar.
          */
         private void reposicionarPainelAtalhoCategoria() {
             if (botaoAtalhoComposicao == null) {
@@ -1853,32 +1908,9 @@ public class Main extends JFrame {
             return g2;
         }
 
-        /**
-         * Indicador ambiente experimental (ver
-         * instrucao-indicador-agente-monitor.pdf) — pulsa quando o
-         * AgenteMonitor produz um veredito. Componente isolado; remover esta
-         * chamada e o campo indicadorAgenteMonitor desliga o experimento sem
-         * afetar o resto da tela.
-         */
-        private void criarIndicadorAgenteMonitor() {
-            indicadorAgenteMonitor = new IndicadorAgenteMonitor();
-            agenteMonitor.adicionarOuvinte(indicadorAgenteMonitor);
-
-            // LEDs dos outros dois agentes da Ajuda Adaptativa, ao lado do
-            // Monitor, com as mesmas cores usadas pra distinguir cada agente
-            // na tabela da faixa lateral (ver PainelAtividadeAgentes.
-            // COR_POR_AGENTE) — decisão da usuária, 2026-07-28.
+        /** Indicador factual do único agente da arquitetura atual. */
+        private void criarIndicadorAgenteModelador() {
             final Color corApagadoLed = gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO;
-            indicadorAgenteZDP = new gerard.pesquisador.IndicadorPulsoAgente(
-                    new Color(0x8A, 0x7B, 0x3E), corApagadoLed,
-                    "Agente ZDP: pisca sempre que decide uma estratégia pedagógica.");
-            agenteZDP.adicionarOuvinte(new gerard.agente.zdp.OuvinteEstrategiaAgenteZDP() {
-                public void aoDecidir(String idUsuario, TipoSituacaoAditiva categoria, String chavePapelAlvo,
-                        boolean correto, gerard.agente.zdp.CamadaEstrategiaZDP estrategia) {
-                    indicadorAgenteZDP.pulsar("Última estratégia: " + estrategia + ".");
-                }
-            });
-
             indicadorAgenteModelador = new gerard.pesquisador.IndicadorPulsoAgente(
                     new Color(0x4F, 0x6F, 0x64), corApagadoLed,
                     "Agente Modelador: pisca sempre que armazena um novo caso no Modelo do Usuário.");
@@ -1888,48 +1920,29 @@ public class Main extends JFrame {
                 }
             });
 
-            // Caixa com a mesma borda dos outros ícones do cabeçalho
-            // (Comparar/Sortear, ver criarBotaoIconeCabecalho) — sem isso o
-            // LED ficava solto, sem moldura, ao lado dos dois botões
-            // emoldurados (relatado pela usuária, 2026-07-28). Alargada de
-            // 34 pra 78px pra caber os 3 LEDs lado a lado.
-            caixaIndicadorAgenteMonitor = new JPanel(null);
-            caixaIndicadorAgenteMonitor.setOpaque(true);
-            caixaIndicadorAgenteMonitor.setBackground(COR_SUPERFICIE);
-            caixaIndicadorAgenteMonitor.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
-            // Ao lado do botão Comparar categorias (ver
-            // criarBotoesCabecalhoEmbutidos, bounds 16,8,34,34). Os botões
-            // de Sortear que ficavam entre os dois (58,8 e 100,8) se
-            // mudaram em 2026-08-07 pra dentro do painel de ícones de
-            // categoria — ver criarBotoesCabecalhoEmbutidos. Alargada de 78
-            // pra 94px — os ícones de robô (22px) precisam de mais espaço
-            // que os círculos antigos (14px) — ver IconeRoboAgente.
-            caixaIndicadorAgenteMonitor.setBounds(58, 8, 94, 34);
-            indicadorAgenteMonitor.setBounds(8, 6, 22, 22);
-            indicadorAgenteZDP.setBounds(36, 6, 22, 22);
-            indicadorAgenteModelador.setBounds(64, 6, 22, 22);
-            caixaIndicadorAgenteMonitor.add(indicadorAgenteMonitor);
-            caixaIndicadorAgenteMonitor.add(indicadorAgenteZDP);
-            caixaIndicadorAgenteMonitor.add(indicadorAgenteModelador);
-            add(caixaIndicadorAgenteMonitor);
-            setComponentZOrder(caixaIndicadorAgenteMonitor, 0);
+            caixaIndicadorAgenteModelador = new JPanel(null);
+            caixaIndicadorAgenteModelador.setOpaque(true);
+            caixaIndicadorAgenteModelador.setBackground(COR_SUPERFICIE);
+            caixaIndicadorAgenteModelador.setBorder(
+                    BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
+            caixaIndicadorAgenteModelador.setBounds(58, 8, 34, 34);
+            indicadorAgenteModelador.setBounds(6, 6, 22, 22);
+            caixaIndicadorAgenteModelador.add(indicadorAgenteModelador);
+            add(caixaIndicadorAgenteModelador);
+            setComponentZOrder(caixaIndicadorAgenteModelador, 0);
         }
 
-        /**
-         * Faixa lateral recolhida por padrão para a pesquisadora acompanhar
-         * Monitor/ZDP/Modelador ao vivo, sentada ao lado do estudante (ver
-         * gerard-ajuda-adaptativa/references). Reaproveita o mesmo portão de
-         * senha do botão "Visão Pesquisador" (autenticarPesquisador).
-         */
-        private void criarFaixaAtividadeAgentes() {
-            faixaAtividadeAgentes = new gerard.pesquisador.FaixaLateralAtividadeAgentes(
-                    agenteMonitor, agenteZDP, agenteModelador, this::autenticarPesquisador);
-            faixaAtividadeAgentes.reposicionar(getWidth(), getHeight());
-            add(faixaAtividadeAgentes);
+        /** Faixa autenticada para observar os casos recebidos pelo Modelador. */
+        private void criarFaixaAtividadeModelador() {
+            faixaAtividadeModelador =
+                    new gerard.pesquisador.FaixaLateralAtividadeModelador(
+                            agenteModelador, this::autenticarPesquisador);
+            faixaAtividadeModelador.reposicionar(getWidth(), getHeight());
+            add(faixaAtividadeModelador);
             // Índice 0 = topo da pilha de pintura (ver Container#setComponentZOrder):
             // garante que a faixa fique acima de qualquer botão adicionado depois
             // dela quando expandida, mesmo sobrepondo a área de trabalho.
-            setComponentZOrder(faixaAtividadeAgentes, 0);
+            setComponentZOrder(faixaAtividadeModelador, 0);
         }
 
         /** Nome do usuário cadastrado atual, se houver, senão o rótulo padrão do botão. */
@@ -2342,12 +2355,9 @@ public class Main extends JFrame {
             String anterior = situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getCodigoIdioma();
             situacaoProblemaAtual = versao;
             textoProblemaEhMensagemSistema = false;
-            textoProblema = normalizarTextoProblemaParaRenderizacao(versao.getEnunciado());
+            textoProblema = materializadorEnunciadoCurado.materializar(versao);
             resultadoInterpretacao = construtorResultadoCurado.construir(versao, textoProblema);
             atualizarContextoAdaptativoIncognitaAtual();
-            transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
-            quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
-            estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             inicializarElementosTexto();
@@ -3355,8 +3365,7 @@ public class Main extends JFrame {
          * usuária, 2026-07-28): "Comparar categorias" (mesma função do item
          * de menu Arquivo > Comparar categorias — reaproveita
          * ConfiguradorOpcaoComparacaoCategorias/abrirTelaComparacaoCategorias),
-         * seguido do LED do Agente Monitor (indicadorAgenteMonitor.setBounds,
-         * ver criarIndicadorAgenteMonitor). Os dois botões de Sortear
+         * seguido do indicador factual do Modelador. Os dois botões de Sortear
          * (Medidas/Relações) que ficavam aqui, ao lado deste, se mudaram em
          * 2026-08-07 para dentro do próprio painel de ícones de categoria
          * (criarPainelAtalhoCategoria/reposicionarPainelAtalhoCategoria) —
@@ -3597,12 +3606,6 @@ public class Main extends JFrame {
          * este grupo (botaoFerramentaSortearMedidas) — mesmos 3 tipos que já
          * formavam a metade "Medidas" de CATEGORIAS_SORTEIO_LIVRE.
          */
-        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_MEDIDAS = {
-                TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
-                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-        };
-
         /**
          * Categorias do grupo "Relações" que entram no sorteio restrito a
          * este grupo (botaoFerramentaSortearRelacoes) — mesmos 3 tipos que
@@ -3611,12 +3614,6 @@ public class Main extends JFrame {
          * "Transformações" mas sempre esteve agrupado com Relações nos
          * ícones de atalho — ver criarPainelAtalhoCategoria).
          */
-        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_RELACOES = {
-                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
-                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
-                TipoSituacaoAditiva.COMPOSICAO_RELACOES
-        };
-
         /**
          * União das duas listas acima — mantida só para o item de menu
          * Arquivo > Nova situação-problema (itemNovaSituacao), que continua
@@ -3626,17 +3623,9 @@ public class Main extends JFrame {
          * a pedido da usuária) usam as listas restritas acima, não esta.
          * O domínio possui exatamente as seis categorias destas duas listas.
          */
-        private static final TipoSituacaoAditiva[] CATEGORIAS_SORTEIO_LIVRE =
-                concatenarTipos(CATEGORIAS_SORTEIO_MEDIDAS, CATEGORIAS_SORTEIO_RELACOES);
-
-        private static TipoSituacaoAditiva[] concatenarTipos(TipoSituacaoAditiva[] a, TipoSituacaoAditiva[] b) {
-            TipoSituacaoAditiva[] resultado = new TipoSituacaoAditiva[a.length + b.length];
-            System.arraycopy(a, 0, resultado, 0, a.length);
-            System.arraycopy(b, 0, resultado, a.length, b.length);
-            return resultado;
-        }
-
         private final java.util.Random sorteioCategoriaLivre = new java.util.Random();
+        private final PoliticaSorteioSituacoesAditivas politicaSorteioSituacoes =
+                new PoliticaSorteioSituacoesAditivas();
 
         /**
          * Ação de "Nova situação-problema" (Arquivo) — decisão da usuária em
@@ -3649,7 +3638,7 @@ public class Main extends JFrame {
          * escolhida manualmente.
          */
         private void sortearNovaSituacao() {
-            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_LIVRE, "Item de menu Nova situação-problema");
+            sortearDentroDoGrupo(Grupo.TODAS, "Item de menu Nova situação-problema");
         }
 
         /**
@@ -3660,7 +3649,7 @@ public class Main extends JFrame {
          * sortear entre as 6 categorias.
          */
         private void sortearSituacaoMedidas() {
-            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_MEDIDAS, "Ícone Sortear Medidas");
+            sortearDentroDoGrupo(Grupo.MEDIDAS, "Ícone Sortear Medidas");
         }
 
         /**
@@ -3669,7 +3658,7 @@ public class Main extends JFrame {
          * sortearSituacaoMedidas.
          */
         private void sortearSituacaoRelacoes() {
-            sortearDentroDoGrupo(CATEGORIAS_SORTEIO_RELACOES, "Ícone Sortear Relações");
+            sortearDentroDoGrupo(Grupo.RELACOES, "Ícone Sortear Relações");
         }
 
         /**
@@ -3677,8 +3666,9 @@ public class Main extends JFrame {
          * grupo de categorias candidatas e a descrição do elemento clicado
          * (para o log de interação) mudam entre eles.
          */
-        private void sortearDentroDoGrupo(TipoSituacaoAditiva[] grupo, String descricaoElemento) {
-            TipoSituacaoAditiva tipoSorteado = grupo[sorteioCategoriaLivre.nextInt(grupo.length)];
+        private void sortearDentroDoGrupo(Grupo grupo, String descricaoElemento) {
+            TipoSituacaoAditiva tipoSorteado =
+                    politicaSorteioSituacoes.sortearCategoria(grupo, sorteioCategoriaLivre);
             registrarLogUsuario(
                     "Sortear uma nova situação-problema, incluindo a categoria",
                     "-",
@@ -3719,8 +3709,9 @@ public class Main extends JFrame {
                     ? new TentativaClassificacaoCategoriaAditiva(situacaoProblemaAtual)
                     : null;
             textoProblemaEhMensagemSistema = !situacaoCuradaDisponivel;
-            textoProblema = normalizarTextoProblemaParaRenderizacao(
-                    situacaoCuradaDisponivel ? situacao.getEnunciado() : textoAusenciaSituacaoCurada());
+            textoProblema = situacaoCuradaDisponivel
+                    ? materializadorEnunciadoCurado.materializar(situacao)
+                    : textoAusenciaSituacaoCurada();
 
             atualizarHabilitacaoIconesAtalhoCategoria();
             repaint();
@@ -3770,7 +3761,7 @@ public class Main extends JFrame {
          * fundamental para a continuidade da modelagem (o diálogo em
          * mostrarQuestionamentoCategoriaErrada impede prosseguir até
          * acertar, e o erro pode se repetir várias vezes seguidas, como nos
-         * diários de 2010 — ver agente-zdp.md). Captura a categoria real
+         * diários de 2010. Captura a categoria real
          * antes de chamar confirmarCategoriaAdivinhada, que zera
          * categoriaSorteioOculta.
          */
@@ -3793,28 +3784,11 @@ public class Main extends JFrame {
                 RegistroAcaoClassificacaoCategoria registro =
                         tentativaClassificacaoCategoriaAtual.avaliarEscolha(
                                 tipo, contextoInstrumental);
-                if (agentAuditService != null) {
-                    agentAuditService.iniciarAcao(
-                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                    loggerInteracaoGerard.getUsuarioAtual(),
-                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                    textoProblema, String.valueOf(registro.getCategoriaEsperada()), null,
-                                    registro.getActionId(), registro.getRejectionSequenceId()),
-                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                    "select", String.valueOf(tipo), null, null,
-                                    TentativaClassificacaoCategoriaAditiva.ALVO_ESCOLHA,
-                                    null, null, null, null),
-                            gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA,
-                            registro.getCategoriaEsperada());
-                }
                 loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
                 conectorVereditoModelador.registrarAcaoInstrumental(
                         loggerInteracaoGerard.getUsuarioAtual(), registro,
                         gerard.agente.modelousuario.NivelSuporte.NENHUM,
                         registro.getActionId());
-                if (agentAuditService != null) {
-                    agentAuditService.finalizarAcao();
-                }
                 if (registro.getDesfecho()
                         == RegistroAcaoClassificacaoCategoria.Desfecho.ACEITAR_CATEGORIA) {
                     confirmarCategoriaAdivinhada(tipo);
@@ -3894,28 +3868,11 @@ public class Main extends JFrame {
                     tentativaClassificacaoCategoriaAtual
                             .avaliarConfirmacaoCategoriaDivergente(
                                     concordou, contextoInstrumental);
-            if (agentAuditService != null) {
-                agentAuditService.iniciarAcao(
-                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                loggerInteracaoGerard.getUsuarioAtual(),
-                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                textoProblema, String.valueOf(registro.getCategoriaEsperada()), null,
-                                registro.getActionId(), registro.getRejectionSequenceId()),
-                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                "select", concordou ? "SIM" : "NAO", null, null,
-                                TentativaClassificacaoCategoriaAditiva.ALVO_CONFIRMACAO,
-                                null, null, null, null),
-                        gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_CATEGORIA,
-                        registro.getCategoriaEsperada());
-            }
             loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
             conectorVereditoModelador.registrarAcaoInstrumental(
                     loggerInteracaoGerard.getUsuarioAtual(), registro,
                     gerard.agente.modelousuario.NivelSuporte.PARCIAL,
                     registro.getActionId());
-            if (agentAuditService != null) {
-                agentAuditService.finalizarAcao();
-            }
             // "Não" é uma ação correta, mas não encerra a sequência: a
             // categoria da situação ainda não foi acertada. Esse estado
             // permanece no agregado, não na interface.
@@ -4757,7 +4714,7 @@ public class Main extends JFrame {
             cancelarEfeitosArraste();
             situacaoProblemaAtual = versao;
             textoProblemaEhMensagemSistema = false;
-            textoProblema = normalizarTextoProblemaParaRenderizacao(versao.getEnunciado());
+            textoProblema = materializadorEnunciadoCurado.materializar(versao);
             resultadoInterpretacao = construtorResultadoCurado.construir(versao, textoProblema);
             atualizarContextoAdaptativoIncognitaAtual();
             definicaoDiagramaAtual = SemanticaCuradaSituacao.aplicarRotulos(
@@ -4765,9 +4722,6 @@ public class Main extends JFrame {
                     situacaoProblemaAtual,
                     localizacao
             );
-            transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
-            quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
-            estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             inicializarElementosTexto();
@@ -4828,7 +4782,7 @@ public class Main extends JFrame {
             limparQuestionamentoPersistente();
             limparSinalDivergentePersistente();
             limparGraficoInteiros();
-            paineisEixosRelacoes.desativar();
+            desativarPaineisEixosRelacoes();
             seletorOperacaoRelacaoAluno.desativar();
             seletorOperacaoEstadoTransformacaoAluno.desativar();
             desabilitarSincronizacaoEstadoFinal();
@@ -4895,8 +4849,9 @@ public class Main extends JFrame {
             boolean situacaoCuradaDisponivel = contexto.possuiSituacaoExibivel();
             situacaoProblemaAtual = situacaoCuradaDisponivel ? situacao : null;
             textoProblemaEhMensagemSistema = !situacaoCuradaDisponivel;
-            textoProblema = normalizarTextoProblemaParaRenderizacao(
-                    situacaoCuradaDisponivel ? situacao.getEnunciado() : textoAusenciaSituacaoCurada());
+            textoProblema = situacaoCuradaDisponivel
+                    ? materializadorEnunciadoCurado.materializar(situacao)
+                    : textoAusenciaSituacaoCurada();
             controladorContextoSituacao.registrarNovaSituacao(
                     situacaoProblemaAtual,
                     situacaoCuradaDisponivel ? tipoSituacaoSelecionada.name() : "SEM_SITUACAO_CURADA",
@@ -4917,9 +4872,6 @@ public class Main extends JFrame {
         private void finalizarCarregamentoSituacao() {
             reiniciarTentativasEscolhaSinalAtual();
             atualizarContextoAdaptativoIncognitaAtual();
-            transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
-            quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
-            estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
 
             itensArrastaveis.clear();
             marcadoresFixosTexto.clear();
@@ -4982,11 +4934,8 @@ public class Main extends JFrame {
             if (contexto.possuiSituacaoExibivel()) {
                 situacaoProblemaAtual = situacaoTraduzida;
                 textoProblemaEhMensagemSistema = false;
-                textoProblema = normalizarTextoProblemaParaRenderizacao(situacaoTraduzida.getEnunciado());
+                textoProblema = materializadorEnunciadoCurado.materializar(situacaoTraduzida);
                 resultadoInterpretacao = contexto.getInterpretacao();
-                transformacoesComSinalTransformacaoComposta = extrairTransformacoesComSinalTransformacaoComposta();
-                quantidadePassosTransformacaoComposta = calcularQuantidadePassosTransformacaoComposta();
-                estadosIntermediariosTransformacaoComposta = calcularEstadosIntermediariosTransformacaoComposta();
                 handlerElementoTextoMovel.cancelar();
                 elementoTextoFocado = null;
                 inicializarElementosTexto();
@@ -4994,7 +4943,7 @@ public class Main extends JFrame {
                 // A ausência de uma versão textual não autoriza restaurar a modelagem.
                 // O diagrama permanece exatamente no estado construído pelo usuário.
                 textoProblemaEhMensagemSistema = true;
-                textoProblema = normalizarTextoProblemaParaRenderizacao(textoAusenciaSituacaoCurada());
+                textoProblema = textoAusenciaSituacaoCurada();
                 resultadoInterpretacao = null;
                 elementosTexto.clear();
                 handlerElementoTextoMovel.cancelar();
@@ -5026,14 +4975,9 @@ public class Main extends JFrame {
             }
 
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
-            CenaDiagramaAditivo cenaAtualizada;
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                cenaAtualizada = criarCenaTransformacaoComposta(area);
-            } else if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                cenaAtualizada = criarCenaComposicaoTransformacaoMedidas(area);
-            } else {
-                cenaAtualizada = geradorCenaDiagrama.gerar(tipoSituacaoSelecionada, area, definicaoDiagramaAtual, extrairValoresDoTexto());
-            }
+            CenaDiagramaAditivo cenaAtualizada = geradorCenaDiagrama.gerar(
+                    tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
+                    extrairValoresDoTexto());
 
             if (cenaAtualizada == null) {
                 return;
@@ -5076,7 +5020,7 @@ public class Main extends JFrame {
                 planoUnidadesProcesso = null;
             }
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
-            TipoSituacaoAditiva tipoVenn = usaCenaVergnaudComposta() ? TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS : tipoSituacaoSelecionada;
+            TipoSituacaoAditiva tipoVenn = tipoSituacaoSelecionada;
             cenaDiagramaVennAtual = geradorCenaDiagramaVenn.gerar(tipoVenn, ultimaAreaDiagramaVenn, definicaoDiagramaAtual, valores);
             circulosVenn.clear();
             if (cenaDiagramaVennAtual != null) {
@@ -5092,8 +5036,7 @@ public class Main extends JFrame {
                     );
                     circulo.formaRetangular = (tipoVenn == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
                         || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-                        || tipoVenn == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS)
-                        && !usaCenaVergnaudComposta();
+                        || tipoVenn == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
                     circulosVenn.add(circulo);
                 }
             }
@@ -5106,161 +5049,8 @@ public class Main extends JFrame {
             if (tipoSituacaoSelecionada == null) {
                 return CategoriaProblema.INDEFINIDA;
             }
-
-            switch (tipoSituacaoSelecionada) {
-                case COMPOSICAO_MEDIDAS:
-                    return CategoriaProblema.COMPOSICAO_MEDIDAS;
-                case TRANSFORMACAO_MEDIDAS:
-                    return CategoriaProblema.TRANSFORMACAO_MEDIDAS;
-                case COMPARACAO_MEDIDAS:
-                    return CategoriaProblema.COMPARACAO_MEDIDAS;
-                case COMPOSICAO_TRANSFORMACOES:
-                    return CategoriaProblema.COMPOSICAO_TRANSFORMACOES;
-                case TRANSFORMACAO_RELACAO:
-                    return CategoriaProblema.TRANSFORMACAO_RELACAO;
-                case COMPOSICAO_RELACOES:
-                    return CategoriaProblema.COMPOSICAO_RELACOES;
-                default:
-                    return CategoriaProblema.INDEFINIDA;
-            }
-        }
-
-        private String normalizarTextoProblemaParaRenderizacao(String textoOriginal) {
-            if (textoOriginal == null || textoOriginal.trim().length() == 0) {
-                return textoOriginal == null ? "" : textoOriginal;
-            }
-
-            int quantidadeNumerosArabicos = contarNumerosArabicos(textoOriginal);
-            if (quantidadeNumerosArabicos >= 2) {
-                return textoOriginal;
-            }
-
-            int faltamConverter = 2 - quantidadeNumerosArabicos;
-            String[] tokens = textoOriginal.split(" ");
-
-            for (int i = 0; i < tokens.length && faltamConverter > 0; i++) {
-                String convertido = converterTokenNumeralParaAlgarismo(tokens[i]);
-                if (!convertido.equals(tokens[i])) {
-                    tokens[i] = convertido;
-                    faltamConverter--;
-                }
-            }
-
-            StringBuilder textoNormalizado = new StringBuilder();
-            for (int i = 0; i < tokens.length; i++) {
-                if (i > 0) {
-                    textoNormalizado.append(' ');
-                }
-                textoNormalizado.append(tokens[i]);
-            }
-
-            return textoNormalizado.toString();
-        }
-
-        private int contarNumerosArabicos(String texto) {
-            java.util.regex.Pattern padrao = java.util.regex.Pattern.compile("\\d+");
-            java.util.regex.Matcher matcher = padrao.matcher(texto == null ? "" : texto);
-            int contador = 0;
-
-            while (matcher.find()) {
-                contador++;
-            }
-
-            return contador;
-        }
-
-        private String converterTokenNumeralParaAlgarismo(String token) {
-            if (token == null || token.length() == 0) {
-                return token == null ? "" : token;
-            }
-
-            int inicio = 0;
-            int fim = token.length();
-
-            while (inicio < fim && !Character.isLetter(token.charAt(inicio))) {
-                inicio++;
-            }
-
-            while (fim > inicio && !Character.isLetter(token.charAt(fim - 1))) {
-                fim--;
-            }
-
-            if (inicio >= fim) {
-                return token;
-            }
-
-            String prefixo = token.substring(0, inicio);
-            String nucleo = token.substring(inicio, fim);
-            String sufixo = token.substring(fim);
-
-            String valor = obterAlgarismoParaPalavraNumeral(nucleo);
-            if (valor == null) {
-                return token;
-            }
-
-            return prefixo + valor + sufixo;
-        }
-
-        private String obterAlgarismoParaPalavraNumeral(String palavra) {
-            if (palavra == null) {
-                return null;
-            }
-
-            String normalizada = Normalizer.normalize(palavra, Normalizer.Form.NFD)
-                    .replaceAll("\\p{M}+", "")
-                    .toLowerCase();
-
-            Map<String, String> mapa = new LinkedHashMap<String, String>();
-            mapa.put("zero", "0");
-            mapa.put("um", "1");
-            mapa.put("uma", "1");
-            mapa.put("dois", "2");
-            mapa.put("duas", "2");
-            mapa.put("tres", "3");
-            mapa.put("quatro", "4");
-            mapa.put("cinco", "5");
-            mapa.put("seis", "6");
-            mapa.put("sete", "7");
-            mapa.put("oito", "8");
-            mapa.put("nove", "9");
-            mapa.put("dez", "10");
-            mapa.put("onze", "11");
-            mapa.put("doze", "12");
-            mapa.put("treze", "13");
-            mapa.put("catorze", "14");
-            mapa.put("quatorze", "14");
-            mapa.put("quinze", "15");
-            mapa.put("dezesseis", "16");
-            mapa.put("dezessete", "17");
-            mapa.put("dezoito", "18");
-            mapa.put("dezenove", "19");
-            mapa.put("vinte", "20");
-            mapa.put("trinta", "30");
-            mapa.put("quarenta", "40");
-            mapa.put("cinquenta", "50");
-            mapa.put("sessenta", "60");
-            mapa.put("setenta", "70");
-            mapa.put("oitenta", "80");
-            mapa.put("noventa", "90");
-            mapa.put("cem", "100");
-            mapa.put("cento", "100");
-
-            return mapa.get(normalizada);
-        }
-
-        /** Categoria removida do modelo canônico; mantido durante a migração dos renderizadores. */
-        private boolean usaDiagramasEncadeadosTransformacaoComposta() {
-            return false;
-        }
-
-        /** Categoria removida do modelo canônico; mantido durante a migração dos renderizadores. */
-        private boolean usaDiagramasComposicaoTransformacaoMedidas() {
-            return false;
-        }
-
-        private boolean usaCenaVergnaudComposta() {
-            return usaDiagramasEncadeadosTransformacaoComposta()
-                    || usaDiagramasComposicaoTransformacaoMedidas();
+            return construtorResultadoCurado.categoriaDeTipo(
+                    tipoSituacaoSelecionada);
         }
 
         private int[] extrairTodosNumerosDoTexto() {
@@ -5294,138 +5084,6 @@ public class Main extends JFrame {
             } catch (NumberFormatException ex) {
                 return 0;
             }
-        }
-
-        private int calcularQuantidadePassosTransformacaoComposta() {
-            if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                return 2;
-            }
-            if (!usaDiagramasEncadeadosTransformacaoComposta()) {
-                return 1;
-            }
-
-            if (!transformacoesComSinalTransformacaoComposta.isEmpty()) {
-                return Math.max(2, transformacoesComSinalTransformacaoComposta.size());
-            }
-
-            int[] numeros = extrairTodosNumerosDoTexto();
-            if (numeros.length <= 1) {
-                return 2;
-            }
-
-            return Math.max(2, numeros.length - 1);
-        }
-
-        private java.util.List<Integer> calcularEstadosIntermediariosTransformacaoComposta() {
-            java.util.List<Integer> estados = new ArrayList<Integer>();
-
-            if (!usaDiagramasEncadeadosTransformacaoComposta()) {
-                return estados;
-            }
-
-            int[] numeros = extrairTodosNumerosDoTexto();
-            if (numeros.length == 0) {
-                return estados;
-            }
-
-            int acumulado = numeros[0];
-            java.util.List<Integer> transformacoes = transformacoesComSinalTransformacaoComposta;
-            if (transformacoes == null || transformacoes.isEmpty()) {
-                transformacoes = extrairTransformacoesComSinalTransformacaoComposta();
-            }
-
-            for (int i = 0; i < transformacoes.size(); i++) {
-                acumulado += transformacoes.get(i);
-                estados.add(acumulado);
-            }
-
-            return estados;
-        }
-
-        private java.util.List<Integer> extrairTransformacoesComSinalTransformacaoComposta() {
-            java.util.List<Integer> transformacoes = new ArrayList<Integer>();
-
-            if (!usaDiagramasEncadeadosTransformacaoComposta()) {
-                return transformacoes;
-            }
-
-            String texto = textoProblema == null ? "" : textoProblema;
-            String textoNormalizado = Normalizer.normalize(texto, Normalizer.Form.NFD)
-                    .replaceAll("\\p{M}+", "")
-                    .toLowerCase();
-
-            java.util.regex.Pattern padrao = java.util.regex.Pattern.compile("\\d+");
-            java.util.regex.Matcher matcher = padrao.matcher(textoNormalizado);
-            java.util.List<Integer> valores = new ArrayList<Integer>();
-            java.util.List<Integer> inicios = new ArrayList<Integer>();
-            java.util.List<Integer> fins = new ArrayList<Integer>();
-
-            while (matcher.find()) {
-                valores.add(Integer.parseInt(matcher.group()));
-                inicios.add(matcher.start());
-                fins.add(matcher.end());
-            }
-
-            if (valores.size() <= 1) {
-                return transformacoes;
-            }
-
-            int sinalAnterior = detectarSinalPadraoTransformacaoComposta(textoNormalizado);
-
-            for (int i = 1; i < valores.size(); i++) {
-                int inicioJanela = i == 1 ? Math.max(0, inicios.get(i) - 28) : Math.max(0, fins.get(i - 1));
-                int fimJanela = Math.min(textoNormalizado.length(), fins.get(i) + 24);
-                String contexto = textoNormalizado.substring(inicioJanela, fimJanela);
-                int sinal = inferirSinalPassoTransformacao(contexto, sinalAnterior);
-                transformacoes.add(valores.get(i) * sinal);
-                sinalAnterior = sinal;
-            }
-
-            return transformacoes;
-        }
-
-        private int detectarSinalPadraoTransformacaoComposta(String texto) {
-            if (texto == null) {
-                return 1;
-            }
-
-            String[] negativas = new String[] {"comeu", "perdeu", "gastou", "tirou", "retirou", "deu", "emprestou", "tomou", "vendeu", "foi vendido", "foram vendidos", "sobraram", "sobrou", "restaram", "restou", "diminuiu", "removeu", "usou"};
-            for (String termo : negativas) {
-                if (texto.contains(termo)) {
-                    return -1;
-                }
-            }
-
-            String[] positivas = new String[] {"ganhou", "recebeu", "comprou", "juntou", "acrescentou", "colocou", "foram postas", "foi posta", "mais", "chegaram", "adicionou", "aumentou"};
-            for (String termo : positivas) {
-                if (texto.contains(termo)) {
-                    return 1;
-                }
-            }
-
-            return 1;
-        }
-
-        private int inferirSinalPassoTransformacao(String contexto, int sinalPadrao) {
-            if (contexto == null || contexto.trim().length() == 0) {
-                return sinalPadrao;
-            }
-
-            String[] negativas = new String[] {"comeu", "perdeu", "gastou", "tirou", "retirou", "deu", "emprestou", "tomou", "vendeu", "foi vendido", "foram vendidos", "diminuiu", "removeu", "usou"};
-            for (String termo : negativas) {
-                if (contexto.contains(termo)) {
-                    return -1;
-                }
-            }
-
-            String[] positivas = new String[] {"ganhou", "recebeu", "comprou", "juntou", "acrescentou", "colocou", "foram postas", "foi posta", "mais", "chegaram", "adicionou", "aumentou"};
-            for (String termo : positivas) {
-                if (contexto.contains(termo)) {
-                    return 1;
-                }
-            }
-
-            return sinalPadrao;
         }
 
         private void atualizarTextosFixosDaInterface() {
@@ -5637,8 +5295,7 @@ public class Main extends JFrame {
             int margemX = 94;
             // A categoria funciona como rótulo de contexto acima do enunciado.
             // Diagramas compostos reservam uma segunda linha para o resumo dos passos.
-            int yInicial = (usaDiagramasEncadeadosTransformacaoComposta()
-                    || usaDiagramasComposicaoTransformacaoMedidas()) ? 113 : 101;
+            int yInicial = 101;
             yInicial += ALTURA_PAINEL_ATALHOS_CATEGORIA;
             int larguraMaxima = getWidth() - margemX - 30;
 
@@ -5809,7 +5466,7 @@ public class Main extends JFrame {
             quadradinhoVennFocado = null;
             handlerConectorVergnaud.cancelar();
             alvoRealcadoPorProximidade = null;
-            paineisEixosRelacoes.desativar();
+            desativarPaineisEixosRelacoes();
             seletorOperacaoRelacaoAluno.desativar();
             seletorOperacaoEstadoTransformacaoAluno.desativar();
 
@@ -5863,11 +5520,31 @@ public class Main extends JFrame {
 
         private boolean elementoEhPapelDaIncognita(ElementoVergnaud elemento) {
             if (elemento == null) return false;
-            int indice = elementosVergnaud.indexOf(elemento);
-            if (indice < 0) return false;
             return politicaPreenchimentoIncognita.ehPapelDaIncognita(
-                    obterPapelElementoParaConclusao(indice),
+                    obterPapelSemanticoDoElemento(elemento),
                     obterPapelIncognitaAtual());
+        }
+
+        private String obterPapelSemanticoDoElemento(ElementoVergnaud elemento) {
+            if (elemento == null || elemento.chavePapelSemantico == null
+                    || elemento.chavePapelSemantico.trim().isEmpty()) {
+                return "papel.valor";
+            }
+            return elemento.chavePapelSemantico.trim();
+        }
+
+        private ElementoVergnaud encontrarElementoVergnaudPorPapel(
+                String chavePapel) {
+            if (chavePapel == null || elementosVergnaud == null) {
+                return null;
+            }
+            for (ElementoVergnaud elemento : elementosVergnaud) {
+                if (elemento != null
+                        && chavePapel.equals(elemento.chavePapelSemantico)) {
+                    return elemento;
+                }
+            }
+            return null;
         }
 
         private ItemTextoArrastavel encontrarIncognitaOriginalSobreElemento(
@@ -5887,10 +5564,9 @@ public class Main extends JFrame {
                 }
                 ElementoVergnaud alvo = encontrarElementoVergnaudPorItem(item);
                 if (alvo == null) continue;
-                int indice = elementosVergnaud.indexOf(alvo);
-                if (indice >= 0 && politicaPreenchimentoIncognita
+                if (politicaPreenchimentoIncognita
                         .ehPapelDaIncognita(
-                                obterPapelElementoParaConclusao(indice),
+                                obterPapelSemanticoDoElemento(alvo),
                                 papelIncognita)) {
                     return true;
                 }
@@ -5901,15 +5577,13 @@ public class Main extends JFrame {
         private boolean devePreservarMarcadorIncognita(
                 ElementoVergnaud elemento) {
             if (elemento == null) return false;
-            int indice = elementosVergnaud.indexOf(elemento);
-            if (indice < 0) return false;
             ItemTextoArrastavel incognita =
                     encontrarIncognitaOriginalSobreElemento(elemento);
             boolean preenchida = (incognita != null
                     && incognita.isPreenchidoPeloProtocoloMouseTexto())
                     || incognitaPreenchidaPeloProtocoloMouseTexto();
             return politicaPreenchimentoIncognita.devePreservarMarcador(
-                    obterPapelElementoParaConclusao(indice),
+                    obterPapelSemanticoDoElemento(elemento),
                     obterPapelIncognitaAtual(), preenchida);
         }
 
@@ -5943,7 +5617,7 @@ public class Main extends JFrame {
             return scaffoldingQuestionamento.obterChavePapelDoElemento(
                     tipoSituacaoSelecionada,
                     indiceElemento,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
+                    false,
                     quantidadePassosTransformacaoComposta);
         }
 
@@ -6010,7 +5684,7 @@ public class Main extends JFrame {
                             item.representaIncognitaOriginal(),
                             item.isPreenchidoPeloProtocoloMouseTexto(),
                             item.representaIncognitaOriginal()
-                                    ? valorDigitadoCorrespondeAoCurado(papelAlvo, item.valor)
+                                    ? valorDigitadoCorrespondeAoEsperado(papelAlvo, item.valor)
                                     : null,
                             calcularEstadoModificado(papelAlvo, item.valor)));
                 } else {
@@ -6195,38 +5869,16 @@ public class Main extends JFrame {
          * detecta a divergência; não julga se ela é intencional.
          *
          * @return null quando não há curado disponível para conferir (mesmo
-         *         critério de valorDigitadoCorrespondeAoCurado).
+         *         critério de valorDigitadoCorrespondeAoEsperado).
          */
         private Boolean calcularEstadoModificado(String papel, String valorAtual) {
-            Integer curado = obterValorCuradoParaPapel(papel);
-            if (curado == null) {
-                return null;
-            }
-            Integer atual = converterTextoParaInteiro(valorAtual);
-            if (atual == null) {
-                return null;
-            }
-            return Boolean.valueOf(atual.intValue() != curado.intValue());
-        }
-
-        /**
-         * Valor curado (não exibido) do papel indicado, para conferência do
-         * preenchimento da incógnita — nunca para exibir na interface (ver
-         * gerard-consistencia-estado, "nunca usar o valor curado de um papel
-         * que é a incógnita antes de o aluno resolvê-lo": aqui o uso é só
-         * comparação interna, o valor em si não chega a nenhum componente
-         * visual).
-         */
-        private Integer obterValorCuradoParaPapel(String papel) {
             if (situacaoProblemaAtual == null || papel == null) {
                 return null;
             }
             SemanticaCuradaSituacao.PapelCurado curado =
-                    SemanticaCuradaSituacao.buscar(situacaoProblemaAtual, localizacao, papel);
-            if (curado == null) {
-                return null;
-            }
-            return converterTextoParaInteiro(curado.getValor());
+                    SemanticaCuradaSituacao.buscar(
+                            situacaoProblemaAtual, localizacao, papel);
+            return curado == null ? null : curado.estadoModificadoPor(valorAtual);
         }
 
         /**
@@ -6237,22 +5889,12 @@ public class Main extends JFrame {
          *         motivo; caso contrário, se o valor digitado bate com o
          *         valor curado do papel.
          */
-        private Boolean valorDigitadoCorrespondeAoCurado(String papel, String valorDigitado) {
-            Integer alvo = obterValorAlvoParaPapel(papel);
-            if (alvo == null) {
-                return null;
-            }
-            Integer digitado = converterTextoParaInteiro(valorDigitado);
-            if (digitado == null) {
-                return null;
-            }
-            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
-            if (incognita == null) {
-                return null;
-            }
-            return incognita.correspondeAoEsperado(
-                    new NumeroInteiro(digitado.intValue()),
-                    new NumeroInteiro(alvo.intValue()));
+        private Boolean valorDigitadoCorrespondeAoEsperado(String papel, String valorDigitado) {
+            return servicoAvaliacaoAcaoIncognita.correspondeAoEsperado(
+                    obterIncognitaSemanticaAtual(), situacaoProblemaAtual,
+                    localizacao, papel, estadoSemanticoCompartilhado.snapshot(),
+                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
+                    valorDigitado);
         }
 
         private IncognitaQuantitativa obterIncognitaSemanticaAtual() {
@@ -6283,17 +5925,11 @@ public class Main extends JFrame {
          * a incógnita no "primeiro preenchimento" — não é um cálculo novo.
          */
         private Integer obterValorAlvoParaPapel(String papel) {
-            if (papel != null && papel.equals(obterPapelIncognitaAtual())) {
-                int indice = obterIndiceIncognitaProtegidaNoEstadoCompartilhado();
-                if (indice >= 0) {
-                    EstadoSemanticoCompartilhado.Snapshot snapshot =
-                            estadoSemanticoCompartilhado.snapshot();
-                    if (snapshot != null && snapshot.isConhecido(indice)) {
-                        return Integer.valueOf(snapshot.valorOuZero(indice));
-                    }
-                }
-            }
-            return obterValorCuradoParaPapel(papel);
+            return resolvedorValorEsperadoIncognita.resolver(
+                    situacaoProblemaAtual, localizacao, papel,
+                    obterPapelIncognitaAtual(),
+                    estadoSemanticoCompartilhado.snapshot(),
+                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado());
         }
 
         /**
@@ -6330,30 +5966,11 @@ public class Main extends JFrame {
                             OpcaoSinalNumeroInteiro.doSimbolo(sinalEscolhido),
                             contextoInstrumental);
 
-            if (agentAuditService != null) {
-                agentAuditService.iniciarAcao(
-                        new gerard.pesquisador.auditoria.IdentificacaoEvento(
-                                null, null,
-                                loggerInteracaoGerard.getUsuarioAtual(),
-                                situacaoProblemaAtual == null
-                                        ? null : situacaoProblemaAtual.getId(),
-                                textoProblema, String.valueOf(registro.getCategoria()),
-                                papel, registro.getActionId(),
-                                registro.getRejectionSequenceId()),
-                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                "select", papel, sinalEscolhido, null, papel,
-                                null, null, null, null),
-                        gerard.pesquisador.auditoria.OrigemAvaliacao.SELECAO_SINAL,
-                        registro.getCategoria());
-            }
             loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
             conectorVereditoModelador.registrarAcaoInstrumental(
                     loggerInteracaoGerard.getUsuarioAtual(), registro,
                     gerard.agente.modelousuario.NivelSuporte.NENHUM,
                     registro.getActionId());
-            if (agentAuditService != null) {
-                agentAuditService.finalizarAcao();
-            }
             return registro;
         }
 
@@ -6372,28 +5989,15 @@ public class Main extends JFrame {
             );
         }
 
-        /**
-         * Chave de papel semântico do número relativo sendo editado no menu
-         * de sinal — mesmo padrão de índice→papel usado em
-         * avaliarQuestionamentoPosicionamento e
-         * ehElementoEstadoFinalIncognito (scaffoldingQuestionamento.
-         * obterChavePapelDoElemento), aplicado aqui ao próprio elemento do
-         * círculo/número relativo, não ao item de texto arrastado sobre ele.
-         */
+        /** Chave de papel transportada pela descrição semântica da cena. */
         private String obterChavePapelDoNumeroRelativo(ElementoVergnaud numeroRelativo) {
             if (numeroRelativo == null) {
                 return null;
             }
-            int indice = elementosVergnaud.indexOf(numeroRelativo);
-            if (indice < 0) {
-                return null;
-            }
-            return scaffoldingQuestionamento.obterChavePapelDoElemento(
-                    tipoSituacaoSelecionada,
-                    indice,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
-                    quantidadePassosTransformacaoComposta
-            );
+            String chavePapel = numeroRelativo.chavePapelSemantico;
+            return chavePapel == null || chavePapel.trim().isEmpty()
+                    ? null
+                    : chavePapel.trim();
         }
 
         /**
@@ -6411,7 +6015,7 @@ public class Main extends JFrame {
                 return false;
             }
             return Boolean.FALSE.equals(
-                    valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor));
+                    valorDigitadoCorrespondeAoEsperado(obterPapelIncognitaAtual(), item.valor));
         }
 
         /**
@@ -6485,95 +6089,6 @@ public class Main extends JFrame {
                         gerard.dominio.campoaditivo.evento.PublicadorEventoDominio.NENHUM);
                 papelDaTentativaAtual = chave;
             }
-        }
-
-        /**
-         * Contabiliza uma avaliação da incógnita no fluxo de tentativas
-         * rejeitadas (REFERENCE.md §4.8; TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md)
-         * — delega a PapelQuantitativo.registrarTentativa, que é onde o
-         * documento normativo determina que esse conhecimento deve morar.
-         * Main só mantém a instância (garantirTentativasIncognitaAtual) e
-         * traduz o resultado para o log de produção
-         * (registrarLogComputador) — o publicador de eventos do piloto
-         * continua descartando (PublicadorEventoDominio.NENHUM), os dois
-         * mecanismos de log permanecem deliberadamente separados.
-         *
-         * @return true se esta chamada atingiu o limite de tentativas
-         *         rejeitadas consecutivas agora — quem chama deve então
-         *         avisar o participante (mostrarAvisoLimiteTentativasAtingido);
-         *         o conteúdo pedagógico específico da ajuda continua uma
-         *         decisão futura, não tomada aqui.
-         */
-        /** Compatibilidade do protocolo e dos harnesses anteriores à P3.1. */
-        private boolean registrarTentativaIncognita(
-                String papelAlvo, boolean correto, ItemTextoArrastavel item) {
-            garantirTentativasIncognitaAtual(papelAlvo);
-            gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidade =
-                    tentativasIncognitaAtual.iniciarAcaoInstrumental(
-                            gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
-            return registrarTentativaIncognita(papelAlvo, correto, item,
-                    identidade, false).isLimiteAtingidoAgora();
-        }
-
-        private gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel registrarTentativaIncognita(
-                String papelAlvo, boolean correto, ItemTextoArrastavel item,
-                gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao,
-                boolean registrarAcaoDoProtocoloTexto) {
-            garantirTentativasIncognitaAtual(papelAlvo);
-            Integer valorNumerico = item == null ? null : converterTextoParaInteiro(item.valor);
-            gerard.semantica.numero.ValorNumerico valorProposto = valorNumerico == null
-                    ? null : new gerard.semantica.numero.NumeroInteiro(valorNumerico.intValue());
-            java.util.Optional<gerard.dominio.campoaditivo.DiagnosticoErroPapel> diagnostico = correto
-                    ? java.util.Optional.<gerard.dominio.campoaditivo.DiagnosticoErroPapel>empty()
-                    : java.util.Optional.of(new gerard.dominio.campoaditivo.DiagnosticoErroPapel(
-                            gerard.dominio.campoaditivo.TipoErroPapel.VALOR_INCORRETO,
-                            "erro.papel.valorIncorreto", "feedback.papel.valorIncorreto",
-                            "correcao.papel.valorIncorreto"));
-            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultado =
-                    tentativasIncognitaAtual.registrarTentativaComIdentidade(
-                            identidadeAcao, diagnostico,
-                            gerard.dominio.campoaditivo.ContextoAcao.NAO_INFORMADO,
-                            valorProposto);
-            if (registrarAcaoDoProtocoloTexto) {
-                registrarLogUsuarioComIdentidade(
-                        "Substituir incógnita por número",
-                        correto ? "C" : "E",
-                        "Caixa de texto editável",
-                        "Item arrastável no diagrama",
-                        "Informar valor numérico para elemento previamente marcado como incógnita",
-                        "OBJ8",
-                        correto
-                                ? "O valor informado satisfaz a relação estrutural da situação."
-                                : "O valor informado não satisfaz a relação estrutural da situação.",
-                        "EDICAO_ITEM",
-                        "valor=" + (item == null ? "" : item.valor),
-                        resultado.getActionId(), resultado.getRejectionSequenceId());
-            }
-            if (resultado.isLimiteAtingidoAgora()) {
-                registrarLogComputadorComIdentidade(
-                        "Limite de tentativas rejeitadas atingido",
-                        "Fluxo de tentativas (REFERENCE.md §4.8)",
-                        "3ª rejeição consecutiva do mesmo item",
-                        "Encerrar a ação e bloquear novas tentativas até 'restaurar' ser acionado",
-                        "Mecanismo implementado; conteúdo específico da ajuda pedagógica é decisão "
-                                + "futura, não tomada aqui — ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md",
-                        "LIMITE_TENTATIVAS_ATINGIDO",
-                        "papel=" + papelAlvo,
-                        resultado.getActionId(), resultado.getRejectionSequenceId());
-                // AG_EMCME (material concreto): é exatamente neste instante
-                // que deveExibirDiagramaComplementar() passa a devolver
-                // true — a modalidade é MANIPULATIVA (interativa), então o
-                // critério de confirmação é "affordance ativada" (o
-                // diagrama complementar passou a estar disponível para o
-                // participante operar), não "renderizado": a próxima
-                // repaint() é quem efetivamente desenha, mas a
-                // disponibilidade já existe a partir daqui.
-                registrarFeedbackExibido("AG_EMCME (material concreto)",
-                        gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.MANIPULATIVA,
-                        "diagrama complementar passou a estar disponível",
-                        resultado.getActionId(), resultado.getRejectionSequenceId());
-            }
-            return resultado;
         }
 
         /**
@@ -6695,58 +6210,65 @@ public class Main extends JFrame {
             if (registrarAcaoDoProtocoloTexto) {
                 return confirmarValorIncognitaTexto(item, identidadeAcao);
             }
-            // Mesma comparação de incognitaAguardandoConfirmacaoDeValor, mas
-            // sem perder a distinção "não aplicável" (null) de "correto"
-            // (true) — precisamos das duas pra decidir se notifica os
-            // agentes. Ver AgenteMonitor.avaliarValorIncognita (2026-07-30):
-            // essa comparação já existia, só não notificava ninguém.
-            Boolean correto = null;
-            if (item != null && item.representaIncognitaOriginal() && item.isPreenchidoPeloProtocoloMouseTexto()) {
-                correto = valorDigitadoCorrespondeAoCurado(obterPapelIncognitaAtual(), item.valor);
-            }
-            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa = null;
-            if (correto != null) {
-                registrarPapeisDadoModificadosSeHouver();
-                String papelAlvo = obterPapelIncognitaAtual();
-                resultadoTentativa = registrarTentativaIncognita(
-                        papelAlvo, correto.booleanValue(), item, identidadeAcao,
-                        registrarAcaoDoProtocoloTexto);
-                if (agentAuditService != null) {
-                    agentAuditService.iniciarAcao(
-                            new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                    loggerInteracaoGerard.getUsuarioAtual(),
-                                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                    textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo,
-                                    resultadoTentativa.getActionId(),
-                                    resultadoTentativa.getRejectionSequenceId()),
-                            new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                    "type", papelAlvo, item == null ? null : item.valor, null, papelAlvo,
-                                    null, null, null, null),
-                            gerard.pesquisador.auditoria.OrigemAvaliacao.QUANTIFICACAO, tipoSituacaoSelecionada);
-                }
-                agenteMonitor.avaliarValorIncognita(correto.booleanValue());
-                String chaveIdempotenciaIncognita =
-                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
-                gerard.agente.zdp.CamadaEstrategiaZDP estrategiaIncognita = agenteZDP.decidirEstrategia(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, papelAlvo,
-                        correto.booleanValue(), chaveIdempotenciaIncognita);
-                conectorVereditoModelador.registrarVeredito(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, papelAlvo,
-                        estrategiaIncognita, "TEXTO", chaveIdempotenciaIncognita);
-                if (agentAuditService != null) {
-                    agentAuditService.finalizarAcao();
-                }
-            }
-            if (agentAuditService != null) {
-                // Consome/libera a reserva feita em editarNumeroNatural
-                // (rodada 3) — seja porque este subevento acabou de usá-la
-                // (correto != null), seja porque este item nem chegou a
-                // qualificar pra confirmação (correto == null): de todo
-                // jeito, ninguém mais vai chamar iniciarAcao pra esta ação.
-                agentAuditService.liberarReservaDeGesto();
-            }
-            if (correto == null || correto.booleanValue()) {
+            if (item == null || !item.representaIncognitaOriginal()
+                    || !item.isPreenchidoPeloProtocoloMouseTexto()) {
                 return true;
+            }
+            String papelAlvo = obterPapelIncognitaAtual();
+            garantirTentativasIncognitaAtual(papelAlvo);
+            atualizarContextoAdaptativoIncognitaAtual();
+            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
+            if (incognita == null) {
+                return true;
+            }
+            if (identidadeAcao == null) {
+                identidadeAcao = tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                        gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+            }
+
+            registrarPapeisDadoModificadosSeHouver();
+            ContextoAcaoInstrumental contextoInstrumental =
+                    new ContextoAcaoInstrumental(
+                            "Quantificar a incógnita",
+                            "Editor numérico",
+                            "Item do diagrama",
+                            "Informar valor numérico para o papel designado como incógnita",
+                            papelAlvo,
+                            "EDICAO_ITEM",
+                            "valor=" + (item.valor == null ? "" : item.valor),
+                            "Valor numérico informado para a incógnita",
+                            participantesSemanticosDaSituacaoAtual());
+            RegistroAcaoInstrumental registro = servicoAvaliacaoAcaoIncognita.avaliarAcao(
+                    incognita, identidadeAcao,
+                    gerard.dominio.atividade.TarefaInteracao.QUANTIFICAR,
+                    situacaoProblemaAtual, localizacao, papelAlvo,
+                    estadoSemanticoCompartilhado.snapshot(),
+                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
+                    item.valor, contextoInstrumental);
+            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+            conectorVereditoModelador.registrarAcaoInstrumental(
+                    loggerInteracaoGerard.getUsuarioAtual(), registro, null,
+                    registro.getActionId());
+
+            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
+                    registro.getResultadoTentativa().isPresent()
+                            ? registro.getResultadoTentativa().get() : null;
+            ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
+            if (registro.foiErrada() && resultadoTentativa != null
+                    && registro.getDiagnostico().isPresent()) {
+                resultadoAjuda = executorAjudaIncognita.executar(
+                        contextoIncognitaAtual,
+                        registro.getDiagnostico().get(),
+                        resultadoTentativa.getRejeicoesConsecutivas(),
+                        new ContextoRegistroAjuda(
+                                registro.getActionId(),
+                                registro.getRejectionSequenceId()));
+            }
+            if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
+                return true;
+            }
+            if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
+                return false;
             }
             if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
                 // 3ª rejeição consecutiva do mesmo item: encerra a ação e
@@ -6757,7 +6279,7 @@ public class Main extends JFrame {
                 mostrarAvisoLimiteTentativasAtingido(resultadoTentativa);
                 return false;
             }
-            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
+            String nomePapel = localizacao.texto(papelAlvo);
             String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
             int opcao = JOptionPane.showConfirmDialog(
                     this, pergunta, localizacao.texto("ui.dialog.confirm"),
@@ -6785,9 +6307,6 @@ public class Main extends JFrame {
                 gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao) {
             if (item == null || !item.representaIncognitaOriginal()
                     || !item.isPreenchidoPeloProtocoloMouseTexto()) {
-                if (agentAuditService != null) {
-                    agentAuditService.liberarReservaDeGesto();
-                }
                 return true;
             }
 
@@ -6796,9 +6315,6 @@ public class Main extends JFrame {
             atualizarContextoAdaptativoIncognitaAtual();
             IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
             if (incognita == null) {
-                if (agentAuditService != null) {
-                    agentAuditService.liberarReservaDeGesto();
-                }
                 return true;
             }
             if (identidadeAcao == null) {
@@ -6807,8 +6323,6 @@ public class Main extends JFrame {
             }
 
             registrarPapeisDadoModificadosSeHouver();
-            Integer valorProposto = converterTextoParaInteiro(item.valor);
-            Integer valorEsperado = obterValorAlvoParaPapel(papelAlvo);
             ContextoAcaoInstrumental contextoInstrumental =
                     new ContextoAcaoInstrumental(
                             "Substituir incógnita por número",
@@ -6820,36 +6334,21 @@ public class Main extends JFrame {
                             "valor=" + (item.valor == null ? "" : item.valor),
                             "Valor numérico informado para a incógnita",
                             participantesSemanticosDaSituacaoAtual());
-            RegistroAcaoInstrumental registro = incognita.avaliarAcaoTexto(
-                    identidadeAcao,
-                    valorProposto == null ? null : new NumeroInteiro(valorProposto.intValue()),
-                    valorEsperado == null ? null : new NumeroInteiro(valorEsperado.intValue()),
-                    contextoInstrumental);
+            RegistroAcaoInstrumental registro = servicoAvaliacaoAcaoIncognita.avaliarAcao(
+                    incognita, identidadeAcao,
+                    gerard.dominio.atividade.TarefaInteracao.TEXTO,
+                    situacaoProblemaAtual, localizacao, papelAlvo,
+                    estadoSemanticoCompartilhado.snapshot(),
+                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
+                    item.valor, contextoInstrumental);
             gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
                     registro.getResultadoTentativa().isPresent()
                             ? registro.getResultadoTentativa().get() : null;
 
-            if (agentAuditService != null) {
-                agentAuditService.iniciarAcao(
-                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                loggerInteracaoGerard.getUsuarioAtual(),
-                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                textoProblema, String.valueOf(tipoSituacaoSelecionada), papelAlvo,
-                                registro.getActionId(), registro.getRejectionSequenceId()),
-                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                "type", papelAlvo, item.valor, null, papelAlvo,
-                                null, null, null, null),
-                        gerard.pesquisador.auditoria.OrigemAvaliacao.QUANTIFICACAO,
-                        tipoSituacaoSelecionada);
-            }
-
             loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
-            String chaveIdempotencia = agentAuditService == null
-                    ? registro.getActionId()
-                    : agentAuditService.obterChaveIdempotenciaAtual();
             conectorVereditoModelador.registrarAcaoInstrumental(
                     loggerInteracaoGerard.getUsuarioAtual(), registro, null,
-                    chaveIdempotencia);
+                    registro.getActionId());
 
             ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
             if (registro.foiErrada() && resultadoTentativa != null
@@ -6863,10 +6362,6 @@ public class Main extends JFrame {
                                 registro.getRejectionSequenceId()));
             }
 
-            if (agentAuditService != null) {
-                agentAuditService.finalizarAcao();
-                agentAuditService.liberarReservaDeGesto();
-            }
             if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
                 return true;
             }
@@ -7140,12 +6635,6 @@ public class Main extends JFrame {
         }
 
         private int obterIndiceFiguraIncognitaAtual() {
-            if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                return 5;
-            }
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                return quantidadePassosTransformacaoComposta * 3 - 1;
-            }
             if (resultadoInterpretacao == null || resultadoInterpretacao.getSubtipoVergnaud() == null) {
                 return -1;
             }
@@ -7576,12 +7065,6 @@ public class Main extends JFrame {
                 inicializarDiagramaVergnaud();
             }
 
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                desenharRotulosPassosNoDiagrama(g2);
-            } else if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                desenharRotulosComposicaoTransformacaoNoDiagrama(g2);
-            }
-
             ConectorVergnaud conectorAtivo = obterConectorVergnaudAtivo();
             for (ConectorVergnaud conector : conectoresVergnaud) {
                 if (conector != conectorAtivo) {
@@ -7602,27 +7085,6 @@ public class Main extends JFrame {
         private LimitesMovimento obterLimitesMovimentoConectorVergnaud() {
             return AdaptadorMovimentoConectorVergnaud.traduzir(
                     obterAreaConteudoDiagramaVergnaud());
-        }
-
-        private void desenharRotulosPassosNoDiagrama(Graphics2D g2) {
-            g2.setFont(new Font("Arial", Font.BOLD, 13));
-            g2.setColor(COR_TEXTO_SECUNDARIO);
-
-            for (int passo = 0; passo < quantidadePassosTransformacaoComposta; passo++) {
-                Rectangle subarea = obterSubareaPassoTransformacaoComposta(passo);
-                String rotulo = localizacao.formatar("ui.step.label", passo + 1);
-                g2.drawString(rotulo, subarea.x + 12, subarea.y + 16);
-            }
-        }
-
-        private void desenharRotulosComposicaoTransformacaoNoDiagrama(Graphics2D g2) {
-            g2.setFont(new Font("Arial", Font.BOLD, 13));
-            g2.setColor(COR_TEXTO_SECUNDARIO);
-
-            Rectangle subareaComposicao = obterSubareaPassoTransformacaoComposta(0);
-            Rectangle subareaTransformacao = obterSubareaPassoTransformacaoComposta(1);
-            g2.drawString(localizacao.texto("ui.diagram.label.composition"), subareaComposicao.x + 12, subareaComposicao.y + 16);
-            g2.drawString(localizacao.texto("ui.diagram.label.transformation"), subareaTransformacao.x + 12, subareaTransformacao.y + 16);
         }
 
         private void desenharPainelInterpretacaoLinguistica(Graphics2D g2) {
@@ -7739,8 +7201,13 @@ public class Main extends JFrame {
             if (deveExibir && !paineisEixosRelacoes.estaAtivo()) {
                 ativarPaineisEixosRelacoes();
             } else if (!deveExibir && paineisEixosRelacoes.estaAtivo()) {
-                paineisEixosRelacoes.desativar();
+                desativarPaineisEixosRelacoes();
             }
+        }
+
+        private void desativarPaineisEixosRelacoes() {
+            handlerPaineisEixosRelacoes.cancelar();
+            paineisEixosRelacoes.desativar();
         }
 
         /**
@@ -7762,12 +7229,12 @@ public class Main extends JFrame {
             if (!categoriaSelecionadaParaAtividade || elementosVergnaud == null) {
                 return false;
             }
-            for (ElementoVergnaud elemento : elementosVergnaud) {
-                if (ehElementoNumeroRelativo(elemento)) {
-                    return true;
-                }
+            boolean[] flagsExibirLupa = new boolean[elementosVergnaud.size()];
+            for (int i = 0; i < elementosVergnaud.size(); i++) {
+                ElementoVergnaud elemento = elementosVergnaud.get(i);
+                flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;
             }
-            return false;
+            return DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa);
         }
 
         /**
@@ -7799,8 +7266,10 @@ public class Main extends JFrame {
                 PaineisEixosRelacoes.Painel painel, int larguraTela, int alturaTela) {
             atualizarValorPainelEixoRelacao(painel);
             ElementoVergnaud elemento = painel.elemento;
-            int indice = elementosVergnaud == null ? -1 : elementosVergnaud.indexOf(elemento);
-            boolean acima = indice % 2 == 0;
+            int espacoAcima = Math.max(0, elemento.y);
+            int espacoAbaixo = Math.max(0,
+                    alturaTela - (elemento.y + elemento.altura));
+            boolean acima = espacoAcima >= espacoAbaixo;
             int x = Math.max(8, Math.min(elemento.x, larguraTela - 200));
             int y = acima
                     ? Math.max(50, elemento.y - 110)
@@ -7829,8 +7298,10 @@ public class Main extends JFrame {
             if (valor != null) {
                 painel.apresentador.registrarEscolha(
                         geometria,
-                        scaffoldingReacaoRepresentacoes.valorAbsolutoComoTexto(valor.intValue()),
-                        scaffoldingReacaoRepresentacoes.sinalDe(valor.intValue()));
+                        servicoQuantidadeContextual.formatarMagnitudeNumeroRelativo(
+                                valor.intValue(), situacaoProblemaAtual),
+                        servicoQuantidadeContextual.sinalNumeroRelativo(
+                                valor.intValue()));
             } else {
                 painel.apresentador.mostrar(geometria, "");
             }
@@ -8498,7 +7969,7 @@ public class Main extends JFrame {
                 planoUnidadesProcesso = null;
             }
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
-            TipoSituacaoAditiva tipoVenn = usaCenaVergnaudComposta() ? TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS : tipoSituacaoSelecionada;
+            TipoSituacaoAditiva tipoVenn = tipoSituacaoSelecionada;
             String assinatura = criarAssinaturaDiagramaVenn(tipoVenn, areaAtual, valores);
 
             if (!forcarReconstrucao && assinatura.equals(assinaturaDiagramaVennSincronizado)) {
@@ -8525,8 +7996,7 @@ public class Main extends JFrame {
                 circulo.formaRetangular = ehProcessoTransformacaoMedidas()
                         || ehComposicaoTransformacoesProcesso()
                         || ((tipoVenn == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                                || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS)
-                                && !usaCenaVergnaudComposta());
+                                || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS));
                 circulosVenn.add(circulo);
             }
             // Depois distribui as unidades, garantindo que o layout especializado
@@ -8571,7 +8041,8 @@ public class Main extends JFrame {
             int valorRelativo = snapshot != null && snapshot.isConhecido(1)
                     ? snapshot.valorOuZero(1) : 0;
             int maximo = obterValorMaximoEscalaComparacao();
-            int absoluto = Math.abs(valorRelativo);
+            int absoluto = relacaoEstruturalComparacao()
+                    .calcularModuloDoValorRelativo(valorRelativo);
 
             if (maximo > 0) {
                 proporcaoControleComparacao = Math.max(0.0, Math.min(1.0, absoluto / (double) maximo));
@@ -8581,8 +8052,9 @@ public class Main extends JFrame {
                 ultimoValorInteiroControleComparacao = 0;
             }
 
-            if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                ElementoVergnaud numeroRelativo = elementosVergnaud.get(1);
+            ElementoVergnaud numeroRelativo = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            if (numeroRelativo != null) {
                 if (ehElementoNumeroRelativo(numeroRelativo)) {
                     String textoRelativo = servicoQuantidadeContextual
                             .formatarNumeroRelativoParaDiagrama(
@@ -8641,13 +8113,14 @@ public class Main extends JFrame {
                     ? 0 : elementosVergnaud.size();
             int indiceNumeroRelativo = elementosVergnaud == null
                     || numeroRelativoGraficoInteiros == null
-                    ? -1 : elementosVergnaud.indexOf(numeroRelativoGraficoInteiros);
+                    ? -1 : obterIndiceVisualPorIdentidadeSemantica(
+                            numeroRelativoGraficoInteiros);
             int indiceInicialAtual = indicesElementosEstadoCompartilhado == null
                     || indicesElementosEstadoCompartilhado.length == 0
                     ? 0 : indicesElementosEstadoCompartilhado[0];
             indicesElementosEstadoCompartilhado = seletorIndicesEstadoCompartilhado.selecionar(
-                    usaDiagramasComposicaoTransformacaoMedidas(),
-                    usaDiagramasEncadeadosTransformacaoComposta(),
+                    false,
+                    false,
                     quantidadeElementos,
                     indiceAlteradoReal,
                     indiceNumeroRelativo,
@@ -8834,7 +8307,7 @@ public class Main extends JFrame {
                     new gerard.ui.enunciado.MapeadorPapelSemanticoTextoPadrao(
                             scaffoldingQuestionamento,
                             tipoSituacaoSelecionada,
-                            usaDiagramasEncadeadosTransformacaoComposta(),
+                            false,
                             quantidadePassosTransformacaoComposta,
                             indicesElementosEstadoCompartilhado);
 
@@ -8878,19 +8351,33 @@ public class Main extends JFrame {
                     obterSinalAtual(texto));
             if (ehGraficoBarrasComparacao()) {
                 int maximo = Math.max(1, obterValorMaximoEscalaComparacao());
+                int modulo = relacaoEstruturalComparacao()
+                        .calcularModuloDoValorRelativo(valor);
                 proporcaoControleComparacao = Math.max(0.0,
-                        Math.min(1.0, Math.abs(valor) / (double) maximo));
-                ultimoValorInteiroControleComparacao = Math.abs(valor);
+                        Math.min(1.0, modulo / (double) maximo));
+                ultimoValorInteiroControleComparacao = modulo;
             }
         }
 
         private void sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                 ElementoVergnaud elemento,
                 EstadoSemanticoCompartilhado.Origem origem) {
-            int indice = elemento == null ? -1 : elementosVergnaud.indexOf(elemento);
+            int indice = obterIndiceVisualPorIdentidadeSemantica(elemento);
             EstadoSemanticoCompartilhado.Snapshot snapshot =
                     capturarEstadoCompartilhadoDoVergnaud(indice, origem);
             aplicarEstadoCompartilhadoEmTodasAsRepresentacoes(snapshot, true);
+        }
+
+        private int obterIndiceVisualPorIdentidadeSemantica(
+                ElementoVergnaud elemento) {
+            if (elemento == null) {
+                return -1;
+            }
+            return catalogoPapeisSemanticos.obterIndiceElementoPorPapel(
+                    obterPapelSemanticoDoElemento(elemento),
+                    tipoSituacaoSelecionada,
+                    false,
+                    quantidadePassosTransformacaoComposta);
         }
 
         private void sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
@@ -8937,12 +8424,17 @@ public class Main extends JFrame {
             Integer referendo = null;
             boolean existeModelagemDoUsuario = false;
 
-            // No diagrama formal de comparação, a ordem visual existente é:
-            // referido, valor relativo e referendo.
-            if (elementosVergnaud != null && elementosVergnaud.size() >= 3) {
-                Integer referidoModelado = obterValorNumericoDoElemento(elementosVergnaud.get(0));
-                Integer relativoModelado = obterValorNumericoDoElemento(elementosVergnaud.get(1));
-                Integer referendoModelado = obterValorNumericoDoElemento(elementosVergnaud.get(2));
+            ElementoVergnaud elementoReferido = encontrarElementoVergnaudPorPapel(
+                    "papel.referido");
+            ElementoVergnaud elementoRelativo = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            ElementoVergnaud elementoReferendo = encontrarElementoVergnaudPorPapel(
+                    "papel.referendo");
+            if (elementoReferido != null || elementoRelativo != null
+                    || elementoReferendo != null) {
+                Integer referidoModelado = obterValorNumericoDoElemento(elementoReferido);
+                Integer relativoModelado = obterValorNumericoDoElemento(elementoRelativo);
+                Integer referendoModelado = obterValorNumericoDoElemento(elementoReferendo);
                 existeModelagemDoUsuario = referidoModelado != null || relativoModelado != null || referendoModelado != null;
                 if (referidoModelado != null) referido = referidoModelado;
                 if (relativoModelado != null) valorRelativo = relativoModelado;
@@ -8964,7 +8456,14 @@ public class Main extends JFrame {
                 valorRelativo = valorRelativoCurado;
             }
             if (valorRelativo == null && referido != null && referendo != null) {
-                valorRelativo = Integer.valueOf(referendo.intValue() - referido.intValue());
+                ResolvedorRelacoesEstruturaisAditivas.ResolucaoAutomatica resolucao =
+                        resolvedorRelacoesEstruturais.resolverValores(
+                                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                                new Integer[] {referido, null, referendo},
+                                new boolean[] {true, false, true}, -1);
+                if (resolucao.foiResolvida() && resolucao.getIndice() == 1) {
+                    valorRelativo = Integer.valueOf(resolucao.getValor());
+                }
             }
 
             return new int[] {
@@ -8972,40 +8471,6 @@ public class Main extends JFrame {
                 valorRelativo == null ? 0 : valorRelativo.intValue(),
                 Math.max(0, referendo == null ? 0 : referendo.intValue())
             };
-        }
-
-        private Integer converterValorRelativoCurado(String valor, String sinal) {
-            Integer numero = converterTextoParaInteiro(valor);
-            if (numero == null) {
-                return null;
-            }
-            int absoluto = Math.abs(numero.intValue());
-            String s = normalizarChaveComparacao(sinal);
-            if (numero.intValue() < 0 || s.contains("negativo") || s.contains("negative") || s.contains("negatif")) {
-                return Integer.valueOf(-absoluto);
-            }
-            return Integer.valueOf(absoluto);
-        }
-
-        private String normalizarChaveComparacao(String texto) {
-            return gerard.ui.venn.UtilitariosComparacaoBarras.normalizarChaveComparacao(texto);
-        }
-
-        private boolean papelComparacaoDesconhecido(String papel) {
-            if (situacaoProblemaAtual == null) return false;
-            String desconhecido = normalizarChaveComparacao(situacaoProblemaAtual.getTermoDesconhecido());
-            String p = normalizarChaveComparacao(papel);
-            if ("valorrelativo".equals(p)) {
-                return desconhecido.contains("valorrelativo") || desconhecido.contains("diferenca");
-            }
-            return desconhecido.contains(p);
-        }
-
-        private boolean papelComparacaoResolvidoNoDiagrama(String papel) {
-            if (elementosVergnaud == null || elementosVergnaud.size() < 3) return false;
-            String p = normalizarChaveComparacao(papel);
-            int indice = "referido".equals(p) ? 0 : ("valorrelativo".equals(p) ? 1 : 2);
-            return obterValorNumericoDoElemento(elementosVergnaud.get(indice)) != null;
         }
 
         private int obterValorElementoModeladoOuZero(int indiceElemento) {
@@ -9067,9 +8532,6 @@ public class Main extends JFrame {
 
         private Rectangle obterAreaConteudoDiagramaVergnaud() {
             Rectangle limite = obterAreaVisivelDiagramasVergnaud();
-            if (usaCenaVergnaudComposta()) {
-                return new Rectangle(limite.x + 10, limite.y + 28, limite.width - 20, limite.height - 38);
-            }
             return new Rectangle(limite.x + 10, limite.y + 46, limite.width - 20, limite.height - 56);
         }
 
@@ -9173,7 +8635,7 @@ public class Main extends JFrame {
         private boolean ehProcessoTransformacaoMedidas() {
             return seletorRepresentacaoComplementar.selecionar(
                     tipoSituacaoSelecionada,
-                    usaCenaVergnaudComposta())
+                    false)
                     == TipoRepresentacaoComplementar.PROCESSO_TRANSFORMACAO;
         }
 
@@ -9181,7 +8643,7 @@ public class Main extends JFrame {
         private boolean ehComposicaoTransformacoesProcesso() {
             return seletorRepresentacaoComplementar.selecionar(
                     tipoSituacaoSelecionada,
-                    usaCenaVergnaudComposta())
+                    false)
                     == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
         }
 
@@ -9204,7 +8666,7 @@ public class Main extends JFrame {
         private boolean ehRepresentacaoComplementarGenerica() {
             return seletorRepresentacaoComplementar.selecionar(
                     tipoSituacaoSelecionada,
-                    usaCenaVergnaudComposta())
+                    false)
                     == TipoRepresentacaoComplementar.GENERICA;
         }
 
@@ -9310,15 +8772,11 @@ public class Main extends JFrame {
             // incondicionalmente (mesma categoria, novo sorteio, inclusive)
             // em vez de confiar só na autocorreção por repaint, que não
             // reativaria sozinha dentro da MESMA categoria de Relações.
-            paineisEixosRelacoes.desativar();
+            desativarPaineisEixosRelacoes();
 
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                cenaDiagramaAtual = criarCenaTransformacaoComposta(area);
-            } else if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                cenaDiagramaAtual = criarCenaComposicaoTransformacaoMedidas(area);
-            } else {
-                cenaDiagramaAtual = geradorCenaDiagrama.gerar(tipoSituacaoSelecionada, area, definicaoDiagramaAtual, extrairValoresDoTexto());
-            }
+            cenaDiagramaAtual = geradorCenaDiagrama.gerar(
+                    tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
+                    extrairValoresDoTexto());
 
             if (cenaDiagramaAtual == null) {
                 return;
@@ -9328,7 +8786,7 @@ public class Main extends JFrame {
             int deslocamentoCentroX = 0;
             int deslocamentoCentroY = 0;
 
-            if (!usaCenaVergnaudComposta() && caixaCena != null) {
+            if (caixaCena != null) {
                 deslocamentoCentroX = area.x + (area.width - caixaCena.width) / 2 - caixaCena.x;
                 deslocamentoCentroY = area.y + (area.height - caixaCena.height) / 2 - caixaCena.y;
             }
@@ -9337,14 +8795,10 @@ public class Main extends JFrame {
 
             for (int i = 0; i < cenaDiagramaAtual.getConectores().size(); i++) {
                 ConectorDiagrama conector = cenaDiagramaAtual.getConectores().get(i);
-                Rectangle zona = usaDiagramasEncadeadosTransformacaoComposta()
-                        ? criarZonaSemanticaConectorTransformacaoComposta(i)
-                        : (usaDiagramasComposicaoTransformacaoMedidas()
-                                ? criarZonaSemanticaConectorComposicaoTransformacao(i)
-                                : criarZonaSemanticaConector(area, tipoSituacaoSelecionada, i));
-                if (!usaCenaVergnaudComposta()) {
-                    zona = deslocarZonaSemantica(zona, deslocamentoCentroX, deslocamentoCentroY, area);
-                }
+                Rectangle zona = criarZonaSemanticaConector(
+                        area, tipoSituacaoSelecionada, i);
+                zona = deslocarZonaSemantica(
+                        zona, deslocamentoCentroX, deslocamentoCentroY, area);
                 if (conector.temAlvo()) {
                     conectoresVergnaud.add(new ConectorVergnaud(
                             conector.getTipo(),
@@ -9373,14 +8827,11 @@ public class Main extends JFrame {
             int indiceIncognita = obterIndiceFiguraIncognitaAtual();
             for (int i = 0; i < cenaDiagramaAtual.getFiguras().size(); i++) {
                 FiguraDiagrama figura = cenaDiagramaAtual.getFiguras().get(i);
-                Rectangle zona = usaDiagramasEncadeadosTransformacaoComposta()
-                        ? criarZonaSemanticaElementoTransformacaoComposta(i, figura.getLargura(), figura.getAltura())
-                        : (usaDiagramasComposicaoTransformacaoMedidas()
-                                ? criarZonaSemanticaElementoComposicaoTransformacao(i, figura.getLargura(), figura.getAltura())
-                                : criarZonaSemanticaElemento(area, tipoSituacaoSelecionada, i, figura.getLargura(), figura.getAltura()));
-                if (!usaCenaVergnaudComposta()) {
-                    zona = deslocarZonaSemantica(zona, deslocamentoCentroX, deslocamentoCentroY, area);
-                }
+                Rectangle zona = criarZonaSemanticaElemento(
+                        area, tipoSituacaoSelecionada, i,
+                        figura.getLargura(), figura.getAltura());
+                zona = deslocarZonaSemantica(
+                        zona, deslocamentoCentroX, deslocamentoCentroY, area);
                 elementosVergnaud.add(new ElementoVergnaud(
                         figura.getX() + deslocamentoCentroX,
                         figura.getY() + deslocamentoCentroY,
@@ -9389,12 +8840,10 @@ public class Main extends JFrame {
                         figura.getTipo(),
                         figura.getRotulo(),
                         zona,
-                        i == indiceIncognita
+                        i == indiceIncognita,
+                        figura.isExibirLupa(),
+                        figura.getChavePapelSemantico()
                 ));
-            }
-
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                adicionarItensAutomaticosTransformacaoComposta();
             }
 
             // O diagrama deve iniciar vazio. A interrogação pertence ao enunciado
@@ -9424,7 +8873,7 @@ public class Main extends JFrame {
          * não é suficiente, então o método não faz nada nesses casos.
          */
         private void reposicionarDiagramaVergnaudParaAreaAtual() {
-            if (cenaDiagramaAtual == null || usaCenaVergnaudComposta()
+            if (cenaDiagramaAtual == null
                     || elementosVergnaud == null || elementosVergnaud.isEmpty()) {
                 return;
             }
@@ -9498,106 +8947,23 @@ public class Main extends JFrame {
                 if (elemento == null) {
                     continue;
                 }
-                elemento.subtitulo = obterSubtituloPersonagemParaElemento(elemento, i);
-                elemento.rotulosAcima = deveExibirRotulosAcimaNoDiagrama(elemento);
-            }
-        }
-
-        private boolean deveExibirRotulosAcimaNoDiagrama(ElementoVergnaud elemento) {
-            if (elemento == null) {
-                return false;
-            }
-            if (tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
-                return true;
-            }
-            if (tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
-                String chave = normalizarChaveComparacao(elemento.rotulo);
-                return chave.contains("referendo");
-            }
-            return false;
-        }
-
-        private String obterSubtituloPersonagemParaElemento(ElementoVergnaud elemento, int indice) {
-            String porRotulo = obterSubtituloPersonagemParaRotulo(elemento == null ? "" : elemento.rotulo);
-            if (porRotulo != null && porRotulo.trim().length() > 0) {
-                return porRotulo.trim();
-            }
-            return obterSubtituloPersonagemPorIndice(indice);
-        }
-
-        private String obterSubtituloPersonagemPorIndice(int indice) {
-            if (situacaoProblemaAtual == null) {
-                return "";
-            }
-            switch (tipoSituacaoSelecionada) {
-                case COMPOSICAO_MEDIDAS:
-                    if (indice == 0) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-                    if (indice == 1) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    if (indice == 2) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-                    break;
-                case TRANSFORMACAO_MEDIDAS:
-                    if (indice == 0) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-                    if (indice == 1) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    if (indice == 2) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-                    break;
-                case COMPARACAO_MEDIDAS:
-                    if (indice == 0 || indice == 2) {
-                        // fallback apenas se os rótulos não vierem corretamente
-                        return indice == 0
-                                ? valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1())
-                                : valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    }
-                    break;
-                case COMPOSICAO_RELACOES:
-                    if (indice == 0) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-                    if (indice == 1) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    if (indice == 2) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-                    break;
-                case TRANSFORMACAO_RELACAO:
-                    if (indice == 0) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-                    if (indice == 1) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    if (indice == 2) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-                    break;
-                case COMPOSICAO_TRANSFORMACOES:
-                    if (indice == 0 || indice == 3) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-                    if (indice == 1 || indice == 4) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                    if (indice == 2 || indice == 5) return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-                    break;
-                default:
-                    break;
-            }
-            return "";
-        }
-
-        private String obterSubtituloPersonagemParaRotulo(String rotulo) {
-            if (situacaoProblemaAtual == null) {
-                return "";
-            }
-            String chave = normalizarChaveComparacao(rotulo);
-            if (chave.length() == 0) {
-                return "";
-            }
-
-            if (tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
-                if (chave.contains("referido")) {
-                    return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
+                elemento.subtitulo = obterSubtituloPersonagemParaElemento(elemento);
+                if (cenaDiagramaAtual != null && i < cenaDiagramaAtual.getFiguras().size()) {
+                    elemento.rotulosAcima = cenaDiagramaAtual.getFiguras().get(i)
+                            .getPosicaoRotulo()
+                            == gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura.ACIMA;
                 }
-                if (chave.contains("referendo")) {
-                    return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-                }
+            }
+        }
+
+        private String obterSubtituloPersonagemParaElemento(ElementoVergnaud elemento) {
+            if (situacaoProblemaAtual == null || elemento == null) {
                 return "";
             }
-
-            if (chave.contains("parte1") || chave.contains("quantidade1") || chave.contains("estadoinicial") || chave.contains("referido")) {
-                return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem1());
-            }
-            if (chave.contains("parte2") || chave.contains("quantidade2") || chave.contains("transformacao") || chave.contains("valorrelativo") || chave.contains("referendo")) {
-                return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem2());
-            }
-            if (chave.contains("todo") || chave.contains("resultado") || chave.contains("estadofinal")) {
-                return valorSeguroPersonagem(situacaoProblemaAtual.getPersonagem3());
-            }
-            return "";
+            SemanticaCuradaSituacao.PapelCurado papel =
+                    SemanticaCuradaSituacao.buscar(situacaoProblemaAtual,
+                            localizacao, elemento.chavePapelSemantico);
+            return papel == null ? "" : valorSeguroPersonagem(papel.getParticipante());
         }
 
         private String valorSeguroPersonagem(String personagem) {
@@ -9618,241 +8984,6 @@ public class Main extends JFrame {
                     elemento.textoEditavel = "";
                 }
             }
-        }
-
-        private int obterEspacamentoPassosTransformacaoComposta() {
-            return 22;
-        }
-
-        private int obterAlturaPassoTransformacaoComposta(Rectangle area, int passos) {
-            int espacamento = obterEspacamentoPassosTransformacaoComposta();
-            int alturaDisponivelPorPasso = (area.height - (espacamento * (passos - 1))) / Math.max(1, passos);
-
-            if (passos == 2) {
-                return Math.max(175, Math.min(220, alturaDisponivelPorPasso));
-            }
-
-            return Math.max(135, alturaDisponivelPorPasso);
-        }
-
-        private int obterTopoInicialPassosTransformacaoComposta(Rectangle area, int passos, int alturaPasso) {
-            int espacamento = obterEspacamentoPassosTransformacaoComposta();
-            int alturaTotalBloco = passos * alturaPasso + (espacamento * (passos - 1));
-            int topoCentralizado = area.y + Math.max(0, (area.height - alturaTotalBloco) / 2);
-            if (passos > 1) {
-                topoCentralizado -= 20;
-            }
-            return Math.max(area.y, topoCentralizado);
-        }
-
-        private CenaDiagramaAditivo criarCenaComposicaoTransformacaoMedidas(Rectangle area) {
-            java.util.List<FiguraDiagrama> figuras = new ArrayList<FiguraDiagrama>();
-            java.util.List<ConectorDiagrama> conectores = new ArrayList<ConectorDiagrama>();
-
-            DefinicaoDiagramaAditivo definicaoComposicao = catalogoDefinicoesAditivas.obter(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS);
-            DefinicaoDiagramaAditivo definicaoTransformacao = catalogoDefinicoesAditivas.obter(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
-
-            int[] numeros = extrairTodosNumerosDoTexto();
-            int parte1 = numeros.length > 0 ? numeros[0] : 0;
-            int parte2 = numeros.length > 1 ? numeros[1] : 0;
-            int totalInicial = parte1 + parte2;
-            int transformacao = calcularTotalTransformacaoComposicaoTransformacao(numeros);
-            int estadoFinal = totalInicial - transformacao;
-
-            adicionarFigurasComposicaoCompacta(
-                    obterSubareaPassoTransformacaoComposta(0),
-                    definicaoComposicao,
-                    new int[] { parte1, parte2, totalInicial },
-                    figuras,
-                    conectores
-            );
-            adicionarFigurasTransformacaoCompacta(
-                    obterSubareaPassoTransformacaoComposta(1),
-                    definicaoTransformacao,
-                    new int[] { totalInicial, transformacao, estadoFinal },
-                    figuras,
-                    conectores
-            );
-
-            return new CenaDiagramaAditivo(
-                    definicaoDiagramaAtual.getTitulo(),
-                    localizacao.texto("diag.desc.composicao_transformacao_medidas"),
-                    figuras,
-                    conectores
-            );
-        }
-
-        private int calcularTotalTransformacaoComposicaoTransformacao(int[] numeros) {
-            if (numeros == null || numeros.length <= 2) {
-                return 0;
-            }
-
-            int total = 0;
-            for (int i = 2; i < numeros.length; i++) {
-                total += numeros[i];
-            }
-            return total;
-        }
-
-        private CenaDiagramaAditivo criarCenaTransformacaoComposta(Rectangle area) {
-            java.util.List<FiguraDiagrama> figuras = new ArrayList<FiguraDiagrama>();
-            java.util.List<ConectorDiagrama> conectores = new ArrayList<ConectorDiagrama>();
-            int[] numeros = extrairTodosNumerosDoTexto();
-            int passos = quantidadePassosTransformacaoComposta;
-            int espacamento = obterEspacamentoPassosTransformacaoComposta();
-            int alturaPasso = obterAlturaPassoTransformacaoComposta(area, passos);
-            int yInicial = obterTopoInicialPassosTransformacaoComposta(area, passos, alturaPasso);
-            DefinicaoDiagramaAditivo definicaoBase = catalogoDefinicoesAditivas.obter(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
-
-            for (int passo = 0; passo < passos; passo++) {
-                int subY = yInicial + passo * (alturaPasso + espacamento);
-                int alturaReal = Math.min(alturaPasso, area.y + area.height - subY);
-                Rectangle subarea = new Rectangle(area.x, subY, area.width, alturaReal);
-
-                int valorInicial = 0;
-                if (passo == 0) {
-                    valorInicial = numeros.length > 0 ? numeros[0] : 0;
-                } else if (passo - 1 < estadosIntermediariosTransformacaoComposta.size()) {
-                    valorInicial = estadosIntermediariosTransformacaoComposta.get(passo - 1);
-                }
-
-                int valorTransformacao = passo < transformacoesComSinalTransformacaoComposta.size() ? Math.abs(transformacoesComSinalTransformacaoComposta.get(passo)) : (numeros.length > passo + 1 ? numeros[passo + 1] : 0);
-                int valorFinal = passo < estadosIntermediariosTransformacaoComposta.size() ? estadosIntermediariosTransformacaoComposta.get(passo) : 0;
-                adicionarFigurasTransformacaoCompacta(subarea, definicaoBase, new int[] { valorInicial, valorTransformacao, valorFinal }, figuras, conectores);
-            }
-
-            return new CenaDiagramaAditivo(
-                    definicaoDiagramaAtual.getTitulo(),
-                    localizacao.texto("diag.desc.transformacao_composta_dois_passos"),
-                    figuras,
-                    conectores
-            );
-        }
-
-        private int obterDeslocamentoVerticalDiagramasCompostos() {
-            return 18;
-        }
-
-        private void adicionarFigurasComposicaoCompacta(
-                Rectangle area,
-                DefinicaoDiagramaAditivo definicao,
-                int[] valores,
-                java.util.List<FiguraDiagrama> figuras,
-                java.util.List<ConectorDiagrama> conectores
-        ) {
-            int deslocamentoVertical = obterDeslocamentoVerticalDiagramasCompostos();
-            int parte1X = area.x + 58;
-            int parte1Y = area.y + 54 - deslocamentoVertical;
-            int parte2X = area.x + 58;
-            int parte2Y = area.y + 132 - deslocamentoVertical;
-            int todoX = area.x + 225;
-            int todoY = area.y + 93 - deslocamentoVertical;
-
-            FiguraDiagrama parte1 = new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, parte1X, parte1Y, 42, 42, definicao.getRotulo1(), valores[0], true);
-            FiguraDiagrama parte2 = new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, parte2X, parte2Y, 42, 42, definicao.getRotulo2(), valores[1], true);
-            FiguraDiagrama todo = new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, todoX, todoY, 42, 42, definicao.getRotulo3(), valores[2], true);
-
-            figuras.add(parte1);
-            figuras.add(parte2);
-            figuras.add(todo);
-            conectores.add(new ConectorDiagrama(TipoConectorDiagrama.CHAVE_VERTICAL, parte1X + 66, parte1Y - 6, parte2X + 66, parte2Y + 48, ""));
-        }
-
-        private void adicionarFigurasTransformacaoCompacta(
-                Rectangle area,
-                DefinicaoDiagramaAditivo definicao,
-                int[] valores,
-                java.util.List<FiguraDiagrama> figuras,
-                java.util.List<ConectorDiagrama> conectores
-        ) {
-            int deslocamentoVertical = obterDeslocamentoVerticalDiagramasCompostos();
-            int medidaY = area.y + area.height - 58 - deslocamentoVertical;
-            int transformacaoY = Math.max(area.y + 28, medidaY - 72);
-            int inicialX = area.x + 38;
-            int transformacaoX = area.x + 202;
-            int finalX = area.x + 374;
-
-            FiguraDiagrama inicial = new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, inicialX, medidaY, 42, 42, definicao.getRotulo1(), valores[0], true);
-            FiguraDiagrama transformacao = new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, transformacaoX, transformacaoY, 52, 52, definicao.getRotulo2(), valores[1], true);
-            FiguraDiagrama fim = new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO, finalX, medidaY, 42, 42, definicao.getRotulo3(), valores[2], true);
-
-            figuras.add(inicial);
-            figuras.add(transformacao);
-            figuras.add(fim);
-            conectores.add(new ConectorDiagrama(TipoConectorDiagrama.SETA, inicialX + 74, medidaY + 21, finalX - 32, medidaY + 21, ""));
-        }
-
-        private Rectangle obterSubareaPassoTransformacaoComposta(int passo) {
-            Rectangle area = obterAreaConteudoDiagramaVergnaud();
-            int passos = Math.max(1, quantidadePassosTransformacaoComposta);
-            int espacamento = obterEspacamentoPassosTransformacaoComposta();
-            int alturaPasso = obterAlturaPassoTransformacaoComposta(area, passos);
-            int yInicial = obterTopoInicialPassosTransformacaoComposta(area, passos, alturaPasso);
-            int y = yInicial + passo * (alturaPasso + espacamento);
-            int alturaReal = Math.min(alturaPasso, area.y + area.height - y);
-            return new Rectangle(area.x, y, area.width, alturaReal);
-        }
-
-        private Rectangle criarZonaSemanticaElementoTransformacaoComposta(int indiceElemento, int largura, int altura) {
-            int passo = indiceElemento / 3;
-            int indiceLocal = indiceElemento % 3;
-            Rectangle subarea = obterSubareaPassoTransformacaoComposta(passo);
-            return criarZonaSemanticaElemento(subarea, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, indiceLocal, largura, altura);
-        }
-
-        private Rectangle criarZonaSemanticaConectorTransformacaoComposta(int indiceConector) {
-            int passo = indiceConector;
-            Rectangle subarea = obterSubareaPassoTransformacaoComposta(passo);
-            return criarZonaSemanticaConector(subarea, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, 0);
-        }
-
-        private Rectangle criarZonaSemanticaElementoComposicaoTransformacao(int indiceElemento, int largura, int altura) {
-            if (indiceElemento < 3) {
-                Rectangle subarea = obterSubareaPassoTransformacaoComposta(0);
-                return criarZonaSemanticaElemento(subarea, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, indiceElemento, largura, altura);
-            }
-
-            Rectangle subarea = obterSubareaPassoTransformacaoComposta(1);
-            return criarZonaSemanticaElemento(subarea, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, indiceElemento - 3, largura, altura);
-        }
-
-        private Rectangle criarZonaSemanticaConectorComposicaoTransformacao(int indiceConector) {
-            if (indiceConector == 0) {
-                Rectangle subarea = obterSubareaPassoTransformacaoComposta(0);
-                return criarZonaSemanticaConector(subarea, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, 0);
-            }
-
-            Rectangle subarea = obterSubareaPassoTransformacaoComposta(1);
-            return criarZonaSemanticaConector(subarea, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, 0);
-        }
-
-        private void adicionarItensAutomaticosTransformacaoComposta() {
-            // Nesta versão, os diagramas compostos em múltiplos passos permanecem sem preenchimento automático.
-            // A centralização visual é preservada, mas os espaços internos ficam vazios.
-            return;
-        }
-
-        private void adicionarItemAutomaticoCentralizado(int indiceElemento, String valor, String chavePapel) {
-            if (indiceElemento < 0 || indiceElemento >= elementosVergnaud.size()) {
-                return;
-            }
-
-            ElementoVergnaud alvo = elementosVergnaud.get(indiceElemento);
-            Font fonte = new Font("Arial", Font.BOLD, 20);
-            FontMetrics fm = getFontMetrics(fonte);
-            int largura = fm.stringWidth(valor) + 8;
-            int altura = fm.getHeight() - 5;
-            ItemTextoArrastavel item = new ItemTextoArrastavel(
-                    alvo.x + (alvo.largura - largura) / 2,
-                    alvo.y + (alvo.altura - altura) / 2,
-                    largura,
-                    altura,
-                    valor,
-                    false,
-                    valor,
-                    chavePapel
-            );
-            itensArrastaveis.add(item);
         }
 
         private Rectangle calcularCaixaCena(CenaDiagramaAditivo cena) {
@@ -10201,7 +9332,7 @@ public class Main extends JFrame {
                 String chave = scaffoldingQuestionamento.obterChavePapelDoElemento(
                         tipoSituacaoSelecionada,
                         indiceReal,
-                        usaDiagramasEncadeadosTransformacaoComposta(),
+                        false,
                         quantidadePassosTransformacaoComposta);
                 papelSemantico = localizacao.texto(chave);
             }
@@ -10831,10 +9962,10 @@ public class Main extends JFrame {
                         scaffoldingQuestionamento.obterChavePapelDoElemento(
                                 tipoSituacaoSelecionada,
                                 indiceReal,
-                                usaDiagramasEncadeadosTransformacaoComposta(),
+                                false,
                                 quantidadePassosTransformacaoComposta);
-                valores[indiceSemantico] = obterValorCuradoPorIndiceEChave(
-                        indiceReal, chaves[indiceSemantico]);
+                valores[indiceSemantico] = obterValorCuradoPorChave(
+                        chaves[indiceSemantico]);
             }
             int indiceSemanticoAlvo = obterIndiceSemanticoDoAgrupamento(
                     indiceAgrupamento);
@@ -10866,73 +9997,14 @@ public class Main extends JFrame {
             return indiceSemantico;
         }
 
-        private Integer obterValorCuradoPorIndiceEChave(int indiceReal, String chave) {
+        private Integer obterValorCuradoPorChave(String chave) {
             if (situacaoProblemaAtual == null) {
                 return null;
             }
 
             SemanticaCuradaSituacao.PapelCurado papel = SemanticaCuradaSituacao.buscar(
                     situacaoProblemaAtual, localizacao, chave);
-            Integer valorMapeado = converterTextoParaInteiro(
-                    papel == null ? "" : papel.getValor());
-            if (valorMapeado != null) {
-                return valorMapeado;
-            }
-
-            if ("papel.parte1".equals(chave) || "papel.transformacao1".equals(chave)
-                    || "papel.relacao1".equals(chave)) {
-                return converterTextoParaInteiro(situacaoProblemaAtual.getQuantidade1());
-            }
-            if ("papel.parte2".equals(chave) || "papel.transformacao2".equals(chave)
-                    || "papel.relacao2".equals(chave)) {
-                return converterTextoParaInteiro(situacaoProblemaAtual.getQuantidade2());
-            }
-            if ("papel.todo".equals(chave) || "papel.transformacaoFinal".equals(chave)) {
-                return converterTextoParaInteiro(situacaoProblemaAtual.getResultado());
-            }
-            if ("papel.estadoInicial".equals(chave) || "papel.relacaoInicial".equals(chave)) {
-                return converterTextoParaInteiro(situacaoProblemaAtual.getEstadoInicial());
-            }
-            if (chave != null && chave.startsWith("papel.transformacao")) {
-                return converterValorRelativoCurado(
-                        situacaoProblemaAtual.getTransformacao(),
-                        situacaoProblemaAtual.getSinalTransformacao());
-            }
-            if ("papel.estadoFinal".equals(chave)) {
-                return converterTextoParaInteiro(situacaoProblemaAtual.getEstadoFinal());
-            }
-            if ("papel.relacaoFinal".equals(chave)) {
-                return converterTextoParaInteiro(
-                        tipoSituacaoSelecionada == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                                ? situacaoProblemaAtual.getEstadoFinal()
-                                : situacaoProblemaAtual.getResultado());
-            }
-            if ("papel.referido".equals(chave)) {
-                return converterTextoParaInteiro(primeiroNaoVazio(
-                        situacaoProblemaAtual.getReferido(),
-                        situacaoProblemaAtual.getQuantidade2()));
-            }
-            if ("papel.referendo".equals(chave)) {
-                return converterTextoParaInteiro(primeiroNaoVazio(
-                        situacaoProblemaAtual.getReferendo(),
-                        situacaoProblemaAtual.getQuantidade1()));
-            }
-            if ("papel.diferenca".equals(chave)) {
-                Integer relativo = converterValorRelativoCurado(
-                        situacaoProblemaAtual.getValorRelativo(),
-                        situacaoProblemaAtual.getSinalValorRelativo());
-                return relativo != null ? relativo : converterTextoParaInteiro(
-                        situacaoProblemaAtual.getResultado());
-            }
-            return null;
-        }
-
-        private String primeiroNaoVazio(String primeiro, String segundo) {
-            String a = primeiro == null ? "" : primeiro.trim();
-            if (a.length() > 0) {
-                return a;
-            }
-            return segundo == null ? "" : segundo.trim();
+            return converterTextoParaInteiro(papel == null ? "" : papel.getValor());
         }
 
         private void removerQuadradinhoDoAgrupamentoInterno(CirculoVenn agrupamento) {
@@ -11024,11 +10096,11 @@ public class Main extends JFrame {
         }
 
         private boolean ehDiagramaVennComposicaoMedidas() {
-            return !usaCenaVergnaudComposta() && tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS;
+            return tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS;
         }
 
         private boolean ehGraficoBarrasComparacao() {
-            return !usaCenaVergnaudComposta() && tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPARACAO_MEDIDAS;
+            return tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPARACAO_MEDIDAS;
         }
 
         private void desenharCirculoVenn(Graphics2D g2, CirculoVenn circulo, boolean composicaoMedidas, boolean comparacaoMedidas) {
@@ -11139,23 +10211,6 @@ public class Main extends JFrame {
             g2.setStroke(original);
         }
 
-        private String textoValorRelativoComparacao(int valor) {
-            if (papelComparacaoDesconhecido("valor_relativo")
-                    && !papelComparacaoResolvidoNoDiagrama("valor_relativo")) {
-                return "?";
-            }
-            if (valor > 0) return "+" + valor;
-            return String.valueOf(valor);
-        }
-
-        private String textoMedidaComparacao(String papel, int quantidade) {
-            if (papelComparacaoDesconhecido(papel)
-                    && !papelComparacaoResolvidoNoDiagrama(papel)) {
-                return "?";
-            }
-            return String.valueOf(quantidade);
-        }
-
         private void desenharResumoComparacaoMedidas(Graphics2D g2, Rectangle area) {
             if (circulosVenn.size() < 3) {
                 return;
@@ -11170,8 +10225,16 @@ public class Main extends JFrame {
             g2.setColor(COR_TEXTO);
             g2.setFont(new Font("Arial", Font.BOLD, 24));
             FontMetrics fmNumero = g2.getFontMetrics();
-            String textoReferido = textoMedidaComparacao("referido", quantidadeReferido);
-            String textoReferendo = textoMedidaComparacao("referendo", quantidadeReferendo);
+            EstadoSemanticoCompartilhado.Snapshot estado =
+                    estadoSemanticoCompartilhado.snapshot();
+            MapeamentoPapeisRepresentacaoComplementar mapeamento =
+                    obterMapeamentoPapeisComplementaresAtual();
+            String textoReferido = projetorValorPapelDiagramaComplementar.projetar(
+                    estado, tipoSituacaoSelecionada,
+                    mapeamento.paraIndiceSemantico(0), quantidadeReferido);
+            String textoReferendo = projetorValorPapelDiagramaComplementar.projetar(
+                    estado, tipoSituacaoSelecionada,
+                    mapeamento.paraIndiceSemantico(1), quantidadeReferendo);
             g2.drawString(textoReferido,
                     referido.x + (referido.largura - fmNumero.stringWidth(textoReferido)) / 2,
                     referido.y - 10);
@@ -11224,7 +10287,9 @@ public class Main extends JFrame {
                 if (circulosVenn.size() < 2) {
                     return 0;
                 }
-                return Math.max(0, Math.abs(contarQuadradinhosNoCirculo(circulosVenn.get(1)) - contarQuadradinhosNoCirculo(circulosVenn.get(0))));
+                return relacaoEstruturalComparacao().calcularModuloValorRelativo(
+                        contarQuadradinhosNoCirculo(circulosVenn.get(0)),
+                        contarQuadradinhosNoCirculo(circulosVenn.get(1)));
             }
             inicializarProporcaoControleComparacaoSeNecessario();
             return (int) Math.round(proporcaoControleComparacao * maximo);
@@ -11241,25 +10306,33 @@ public class Main extends JFrame {
                 if (papelValorRelativo != null && !papelValorRelativo.isDesconhecido()) {
                     Integer valorCurado = converterTextoParaInteiro(papelValorRelativo.getValor());
                     if (valorCurado != null) {
-                        maximo = Math.max(maximo, Math.abs(valorCurado.intValue()));
+                        maximo = Math.max(maximo, relacaoEstruturalComparacao()
+                                .calcularModuloDoValorRelativo(valorCurado.intValue()));
                     }
                 }
             }
-            if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                Integer valorModelado = obterValorNumericoDoElemento(elementosVergnaud.get(1));
+            ElementoVergnaud elementoValorRelativo = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            if (elementoValorRelativo != null) {
+                Integer valorModelado = obterValorNumericoDoElemento(elementoValorRelativo);
                 if (valorModelado != null) {
-                    maximo = Math.max(maximo, Math.abs(valorModelado.intValue()));
+                    maximo = Math.max(maximo, relacaoEstruturalComparacao()
+                            .calcularModuloDoValorRelativo(valorModelado.intValue()));
                 }
             }
             if (circulosVenn.size() >= 3) {
-                maximo = Math.max(maximo, Math.abs(circulosVenn.get(2).valorReferencia));
+                maximo = Math.max(maximo, relacaoEstruturalComparacao()
+                        .calcularModuloDoValorRelativo(
+                                circulosVenn.get(2).valorReferencia));
             }
             return maximo;
         }
 
         private int obterValorRelativoAssinadoComparacao() {
-            if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                Integer valorModelado = obterValorNumericoDoElemento(elementosVergnaud.get(1));
+            ElementoVergnaud elementoValorRelativo = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            if (elementoValorRelativo != null) {
+                Integer valorModelado = obterValorNumericoDoElemento(elementoValorRelativo);
                 if (valorModelado != null) {
                     return valorModelado.intValue();
                 }
@@ -11271,8 +10344,8 @@ public class Main extends JFrame {
         }
 
         private int aplicarSinalAtualAoModuloComparacao(int modulo) {
-            int atual = obterValorRelativoAssinadoComparacao();
-            return atual < 0 ? -Math.abs(modulo) : Math.abs(modulo);
+            return relacaoEstruturalComparacao().aplicarSinalDoValorAtual(
+                    obterValorRelativoAssinadoComparacao(), modulo);
         }
 
         private void inicializarProporcaoControleComparacaoSeNecessario() {
@@ -11284,9 +10357,15 @@ public class Main extends JFrame {
                 proporcaoControleComparacao = 0.0;
                 return;
             }
-            int atual = Math.max(0, Math.abs(contarQuadradinhosNoCirculo(circulosVenn.get(1)) - contarQuadradinhosNoCirculo(circulosVenn.get(0))));
+            int atual = relacaoEstruturalComparacao().calcularModuloValorRelativo(
+                    contarQuadradinhosNoCirculo(circulosVenn.get(0)),
+                    contarQuadradinhosNoCirculo(circulosVenn.get(1)));
             proporcaoControleComparacao = Math.max(0.0, Math.min(1.0, atual / (double) maximo));
             ultimoValorInteiroControleComparacao = Math.max(0, Math.min(maximo, atual));
+        }
+
+        private RelacaoEstruturalComparacao relacaoEstruturalComparacao() {
+            return RelacaoEstruturalComparacao.comparacaoDeMedidas();
         }
 
         private int obterBaseFixaEixoComparacao(CirculoVenn referido, CirculoVenn referendo) {
@@ -11435,16 +10514,23 @@ public class Main extends JFrame {
             CirculoVenn referendo = circulosVenn.get(1);
             int quantidadeReferido = contarQuadradinhosNoCirculo(referido);
             int quantidadeReferendo = contarQuadradinhosNoCirculo(referendo);
-            String papelDesconhecido = situacaoProblemaAtual != null ? situacaoProblemaAtual.getTermoDesconhecido() : "";
-
-            if ("referido".equalsIgnoreCase(papelDesconhecido)) {
-                normalizarQuantidadeQuadradinhosNaBarra(referido, Math.max(0, quantidadeReferendo - valorControle));
-            } else {
-                normalizarQuantidadeQuadradinhosNaBarra(referendo, Math.max(0, quantidadeReferido + valorControle));
+            RecalculoComparacaoMedidas.Resultado resultado =
+                    RecalculoComparacaoMedidas.decidir(
+                            "papel.referido".equals(obterPapelIncognitaAtual()),
+                            Integer.valueOf(quantidadeReferido),
+                            Integer.valueOf(quantidadeReferendo), valorControle);
+            if (resultado.getPapel() == RecalculoComparacaoMedidas.PapelAlvo.REFERIDO) {
+                normalizarQuantidadeQuadradinhosNaBarra(
+                        referido, Math.max(0, resultado.getValor()));
+            } else if (resultado.getPapel()
+                    == RecalculoComparacaoMedidas.PapelAlvo.REFERENDO) {
+                normalizarQuantidadeQuadradinhosNaBarra(
+                        referendo, Math.max(0, resultado.getValor()));
             }
 
-            if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                ElementoVergnaud diferenca = elementosVergnaud.get(1);
+            ElementoVergnaud diferenca = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            if (diferenca != null) {
                 definirValorNoElementoNumeroRelativo(diferenca, valorControle, true);
                 // Durante o arrasto (chamado a cada movimento do mouse), só
                 // checa em silêncio se a incógnita ainda diverge do curado —
@@ -11458,7 +10544,7 @@ public class Main extends JFrame {
         }
 
         private void sincronizarDiagramaVergnaudAPartirDoControleComparacao(int valorControle) {
-            if (elementosVergnaud == null || elementosVergnaud.size() < 3 || circulosVenn.size() < 2) {
+            if (circulosVenn.size() < 2) {
                 return;
             }
 
@@ -11467,9 +10553,22 @@ public class Main extends JFrame {
             int quantidadeReferido = contarQuadradinhosNoCirculo(referido);
             int quantidadeReferendo = contarQuadradinhosNoCirculo(referendo);
 
-            definirValorNoElementoMedida(elementosVergnaud.get(0), Integer.toString(Math.max(0, quantidadeReferido)));
-            definirValorNoElementoNumeroRelativo(elementosVergnaud.get(1), valorControle, true);
-            definirValorNoElementoMedida(elementosVergnaud.get(2), Integer.toString(Math.max(0, quantidadeReferendo)));
+            ElementoVergnaud elementoReferido = encontrarElementoVergnaudPorPapel(
+                    "papel.referido");
+            ElementoVergnaud elementoRelativo = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            ElementoVergnaud elementoReferendo = encontrarElementoVergnaudPorPapel(
+                    "papel.referendo");
+            if (elementoReferido == null || elementoRelativo == null
+                    || elementoReferendo == null) {
+                return;
+            }
+            definirValorNoElementoMedida(elementoReferido,
+                    Integer.toString(Math.max(0, quantidadeReferido)));
+            definirValorNoElementoNumeroRelativo(elementoRelativo,
+                    valorControle, true);
+            definirValorNoElementoMedida(elementoReferendo,
+                    Integer.toString(Math.max(0, quantidadeReferendo)));
         }
 
         private void normalizarQuantidadeQuadradinhosNaBarra(CirculoVenn barra, int quantidadeDesejada) {
@@ -11488,17 +10587,6 @@ public class Main extends JFrame {
                     .topoConteudoBarraComparacao(quadradinhosVenn, barra);
         }
 
-        private String criarEquacaoComparacao(String referido, String relativo,
-                                               String referendo, int valorRelativo) {
-            if (papelComparacaoDesconhecido("valor_relativo")
-                    && !papelComparacaoResolvidoNoDiagrama("valor_relativo")) {
-                return referendo + " - " + referido + " = ?";
-            }
-            String operador = valorRelativo >= 0 ? " + " : " - ";
-            String modulo = String.valueOf(Math.abs(valorRelativo));
-            return referido + operador + modulo + " = " + referendo;
-        }
-
         private void desenharContagensComposicaoMedidasVenn(Graphics2D g2, Rectangle area) {
             if (circulosVenn.size() < 3) {
                 return;
@@ -11511,7 +10599,9 @@ public class Main extends JFrame {
             int quantidade1 = contarQuadradinhosNoCirculo(parcela1);
             int quantidade2 = contarQuadradinhosNoCirculo(parcela2);
             int quantidadeResultado = contarQuadradinhosNoCirculo(resultado);
-            int totalComposicao = calcularTotalComposicaoMedidas(quantidade1, quantidade2);
+            int totalComposicao = gerard.dominio.campoaditivo.RelacaoEstruturalComposicao
+                    .composicaoDeMedidas().calcularTodo(
+                            Math.max(0, quantidade1), Math.max(0, quantidade2));
 
             g2.setColor(COR_TEXTO_SECUNDARIO);
             g2.setFont(new Font("Arial", Font.BOLD, 26));
@@ -11536,10 +10626,6 @@ public class Main extends JFrame {
         private void desenharNumeroComposicaoVenn(Graphics2D g2, String texto, int x, int y) {
             FontMetrics fm = g2.getFontMetrics();
             g2.drawString(texto, x - fm.stringWidth(texto) / 2, y);
-        }
-
-        private int calcularTotalComposicaoMedidas(int quantidade1, int quantidade2) {
-            return Math.max(0, quantidade1) + Math.max(0, quantidade2);
         }
 
         private void desenharSetaVenn(Graphics2D g2, int x1, int y1, int x2, int y2) {
@@ -11741,8 +10827,8 @@ public class Main extends JFrame {
                     || handlerQuadradinhoVenn.estaAtivo()
                     || handlerConectorVergnaud.estaAtivo()
                     || arrastandoControleComparacao
-                    || scaffoldingGraficoInteiros.estaArrastando()
-                    || paineisEixosRelacoes.estaArrastando();
+                    || handlerEixoInteiros.estaAtivo()
+                    || handlerPaineisEixosRelacoes.estaAtivo();
         }
 
         private boolean pontoSobreElementoArrastavel(int x, int y) {
@@ -11792,6 +10878,8 @@ public class Main extends JFrame {
         private void cancelarEfeitosArraste() {
             controladorArrasteElastico.cancelar();
             handlerConectorVergnaud.finalizarLimiar();
+            handlerEixoInteiros.cancelar();
+            handlerPaineisEixosRelacoes.cancelar();
             marcadorOrigemArraste.limpar();
             scaffoldingFeedbackProxyPosicionamento.cancelar();
             sessaoArrasteTextoParaDiagrama.limpar();
@@ -12054,36 +11142,31 @@ public class Main extends JFrame {
             }
 
             Rectangle origemPontoGraficoInteiros =
-                    scaffoldingGraficoInteiros.obterAreaVisualPontoControle();
+                    adaptadorInteracaoEixoInteiros.obterAreaVisualPontoControle();
             Rectangle origemPainelGraficoInteiros =
-                    scaffoldingGraficoInteiros.obterAreaVisualPainel();
-            ScaffoldingGraficoInteiros.NaturezaInteracao naturezaInteracaoEixo =
-                    scaffoldingGraficoInteiros.identificarNaturezaInteracao(
-                            x, y, getWidth(), getHeight(),
-                            obterAreaVisivelDiagramasVergnaud());
-            if (naturezaInteracaoEixo
-                    == ScaffoldingGraficoInteiros.NaturezaInteracao.VALOR_SEMANTICO
-                    && !interacaoRepresentacoesLiberadaPelaModelagem()) {
+                    adaptadorInteracaoEixoInteiros.obterAreaVisualPainel();
+            HandlerInteracaoEixoInteiros.ResultadoPressionamento resultadoEixo =
+                    handlerEixoInteiros.iniciar(
+                            adaptadorInteracaoEixoInteiros, x, y,
+                            interacaoRepresentacoesLiberadaPelaModelagem());
+            if (resultadoEixo.foiBloqueado()) {
                 informarBloqueioInteracaoRepresentacao(
                         x, y, "Valor semântico no eixo x dos inteiros");
                 return;
             }
-            if (scaffoldingGraficoInteiros.processarPressionamento(
-                    x,
-                    y,
-                    getWidth(),
-                    getHeight(),
-                    obterAreaVisivelDiagramasVergnaud())) {
-                if (scaffoldingGraficoInteiros.estaArrastandoPontoControle()) {
+            if (resultadoEixo.foiConsumido()) {
+                if (resultadoEixo.getModoManipulacao()
+                        == AlvoInteracaoEixoInteiros.ModoManipulacao.PONTO_CONTROLE) {
                     iniciarFantasmaRetangular(origemPontoGraficoInteiros, 14, true);
                     iniciarArrasteElastico(x, y);
                     definirCursorMaoFechada();
-                } else if (scaffoldingGraficoInteiros.estaArrastandoPainel()) {
+                } else if (resultadoEixo.getModoManipulacao()
+                        == AlvoInteracaoEixoInteiros.ModoManipulacao.PAINEL) {
                     iniciarFantasmaRetangular(origemPainelGraficoInteiros, 16, false);
                     iniciarArrasteElastico(x, y);
                     definirCursorMaoFechada();
                 }
-                if (scaffoldingGraficoInteiros.foiOcultadoPorInteracao()) {
+                if (resultadoEixo.foiOcultado()) {
                     registrarAcaoGranular("SELECIONAR", "Ocultar eixo X",
                             "Alterar visibilidade de apoio visual", "BOTAO_VISIBILIDADE_EIXO_X",
                             "ocultar_eixo_x", "estado_anterior=visivel;estado_atual=oculto",
@@ -12180,40 +11263,34 @@ public class Main extends JFrame {
                 return;
             }
 
-            ScaffoldingGraficoInteiros.NaturezaInteracao naturezaInteracaoPaineisRelacoes =
-                    paineisEixosRelacoes.identificarNaturezaInteracao(
-                            x, y, getWidth(), getHeight(),
-                            obterAreaVisivelDiagramasVergnaud());
-            if (naturezaInteracaoPaineisRelacoes
-                    == ScaffoldingGraficoInteiros.NaturezaInteracao.VALOR_SEMANTICO
-                    && !interacaoRepresentacoesLiberadaPelaModelagem()) {
+            HandlerInteracaoPaineisEixosRelacoes.ResultadoPressionamento
+                    resultadoPaineisRelacoes =
+                    handlerPaineisEixosRelacoes.iniciar(
+                            adaptadorInteracaoPaineisEixosRelacoes,
+                            x, y,
+                            interacaoRepresentacoesLiberadaPelaModelagem());
+            if (resultadoPaineisRelacoes.foiBloqueado()) {
                 informarBloqueioInteracaoRepresentacao(
                         x, y, "Valor semântico no painel de eixo das Relações");
                 return;
             }
-            if (paineisEixosRelacoes.processarPressionamento(
-                    x, y, getWidth(), getHeight(), obterAreaVisivelDiagramasVergnaud())) {
-                PaineisEixosRelacoes.Painel painelPressionado = paineisEixosRelacoes.encontrarArrastando();
-                if (painelPressionado != null && painelPressionado.grafico.estaArrastandoPontoControle()) {
+            if (resultadoPaineisRelacoes.foiConsumido()) {
+                if (resultadoPaineisRelacoes.getModoManipulacao()
+                        == AlvoInteracaoPaineisEixosRelacoes.ModoManipulacao.PONTO_CONTROLE) {
                     iniciarFantasmaRetangular(
-                            painelPressionado.grafico.obterAreaVisualPontoControle(), 14, true);
+                            adaptadorInteracaoPaineisEixosRelacoes
+                                    .obterAreaVisualPontoControle(),
+                            14, true);
                     iniciarArrasteElastico(x, y);
                     definirCursorMaoFechada();
-                } else if (painelPressionado != null && painelPressionado.grafico.estaArrastandoPainel()) {
+                } else if (resultadoPaineisRelacoes.getModoManipulacao()
+                        == AlvoInteracaoPaineisEixosRelacoes.ModoManipulacao.PAINEL) {
                     iniciarFantasmaRetangular(
-                            painelPressionado.grafico.obterAreaVisualPainel(), 16, false);
+                            adaptadorInteracaoPaineisEixosRelacoes
+                                    .obterAreaVisualPainel(),
+                            16, false);
                     iniciarArrasteElastico(x, y);
                     definirCursorMaoFechada();
-                }
-                // painelPressionado == null aqui significa clique no botão
-                // de esconder de algum painel — nada ficou arrastando, e
-                // sincronizarPainelEixoRelacaoSeNecessario já não faz nada
-                // quando nenhum painel tem alteração pendente. Nesse caso, a
-                // lupa daquele papel volta a aparecer (2026-08-17).
-                PaineisEixosRelacoes.Painel painelOcultado =
-                        paineisEixosRelacoes.encontrarComOcultacaoPorInteracao();
-                if (painelOcultado != null) {
-                    paineisEixosRelacoes.ocultarRevelacao(painelOcultado);
                 }
                 sincronizarPainelEixoRelacaoSeNecessario(false);
                 itemFocado = null;
@@ -12252,12 +11329,8 @@ public class Main extends JFrame {
                         "SELECAO_TEXTO",
                         "valor=" + marcador.valor + "; papel=" + (marcador.chavePapel != null ? marcador.chavePapel : "")
                 );
-                // Selecionar não tem certo/errado (não há papel-alvo ainda),
-                // mas ainda é uma ação instrumental que o Monitor deve
-                // perceber — ver AgenteMonitor.perceberAcao. Também chega
-                // ao Modelador (ação neutra, sem camada do ZDP) para
-                // regraDeAcao ter alguma variação além de POSICIONAR.
-                agenteMonitor.perceberAcao();
+                // Selecionar não tem certo/errado porque ainda não há
+                // papel-alvo. O fato neutro é encaminhado ao Modelador.
                 conectorVereditoModelador.registrarAcaoNeutra(
                         loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, "SELECIONAR");
                 handlerItemTextoArrastavel.iniciar(novo, x, y);
@@ -12388,15 +11461,13 @@ public class Main extends JFrame {
         }
 
         private void processarMovimentoArraste(int x, int y) {
-            if (scaffoldingGraficoInteiros.estaArrastando()) {
-                scaffoldingGraficoInteiros.arrastarPara(x, y, getWidth(), getHeight());
+            if (handlerEixoInteiros.mover(x, y)) {
                 sincronizarNumeroRelativoComGraficoSeNecessario(false);
                 repaint();
                 return;
             }
 
-            if (paineisEixosRelacoes.estaArrastando()) {
-                paineisEixosRelacoes.arrastarPara(x, y, getWidth(), getHeight());
+            if (handlerPaineisEixosRelacoes.mover(x, y)) {
                 sincronizarPainelEixoRelacaoSeNecessario(false);
                 repaint();
                 return;
@@ -12458,13 +11529,6 @@ public class Main extends JFrame {
         }
 
         public void mouseReleased(MouseEvent e) {
-            // Diagnostico de baixo nivel (rodada 4, 2026-07-31) — captura
-            // identidade real do MouseEvent/thread/listener ANTES de
-            // qualquer logica de negocio, pra achar a causa do disparo
-            // triplo achado na rodada 3. So observa (grava em
-            // despacho_mouse_released.log), nunca decide nada.
-            ultimoDispatchIndexMouseReleased = gerard.pesquisador.auditoria.DespachoMouseReleasedDiagnostico
-                    .registrarDespacho(e, this, "mouseReleased");
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
             }
@@ -12472,18 +11536,17 @@ public class Main extends JFrame {
             HandlerInteracaoQuadradinhoVenn.ResultadoSoltura resultadoSolturaQuadradinho =
                     handlerQuadradinhoVenn.concluir(circulosVenn);
             finalizarRastreamentoGranular(e.getX(), e.getY());
-            if (scaffoldingGraficoInteiros.estaArrastando()) {
+            if (handlerEixoInteiros.concluir()) {
                 sincronizarNumeroRelativoComGraficoSeNecessario(true);
-                scaffoldingGraficoInteiros.finalizarArraste();
                 marcadorOrigemArraste.limpar();
                 atualizarCursorDepoisDoPickup(e.getX(), e.getY());
                 repaint();
                 return;
             }
 
-            if (paineisEixosRelacoes.estaArrastando()) {
+            if (handlerPaineisEixosRelacoes.estaAtivo()) {
                 sincronizarPainelEixoRelacaoSeNecessario(true);
-                paineisEixosRelacoes.finalizarArraste();
+                handlerPaineisEixosRelacoes.concluir();
                 marcadorOrigemArraste.limpar();
                 atualizarCursorDepoisDoPickup(e.getX(), e.getY());
                 repaint();
@@ -12502,8 +11565,9 @@ public class Main extends JFrame {
                 // incognitaAguardandoConfirmacaoDeValor em
                 // atualizarBarrasComparacaoAPartirDoControle, que só bloqueia
                 // em silêncio durante o arrasto).
-                if (elementosVergnaud != null && elementosVergnaud.size() >= 2) {
-                    ElementoVergnaud diferenca = elementosVergnaud.get(1);
+                ElementoVergnaud diferenca = encontrarElementoVergnaudPorPapel(
+                        "papel.diferenca");
+                if (diferenca != null) {
                     ItemTextoArrastavel itemDiferenca = encontrarItemSobreElemento(diferenca);
                     if (confirmarValorIncognitaAceito(itemDiferenca)) {
                         sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
@@ -12537,18 +11601,8 @@ public class Main extends JFrame {
             gerard.pesquisador.auditoria.OrigemAvaliacao origemSoltura = itemRealmenteMoveu
                     ? gerard.pesquisador.auditoria.OrigemAvaliacao.SOLTURA_USUARIO
                     : gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA;
-            int dispatchIndexParaCorrelacao = ultimoDispatchIndexMouseReleased;
             ResultadoQuestionamento resultadoPosicionamento =
                     avaliarQuestionamentoPosicionamento(itemSolto, origemSoltura);
-            gerard.pesquisador.auditoria.DespachoMouseReleasedDiagnostico.registrarCorrelacaoAvaliacao(
-                    dispatchIndexParaCorrelacao,
-                    agentAuditService == null ? null : agentAuditService.getUltimoGestureIdGravado(),
-                    agentAuditService == null ? null : agentAuditService.getUltimoGestureIdGravado(),
-                    itemSolto != null,
-                    resultadoPosicionamento != null && resultadoPosicionamento.isAplicavel(),
-                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico(),
-                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico(),
-                    agentAuditService != null && agentAuditService.isUltimoEventoGravadoCanonico());
             boolean posicionamentoIncorreto = resultadoPosicionamento.isAplicavel()
                     && !resultadoPosicionamento.isCorreto();
             finalizarProxyTextoSolto(itemSolto, !posicionamentoIncorreto);
@@ -12882,13 +11936,7 @@ public class Main extends JFrame {
             if (elemento == null) {
                 return "";
             }
-            int indice = elementosVergnaud.indexOf(elemento);
-            String chave = scaffoldingQuestionamento.obterChavePapelDoElemento(
-                    tipoSituacaoSelecionada,
-                    indice,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
-                    quantidadePassosTransformacaoComposta
-            );
+            String chave = obterPapelSemanticoDoElemento(elemento);
             String papel = localizacao.texto(chave);
             if (papel == null || papel.trim().length() == 0 || papel.startsWith("ui.") || papel.startsWith("papel.")) {
                 papel = elemento.rotulo != null && elemento.rotulo.trim().length() > 0 ? elemento.rotulo : elemento.tipo.name();
@@ -12948,7 +11996,8 @@ public class Main extends JFrame {
                 String sinal = obterSinalAtual(item.valor);
                 mostrarGraficoInteirosNumeroRelativo(item, numeroRelativo, base);
                 registrarEscolhaGraficoInteiros(item, numeroRelativo, base, sinal);
-                atualizarEstadoFinalAPartirDoNumeroRelativo(numeroRelativo, calcularValorRelativo(base, sinal));
+                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                        numeroRelativo, EstadoSemanticoCompartilhado.Origem.ARRASTE);
                 return;
             }
             solicitarSinalNumeroRelativoParaItem(item, numeroRelativo, false);
@@ -12973,22 +12022,9 @@ public class Main extends JFrame {
         }
 
         /**
-         * Correção 2026-07-31: este método é chamado de 7 pontos diferentes
-         * (soltar o item, reavaliação de consistência logo depois, log,
-         * bloqueio do menu de sinal, durante o próprio arraste, habilitação
-         * de sincronização de estado final, e depois de digitar um número) —
-         * só o primeiro (soltura real do item) e o de digitação representam
-         * um gesto de verdade do usuário; os outros são reavaliação reativa
-         * interna. AgenteMonitor.avaliarPosicionamento continua chamado
-         * SEMPRE (é stateless, não tem custo real em chamar de novo — e a
-         * usuária pediu explicitamente pra manter toda avaliação técnica no
-         * log). O que muda é o GATE: agenteZDP.decidirEstrategia e
-         * conectorVereditoModelador.registrarVeredito (que mutam estado
-         * real — erros consecutivos, camada de ajuda, casos no Modelo do
-         * Usuário) só são chamados quando origem.isCanonica() — antes desta
-         * correção, eram chamados em TODAS as 7 origens, inclusive a cada
-         * evento de mouse durante o arraste, inflando erros/casos no app
-         * real (não só no teste). Ver RELATORIO_AUDITORIA_MULTIAGENTE.
+         * Reavaliações internas consultam a compatibilidade sem produzir uma
+         * nova ação. Somente a soltura canônica constitui o registro factual
+         * POSICIONAR encaminhado ao Modelador.
          */
         private ResultadoQuestionamento avaliarQuestionamentoPosicionamento(
                 ItemTextoArrastavel item, gerard.pesquisador.auditoria.OrigemAvaliacao origem) {
@@ -13010,46 +12046,44 @@ public class Main extends JFrame {
                 return ResultadoQuestionamento.naoAplicavel();
             }
 
-            int indiceAlvo = elementosVergnaud.indexOf(elementoAlvo);
             String chavePapelNumeral = chavePapelElementoTexto;
-            String chavePapelAlvo = scaffoldingQuestionamento.obterChavePapelDoElemento(
-                    tipoSituacaoSelecionada,
-                    indiceAlvo,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
-                    quantidadePassosTransformacaoComposta
-            );
+            String chavePapelAlvo = obterPapelSemanticoDoElemento(elementoAlvo);
             String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
 
-            if (agentAuditService != null) {
-                agentAuditService.iniciarAcao(
-                        new gerard.pesquisador.auditoria.IdentificacaoEvento(null, null,
-                                loggerInteracaoGerard.getUsuarioAtual(),
-                                situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getId(),
-                                textoProblema, String.valueOf(tipoSituacaoSelecionada), null),
-                        new gerard.pesquisador.auditoria.AcaoUsuarioAudit(
-                                "drag", chavePapelNumeral, valorParaValidacao, chavePapelNumeral, chavePapelAlvo,
-                                null, null, null, null),
-                        origem, tipoSituacaoSelecionada);
-            }
-            ResultadoQuestionamento resultado = agenteMonitor.avaliarPosicionamento(
+            ResultadoQuestionamento resultado = scaffoldingQuestionamento.avaliarPosicionamento(
                     chavePapelNumeral,
                     chavePapelAlvo,
                     papelDoElementoNoDiagrama,
-                    localizacao.descricaoTipo(tipoSituacaoSelecionada),
-                    tipoSituacaoSelecionada
+                    localizacao.descricaoTipo(tipoSituacaoSelecionada)
             );
-            if (resultado != null && resultado.isAplicavel() && origem.isCanonica()) {
-                String chaveIdempotenciaPosicionamento =
-                        agentAuditService == null ? null : agentAuditService.obterChaveIdempotenciaAtual();
-                gerard.agente.zdp.CamadaEstrategiaZDP estrategia = agenteZDP.decidirEstrategia(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
-                        resultado.isCorreto(), chaveIdempotenciaPosicionamento);
-                conectorVereditoModelador.registrarVeredito(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, chavePapelAlvo,
-                        estrategia, "POSICIONAR", chaveIdempotenciaPosicionamento);
-            }
-            if (agentAuditService != null) {
-                agentAuditService.finalizarAcao();
+            if (resultado != null && resultado.isAplicavel()
+                    && origem.isCanonica() && tipoSituacaoSelecionada != null) {
+                ContextoAcaoInstrumental contextoInstrumental =
+                        new ContextoAcaoInstrumental(
+                                "Posicionar elemento semântico do enunciado",
+                                "Arrastar e soltar",
+                                "Texto e diagrama de Vergnaud",
+                                "Associar o elemento textual ao papel quantitativo correspondente",
+                                chavePapelAlvo,
+                                origem.name(),
+                                "origem=" + chavePapelNumeral
+                                        + "; destino=" + chavePapelAlvo,
+                                "Elemento posicionado sobre um papel do diagrama",
+                                participantesSemanticosDaSituacaoAtual());
+                gerard.dominio.campoaditivo.RegistroAcaoPosicionamentoPapelQuantitativo
+                        registro = catalogoPapeisSemanticos
+                                .obterDescritor(chavePapelNumeral)
+                                .avaliarPosicionamento(
+                                        catalogoPapeisSemanticos
+                                                .obterDescritor(chavePapelAlvo),
+                                        tipoSituacaoSelecionada,
+                                        contextoInstrumental);
+                loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+                conectorVereditoModelador.registrarAcaoInstrumental(
+                        loggerInteracaoGerard.getUsuarioAtual(),
+                        registro,
+                        gerard.agente.modelousuario.NivelSuporte.NENHUM,
+                        registro.getActionId());
             }
             return resultado;
         }
@@ -13197,7 +12231,8 @@ public class Main extends JFrame {
                     numeroRelativoGraficoInteiros);
             if (!valorRelativoPreservaQuantidadesNaoNegativas(
                     numeroRelativoGraficoInteiros, valor)) {
-                int seguro = valorAnterior == null ? Math.abs(valor) : valorAnterior.intValue();
+                int seguro = politicaRestauracaoValorRelativo
+                        .escolherValorSeguro(valorAnterior, valor);
                 aplicarValorRelativoNoDiagrama(
                         numeroRelativoGraficoInteiros,
                         itemGraficoInteiros,
@@ -13232,10 +12267,6 @@ public class Main extends JFrame {
                     ? confirmarValorIncognitaAceito(itemIncognita)
                     : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
             if (liberadoParaPropagar) {
-                reagirConsistenciaAPartirDoElemento(
-                        numeroRelativoGraficoInteiros,
-                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
-                );
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         numeroRelativoGraficoInteiros,
                         EstadoSemanticoCompartilhado.Origem.EIXO_X);
@@ -13264,12 +12295,14 @@ public class Main extends JFrame {
             int valor = painel.grafico.getValorNavegavel();
             Integer valorAnterior = obterValorNumericoDoElemento(numeroRelativo);
             if (!valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valor)) {
-                int seguro = valorAnterior == null ? Math.abs(valor) : valorAnterior.intValue();
+                int seguro = politicaRestauracaoValorRelativo
+                        .escolherValorSeguro(valorAnterior, valor);
                 aplicarValorRelativoNoDiagrama(numeroRelativo, null, seguro, false);
                 painel.apresentador.registrarEscolha(
                         retanguloDoElemento(numeroRelativo),
-                        scaffoldingReacaoRepresentacoes.valorAbsolutoComoTexto(seguro),
-                        scaffoldingReacaoRepresentacoes.sinalDe(seguro));
+                        servicoQuantidadeContextual.formatarMagnitudeNumeroRelativo(
+                                seguro, situacaoProblemaAtual),
+                        servicoQuantidadeContextual.sinalNumeroRelativo(seguro));
                 informarBloqueioQuantidadeNegativa(null, numeroRelativo);
                 painel.grafico.limparAlteracaoValorPorInteracao();
                 repaint();
@@ -13292,10 +12325,6 @@ public class Main extends JFrame {
                     ? confirmarValorIncognitaAceito(itemIncognita)
                     : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
             if (liberadoParaPropagar) {
-                reagirConsistenciaAPartirDoElemento(
-                        numeroRelativo,
-                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
-                );
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         numeroRelativo,
                         EstadoSemanticoCompartilhado.Origem.EIXO_X);
@@ -13353,20 +12382,9 @@ public class Main extends JFrame {
         }
 
         private boolean ehElementoEstadoFinalIncognito(ElementoVergnaud elemento) {
-            if (elemento == null || !ehElementoMedidaRetangular(elemento)) {
-                return false;
-            }
-            int indice = elementosVergnaud.indexOf(elemento);
-            if (indice < 0) {
-                return false;
-            }
-            String chavePapel = scaffoldingQuestionamento.obterChavePapelDoElemento(
-                    tipoSituacaoSelecionada,
-                    indice,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
-                    quantidadePassosTransformacaoComposta
-            );
-            return elemento.incognitaPrincipal || "papel.estadoFinal".equals(chavePapel);
+            return elemento != null
+                    && (elemento.incognitaPrincipal
+                    || "papel.estadoFinal".equals(elemento.chavePapelSemantico));
         }
 
         private void recalcularEstadoFinalSeNumeroRelativoJaDefinido() {
@@ -13378,7 +12396,8 @@ public class Main extends JFrame {
             if (valorRelativo == null) {
                 return;
             }
-            atualizarEstadoFinalAPartirDoNumeroRelativo(numeroRelativo, valorRelativo.intValue());
+            sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                    numeroRelativo, EstadoSemanticoCompartilhado.Origem.ARRASTE);
         }
 
         private void atualizarRepresentacoesReativasAposAlteracaoDoItem(ItemTextoArrastavel item) {
@@ -13396,10 +12415,6 @@ public class Main extends JFrame {
             // (texto, Venn, eixo) não devem refletir uma resposta ainda não
             // confirmada como correta — ver incognitaAguardandoConfirmacaoDeValor.
             if (!incognitaAguardandoConfirmacaoDeValor(item)) {
-                ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem = ehElementoNumeroRelativo(elemento)
-                        ? ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                        : ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ARRASTE;
-                reagirConsistenciaAPartirDoElemento(elemento, origem);
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         elemento, EstadoSemanticoCompartilhado.Origem.ARRASTE);
             }
@@ -13411,181 +12426,9 @@ public class Main extends JFrame {
                 return;
             }
 
-            ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem = ehElementoNumeroRelativo(elemento)
-                    ? ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                    : ScaffoldingReacaoRepresentacoes.OrigemAlteracao.TEXTO;
-            reagirConsistenciaAPartirDoElemento(elemento, origem);
             sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                     elemento, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO);
             verificarConclusaoModelagem();
-        }
-
-        private void atualizarGraficoAPartirDoNumeroRelativo(ElementoVergnaud numeroRelativo) {
-            if (numeroRelativo == null || !ehElementoNumeroRelativo(numeroRelativo)) {
-                return;
-            }
-
-            Integer valorRelativo = obterValorNumericoDoElemento(numeroRelativo);
-            if (valorRelativo == null) {
-                return;
-            }
-
-            String textoRelativo = servicoQuantidadeContextual
-                    .formatarNumeroRelativoParaDiagrama(
-                            valorRelativo.intValue(), situacaoProblemaAtual);
-            String base = scaffoldingNumeroRelativo.removerSinal(textoRelativo);
-            String sinal = obterSinalAtual(textoRelativo);
-            ItemTextoArrastavel item = encontrarItemSobreElemento(numeroRelativo);
-            registrarEscolhaGraficoInteiros(item, numeroRelativo, base, sinal);
-        }
-
-        private void reagirConsistenciaAPartirDoElemento(ElementoVergnaud elemento, ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem) {
-            if (elemento == null) {
-                return;
-            }
-
-            int indice = elementosVergnaud.indexOf(elemento);
-            if (indice < 0) {
-                return;
-            }
-
-            if (ehElementoNumeroRelativo(elemento)) {
-                atualizarGraficoAPartirDoNumeroRelativo(elemento);
-                Integer valorRelativo = obterValorNumericoDoElemento(elemento);
-                if (valorRelativo != null) {
-                    reagirConsistenciaDaTransformacao(indice, origem, valorRelativo);
-                }
-                return;
-            }
-
-            if (!ehElementoMedidaRetangular(elemento)) {
-                return;
-            }
-
-            // Quando a medida alterada vem antes de um circulo, ela funciona como
-            // estado inicial daquela transformacao.
-            if (indice + 2 < elementosVergnaud.size()
-                    && ehElementoNumeroRelativo(elementosVergnaud.get(indice + 1))
-                    && ehElementoMedidaRetangular(elementosVergnaud.get(indice + 2))) {
-                reagirConsistenciaDaTransformacao(
-                        indice + 1,
-                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ESTADO_INICIAL,
-                        null
-                );
-            }
-
-            // Quando a medida alterada vem depois de um circulo, ela funciona como
-            // estado final daquela transformacao; nesse caso a relacao deve ser
-            // recalculada para manter a consistencia.
-            if (indice - 2 >= 0
-                    && ehElementoNumeroRelativo(elementosVergnaud.get(indice - 1))
-                    && ehElementoMedidaRetangular(elementosVergnaud.get(indice - 2))) {
-                reagirConsistenciaDaTransformacao(
-                        indice - 1,
-                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ESTADO_FINAL,
-                        null
-                );
-            }
-
-            // Na categoria composicao seguida de transformacao, o todo da composicao
-            // alimenta o estado inicial da transformacao seguinte. Se esse todo mudar,
-            // a transformacao tambem deve reagir.
-            if (usaDiagramasComposicaoTransformacaoMedidas()
-                    && indice == 2
-                    && elementosVergnaud.size() > 5
-                    && ehElementoNumeroRelativo(elementosVergnaud.get(4))) {
-                reagirConsistenciaDaTransformacao(
-                        4,
-                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ESTADO_INICIAL,
-                        null
-                );
-            }
-        }
-
-        private void reagirConsistenciaDaTransformacao(int indiceRelacao,
-                ScaffoldingReacaoRepresentacoes.OrigemAlteracao origem,
-                Integer valorRelativoForcado) {
-            if (indiceRelacao < 1 || indiceRelacao + 1 >= elementosVergnaud.size()) {
-                return;
-            }
-
-            ElementoVergnaud relacao = elementosVergnaud.get(indiceRelacao);
-            ElementoVergnaud estadoInicial = elementosVergnaud.get(indiceRelacao - 1);
-            ElementoVergnaud estadoFinal = elementosVergnaud.get(indiceRelacao + 1);
-
-            if (!ehElementoNumeroRelativo(relacao)
-                    || !ehElementoMedidaRetangular(estadoInicial)
-                    || !ehElementoMedidaRetangular(estadoFinal)) {
-                return;
-            }
-
-            Integer valorRelativo = valorRelativoForcado != null
-                    ? valorRelativoForcado
-                    : obterValorNumericoDoElemento(relacao);
-            Integer valorInicial = obterValorEstadoInicialParaRelacao(indiceRelacao);
-            Integer valorFinal = obterValorNumericoDoElemento(estadoFinal);
-
-            if (origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ESTADO_FINAL) {
-                Integer novaRelacao = scaffoldingReacaoRepresentacoes.calcularRelacao(valorInicial, valorFinal);
-                if (novaRelacao != null) {
-                    definirValorNoElementoNumeroRelativo(relacao, novaRelacao.intValue(), true);
-                }
-                return;
-            }
-
-            if (origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                    || origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.EIXO
-                    || origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ESTADO_INICIAL
-                    || origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.ARRASTE
-                    || origem == ScaffoldingReacaoRepresentacoes.OrigemAlteracao.TEXTO) {
-                Integer novoFinal = scaffoldingReacaoRepresentacoes.calcularEstadoFinal(valorInicial, valorRelativo);
-                if (novoFinal != null
-                        && politicaValoresAditivos.quantidadeEhNaoNegativa(novoFinal)) {
-                    String valorFormatado = servicoQuantidadeContextual
-                            .formatarMedidaParaDiagrama(novoFinal.intValue(),
-                                    situacaoProblemaAtual);
-                    definirValorNoElementoMedida(estadoFinal, valorFormatado);
-                    propagarTextoEntrePassosTransformacaoComposta(
-                            estadoFinal, valorFormatado);
-                }
-                return;
-            }
-
-            Integer novoFinal = scaffoldingReacaoRepresentacoes.calcularEstadoFinal(valorInicial, valorRelativo);
-            if (novoFinal != null
-                    && politicaValoresAditivos.quantidadeEhNaoNegativa(novoFinal)) {
-                String valorFormatado = servicoQuantidadeContextual
-                        .formatarMedidaParaDiagrama(novoFinal.intValue(),
-                                situacaoProblemaAtual);
-                definirValorNoElementoMedida(estadoFinal, valorFormatado);
-                propagarTextoEntrePassosTransformacaoComposta(
-                        estadoFinal, valorFormatado);
-                return;
-            }
-
-            Integer novaRelacao = scaffoldingReacaoRepresentacoes.calcularRelacao(valorInicial, valorFinal);
-            if (novaRelacao != null) {
-                definirValorNoElementoNumeroRelativo(relacao, novaRelacao.intValue(), true);
-            }
-        }
-
-        private Integer obterValorEstadoInicialParaRelacao(int indiceRelacao) {
-            if (indiceRelacao < 1 || indiceRelacao >= elementosVergnaud.size()) {
-                return null;
-            }
-
-            Integer valorInicial = obterValorNumericoDoElemento(elementosVergnaud.get(indiceRelacao - 1));
-
-            // Na categoria "Composicao seguida de transformacao", o estado inicial
-            // da transformacao pode ser o todo obtido no primeiro diagrama.
-            if (valorInicial == null
-                    && usaDiagramasComposicaoTransformacaoMedidas()
-                    && indiceRelacao == 4
-                    && elementosVergnaud.size() > 2) {
-                valorInicial = obterValorNumericoDoElemento(elementosVergnaud.get(2));
-            }
-
-            return valorInicial;
         }
 
         private void aplicarValorRelativoNoDiagrama(ElementoVergnaud numeroRelativo,
@@ -13609,15 +12452,15 @@ public class Main extends JFrame {
                 numeroRelativo.textoEditavel = "";
             } else {
                 numeroRelativo.textoEditavel = textoRelativo;
-                propagarTextoEntrePassosTransformacaoComposta(numeroRelativo, textoRelativo);
             }
 
             if (atualizarGrafico) {
                 registrarEscolhaGraficoInteiros(
                         item,
                         numeroRelativo,
-                        scaffoldingReacaoRepresentacoes.valorAbsolutoComoTexto(valorRelativo),
-                        scaffoldingReacaoRepresentacoes.sinalDe(valorRelativo)
+                        servicoQuantidadeContextual.formatarMagnitudeNumeroRelativo(
+                                valorRelativo, situacaoProblemaAtual),
+                        servicoQuantidadeContextual.sinalNumeroRelativo(valorRelativo)
                 );
             }
         }
@@ -13637,24 +12480,6 @@ public class Main extends JFrame {
                 }
             }
             return null;
-        }
-
-        private void atualizarEstadoFinalAPartirDoNumeroRelativo(ElementoVergnaud numeroRelativo, int valorRelativo) {
-            if (numeroRelativo == null) {
-                return;
-            }
-            int indiceRelacao = elementosVergnaud.indexOf(numeroRelativo);
-            reagirConsistenciaDaTransformacao(
-                    indiceRelacao,
-                    ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO,
-                    Integer.valueOf(valorRelativo)
-            );
-        }
-
-        private boolean ehElementoMedidaRetangular(ElementoVergnaud elemento) {
-            return elemento != null
-                    && (elemento.tipo == TipoFiguraDiagrama.RETANGULO
-                    || elemento.tipo == TipoFiguraDiagrama.RETANGULO_ARREDONDADO);
         }
 
         private Integer obterValorNumericoDoElemento(ElementoVergnaud elemento) {
@@ -13738,6 +12563,7 @@ public class Main extends JFrame {
         private void limparGraficoInteiros() {
             itemGraficoInteiros = null;
             numeroRelativoGraficoInteiros = null;
+            handlerEixoInteiros.cancelar();
             scaffoldingGraficoInteiros.ocultar();
         }
 
@@ -13766,62 +12592,30 @@ public class Main extends JFrame {
         }
 
         private boolean ehElementoNumeroRelativo(ElementoVergnaud elemento) {
-            return elemento != null && elemento.tipo == TipoFiguraDiagrama.ELIPSE;
+            return elemento != null && elemento.exibirLupa;
         }
 
         private int calcularValorRelativo(String base, String sinal) {
-            return scaffoldingReacaoRepresentacoes.calcularValorRelativo(base, sinal);
-        }
-
-        private boolean primeiraQuantidadeDaRelacaoEhDesconhecida() {
-            if (situacaoProblemaAtual == null) {
-                return false;
-            }
-            String desconhecido = normalizarChaveComparacao(
-                    situacaoProblemaAtual.getTermoDesconhecido());
-            return desconhecido.contains("referido")
-                    || desconhecido.contains("estado_inicial");
-        }
-
-        private ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente
-                calcularQuantidadeDependenteDoValorRelativo(
-                        ElementoVergnaud relacao, int valorRelativo) {
-            if (relacao == null || elementosVergnaud == null) {
-                return ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente.ausente();
-            }
-            int indiceRelacao = elementosVergnaud.indexOf(relacao);
-            if (indiceRelacao < 1 || indiceRelacao + 1 >= elementosVergnaud.size()) {
-                return ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente.ausente();
-            }
-
-            Integer primeiraQuantidade = obterValorEstadoInicialParaRelacao(indiceRelacao);
-            Integer terceiraQuantidade = obterValorNumericoDoElemento(
-                    elementosVergnaud.get(indiceRelacao + 1));
-
-            return scaffoldingReacaoRepresentacoes.calcularQuantidadeDependente(
-                    indiceRelacao,
-                    primeiraQuantidade,
-                    terceiraQuantidade,
-                    primeiraQuantidadeDaRelacaoEhDesconhecida(),
-                    valorRelativo
-            );
+            return servicoQuantidadeContextual.converterNumeroRelativoLegado(
+                    base, sinal, situacaoProblemaAtual);
         }
 
         private boolean valorRelativoPreservaQuantidadesNaoNegativas(
                 ElementoVergnaud relacao, int valorRelativo) {
-            ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente resultado =
-                    calcularQuantidadeDependenteDoValorRelativo(
-                            relacao, valorRelativo);
-            if (!resultado.foiCalculado()) {
+            int indiceVisual = obterIndiceVisualPorIdentidadeSemantica(relacao);
+            int indicePapel = converterIndiceRealParaPapel(indiceVisual);
+            if (indicePapel < 0 || indicePapel > 2) {
                 return true;
             }
-            return politicaValoresAditivos.valorEhValidoParaElemento(
-                    tipoSituacaoSelecionada,
-                    resultado.getIndiceDependente(),
-                    usaDiagramasEncadeadosTransformacaoComposta(),
-                    quantidadePassosTransformacaoComposta,
-                    resultado.getValor()
-            );
+            EstadoSemanticoCompartilhado.Snapshot snapshot =
+                    estadoSemanticoCompartilhado.snapshot();
+            ValorNumerico[] valores = new ValorNumerico[] {
+                snapshot.getValorNumerico(0), snapshot.getValorNumerico(1),
+                snapshot.getValorNumerico(2)
+            };
+            return resolvedorRelacoesEstruturais.tentativaPreservaDominios(
+                    tipoSituacaoSelecionada, valores, indicePapel,
+                    Integer.valueOf(valorRelativo));
         }
 
         private void informarBloqueioQuantidadeNegativa() {
@@ -13967,7 +12761,8 @@ public class Main extends JFrame {
 
         private void restaurarValorRelativoPositivoSeguro(
                 ElementoVergnaud relacao, ItemTextoArrastavel item, String base) {
-            int valorSeguro = Math.abs(calcularValorRelativo(base, "+"));
+            int valorSeguro = politicaRestauracaoValorRelativo
+                    .restaurarComoPositivo(calcularValorRelativo(base, "+"));
             aplicarValorRelativoNoDiagrama(relacao, item, valorSeguro, true);
             sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                     relacao, EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
@@ -14003,12 +12798,7 @@ public class Main extends JFrame {
                             if (registroSinal == null) {
                                 registrarEscolhaSinalSemCriterio(base, sinal);
                             }
-                            propagarTextoEntrePassosTransformacaoComposta(elemento, elemento.textoEditavel);
                             registrarEscolhaGraficoInteiros(null, elemento, base, sinal);
-                            reagirConsistenciaAPartirDoElemento(
-                                    elemento,
-                                    ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                            );
                             sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                                     elemento, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO);
                             verificarConclusaoModelagem();
@@ -14077,10 +12867,6 @@ public class Main extends JFrame {
                             // usuário pode reabrir o menu de sinal para tentar de
                             // novo (ver confirmarValorIncognitaAceito).
                             if (confirmarValorIncognitaAceito(item)) {
-                                reagirConsistenciaAPartirDoElemento(
-                                        numeroRelativoFinal,
-                                        ScaffoldingReacaoRepresentacoes.OrigemAlteracao.NUMERO_RELATIVO
-                                );
                                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                                         numeroRelativoFinal,
                                         EstadoSemanticoCompartilhado.Origem.ARRASTE);
@@ -14129,34 +12915,12 @@ public class Main extends JFrame {
                 elemento.preenchidoExplicitamentePeloUsuario =
                         elemento.textoEditavel != null
                         && elemento.textoEditavel.trim().length() > 0;
-                propagarTextoEntrePassosTransformacaoComposta(elemento, elemento.textoEditavel);
                 if (ehElementoNumeroRelativo(elemento) && scaffoldingNumeroRelativo.ehNumeroOuInterrogacao(elemento.textoEditavel)) {
                     solicitarSinalNumeroRelativoParaTexto(elemento);
                 } else {
                     atualizarRepresentacoesReativasAposAlteracaoDoElemento(elemento);
                 }
                 repaint();
-            }
-        }
-
-        private void propagarTextoEntrePassosTransformacaoComposta(ElementoVergnaud elemento, String texto) {
-            if (!usaDiagramasEncadeadosTransformacaoComposta() || elemento == null) {
-                return;
-            }
-
-            int indice = elementosVergnaud.indexOf(elemento);
-            if (indice < 0) {
-                return;
-            }
-
-            int indiceLocalNoPasso = indice % 3;
-            int indicePassoSeguinte = indice + 1;
-
-            if (indiceLocalNoPasso == 2 && indicePassoSeguinte < elementosVergnaud.size()) {
-                ElementoVergnaud proximoEstadoInicial = elementosVergnaud.get(indicePassoSeguinte);
-                if (!devePreservarMarcadorIncognita(proximoEstadoInicial)) {
-                    proximoEstadoInicial.textoEditavel = texto != null ? texto : "";
-                }
             }
         }
 
@@ -14224,13 +12988,15 @@ public class Main extends JFrame {
         }
 
         private void aplicarEdicaoValorRelativoComparacao(int valorRelativo) {
-            if (elementosVergnaud == null || elementosVergnaud.size() < 3) {
+            ElementoVergnaud referido = encontrarElementoVergnaudPorPapel(
+                    "papel.referido");
+            ElementoVergnaud relacao = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            ElementoVergnaud referendo = encontrarElementoVergnaudPorPapel(
+                    "papel.referendo");
+            if (referido == null || relacao == null || referendo == null) {
                 return;
             }
-
-            ElementoVergnaud referido = elementosVergnaud.get(0);
-            ElementoVergnaud relacao = elementosVergnaud.get(1);
-            ElementoVergnaud referendo = elementosVergnaud.get(2);
             if (!valorRelativoPreservaQuantidadesNaoNegativas(relacao, valorRelativo)) {
                 informarBloqueioQuantidadeNegativa();
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
@@ -14242,19 +13008,16 @@ public class Main extends JFrame {
 
             Integer valorReferido = obterValorNumericoDoElemento(referido);
             Integer valorReferendo = obterValorNumericoDoElemento(referendo);
-            String desconhecido = situacaoProblemaAtual == null
-                    ? ""
-                    : normalizarChaveComparacao(situacaoProblemaAtual.getTermoDesconhecido());
-
-            if (desconhecido.contains("referido") && valorReferendo != null) {
+            RecalculoComparacaoMedidas.Resultado resultadoRecalculo =
+                    RecalculoComparacaoMedidas.decidir(
+                            "papel.referido".equals(obterPapelIncognitaAtual()),
+                            valorReferido, valorReferendo, valorRelativo);
+            if (resultadoRecalculo.getPapel() == RecalculoComparacaoMedidas.PapelAlvo.REFERIDO) {
                 definirValorNoElementoMedida(referido,
-                        Integer.toString(valorReferendo.intValue() - valorRelativo));
-            } else if (valorReferido != null) {
+                        Integer.toString(resultadoRecalculo.getValor()));
+            } else if (resultadoRecalculo.getPapel() == RecalculoComparacaoMedidas.PapelAlvo.REFERENDO) {
                 definirValorNoElementoMedida(referendo,
-                        Integer.toString(valorReferido.intValue() + valorRelativo));
-            } else if (valorReferendo != null) {
-                definirValorNoElementoMedida(referido,
-                        Integer.toString(valorReferendo.intValue() - valorRelativo));
+                        Integer.toString(resultadoRecalculo.getValor()));
             }
 
             proporcaoControleComparacao = -1.0;
@@ -14330,13 +13093,8 @@ public class Main extends JFrame {
                     // A posição já foi validada quando o item foi
                     // solto/arrastado até aqui (evento SOLTURA_USUARIO
                     // anterior); reconferir agora é reavaliação de
-                    // consistência (reativa — não conta como 2ª ação
-                    // pedagógica, não mexe em ZDP/Modelador de novo), não
-                    // um gesto canônico novo.
-                    if (agentAuditService != null) {
-                        agentAuditService.reservarProximoGesto(
-                                identidadeAcao == null ? null : identidadeAcao.getActionId());
-                    }
+                    // consistência é reativa: não constitui uma segunda
+                    // ação instrumental nem um novo gesto canônico.
                     String ceIncognita = "-";
                     String regrasIncognita = "A ação não foi avaliada como acerto ou erro matemático.";
                     ResultadoQuestionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item,
@@ -14365,12 +13123,7 @@ public class Main extends JFrame {
                                 "Item arrastável", "Especificar valor numérico", "valor=" + entrada, "Valor numérico informado.");
                     }
                     if (numeroRelativo != null) {
-                        // Fluxo de sinal, não de confirmação de valor da
-                        // incógnita — não há 2º subevento vindo, libera a
-                        // reserva aqui.
-                        if (agentAuditService != null) {
-                            agentAuditService.liberarReservaDeGesto();
-                        }
+                        // Fluxo de sinal, não de confirmação de valor.
                         item.valor = scaffoldingNumeroRelativo.removerSinal(entrada);
                         ajustarTamanhoDoItem(item);
                         if (!deveBloquearMenuNumeroRelativoPorQuestionamento(item, numeroRelativo)) {
@@ -14382,12 +13135,6 @@ public class Main extends JFrame {
                         }
                         item.valor = scaffoldingNumeroRelativo.removerSinalPositivo(entrada);
                         ajustarTamanhoDoItem(item);
-                        if (!preenchimentoDeInterrogacao && agentAuditService != null) {
-                            // Não é preenchimento de incógnita: não há
-                            // confirmarValorIncognitaAceito por vir, ninguém
-                            // mais vai consumir a reserva.
-                            agentAuditService.liberarReservaDeGesto();
-                        }
                         if (preenchimentoDeInterrogacao
                                 && !confirmarValorIncognitaAceito(item, identidadeAcao, true)) {
                             // Usuário respondeu "Não" à pergunta de confirmação:
@@ -14854,7 +13601,7 @@ public class Main extends JFrame {
             return scaffoldingQuestionamento.obterIndiceElementoPorPapel(
                     chavePapel,
                     tipoSituacaoSelecionada,
-                    usaDiagramasEncadeadosTransformacaoComposta(),
+                    false,
                     quantidadePassosTransformacaoComposta
             );
         }
@@ -14941,25 +13688,19 @@ public class Main extends JFrame {
          * "papel.valor", recupera-se da curadoria o papel efetivamente ocupado
          * pela incógnita (estado inicial, transformação, estado final, parte 1,
          * parte 2, referido, referendo, valor relativo ou todo).
+         *
+         * Lógica movida em 2026-09-01 para
+         * {@link gerard.interpretacao.modelo.ResolvedorPapelInterpretado}
+         * (não dependia de Swing nem de outro estado de instância além de
+         * {@code resultadoInterpretacao}) — ver
+         * LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md. Este método
+         * preserva o nome e a assinatura para todos os pontos de chamada
+         * existentes.
          */
         private String aplicarFallbackCuradoItemDesconhecido(String chavePapel) {
-            if (!"papel.valor".equals(chavePapel)) {
-                return chavePapel;
-            }
-            if (resultadoInterpretacao != null && resultadoInterpretacao.getPapeis() != null) {
-                java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-                for (int i = 0; i < papeis.size(); i++) {
-                    PapelElementoInterpretado papel = papeis.get(i);
-                    if (papel != null && !papel.isConhecido()
-                            && papel.getChavePapel() != null
-                            && papel.getChavePapel().trim().length() > 0) {
-                        return converterParaPapelCanonico(papel.getChavePapel());
-                    }
-                }
-            }
-            return chavePapel;
+            return ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(
+                    resultadoInterpretacao, chavePapel);
         }
-
 
         private String obterChavePapelExataDoElemento(ElementoTextoMovel elemento) {
             if (elemento != null && elemento.possuiVinculoSemantico()
@@ -14970,75 +13711,17 @@ public class Main extends JFrame {
                 return obterChavePapelExataPorValor("?");
             }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                return obterChavePapelExataComposicaoTransformacaoPorIndice(indice);
-            }
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                if (indice == 0) {
-                    return "papel.estadoInicial";
-                }
-                if (indice > 0 && indice <= quantidadePassosTransformacaoComposta) {
-                    return "papel.transformacao" + indice;
-                }
-                return "papel.estadoFinal";
-            }
             return obterChavePapelExataPorIndice(indice);
         }
 
-        private String obterChavePapelExataComposicaoTransformacaoPorIndice(int indice) {
-            if (indice == 0) {
-                return "papel.parte1";
-            }
-            if (indice == 1) {
-                return "papel.parte2";
-            }
-            if (indice == 2 || indice == 3) {
-                return "papel.transformacao";
-            }
-            if (indice >= 4) {
-                return "papel.estadoFinal";
-            }
-            return "papel.valor";
-        }
-
         private String obterChavePapelExataPorValor(String valor) {
-            if (resultadoInterpretacao == null || valor == null) {
-                return "papel.valor";
-            }
-
-            java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-
-            if (SimboloDesconhecido.eh(valor)) {
-                for (int i = 0; i < papeis.size(); i++) {
-                    PapelElementoInterpretado papel = papeis.get(i);
-                    if (!papel.isConhecido()) {
-                        return papel.getChavePapel();
-                    }
-                }
-            }
-
-            for (int i = 0; i < papeis.size(); i++) {
-                PapelElementoInterpretado papel = papeis.get(i);
-                if (valor.equals(papel.getElemento())) {
-                    return papel.getChavePapel();
-                }
-            }
-
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(
+                    resultadoInterpretacao, valor);
         }
 
         private String obterChavePapelExataPorIndice(int indice) {
-            if (resultadoInterpretacao == null || indice < 0) {
-                return "papel.valor";
-            }
-
-            java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-
-            if (indice >= 0 && indice < papeis.size()) {
-                return papeis.get(indice).getChavePapel();
-            }
-
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.obterChavePapelExataPorIndice(
+                    resultadoInterpretacao, indice);
         }
 
         private String obterChavePapelCanonicoDoElemento(ElementoTextoMovel elemento) {
@@ -15050,18 +13733,6 @@ public class Main extends JFrame {
                 return converterParaPapelCanonico(obterChavePapelExataPorValor("?"));
             }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            if (usaDiagramasComposicaoTransformacaoMedidas()) {
-                return converterParaPapelCanonico(obterChavePapelExataComposicaoTransformacaoPorIndice(indice));
-            }
-            if (usaDiagramasEncadeadosTransformacaoComposta()) {
-                if (indice == 0) {
-                    return "papel.estadoInicial";
-                }
-                if (indice > 0 && indice <= quantidadePassosTransformacaoComposta) {
-                    return "papel.transformacao";
-                }
-                return "papel.estadoFinal";
-            }
             return obterChavePapelCanonicoPorIndice(indice);
         }
 
@@ -15083,89 +13754,18 @@ public class Main extends JFrame {
         }
 
         private String obterChavePapelCanonicoPorValor(String valor) {
-            if (resultadoInterpretacao == null || valor == null) {
-                return "papel.valor";
-            }
-
-            java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-
-            for (int i = 0; i < papeis.size(); i++) {
-                PapelElementoInterpretado papel = papeis.get(i);
-
-                if (valor.equals(papel.getElemento())) {
-                    return converterParaPapelCanonico(papel.getChavePapel());
-                }
-            }
-
-            if (SimboloDesconhecido.eh(valor)) {
-                for (int i = 0; i < papeis.size(); i++) {
-                    PapelElementoInterpretado papel = papeis.get(i);
-
-                    if (!papel.isConhecido()) {
-                        return converterParaPapelCanonico(papel.getChavePapel());
-                    }
-                }
-            }
-
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorValor(
+                    resultadoInterpretacao, valor);
         }
 
         private String obterChavePapelCanonicoPorIndice(int indice) {
-            if (resultadoInterpretacao == null || indice < 0) {
-                return "papel.valor";
-            }
-
-            java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-
-            if (indice >= 0 && indice < papeis.size()) {
-                return converterParaPapelCanonico(papeis.get(indice).getChavePapel());
-            }
-
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorIndice(
+                    resultadoInterpretacao, indice);
         }
 
+        /** Ver {@link gerard.interpretacao.modelo.ResolvedorPapelInterpretado#converterParaPapelCanonico}. */
         private String converterParaPapelCanonico(String chavePapel) {
-            if (chavePapel == null) {
-                return "papel.valor";
-            }
-
-            if (chavePapel.indexOf("parte") >= 0) {
-                return "papel.parte";
-            }
-
-            if (chavePapel.indexOf("todo") >= 0) {
-                return "papel.todo";
-            }
-
-            if (chavePapel.indexOf("estadoInicial") >= 0) {
-                return "papel.estadoInicial";
-            }
-
-            if (chavePapel.indexOf("estadoFinal") >= 0) {
-                return "papel.estadoFinal";
-            }
-
-            if (chavePapel.indexOf("transformacao") >= 0) {
-                return "papel.transformacao";
-            }
-
-            if (chavePapel.indexOf("referendo") >= 0 || chavePapel.indexOf("referente") >= 0) {
-                return "papel.referendo";
-            }
-
-            if (chavePapel.indexOf("referido") >= 0) {
-                return "papel.referido";
-            }
-
-            if (chavePapel.indexOf("diferenca") >= 0) {
-                return "papel.diferenca";
-            }
-
-            if (chavePapel.indexOf("relacao") >= 0) {
-                return "papel.relacao";
-            }
-
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.converterParaPapelCanonico(chavePapel);
         }
 
         public void keyPressed(KeyEvent e) {
@@ -15231,51 +13831,13 @@ public class Main extends JFrame {
             dialogo.setVisible(true);
         }
 
-        private final class ModeloNumericoComparacao {
-            int parcela1 = 4;
-            int parcela2 = 7;
-            final java.util.List<Runnable> ouvintes = new ArrayList<Runnable>();
-
-            int total() { return parcela1 + parcela2; }
-
-            void definir(int a, int b) {
-                parcela1 = Math.max(0, a);
-                parcela2 = Math.max(0, b);
-                notificar();
-            }
-
-            void definirPapel(TipoSituacaoAditiva categoria, int indice, int valor) {
-                valor = Math.max(0, valor);
-                if (categoria == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
-                    if (indice == 0) parcela1 = valor;
-                    else if (indice == 1) parcela2 = valor;
-                    else parcela2 = Math.max(0, valor - parcela1);
-                } else if (categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
-                    if (indice == 0) parcela1 = valor;
-                    else if (indice == 1) parcela2 = valor;
-                    else parcela2 = Math.max(0, valor - parcela1);
-                } else {
-                    // Na comparação, M1 é o referente, R a relação e M2 o referido.
-                    if (indice == 0) parcela1 = valor;
-                    else if (indice == 1) parcela2 = valor;
-                    else parcela2 = Math.max(0, valor - parcela1);
-                }
-                notificar();
-            }
-
-            void adicionarOuvinte(Runnable r) { ouvintes.add(r); }
-
-            void notificar() {
-                for (Runnable r : new ArrayList<Runnable>(ouvintes)) r.run();
-            }
-        }
-
         private final class PainelComparacaoCategorias extends JPanel {
             // Terceiro tom de cinza (mais claro que COR_TEXTO/COR_TEXTO_SECUNDARIO,
             // ainda legível) usado só para distinguir o "total" de parcela1/parcela2
             // no rastreio de valores entre colunas — ver comentário acima de total.setForeground.
             final Color COR_CINZA_TOTAL_COMPARACAO = new Color(150, 142, 128);
-            final ModeloNumericoComparacao modelo = new ModeloNumericoComparacao();
+            final EstadoNumericoComparacaoCategorias modelo =
+                    new EstadoNumericoComparacaoCategorias(4, 7);
             final JSpinner spinnerA = new JSpinner(new SpinnerNumberModel(4, 0, 999, 1));
             final JSpinner spinnerB = new JSpinner(new SpinnerNumberModel(7, 0, 999, 1));
             final JPanel grade = new JPanel(new GridBagLayout());
@@ -15328,7 +13890,7 @@ public class Main extends JFrame {
                 valores.add(new JLabel("+"));
                 valores.add(spinnerB);
                 valores.add(new JLabel("="));
-                final JLabel total = new JLabel(String.valueOf(modelo.total()));
+                final JLabel total = new JLabel(String.valueOf(modelo.getTotal()));
                 total.setFont(new Font("Arial", Font.BOLD, 14));
                 // Tons de cinza, não cores: o rastreio de valores entre colunas
                 // não deve competir com o azul de COR_SUCESSO nem introduzir
@@ -15350,11 +13912,11 @@ public class Main extends JFrame {
                 ChangeListener listener = new ChangeListener() {
                     public void stateChanged(ChangeEvent e) {
                         if (atualizandoControles) return;
-                        modelo.definir(((Number) spinnerA.getValue()).intValue(),
+                        modelo.definirParcelas(((Number) spinnerA.getValue()).intValue(),
                                 ((Number) spinnerB.getValue()).intValue());
-                        total.setText(String.valueOf(modelo.total()));
-                        formulaDestaque.setText(modelo.parcela1 + " + " + modelo.parcela2 + " = " + modelo.total());
-                        registrarAcaoComparacao("ALTERAR_VALORES_COMUNS", "a=" + modelo.parcela1 + ";b=" + modelo.parcela2 + ";total=" + modelo.total());
+                        total.setText(String.valueOf(modelo.getTotal()));
+                        formulaDestaque.setText(modelo.getPrimeiraParcela() + " + " + modelo.getSegundaParcela() + " = " + modelo.getTotal());
+                        registrarAcaoComparacao("ALTERAR_VALORES_COMUNS", "a=" + modelo.getPrimeiraParcela() + ";b=" + modelo.getSegundaParcela() + ";total=" + modelo.getTotal());
                     }
                 };
                 spinnerA.addChangeListener(listener);
@@ -15363,10 +13925,10 @@ public class Main extends JFrame {
                     public void run() {
                         atualizandoControles = true;
                         try {
-                            spinnerA.setValue(modelo.parcela1);
-                            spinnerB.setValue(modelo.parcela2);
-                            total.setText(String.valueOf(modelo.total()));
-                            formulaDestaque.setText(modelo.parcela1 + " + " + modelo.parcela2 + " = " + modelo.total());
+                            spinnerA.setValue(modelo.getPrimeiraParcela());
+                            spinnerB.setValue(modelo.getSegundaParcela());
+                            total.setText(String.valueOf(modelo.getTotal()));
+                            formulaDestaque.setText(modelo.getPrimeiraParcela() + " + " + modelo.getSegundaParcela() + " = " + modelo.getTotal());
                             grade.repaint();
                             atualizarTextosSituacoes();
                         } finally {
@@ -15462,9 +14024,9 @@ public class Main extends JFrame {
                         : categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
                         ? "ui.compare.problem.transformation"
                         : "ui.compare.problem.comparison";
-                String valorA = "<span style='color:#332E28;font-weight:bold'>" + modelo.parcela1 + "</span>";
-                String valorB = "<span style='color:#746E62;font-weight:bold'>" + modelo.parcela2 + "</span>";
-                String valorTotal = "<span style='color:#968E80;font-weight:bold'>" + modelo.total() + "</span>";
+                String valorA = "<span style='color:#332E28;font-weight:bold'>" + modelo.getPrimeiraParcela() + "</span>";
+                String valorB = "<span style='color:#746E62;font-weight:bold'>" + modelo.getSegundaParcela() + "</span>";
+                String valorTotal = "<span style='color:#968E80;font-weight:bold'>" + modelo.getTotal() + "</span>";
                 return "<html><div style='padding:5px 7px'><b>" + romano + ". " + titulo + "</b><br><br>"
                         + localizacao.formatar(chave, valorA, valorB, valorTotal)
                         + "</div></html>";
@@ -15499,11 +14061,11 @@ public class Main extends JFrame {
                     g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                     int tamanhoFonte = Math.max(14, Math.min(28, getHeight() / 8));
                     g2.setFont(new Font("Arial", Font.BOLD, tamanhoFonte));
-                    String a = String.valueOf(modelo.parcela1);
+                    String a = String.valueOf(modelo.getPrimeiraParcela());
                     String op1 = " + ";
-                    String b = String.valueOf(modelo.parcela2);
+                    String b = String.valueOf(modelo.getSegundaParcela());
                     String op2 = " = ";
-                    String t = String.valueOf(modelo.total());
+                    String t = String.valueOf(modelo.getTotal());
                     FontMetrics fm = g2.getFontMetrics();
                     int largura = fm.stringWidth(a + op1 + b + op2 + t);
                     int x = Math.max(6, (getWidth() - largura) / 2);
@@ -15630,9 +14192,9 @@ public class Main extends JFrame {
 
                 void desenharComposicao(Graphics2D g2) {
                     int w=getWidth(), h=getHeight(); int x1=w/4, x2=w/4, xt=3*w/4;
-                    desenharValor(g2,x1,h/3,modelo.parcela1,false);
-                    desenharValor(g2,x2,2*h/3,modelo.parcela2,false);
-                    desenharValor(g2,xt,h/2,modelo.total(),false);
+                    desenharValor(g2,x1,h/3,modelo.getPrimeiraParcela(),false);
+                    desenharValor(g2,x2,2*h/3,modelo.getSegundaParcela(),false);
+                    desenharValor(g2,xt,h/2,modelo.getTotal(),false);
                     double r = escalaTraco();
                     int bx=w/2-(int)Math.round(12*r);
                     g2.drawArc(bx,h/3-(int)Math.round(18*r),(int)Math.round(30*r),h/3+(int)Math.round(36*r),270,180);
@@ -15640,9 +14202,9 @@ public class Main extends JFrame {
 
                 void desenharTransformacao(Graphics2D g2) {
                     int w=getWidth(), h=getHeight(); int y=2*h/3;
-                    desenharValor(g2,w/5,y,modelo.parcela1,false);
-                    desenharValor(g2,w/2,h/3,modelo.parcela2,true);
-                    desenharValor(g2,4*w/5,y,modelo.total(),false);
+                    desenharValor(g2,w/5,y,modelo.getPrimeiraParcela(),false);
+                    desenharValor(g2,w/2,h/3,modelo.getSegundaParcela(),true);
+                    desenharValor(g2,4*w/5,y,modelo.getTotal(),false);
                     double r = escalaTraco();
                     int gap=(int)Math.round(25*r), ponta=(int)Math.round(35*r), asa=(int)Math.round(6*r);
                     g2.drawLine(w/5+gap,y,4*w/5-gap,y);
@@ -15651,9 +14213,9 @@ public class Main extends JFrame {
 
                 void desenharComparacao(Graphics2D g2) {
                     int w=getWidth(), h=getHeight(); int x=w/2;
-                    desenharValor(g2,x,h/5,modelo.total(),false);
-                    desenharValor(g2,x,h*4/5,modelo.parcela1,false);
-                    desenharValor(g2,x+w/4,h/2,modelo.parcela2,true);
+                    desenharValor(g2,x,h/5,modelo.getTotal(),false);
+                    desenharValor(g2,x,h*4/5,modelo.getPrimeiraParcela(),false);
+                    desenharValor(g2,x+w/4,h/2,modelo.getSegundaParcela(),true);
                     double r = escalaTraco();
                     int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
                     g2.drawLine(x,h/5+gap,x,h*4/5-gap);
@@ -15699,12 +14261,13 @@ public class Main extends JFrame {
                 public void mouseClicked(MouseEvent e) {
                     if (formal || e.getClickCount() < 2) return;
                     for (int i=0;i<alvos.size();i++) if (alvos.get(i).contains(e.getPoint())) {
-                        String entrada = solicitarValorInteiro(
-                                i == 0 ? modelo.parcela1 : i == 1 ? modelo.parcela2 : modelo.total());
+                        EstadoNumericoComparacaoCategorias.Papel papel =
+                                papelRepresentadoNoIndice(i);
+                        String entrada = solicitarValorInteiro(valorAtual(papel));
                         if (entrada == null) return;
                         try {
                             int valor=Integer.parseInt(entrada.trim());
-                            modelo.definirPapel(categoria,i,valor);
+                            modelo.definir(papel, valor);
                             registrarAcaoComparacao("EDITAR_REPRESENTACAO", "categoria="+categoria.name()+";representacao="+(formal?"CATEGORIA":"SITUACAO")+";indice="+i+";valor="+valor);
                         } catch(NumberFormatException ex) {
                             JOptionPane.showMessageDialog(this, localizacao.texto("ui.compare.invalidValue"));
@@ -15716,6 +14279,29 @@ public class Main extends JFrame {
                 public void mouseReleased(MouseEvent e) {}
                 public void mouseEntered(MouseEvent e) {}
                 public void mouseExited(MouseEvent e) {}
+
+                private EstadoNumericoComparacaoCategorias.Papel
+                        papelRepresentadoNoIndice(int indice) {
+                    if (categoria == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+                        if (indice == 0) return EstadoNumericoComparacaoCategorias.Papel.TOTAL;
+                        if (indice == 1) return EstadoNumericoComparacaoCategorias.Papel.PRIMEIRA_PARCELA;
+                        return EstadoNumericoComparacaoCategorias.Papel.SEGUNDA_PARCELA;
+                    }
+                    if (indice == 0) return EstadoNumericoComparacaoCategorias.Papel.PRIMEIRA_PARCELA;
+                    if (indice == 1) return EstadoNumericoComparacaoCategorias.Papel.SEGUNDA_PARCELA;
+                    return EstadoNumericoComparacaoCategorias.Papel.TOTAL;
+                }
+
+                private int valorAtual(
+                        EstadoNumericoComparacaoCategorias.Papel papel) {
+                    if (papel == EstadoNumericoComparacaoCategorias.Papel.PRIMEIRA_PARCELA) {
+                        return modelo.getPrimeiraParcela();
+                    }
+                    if (papel == EstadoNumericoComparacaoCategorias.Papel.SEGUNDA_PARCELA) {
+                        return modelo.getSegundaParcela();
+                    }
+                    return modelo.getTotal();
+                }
             }
         }
 

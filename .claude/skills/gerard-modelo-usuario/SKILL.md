@@ -1,6 +1,6 @@
 ---
 name: gerard-modelo-usuario
-description: Esquema das dimensões do Modelo do Usuário do Gérard (Quadro 5.60 do material de pesquisa) — o que é armazenado sobre cada usuário e usado pelo Agente Modelador (J48.PART + APRIORI) para aprender regras. Use ao criar, revisar ou estender qualquer estrutura de dados relacionada ao perfil/modelo do usuário no Gérard. Esta skill é dona do esquema; NÃO decide como as regras são inferidas (ver gerard-ajuda-adaptativa/references/agente-modelador.md) nem como a estratégia pedagógica é escolhida (ver agente-zdp.md).
+description: Esquema das dimensões do Modelo do Usuário do Gérard (Quadro 5.60 do material de pesquisa) — o que é armazenado sobre cada usuário e usado pelo Agente Modelador (J48.PART + APRIORI) para aprender regras. Use ao criar, revisar ou estender qualquer estrutura de dados relacionada ao perfil/modelo do usuário no Gérard. Esta skill é dona do esquema; a seleção da ajuda pertence ao proprietário semântico.
 ---
 
 # Modelo do Usuário — Gérard
@@ -45,6 +45,6 @@ Em qual categoria de estruturas aditivas o usuário tem maior domínio, e qual e
 ## Relação com os agentes
 
 - O **Agente Modelador** escreve/atualiza este modelo (ver `gerard-ajuda-adaptativa/references/agente-modelador.md`), usando J48.PART + APRIORI para inferir novas regras a partir dos casos acumulados aqui.
-- O **Agente ZDP** consulta este modelo para decidir a estratégia pedagógica (ver `agente-zdp.md`).
+- Cada proprietário semântico consulta somente a projeção pertinente e escolhe uma ajuda em seu repertório local.
 
 Este arquivo não decide como as regras são inferidas nem como a estratégia é escolhida — só documenta o que é armazenado.

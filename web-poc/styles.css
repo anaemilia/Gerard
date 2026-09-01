@@ -61,3 +61,10 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .confirmation-dialog p { margin:0 0 20px; line-height:1.5; }
 .dialog-actions { display:flex; justify-content:flex-end; gap:10px; }
 .dialog-actions button { min-width:76px; min-height:40px; }
+.portable-scene { width:100%; height:100%; min-height:420px; background:var(--superficie); }
+.scene-figure rect,.scene-figure ellipse { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:2; }
+.scene-figure text,.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
+.scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; }
+.scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
+.scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }
+.scene-magnifier path { fill:none; }

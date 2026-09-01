@@ -16,11 +16,9 @@ import java.util.Optional;
 
 /**
  * Harness executável do piloto Composição de Transformações — categoria
- * "Relações" de Vergnaud, não "Medidas": os três papéis (Transformacao1,
- * Transformacao2, TransformacaoFinal) são todos INTEIROS, sem restrição de
- * sinal — por isso, diferente dos harnesses de Composição/Transformação/
- * Comparação de Medidas, não há cenário de rejeição por domínio aqui: todo
- * valor inteiro é aceito nos três papéis. Mesmo padrão dos outros harnesses
+ * "Relações" de Vergnaud, não "Medidas": Transformacao1 e Transformacao2
+ * são inteiros não nulos; TransformacaoFinal é inteira e pode ser zero
+ * quando os efeitos se anulam. Mesmo padrão dos outros harnesses
  * do piloto quanto ao resto: calcularValorAusente() nunca modifica o papel
  * calculado, aplicar(...) é o passo explícito separado, origem_da_acao do
  * cálculo do sistema é sempre ORIGEM_SISTEMA.
@@ -47,13 +45,26 @@ public class TestePilotoComposicaoDeTransformacoes {
                 String.valueOf(FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador).ehIncognita()), "true");
 
         System.out.println();
-        System.out.println("=== Os três aceitam positivo, negativo e nulo (domínio INTEIROS nos três) ===");
+        System.out.println("=== Componentes são não nulos; a resultante pode ser zero ===");
         PapelQuantitativo t1 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
         checar("positivo (+5) é aceito", String.valueOf(t1.posicionar(new NumeroInteiro(5)).isPresent()), "false");
+        PapelQuantitativo t1Zero = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        checar("primeira transformação nula é rejeitada", String.valueOf(t1Zero.posicionar(new NumeroInteiro(0)).isPresent()), "true");
         PapelQuantitativo t2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
         checar("negativo (-3) é aceito", String.valueOf(t2.posicionar(new NumeroInteiro(-3)).isPresent()), "false");
+        PapelQuantitativo t2Zero = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        checar("segunda transformação nula é rejeitada", String.valueOf(t2Zero.posicionar(new NumeroInteiro(0)).isPresent()), "true");
         PapelQuantitativo t3 = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
-        checar("nulo (0) é aceito", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "false");
+        checar("transformação resultante nula é aceita", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "false");
+
+        PapelQuantitativo anulacao1 = FabricaPapeisComposicaoDeTransformacoes.transformacao1(publicador);
+        PapelQuantitativo anulacao2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(publicador);
+        PapelQuantitativo anulacaoFinal = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(publicador);
+        anulacao1.posicionar(new NumeroInteiro(2));
+        anulacao2.posicionar(new NumeroInteiro(-2));
+        anulacaoFinal.posicionar(new NumeroInteiro(0));
+        checar("+2 + (-2) = 0 é uma composição consistente",
+                relacao.verificarConsistencia(anulacao1, anulacao2, anulacaoFinal).name(), "CONSISTENTE");
 
         System.out.println();
         System.out.println("=== relação estrutural CONSISTENTE (8 + (-3) = 5) ===");
@@ -152,12 +163,12 @@ public class TestePilotoComposicaoDeTransformacoes {
                 relacao.verificarConsistencia(h1, h2, hf).name(), "REPRESENTACAO_INCOMPLETA");
 
         System.out.println();
-        System.out.println("=== Eventos semânticos (só ACEITO — INTEIROS nos três nunca rejeita) ===");
+        System.out.println("=== Eventos semânticos dos domínios distintos ===");
         long aceitos = eventos.stream().filter(e -> "ACEITO".equals(e.paraMapa().get("resultado"))).count();
         long rejeitados = eventos.stream().filter(e -> "REJEITADO".equals(e.paraMapa().get("resultado"))).count();
         System.out.println("total de eventos: " + eventos.size() + " (aceitos=" + aceitos + ", rejeitados=" + rejeitados + ")");
         checar("existe ao menos um evento de valor aceito", String.valueOf(aceitos > 0), "true");
-        checar("nenhum evento de rejeição (domínio INTEIROS nos três nunca rejeita)", String.valueOf(rejeitados), "0");
+        checar("as duas tentativas de componente nulo foram rejeitadas", String.valueOf(rejeitados), "2");
 
         System.out.println();
         System.out.println("=== Null Object do publicador ===");
@@ -173,7 +184,7 @@ public class TestePilotoComposicaoDeTransformacoes {
         System.out.println();
         System.out.println("=== Serialização por paraMapa() ===");
         System.out.println("d1.paraMapa() = " + d1.paraMapa());
-        checar("mapa serializado traz domínio INTEIROS", String.valueOf(d1.paraMapa().get("dominio")), "INTEIROS");
+        checar("mapa serializado traz domínio INTEIROS_NAO_NULOS", String.valueOf(d1.paraMapa().get("dominio")), "INTEIROS_NAO_NULOS");
         checar("mapa serializado traz o valor correto (8)", String.valueOf(d1.paraMapa().get("valor_atual")), "8");
 
         System.out.println();

@@ -151,17 +151,21 @@ fluxo_texto=(main[inicio_fluxo_texto:fim_fluxo_texto]
              if inicio_fluxo_texto >= 0 and fim_fluxo_texto > inicio_fluxo_texto
              else '')
 check(bool(fluxo_texto),'fluxo TEXTO distribuído localizado na Main')
-check('incognita.avaliarAcaoTexto(' in fluxo_texto,
+check('servicoAvaliacaoAcaoIncognita.avaliarAcao(' in fluxo_texto
+      and 'TarefaInteracao.TEXTO' in fluxo_texto,
       'proprietário semântico avalia a ação TEXTO')
+servico_avaliacao_incognita=text('src/gerard/aplicacao/ServicoAvaliacaoAcaoIncognita.java')
+check('incognita.avaliarAcao(' in servico_avaliacao_incognita
+      and all(token not in servico_avaliacao_incognita for token in ('javax.swing', 'java.awt')),
+      'serviço de aplicação delega a avaliação factual à incógnita sem depender de Swing/AWT')
 check(fluxo_texto.count('registrarAcaoInstrumentalUsuario(registro)') == 1,
       'uma ação TEXTO produz um único registro factual no log')
 check(fluxo_texto.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 1,
       'o mesmo registro chega uma única vez ao Modelador')
 check('executorAjudaIncognita.executar(' in fluxo_texto,
       'a interface materializa a decisão local de ajuda')
-check(all(token not in fluxo_texto for token in
-          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(')),
-      'Monitor e ZDP não participam do fluxo TEXTO migrado')
+check('registrarVeredito(' not in fluxo_texto,
+      'o fluxo TEXTO encaminha o registro factual sem adaptador de veredito')
 check('sessaoAdaptativaUsuario.iniciarNoLogin(idEscolhido)' in main
       and 'projetorContextoIncognita.projetarPara(' in main,
       'fotografia do Modelo do Usuário é carregada no login e projetada à incógnita')
@@ -173,11 +177,10 @@ check('correspondeAoEsperado' in incognita_rica
       and 'diagnosticoValorIncorreto' in incognita_rica
       and 'selecionarAjuda' in incognita_rica,
       'incógnita concentra avaliação, diagnóstico e seleção no repertório local')
-check(all(token not in incognita_rica for token in
-          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
-      'proprietário semântico permanece independente de Swing, AWT, Monitor e ZDP')
+check(all(token not in incognita_rica for token in ('javax.swing', 'java.awt')),
+      'proprietário semântico permanece independente de Swing e AWT')
 
-print('== P5.1: classificação de categoria sem Monitor/ZDP ==')
+print('== P5.1: classificação local de categoria ==')
 inicio_fluxo_categoria=main.find('private void clicarAtalhoCategoria(')
 fim_fluxo_categoria=main.find('private void acionarTimeoutCategoria(',
                                inicio_fluxo_categoria)
@@ -192,18 +195,15 @@ check(fluxo_categoria.count('registrarAcaoInstrumentalUsuario(registro)') == 2,
       'cada um dos dois atos de categoria entrega um único registro ao log')
 check(fluxo_categoria.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 2,
       'os mesmos registros de categoria chegam uma vez ao Modelador')
-check(all(token not in fluxo_categoria for token in
-          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(',
-           'LimiteErrosConsecutivosCategoria')),
-      'Monitor, ZDP e o limite legado não participam do fluxo de categoria')
+check('registrarVeredito(' not in fluxo_categoria,
+      'o fluxo de categoria encaminha o registro factual sem adaptador de veredito')
 tentativa_categoria=text(
     'src/gerard/dominio/campoaditivo/TentativaClassificacaoCategoriaAditiva.java')
 check('situacao.getTipo()' in tentativa_categoria
       and 'LIMITE_REJEICOES_CONSECUTIVAS = 3' in tentativa_categoria,
       'tentativa usa a categoria curada da situação e possui a sequência de rejeições')
-check(all(token not in tentativa_categoria for token in
-          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
-      'proprietário da classificação independe de Swing, AWT, Monitor e ZDP')
+check(all(token not in tentativa_categoria for token in ('javax.swing', 'java.awt')),
+      'proprietário da classificação independe de Swing e AWT')
 
 print('== P5.2: escolha de sinal no proprietário semântico ==')
 inicio_avaliacao_sinal=main.find(
@@ -233,13 +233,11 @@ check(avaliacao_sinal.count('registrarAcaoInstrumentalUsuario(registro)') == 1
 check(callbacks_sinal.count('avaliarEscolhaSinalNumeroRelativo(') == 2,
       'os dois caminhos de seleção usam o mesmo ponto de encaminhamento')
 check(all(token not in avaliacao_sinal + callbacks_sinal for token in
-          ('agenteMonitor', 'agenteZDP', 'registrarVeredito(',
-           'sinalEscolhidoCorrespondeAoCurado')),
-      'Monitor, ZDP e comparação semântica na Main não participam do fluxo')
+          ('registrarVeredito(', 'sinalEscolhidoCorrespondeAoCurado')),
+      'adaptador de veredito e comparação semântica na Main não participam do fluxo')
 check(all(token in callbacks_sinal for token in
           ('valorRelativoPreservaQuantidadesNaoNegativas(',
            'informarSuspeitaSinalIncorretoNumeroRelativo(',
-           'reagirConsistenciaAPartirDoElemento(',
            'sincronizarTodasAsRepresentacoesAPartirDoVergnaud(',
            'confirmarValorIncognitaAceito(')),
       'segurança, feedback, confirmação e sincronização foram preservados')
@@ -265,8 +263,8 @@ check('SINAL_DIVERGENTE_DO_PAPEL' in registro_sinal
       and 'TarefaInteracao.SELECIONAR' in registro_sinal,
       'registro factual tipa o diagnóstico e o protocolo de seleção')
 check(all(token not in tentativa_sinal + registro_sinal + numero_inteiro for token in
-          ('javax.swing', 'java.awt', 'AgenteMonitor', 'AgenteZDP')),
-      'proprietário e número permanecem independentes de UI, Monitor e ZDP')
+          ('javax.swing', 'java.awt')),
+      'proprietário e número permanecem independentes da UI')
 
 print('== Main compositora e roteadora: ratchet dos protocolos de interação ==')
 # Estes limites são a fotografia da versão arquitetural corrente. Eles não
@@ -274,10 +272,10 @@ print('== Main compositora e roteadora: ratchet dos protocolos de interação ==
 # justificar que a mecânica particular volte aos protocolos centrais. Cada
 # extração deve reduzir o método e, na mesma alteração, reduzir este limite.
 LIMITES_PROTOCOLOS_MAIN = {
-    'public void mousePressed(MouseEvent e)': 457,
+    'public void mousePressed(MouseEvent e)': 442,
     'public void mouseDragged(MouseEvent e)': 20,
-    'private void processarMovimentoArraste(int x, int y)': 69,
-    'public void mouseReleased(MouseEvent e)': 128,
+    'private void processarMovimentoArraste(int x, int y)': 67,
+    'public void mouseReleased(MouseEvent e)': 111,
     'public void mouseClicked(MouseEvent e)': 34,
     'public void mouseMoved(MouseEvent e)': 229,
 }
@@ -697,6 +695,114 @@ check('quadradinhoVennFocado' in main,
 check(main.count('encontrarQuadradinhoVenn(x, y)') >= 1,
       'tela continua responsável por decidir qual quadradinho foi alvo do pickup')
 
+print('== Fase 7.6: protocolo portátil do eixo flutuante de inteiros ==')
+alvo_eixo=text('src/gerard/interacao/arraste/AlvoInteracaoEixoInteiros.java')
+handler_eixo=text('src/gerard/interacao/arraste/HandlerInteracaoEixoInteiros.java')
+adaptador_eixo=text('src/gerard/ui/vergnaud/AdaptadorInteracaoEixoInteiros.java')
+fonte_geometria_eixo=text('src/gerard/ui/vergnaud/FonteGeometriaInteracaoEixoInteiros.java')
+teste_handler_eixo=text('tests/java/TesteHandlerInteracaoEixoInteiros.java')
+check('interface AlvoInteracaoEixoInteiros' in alvo_eixo
+      and 'identificarNatureza' in alvo_eixo
+      and 'processarPressionamento' in alvo_eixo
+      and 'moverPara' in alvo_eixo
+      and 'finalizarManipulacao' in alvo_eixo,
+      'porta portátil separa o protocolo da representação concreta do eixo')
+check('class HandlerInteracaoEixoInteiros' in handler_eixo
+      and 'ResultadoPressionamento iniciar' in handler_eixo
+      and 'public boolean mover' in handler_eixo
+      and 'public boolean concluir' in handler_eixo
+      and 'public void cancelar' in handler_eixo,
+      'handler do eixo expõe pressionamento, movimento, conclusão e cancelamento')
+check(all(token not in handler_eixo + alvo_eixo for token in
+          ('java.awt', 'javax.swing', 'Rectangle', 'ScaffoldingGraficoInteiros',
+           'Main', 'getWidth()', 'getHeight()')),
+      'protocolo do eixo permanece independente de Swing/AWT, tela, layout e scaffolding visual')
+check('implements AlvoInteracaoEixoInteiros' in adaptador_eixo
+      and 'ScaffoldingGraficoInteiros' in adaptador_eixo
+      and 'Rectangle' in adaptador_eixo
+      and 'FonteGeometriaInteracaoEixoInteiros' in adaptador_eixo
+      and 'Rectangle obterAreaDiagrama()' in fonte_geometria_eixo,
+      'adaptador desktop concentra a tradução do scaffolding e da geometria Rectangle')
+check('handlerEixoInteiros.iniciar' in main
+      and 'handlerEixoInteiros.mover' in main
+      and 'handlerEixoInteiros.concluir' in main
+      and 'handlerEixoInteiros.cancelar' in main,
+      'Main compõe e roteia o protocolo do eixo pelo handler portátil')
+check('scaffoldingGraficoInteiros.processarPressionamento' not in main
+      and 'scaffoldingGraficoInteiros.arrastarPara' not in main
+      and 'scaffoldingGraficoInteiros.finalizarArraste' not in main
+      and 'scaffoldingGraficoInteiros.identificarNaturezaInteracao' not in main,
+      'Main não duplica pressionamento, arraste, conclusão nem classificação do eixo único')
+check('class TesteHandlerInteracaoEixoInteiros' in teste_handler_eixo
+      and 'testarBloqueioSemanticoSemConhecerPolitica' in teste_handler_eixo
+      and 'testarCicloPortatilDeManipulacao' in teste_handler_eixo
+      and 'testarAdaptadorDaRepresentacaoDesktop' in teste_handler_eixo,
+      'teste do handler cobre bloqueio contextual, ciclo portátil e adaptação desktop')
+
+print('== Fase 7.7: protocolo portátil dos painéis de eixo das Relações ==')
+alvo_paineis_relacoes=text(
+    'src/gerard/interacao/arraste/AlvoInteracaoPaineisEixosRelacoes.java')
+handler_paineis_relacoes=text(
+    'src/gerard/interacao/arraste/HandlerInteracaoPaineisEixosRelacoes.java')
+adaptador_paineis_relacoes=text(
+    'src/gerard/ui/vergnaud/AdaptadorInteracaoPaineisEixosRelacoes.java')
+fonte_geometria_paineis_relacoes=text(
+    'src/gerard/ui/vergnaud/FonteGeometriaInteracaoPaineisEixosRelacoes.java')
+teste_handler_paineis_relacoes=text(
+    'tests/java/TesteHandlerInteracaoPaineisEixosRelacoes.java')
+check('interface AlvoInteracaoPaineisEixosRelacoes' in alvo_paineis_relacoes
+      and 'identificarNatureza' in alvo_paineis_relacoes
+      and 'processarPressionamento' in alvo_paineis_relacoes
+      and 'moverPara' in alvo_paineis_relacoes
+      and 'finalizarManipulacao' in alvo_paineis_relacoes,
+      'porta portátil separa o protocolo dos painéis da representação desktop')
+check('class HandlerInteracaoPaineisEixosRelacoes' in handler_paineis_relacoes
+      and 'ResultadoPressionamento iniciar' in handler_paineis_relacoes
+      and 'public boolean mover' in handler_paineis_relacoes
+      and 'public boolean concluir' in handler_paineis_relacoes
+      and 'public void cancelar' in handler_paineis_relacoes,
+      'handler dos painéis expõe pressionamento, movimento, conclusão e cancelamento')
+check(all(token not in handler_paineis_relacoes + alvo_paineis_relacoes
+          for token in ('java.awt', 'javax.swing', 'MouseEvent', 'Rectangle',
+                        'Graphics2D', 'gerard.ui.vergnaud',
+                        'ScaffoldingGraficoInteiros', 'Main.',
+                        'getWidth()', 'getHeight()')),
+      'protocolo dos painéis permanece independente de Swing/AWT, tela, layout e representação concreta')
+check('implements AlvoInteracaoPaineisEixosRelacoes'
+          in adaptador_paineis_relacoes
+      and 'PaineisEixosRelacoes' in adaptador_paineis_relacoes
+      and 'Rectangle' in adaptador_paineis_relacoes
+      and 'FonteGeometriaInteracaoPaineisEixosRelacoes'
+          in adaptador_paineis_relacoes
+      and 'Rectangle obterAreaDiagrama()'
+          in fonte_geometria_paineis_relacoes,
+      'adaptador desktop concentra representação, hit-testing e geometria Rectangle')
+check('handlerPaineisEixosRelacoes.iniciar' in main
+      and 'handlerPaineisEixosRelacoes.mover' in main
+      and 'handlerPaineisEixosRelacoes.concluir' in main
+      and 'handlerPaineisEixosRelacoes.cancelar' in main,
+      'Main compõe e roteia os painéis pelo handler portátil')
+check('paineisEixosRelacoes.identificarNaturezaInteracao(' not in main
+      and 'paineisEixosRelacoes.processarPressionamento(' not in main
+      and 'paineisEixosRelacoes.arrastarPara(' not in main
+      and 'paineisEixosRelacoes.finalizarArraste(' not in main
+      and 'paineisEixosRelacoes.encontrarComOcultacaoPorInteracao(' not in main,
+      'Main não duplica classificação, pressionamento, arraste, conclusão nem ocultação dos painéis')
+check('sincronizarPainelEixoRelacaoSeNecessario(false)' in main
+      and 'sincronizarPainelEixoRelacaoSeNecessario(true)' in main
+      and main.index('sincronizarPainelEixoRelacaoSeNecessario(true)')
+          < main.index('handlerPaineisEixosRelacoes.concluir()'),
+      'sincronização e confirmação permanecem fora do handler e preservam a ordem anterior à conclusão visual')
+check('class TesteHandlerInteracaoPaineisEixosRelacoes'
+          in teste_handler_paineis_relacoes
+      and 'testarBloqueioSemanticoSemConhecerPolitica'
+          in teste_handler_paineis_relacoes
+      and 'testarCicloPortatilDeManipulacao'
+          in teste_handler_paineis_relacoes
+      and 'testarAdaptadorDesktopDosPaineis'
+          in teste_handler_paineis_relacoes,
+      'teste do handler cobre bloqueio contextual, ciclo portátil e adaptação desktop dos painéis')
+
 print('== Item 4: material concreto próprio de Relações (painéis de eixo por papel) ==')
 paineis_relacoes=text('src/gerard/ui/vergnaud/PaineisEixosRelacoes.java')
 check('class PaineisEixosRelacoes' in paineis_relacoes
@@ -716,25 +822,29 @@ check('public boolean processarPressionamento' in paineis_relacoes
 check('new ScaffoldingGraficoInteiros()' in paineis_relacoes,
       'painel reaproveita a classe já existente (instâncias novas, não uma reimplementação)')
 check('paineisEixosRelacoes.ativar' in main
-      and main.count('paineisEixosRelacoes.desativar()') >= 3
+      and main.count('desativarPaineisEixosRelacoes()') >= 3
+      and 'paineisEixosRelacoes.desativar()' in main
       and 'paineisEixosRelacoes.desenhar' in main
-      and 'paineisEixosRelacoes.processarPressionamento' in main
-      and 'paineisEixosRelacoes.arrastarPara' in main
-      and 'paineisEixosRelacoes.finalizarArraste' in main
-      and 'paineisEixosRelacoes.estaArrastando' in main,
-      'tela ativa/desativa e roteia pickup, arraste e desenho dos painéis de Relações pelo coordenador')
+      and 'handlerPaineisEixosRelacoes' in main,
+      'tela preserva ciclo de vida e desenho, roteando a interação dos painéis pelo handler')
 check('private boolean devemExibirPaineisEixosRelacoes' in main
       and 'if (!categoriaSelecionadaParaAtividade || elementosVergnaud == null) {' in main
-      and main.count('if (ehElementoNumeroRelativo(elemento)) {\n                    return true;\n                }') >= 1,
-      'visibilidade dos painéis de eixo depende só de existir um elemento número relativo no diagrama '
-      'atual (regra generalizada 2026-08-18: "todo número relativo ou transformação carrega uma lupa. '
-      'Essa é a regra") — critério estrutural (ehElementoNumeroRelativo/TipoFiguraDiagrama.ELIPSE), não '
-      'mais uma lista fixa de 2 categorias (TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES) — não espera '
-      'nenhuma tentativa rejeitada, diferente de quadradinhos/barras/processo')
-check('elemento.tipo == TipoFiguraDiagrama.ELIPSE' in paineis_relacoes,
-      'PaineisEixosRelacoes.ativar só cria painel para elementos elipse (número relativo) — filtra fora '
-      'as âncoras de medida (quadrado) que hoje entram na mesma lista de elementosVergnaud em cenas '
-      'compostas (ex.: Composição de Transformações)')
+      and 'flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;' in main
+      and 'DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa)' in main,
+      'visibilidade dos painéis de eixo depende só de existir um elemento cujo descritor semântico '
+      'solicita lupa no diagrama atual (regra generalizada 2026-08-18: "todo número relativo ou '
+      'transformação carrega uma lupa. Essa é a regra") — não infere pela forma geométrica nem usa '
+      'uma lista fixa de categorias — não espera '
+      'nenhuma tentativa rejeitada, diferente de quadradinhos/barras/processo; a redução booleana '
+      'foi extraída para DecisaoExibicaoPaineisEixo (2026-09-01), compartilhada com a API web')
+decisao_exibicao_paineis=text(
+    'src/gerard/campoaditivo/diagrama/modelo/DecisaoExibicaoPaineisEixo.java')
+check('existeAlgumComLupa' in decisao_exibicao_paineis
+      and all(token not in decisao_exibicao_paineis for token in ('javax.swing', 'java.awt')),
+      'DecisaoExibicaoPaineisEixo é redução pura, sem depender de Swing/AWT')
+check('elemento != null && elemento.exibirLupa' in paineis_relacoes,
+      'PaineisEixosRelacoes.ativar cria painel somente quando o descritor semântico solicita lupa — '
+      'filtra fora âncoras de medida sem inferir significado de quadrado/elipse')
 check('scaffoldingGraficoInteiros' in main
       and 'itemGraficoInteiros' in main
       and 'numeroRelativoGraficoInteiros' in main
@@ -1086,8 +1196,12 @@ check('class CatalogoExplicacoesConceituaisPapel' in catalogo_explicacoes
       and 'obterChaveExplicacao' in catalogo_explicacoes
       and 'CHAVE_EXPLICACAO_GENERICA' in catalogo_explicacoes,
       'catálogo coordenador resolve chave de papel -> chave de explicação, com fallback genérico')
-check("papel.diferenca" in catalogo_explicacoes and "papel.referente" in catalogo_explicacoes,
-      'catálogo trata os sinônimos vivos sem fábrica própria (diferenca/valorRelativo, referente/referendo)')
+check('"papel.diferenca"' in fabrica_comparacao_medidas
+      and 'registrar(mapa, FabricaPapeisComparacaoMedidas.valorRelativo(nenhum))'
+          in catalogo_explicacoes
+      and '"papel.referente"' in catalogo_explicacoes,
+      'Valor Relativo nasce com a chave canônica papel.diferenca; catálogo o registra'
+      ' diretamente e mantém apenas o sinônimo histórico referente/referendo')
 check('CatalogoExplicacoesConceituaisPapel' in main
       and 'obterChaveExplicacao' in main
       and 'explicacaoConceitual' in main,
@@ -1104,15 +1218,15 @@ for chave in chaves_explicacao:
 
 print('== Item 24 (2026-08-18): necessitaRepresentacaoDeSinal() no objeto rico (piloto isolado) ==')
 check('public boolean necessitaRepresentacaoDeSinal()' in papel_quantitativo
-      and 'return dominio == DominioNumerico.INTEIROS;' in papel_quantitativo,
+      and 'return dominio.aceitaSinalNegativo();' in papel_quantitativo,
       'PapelQuantitativo responde por si mesmo se precisa de representação de sinal (lupa/eixo) — '
       'decisão da usuária: "a pergunta \'eu preciso de lupa?\' vira comportamento do objeto, não '
-      'inferência de quem olha de fora" — fonte de verdade é o domínio numérico (INTEIROS vs '
-      'NATURAIS), não a forma visual (elipse/quadrado)')
+      'inferência de quem olha de fora" — fonte de verdade é a capacidade do domínio numérico de '
+      'aceitar sinal negativo, não o nome do enum nem a forma visual (elipse/quadrado)')
 teste_transformacao_relacao = text('tests/java/TestePilotoTransformacaoDeRelacao.java')
 check('necessitaRepresentacaoDeSinal()' in teste_transformacao_relacao
       and teste_transformacao_relacao.count('.necessitaRepresentacaoDeSinal())') >= 4,
-      'harness do piloto cobre o método: os 3 papéis INTEIROS de Transformação de Relação (true) e um '
+      'harness do piloto cobre o método: os 3 papéis assinados de Transformação de Relação (true) e um '
       'papel NATURAIS de outro esquema, Parte1 (false)')
 
 print('== Correção 2026-08-17: renderizador correto de Composição de Transformações ==')
@@ -1152,7 +1266,7 @@ for chave_intro in ('ui.dialog.categoryExplanation.title', 'ui.dialog.categoryEx
 
 print('== Correção 2026-08-17: lupa revela cada eixo de Relações sob demanda ==')
 paineis_relacoes_lupa = paineis_relacoes  # já lido/definido na seção do Item 4
-check('private boolean revelado' in paineis_relacoes_lupa
+check('ControleVisibilidadeEixoPapel controleVisibilidade' in paineis_relacoes_lupa
       and 'public boolean estaRevelado()' in paineis_relacoes_lupa
       and 'public Painel processarPressionamentoLupa' in paineis_relacoes_lupa
       and 'public void desenharLupas' in paineis_relacoes_lupa
@@ -1161,10 +1275,16 @@ check('private boolean revelado' in paineis_relacoes_lupa
       'cada papel de Relações tem visibilidade individual controlada por lupa (revelado/'
       'processarPressionamentoLupa/desenharLupas) — decisão da usuária 2026-08-17: "eixos aparecendo '
       'logo no início deixou a tela muito poluída"')
-check(paineis_relacoes_lupa.count('painel.revelado') >= 8,
+check(paineis_relacoes_lupa.count('painel.estaRevelado()') >= 8,
       'métodos de desenho/interação do coordenador (desenhar, processarPressionamento, '
       'contemPontoControle, contemAlgumPainel, contemBotaoEsconder, identificarNaturezaInteracao, '
       'estaArrastando, encontrarArrastando) só consideram papéis já revelados pela lupa')
+controle_visibilidade_eixo = text('src/gerard/interacao/eixo/ControleVisibilidadeEixoPapel.java')
+check('enum Estado { FECHADO, REVELADO }' in controle_visibilidade_eixo
+      and all(token not in controle_visibilidade_eixo for token in ('javax.swing', 'java.awt')),
+      'estado revelado/fechado do eixo (2026-09-01) foi extraído para '
+      'ControleVisibilidadeEixoPapel — portátil, sem Swing/AWT, reaproveitável por uma futura '
+      'interface web/mobile do protocolo REVELAR_EIXO/OCULTAR_EIXO')
 check('prepararPainelEixoRelacao' in main
       and main.count('prepararPainelEixoRelacao(') >= 3,
       'preparação de valor+posição do painel (ativação e revelação por lupa) reaproveita o mesmo '
@@ -1172,10 +1292,12 @@ check('prepararPainelEixoRelacao' in main
 check('paineisEixosRelacoes.processarPressionamentoLupa' in main
       and 'paineisEixosRelacoes.desenharLupas' in main
       and 'paineisEixosRelacoes.contemLupa' in main
-      and 'paineisEixosRelacoes.encontrarComOcultacaoPorInteracao' in main
-      and 'paineisEixosRelacoes.ocultarRevelacao' in main,
-      'tela aciona a lupa no mousePressed, desenha as lupas a cada repaint, mostra tooltip no hover, '
-      'e reexibe a lupa quando o painel é escondido pelo próprio botão')
+      and 'paineis.encontrarComOcultacaoPorInteracao'
+          in adaptador_paineis_relacoes
+      and 'paineis.ocultarRevelacao'
+          in adaptador_paineis_relacoes,
+      'tela aciona e desenha as lupas, mostra tooltip no hover, e o adaptador desktop reexibe a lupa '
+      'quando o painel é escondido pelo próprio botão')
 
 print('== Correção 2026-08-18: aviso (som+tremor+tip) quando o sinal do número relativo diverge do curado ==')
 check('sinalizarErro(ElementoVergnaud elemento, Runnable repaint)' in feedback_erro
@@ -1191,8 +1313,8 @@ check('private void informarSuspeitaSinalIncorretoNumeroRelativo(' in main,
       '"o sinal do primeiro número nos dados curados é negativo, mas o sinal do primeiro número '
       'relativo foi colocado positivo e não houve feedback de erro" (sinalEscolhidoCorrespondeAoCurado '
       'já calculava a divergência, mas só alimentava o log de pesquisa C/E, sem nenhum aviso visível)')
-check(main.count('if (sinalCorreto != null && !sinalCorreto.booleanValue()) {\n'
-                  '                                informarSuspeitaSinalIncorretoNumeroRelativo(') == 2,
+check(main.count('if (registroSinal != null && registroSinal.foiErrada()) {\n'
+                 '                                informarSuspeitaSinalIncorretoNumeroRelativo(') == 2,
       'os dois pontos que abrem o menu de escolha de sinal (solicitarSinalNumeroRelativoParaTexto e '
       'solicitarSinalNumeroRelativoParaItem) acionam o aviso quando o sinal escolhido diverge do curado')
 check('ui.tooltip.relativeSign.confirm' in main,
@@ -1430,21 +1552,22 @@ check('ESPACAMENTO_BOTOES = 70' in seletor_op,
       'usuária) — mantido o suficiente para os dois rótulos não se tocarem')
 
 print('== Item 23 (2026-08-18): lupa generalizada para todo número relativo ==')
-check('private boolean ehElementoNumeroRelativo(ElementoVergnaud elemento)' in main
-      and 'elemento.tipo == TipoFiguraDiagrama.ELIPSE' in main,
-      'critério estrutural já existente (usado pelo menu de sinal) reaproveitado para decidir quem '
-      'ganha painel/lupa — localidade do conhecimento: a própria figura já sabe se é número relativo')
-check('for (ElementoVergnaud elemento : elementosVergnaud) {\n'
-      '                if (ehElementoNumeroRelativo(elemento)) {\n'
-      '                    return true;\n'
-      '                }\n            }\n            return false;' in main,
+elemento_vergnaud = text('src/gerard/campoaditivo/diagrama/elementos/ElementoVergnaud.java')
+check('public boolean exibirLupa' in elemento_vergnaud
+      and 'this.exibirLupa = exibirLupa;' in elemento_vergnaud
+      and 'figura.isExibirLupa(),' in main,
+      'descritor vindo da cena decide quem ganha painel/lupa; Main apenas materializa a decisão '
+      '(passado ao construtor de ElementoVergnaud, não atribuído depois)')
+check('flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;' in main
+      and 'DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa)' in main,
       'devemExibirPaineisEixosRelacoes não filtra mais por TipoSituacaoAditiva — qualquer categoria '
-      'com pelo menos um elemento elipse no diagrama atual ganha os painéis')
-check(paineis_relacoes.count('elemento.tipo == TipoFiguraDiagrama.ELIPSE') == 1,
-      'PaineisEixosRelacoes.ativar filtra por elipse ao criar os Painel, para não dar lupa a uma âncora '
-      'de medida (quadrado) que porventura esteja na mesma lista de elementos')
-check('import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;' in paineis_relacoes,
-      'PaineisEixosRelacoes importa TipoFiguraDiagrama para o novo filtro')
+      'com pelo menos um descritor exibirLupa no diagrama atual ganha os painéis (redução extraída '
+      'para DecisaoExibicaoPaineisEixo em 2026-09-01, compartilhada com a API web)')
+check(paineis_relacoes.count('elemento != null && elemento.exibirLupa') == 1,
+      'PaineisEixosRelacoes.ativar respeita o descritor exibirLupa ao criar os Painel')
+check('import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;' not in paineis_relacoes
+      and 'elemento.tipo ==' not in paineis_relacoes,
+      'PaineisEixosRelacoes não infere conhecimento semântico pela forma geométrica')
 
 print('== Item 27 (2026-08-23): rótulos corretos em Composição de Transformações ==')
 semantica_curada = text('src/gerard/campoaditivo/curadoria/SemanticaCuradaSituacao.java')
@@ -1458,9 +1581,9 @@ check('if (papeis.size() >= 3) {\n'
       '            rotulo1 = papeis.get(0).getRotulo();' in semantica_curada,
       'Composição de Transformações passa a usar o mesmo caminho das demais categorias — papeis já '
       'traz "Transformação 1"/"Transformação 2"/"Transformação final" (mapear()) para os 3 círculos')
-check('medida(area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0)' in renderizador_composicao_transf
-      and 'medida(area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0)' in renderizador_composicao_transf
-      and 'medida(area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0)' in renderizador_composicao_transf,
+check('medida("papel.estadoInicial", area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0)' in renderizador_composicao_transf
+      and 'medida("papel.estadoIntermediario", area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0)' in renderizador_composicao_transf
+      and 'medida("papel.estadoFinal", area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0)' in renderizador_composicao_transf,
       'os 3 quadrados de estado (medida) ganham rótulo próprio — antes ficavam com "" (sem rótulo '
       'algum), diferente de todo outro renderizador que usa medida() com um rótulo real')
 
@@ -1572,7 +1695,7 @@ check('String operacaoEstadoTransformacao;' in cur,
       'LinhaSituacao (modelo de tela da curadoria) ganha o campo operacaoEstadoTransformacao')
 check('l.operacaoEstadoTransformacao = s.getOperacaoEstadoTransformacao();' in cur
       and 'l.operacaoEstadoTransformacao = "";' in cur
-      and 'l.estadoIntermediario, l.operacaoEstadoTransformacao));' in cur,
+      and 'l.estadoIntermediario, l.operacaoEstadoTransformacao);' in cur,
       'ModeloTabelaSituacoes.substituir/adicionarLinha/paraSituacoes leem, inicializam e devolvem '
       'operacaoEstadoTransformacao, mesmo padrão já usado para estadoIntermediario')
 check(cur.count('operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;') == 3,
@@ -1620,9 +1743,9 @@ check('y = adicionarCampo(formulario, gbc, y, "operacao_transformacao", campoOpe
 check('JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoEstadoIntermediario,\n'
       '            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao) {' in cur,
       'aplicarCamposDaCuradoriaDetalhada ganha o parâmetro campoOperacaoEstadoTransformacao')
-check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);') == 2,
-      'os dois pontos que chamam aplicarCamposDaCuradoriaDetalhada (salvar e adicionar tradução) passam '
-      'o novo campoOperacaoEstadoTransformacao')
+check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);') >= 2,
+      'todos os fluxos que materializam os campos da curadoria passam o novo '
+      'campoOperacaoEstadoTransformacao')
 check('linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorCanonico();' in cur
       and 'Integer estadoFinalCalculado = operacaoEstadoTransformacao.aplicar(\n'
       '                            estadoInicialValor, transformacaoResultanteValor);' in cur,
@@ -1926,6 +2049,226 @@ check('private void mostrarDicaSeletorOperacaoPendente() {\n'
 for lang in ('pt', 'en', 'es', 'fr'):
     check(len(props[lang].get('ui.hint.pendingOperationSelector', '')) > 0,
           f'chave ui.hint.pendingOperationSelector presente e não vazia em {lang}')
+
+print('== Item 37 (2026-08-29): relação orientada não confunde transformação com operação ==')
+conversor_rico = text('src/gerard/campoaditivo/curadoria/ConversorSituacaoProblemaRica.java')
+relacao_orientada = text(
+    'src/gerard/dominio/campoaditivo/RelacaoEstruturalTransformacaoDeRelacaoOrientada.java')
+criterio_operacao = text(
+    'src/gerard/dominio/campoaditivo/situacao/CriterioOperacaoModelagem.java')
+referencia_narrativa = text(
+    'src/gerard/dominio/campoaditivo/situacao/ReferenciaValorNarrativo.java')
+teste_transformacao_relacao_rica = text(
+    'tests/java/TesteConversorTransformacaoRelacaoRica.java')
+check('converterTransformacaoRelacao(' in conversor_rico
+      and 'RelacaoEstruturalTransformacaoDeRelacaoOrientada' in conversor_rico,
+      'a ponte rica cobre TRANSFORMACAO_RELACAO por uma relação que recebe orientações '
+      'narrativas explícitas, sem inferir personagens por posição')
+check('DIFERENCA_ENTRE_QUANTIDADES_FINAIS' in referencia_narrativa
+      and 'diferencaEntreQuantidadesFinais(' in referencia_narrativa,
+      'a relação final possui referência nominal própria e pode inverter explicitamente os '
+      'participantes da relação inicial')
+check('participanteTransformado.equals(primeiroInicial)' in relacao_orientada
+      and 'participanteTransformado.equals(segundoInicial)' in relacao_orientada
+      and 'orientacaoFinal = -1' in relacao_orientada,
+      'o objeto relacional, e não a interface ou o conversor, possui o conhecimento para aplicar '
+      'o evento ao primeiro/segundo participante e normalizar uma orientação final invertida')
+check('CriterioOperacaoModelagem' in criterio_operacao
+      and 'correspondeA(OperacaoAditiva tentativa)' in criterio_operacao
+      and 'new CriterioOperacaoModelagem(' in conversor_rico,
+      'soma/subtração curada é critério independente para avaliar a resposta do participante')
+trecho_transformacao_relacao_rica = conversor_rico.split(
+    'converterTransformacaoRelacao(\n'
+    '                    SituacaoProblemaAditiva registro,', 1)[1].split(
+        'converterComposicaoRelacoes(\n'
+        '                    SituacaoProblemaAditiva registro,', 1)[0]
+check('RelacaoEstruturalOperacaoBinaria' not in trecho_transformacao_relacao_rica
+      and '"relacao_final", registro.getEstadoFinal()' in trecho_transformacao_relacao_rica,
+      'na ponte de TRANSFORMACAO_RELACAO, a operação de resolução não substitui a relação '
+      'orientada nem recalcula relacao_final; o escopo não redefine outras categorias')
+check('relação final nula é válida no contexto relativo' in teste_transformacao_relacao_rica
+      and 'evento de transformação nulo não é convertido' in teste_transformacao_relacao_rica,
+      'o teste distingue resultado relativo zero válido de evento de transformação zero inválido')
+
+print('== Item 38 (2026-08-29): sexta ponte rica — Composição de Relações ==')
+teste_composicao_relacoes_rica = text(
+    'tests/java/TesteConversorComposicaoRelacoesRica.java')
+skill_objetos_ricos = text(
+    '.agents/skills/gerard-knowledge-oriented-domain-objects/SKILL.md')
+modelo_semantico = text(
+    '.agents/skills/gerard-semantic-model/REFERENCE.md')
+trecho_composicao_relacoes_rica = conversor_rico.split(
+    'converterComposicaoRelacoes(\n'
+    '                    SituacaoProblemaAditiva registro,', 1)[1].split(
+        'converterComposicaoTransformacoes(\n'
+        '                    SituacaoProblemaAditiva registro,', 1)[0]
+check('TipoSituacaoAditiva.COMPOSICAO_RELACOES' in conversor_rico
+      and 'converterComposicaoRelacoes(' in conversor_rico,
+      'a ponte rica cobre as seis categorias canônicas, incluindo COMPOSICAO_RELACOES')
+check('FabricaPapeisComposicaoDeRelacoes.relacao1' in trecho_composicao_relacoes_rica
+      and 'FabricaPapeisComposicaoDeRelacoes.relacao2' in trecho_composicao_relacoes_rica
+      and 'FabricaPapeisComposicaoDeRelacoes.relacaoFinal' in trecho_composicao_relacoes_rica,
+      'a ponte reutiliza os três proprietários semânticos inteiros já existentes da categoria')
+check('"relacao_1", registro.getQuantidade1()' in trecho_composicao_relacoes_rica
+      and '"relacao_2", registro.getQuantidade2()' in trecho_composicao_relacoes_rica
+      and '"relacao_resultante", registro.getResultado()' in trecho_composicao_relacoes_rica
+      and 'natural(' not in trecho_composicao_relacoes_rica,
+      'Relação 1, Relação 2 e Relação Final são inteiros; zero não é rejeitado genericamente')
+check('RelacaoEstruturalOperacaoBinaria.com(operacaoRelacoes)' in trecho_composicao_relacoes_rica
+      and '"operacao_relacao", registro.getOperacaoRelacao()' in trecho_composicao_relacoes_rica,
+      'a operação declarada pelo pesquisador configura a relação estrutural de composição')
+check('referenciaDoPapel(\n                "papel.relacao1"' in trecho_composicao_relacoes_rica
+      and 'referenciaDoPapel(\n                "papel.relacao2"' in trecho_composicao_relacoes_rica
+      and 'referenciaDoPapel(\n                "papel.relacaoFinal"' in trecho_composicao_relacoes_rica
+      and 'getPersonagem' not in trecho_composicao_relacoes_rica,
+      'as três orientações narrativas são explícitas e não derivadas dos campos personagem_*')
+check('composição encadeada por soma é consistente' in teste_composicao_relacoes_rica
+      and 'composição com referência comum usa subtração curada' in teste_composicao_relacoes_rica
+      and 'relações opostas podem totalizar zero' in teste_composicao_relacoes_rica,
+      'o harness cobre soma encadeada, subtração com referência comum e resultante zero')
+check('Na ponte rica de `COMPOSICAO_RELACOES`' in skill_objetos_ricos
+      and '##### Composição de relações' in modelo_semantico,
+      'as fontes normativas registram a localidade, as orientações e o domínio relativo da sexta ponte')
+
+print('== Item 39 (2026-08-29): sidecar explícito da narrativa rica ==')
+repositorio_narrativa_rica = text(
+    'src/gerard/campoaditivo/curadoria/RepositorioCuradoriaNarrativaRica.java')
+servico_situacao_rica = text(
+    'src/gerard/campoaditivo/curadoria/ServicoSituacaoProblemaRicaCurada.java')
+teste_persistencia_narrativa = text(
+    'tests/java/TestePersistenciaCuradoriaNarrativaRica.java')
+check('private static final String VERSAO_FORMATO = "2"' in repositorio_narrativa_rica
+      and 'private static final String VERSAO_ANTERIOR = "1"' in repositorio_narrativa_rica
+      and 'raiz.setAttribute("situacao-id", registro.getIdSituacao())' in repositorio_narrativa_rica,
+      'a narrativa rica é persistida em sidecar XML versionado e nominalmente vinculado ao id da situação')
+check('getPersonagem' not in repositorio_narrativa_rica
+      and 'getPersonagem' not in servico_situacao_rica,
+      'persistência e serviço não inferem participantes pelos campos posicionais personagem_*')
+check('conversao.narrativa_persistida.ausente' in servico_situacao_rica
+      and 'repositorioNarrativo.carregar(idNarrativa)' in servico_situacao_rica
+      and 'idProprietarioNarrativa(registro)' in servico_situacao_rica,
+      'a ponte de produção exige o complemento explícito e diagnostica sua ausência')
+check('disallow-doctype-decl' in repositorio_narrativa_rica
+      and 'ATOMIC_MOVE' in repositorio_narrativa_rica
+      and 'MessageDigest.getInstance("SHA-256")' in repositorio_narrativa_rica,
+      'o sidecar bloqueia DTD externo, é substituído de forma atômica e usa nome de arquivo sem travessia')
+check('campos personagem antigos não substituem identidade curada' in teste_persistencia_narrativa
+      and 'referência nominal desconhecida bloqueia leitura' in teste_persistencia_narrativa
+      and 'DOCTYPE e entidades externas são bloqueados' in teste_persistencia_narrativa,
+      'o harness cobre ausência de inferência posicional, referência inválida e leitura XML segura')
+check('##### Persistência da narrativa rica' in modelo_semantico
+      and 'sidecar\nXML versionado' in skill_objetos_ricos,
+      'as fontes normativas registram o sidecar como infraestrutura complementar, não como nova teoria')
+
+print('== Item 40 (2026-08-29): editor humano nominal da narrativa rica ==')
+dialogo_narrativa_rica = text(
+    'src/gerard/campoaditivo/curadoria/DialogoCuradoriaNarrativaRica.java')
+montador_narrativa_rica = text(
+    'src/gerard/campoaditivo/curadoria/MontadorCuradoriaNarrativaRica.java')
+rascunho_narrativa_rica = text(
+    'src/gerard/campoaditivo/curadoria/RascunhoCuradoriaNarrativaRica.java')
+teste_montador_narrativa = text(
+    'tests/java/TesteMontadorCuradoriaNarrativaRica.java')
+check('new JButton("Narrativa rica...")' in cur
+      and 'editarNarrativaRica.setEnabled(!versaoTraducaoSomenteTexto);' in cur,
+      'a curadoria original oferece o editor rico e traduções não criam uma semântica paralela')
+check(all(f'abas.addTab("{rotulo}"' in dialogo_narrativa_rica for rotulo in (
+          'Participantes', 'Famílias', 'Objetos', 'Estado inicial',
+          'Eventos', 'Estado final', 'Correspondências')),
+      'o editor materializa separadamente as sete declarações nominais da narrativa')
+check('getPersonagem' not in dialogo_narrativa_rica
+      and 'getPersonagem' not in montador_narrativa_rica,
+      'editor e montador não inferem identidades pelos campos posicionais personagem_*')
+check('javax.swing' not in montador_narrativa_rica
+      and 'java.awt' not in montador_narrativa_rica
+      and 'javax.swing' not in rascunho_narrativa_rica
+      and 'java.awt' not in rascunho_narrativa_rica,
+      'rascunho e montador permanecem independentes da tecnologia de interface')
+check('montador.montar(coletar())' in dialogo_narrativa_rica
+      and 'confirmarPersistenciaDaCandidata(resultado)' in dialogo_narrativa_rica
+      and 'A declaração foi preservada' in dialogo_narrativa_rica,
+      'a interface delega a construção e pede confirmação humana para preservar candidata divergente')
+check('idProprietarioNarrativa(registro)' in servico_situacao_rica
+      and '"traducao".equalsIgnoreCase' in servico_situacao_rica
+      and 'tradução usa a narrativa semântica da versão original' in teste_persistencia_narrativa,
+      'traduções reutilizam explicitamente o sidecar semântico da versão original')
+check('POSICAO_1_INCORRETA' in teste_montador_narrativa
+      and 'id nominal desconhecido é rejeitado' in teste_montador_narrativa
+      and 'id duplicado não é resolvido por posição' in teste_montador_narrativa,
+      'o harness protege identidades nominais contra inferência, referência desconhecida e duplicidade')
+check('##### Edição humana da narrativa rica' in modelo_semantico
+      and 'O editor Swing é somente um adaptador de entrada' in skill_objetos_ricos,
+      'as fontes normativas registram a localidade do editor e da montagem do agregado')
+
+print('== Item 41 (2026-08-30): promoção editorial humana da narrativa rica ==')
+registro_narrativa_rica = text(
+    'src/gerard/campoaditivo/curadoria/RegistroCuradoriaNarrativaRica.java')
+check('private final StatusCuradoriaSituacao statusCuradoria;' in registro_narrativa_rica
+      and 'this(idSituacao, StatusCuradoriaSituacao.CANDIDATA_NAO_CURADA,'
+          in registro_narrativa_rica
+      and 'getStatusCuradoria()' in registro_narrativa_rica,
+      'registro rico possui status editorial e o construtor compatível permanece candidato')
+check('raiz.setAttribute("status-curadoria"' in repositorio_narrativa_rica
+      and 'StatusCuradoriaSituacao.valueOf(' in repositorio_narrativa_rica
+      and 'VERSAO_ANTERIOR.equals(versao)' in repositorio_narrativa_rica,
+      'sidecar v2 persiste o status e sidecar v1 sem status é lido conservadoramente')
+check('new JCheckBox(\n            "Validada pelo pesquisador")' in dialogo_narrativa_rica
+      and 'Validar narrativa rica pelo pesquisador' in dialogo_narrativa_rica
+      and 'validadaPeloPesquisador.isSelected()' in dialogo_narrativa_rica,
+      'editor oferece um ato humano explícito, textual e acessível de promoção')
+check('A promoção foi bloqueada pelos diagnósticos da situação.' in dialogo_narrativa_rica
+      and 'A narrativa não pode ser validada enquanto houver diagnósticos:'
+          in dialogo_narrativa_rica,
+      'a interface bloqueia promoção quando a conversão produz diagnóstico')
+check('StatusCuradoriaSituacao statusCuradoria)' in conversor_rico
+      and 'statusCuradoria != StatusCuradoriaSituacao\n                .VALIDADA_PELO_PESQUISADOR'
+          in conversor_rico
+      and 'curadoria.getStatusCuradoria()' in servico_situacao_rica,
+      'a ponte aplica somente o status explícito do sidecar, sem ler a marca validada tabular')
+check('construtor compatível persiste candidata por padrão' in teste_persistencia_narrativa
+      and 'ato humano explícito é persistido no sidecar' in teste_persistencia_narrativa
+      and 'serviço aplica a promoção editorial explícita' in teste_persistencia_narrativa
+      and 'sidecar v1 sem status permanece candidato' in teste_persistencia_narrativa,
+      'o harness cobre candidatura padrão, promoção, consumo e compatibilidade retroativa')
+check('Informe o id da situação antes de editar a narrativa rica.' in cur,
+      'a tela impede abrir um sidecar sem identidade nominal da situação')
+check('A promoção para `VALIDADA_PELO_PESQUISADOR` é outro ato humano explícito'
+          in modelo_semantico
+      and 'Somente um ato explícito do pesquisador no editor pode registrar'
+          in skill_objetos_ricos,
+      'as fontes normativas registram a autoridade humana sobre a promoção')
+
+print('== Item 42 (2026-08-30): contrato gráfico da curadoria narrativa rica ==')
+teste_dialogo_narrativa_rica = text(
+    'tests/java/TesteDialogoCuradoriaNarrativaRica.java')
+linha_base_windows = text('scripts/verificar_linha_base_windows.py')
+skill_identidade_visual = text(
+    '.agents/skills/gerard-identidade-visual/SKILL.md')
+check('"TesteDialogoCuradoriaNarrativaRica",' in linha_base_windows,
+      'o teste do editor rico integra explicitamente o conjunto gráfico da linha de base')
+check('"Participantes", "Famílias", "Objetos", "Estado inicial"'
+          in teste_dialogo_narrativa_rica
+      and '"Eventos", "Estado final", "Correspondências"'
+          in teste_dialogo_narrativa_rica,
+      'o contrato gráfico protege as sete declarações nominais do editor')
+check('validação tabular não promove narrativa rica'
+          in teste_dialogo_narrativa_rica
+      and '!promocao.isSelected()' in teste_dialogo_narrativa_rica
+      and '"original", "", true,' in teste_dialogo_narrativa_rica,
+      'o teste prova visualmente que a validação histórica não promove o sidecar')
+check('UITemaGerard.COR_TEXTO.equals(promocao.getForeground())'
+          in teste_dialogo_narrativa_rica
+      and 'UITemaGerard.COR_FUNDO_CONTEUDO.equals('
+          in teste_dialogo_narrativa_rica,
+      'o controle de promoção e o fundo preservam a paleta neutra quente')
+check('getAccessibleContext().getAccessibleName()'
+          in teste_dialogo_narrativa_rica
+      and 'getAccessibleDescription()' in teste_dialogo_narrativa_rica
+      and 'tooltip explica a autoridade humana' in teste_dialogo_narrativa_rica,
+      'o teste protege texto, tooltip, nome e descrição acessíveis')
+check('TesteDialogoCuradoriaNarrativaRica' in skill_identidade_visual
+      and 'não substitui a validação semântica' in skill_identidade_visual,
+      'a skill visual registra o alcance e o limite epistemológico do teste')
 
 if errors:
     print(f'REPROVADO: {len(errors)} falha(s) no total.'); sys.exit(1)

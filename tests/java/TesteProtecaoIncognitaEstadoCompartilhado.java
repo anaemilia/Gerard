@@ -2,6 +2,8 @@ package gerard.campoaditivo.conclusao;
 
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
+import gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas;
+import gerard.semantica.numero.ValorNumerico;
 
 public final class TesteProtecaoIncognitaEstadoCompartilhado {
     private static int verificacoes;
@@ -12,6 +14,7 @@ public final class TesteProtecaoIncognitaEstadoCompartilhado {
         testarLiberacaoAposProtocolo();
         testarPapelNaoProtegidoContinuaReativo();
         testarPoliticaDePapeis();
+        testarValidacaoPreventivaPelosDominios();
         System.out.println("Proteção da incógnita aprovada: "
                 + verificacoes + " verificações.");
     }
@@ -76,6 +79,46 @@ public final class TesteProtecaoIncognitaEstadoCompartilhado {
         confirmar(!politica.devePreservarMarcador(
                         "papel.estadoInicial", "papel.estadoFinal", false),
                 "outros papéis não devem ser bloqueados");
+    }
+
+    private static void testarValidacaoPreventivaPelosDominios() {
+        EstadoSemanticoCompartilhado estado = new EstadoSemanticoCompartilhado();
+        EstadoSemanticoCompartilhado.Snapshot atual = estado.atualizar(
+                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                new Integer[] {3, null, null},
+                new boolean[] {true, false, false}, 0,
+                EstadoSemanticoCompartilhado.Origem.INICIALIZACAO);
+        ValorNumerico[] valores = new ValorNumerico[] {
+            atual.getValorNumerico(0), atual.getValorNumerico(1),
+            atual.getValorNumerico(2)
+        };
+        ResolvedorRelacoesEstruturaisAditivas resolvedor =
+                new ResolvedorRelacoesEstruturaisAditivas();
+        confirmar(!resolvedor.tentativaPreservaDominios(
+                        TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                        valores, 1, Integer.valueOf(-10)),
+                "resultado negativo deve ser rejeitado");
+        confirmar(resolvedor.tentativaPreservaDominios(
+                        TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                        valores, 1, Integer.valueOf(-2)),
+                "resultado natural deve ser aceito");
+        confirmar(!resolvedor.tentativaPreservaDominios(
+                        TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                        valores, 1, Integer.valueOf(-10)),
+                "referendo negativo da comparação deve ser rejeitado");
+        EstadoSemanticoCompartilhado.Snapshot comparacao = estado.atualizar(
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                new Integer[] {6, 8, 14},
+                new boolean[] {true, true, true}, 1,
+                EstadoSemanticoCompartilhado.Origem.INICIALIZACAO);
+        ValorNumerico[] valoresComparacao = new ValorNumerico[] {
+            comparacao.getValorNumerico(0), comparacao.getValorNumerico(1),
+            comparacao.getValorNumerico(2)
+        };
+        confirmar(!resolvedor.tentativaPreservaDominios(
+                        TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                        valoresComparacao, 1, Integer.valueOf(-8)),
+                "comparação completa não pode recalcular Referendo negativo");
     }
 
     private static void confirmar(boolean condicao, String mensagem) {

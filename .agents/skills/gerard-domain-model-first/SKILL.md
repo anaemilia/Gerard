@@ -31,6 +31,11 @@ O modelo de domínio deve concentrar:
 
 Nenhuma regra semântica pode existir apenas na interface, na GTN, em um agente ou em um persistidor.
 
+A **API semântica do Gérard** é uma fronteira de publicação desse modelo para
+adaptadores web e mobile. O nome qualifica o conteúdo transportado, não torna
+HTTP ou JSON proprietários do significado. Consulte `gerard-api-semantica`
+para contratos, versionamento e maturidade dessa fronteira.
+
 ## Separação de níveis
 
 ### Domínio

@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * Log de falhas do serviço de auditoria, em arquivo separado — a interação
  * principal do Gérard nunca pode parar por causa de um erro aqui (ver
- * AgentAuditService: toda chamada pública dele é protegida por try/catch
+ * Os serviços de auditoria protegem suas chamadas públicas com try/catch
  * que só grava aqui e segue).
  */
 public final class FalhaAuditoriaLogger {

@@ -15,18 +15,6 @@
       "knowledge_owner": "vocabulario_semantico_normativo"
     },
     {
-      "id": "reference-agente-monitor",
-      "kind": "reference",
-      "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-monitor.md",
-      "knowledge_owner": "observacao_e_registro_factual_do_monitor"
-    },
-    {
-      "id": "reference-agente-zdp",
-      "kind": "reference",
-      "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-zdp.md",
-      "knowledge_owner": "referencia_historica_zdp_e_evidencias_pedagogicas"
-    },
-    {
       "id": "reference-agente-modelador",
       "kind": "reference",
       "path": ".agents/skills/gerard-ajuda-adaptativa/references/agente-modelador.md",
@@ -121,9 +109,39 @@
       "kind": "skill",
       "path": ".agents/skills/gerard-geracao-texto-diagrama/SKILL.md",
       "knowledge_owner": "fluxo_de_candidatas_textuais_para_curadoria_humana"
+    },
+    {
+      "id": "gerard-api-semantica",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-api-semantica/SKILL.md",
+      "knowledge_owner": "contratos_http_json_versionamento_e_maturidade_multiplataforma"
     }
   ],
   "edges": [
+    {
+      "from": "gerard-api-semantica",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "A API publica projecoes e comandos sem se tornar fonte semantica."
+    },
+    {
+      "from": "gerard-api-semantica",
+      "relation": "requires",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "Transporte e serializacao nao podem assumir o conhecimento dos proprietarios."
+    },
+    {
+      "from": "gerard-api-semantica",
+      "relation": "constrains",
+      "to": "gerard-consistencia-estado",
+      "reason": "Clientes remotos devem projetar o mesmo estado sem reimplementar propagacao."
+    },
+    {
+      "from": "gerard-api-semantica",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Comandos remotos podem produzir fatos e devem preservar identidades e origens."
+    },
     {
       "from": "gerard-domain-model-first",
       "relation": "requires",
@@ -307,18 +325,6 @@
     {
       "from": "gerard-ajuda-adaptativa",
       "relation": "related",
-      "to": "reference-agente-monitor",
-      "reason": "Referencia historica para migracao e retirada do Agente Monitor legado."
-    },
-    {
-      "from": "gerard-ajuda-adaptativa",
-      "relation": "related",
-      "to": "reference-agente-zdp",
-      "reason": "Referencia historica para evidencias e migracao do Agente ZDP legado."
-    },
-    {
-      "from": "gerard-ajuda-adaptativa",
-      "relation": "related",
       "to": "reference-agente-modelador",
       "reason": "Referencia condicional para tarefas do Agente Modelador."
     },
@@ -327,12 +333,6 @@
       "relation": "related",
       "to": "gerard-semantic-event-logging",
       "reason": "Log instrumental e evento semantico sao esquemas complementares de fatos."
-    },
-    {
-      "from": "gerard-log-acao-instrumental",
-      "relation": "related",
-      "to": "reference-agente-monitor",
-      "reason": "Referencia historica para migrar a propriedade de C/E e do log ao objeto rico responsavel."
     },
     {
       "from": "gerard-log-gestos-interacao",
@@ -363,12 +363,6 @@
       "relation": "related",
       "to": "reference-agente-modelador",
       "reason": "A referencia decide como o agente atualiza o esquema."
-    },
-    {
-      "from": "gerard-modelo-usuario",
-      "relation": "related",
-      "to": "reference-agente-zdp",
-      "reason": "A referencia historica documenta o consumidor legado a ser substituido por projecoes locais."
     },
     {
       "from": "gerard-consistencia-estado",

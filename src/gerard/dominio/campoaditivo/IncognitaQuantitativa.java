@@ -30,8 +30,9 @@ import java.util.Set;
 
 /**
  * Proprietário semântico do papel designado como incógnita original.
- * Avalia a ação TEXTO, produz seu registro único e escolhe ajuda somente no
- * próprio repertório. Não conhece Swing, persistência, Monitor ou ZDP.
+ * Avalia as ações que atribuem valor à incógnita, produz seu registro único
+ * e escolhe ajuda somente no próprio repertório. Não conhece Swing nem
+ * persistência.
  */
 public final class IncognitaQuantitativa
         implements ProprietarioRepertorioAjuda<FatosSelecaoAjudaIncognita> {
@@ -95,6 +96,29 @@ public final class IncognitaQuantitativa
             ValorNumerico valorProposto,
             ValorNumerico valorEsperado,
             ContextoAcaoInstrumental contextoInstrumental) {
+        return avaliarAcao(
+                identidade,
+                TarefaInteracao.TEXTO,
+                valorProposto,
+                valorEsperado,
+                contextoInstrumental);
+    }
+
+    /**
+     * Constitui e avalia uma única ação que atribui valor à incógnita. O
+     * protocolo informa apenas a tarefa instrumental observada; a comparação,
+     * o diagnóstico e a sequência de rejeições continuam pertencendo à
+     * incógnita.
+     */
+    public RegistroAcaoInstrumental avaliarAcao(
+            IdentidadeAcaoInstrumentalPapel identidade,
+            TarefaInteracao tarefaInteracao,
+            ValorNumerico valorProposto,
+            ValorNumerico valorEsperado,
+            ContextoAcaoInstrumental contextoInstrumental) {
+        if (tarefaInteracao == null) {
+            throw new IllegalArgumentException("tarefa de interação é obrigatória");
+        }
         ResultadoAvaliacaoAcaoInstrumental resultado;
         DiagnosticoErroPapel diagnostico = null;
         String regra;
@@ -130,7 +154,7 @@ public final class IncognitaQuantitativa
 
         return new RegistroAcaoInstrumental(
                 identidade,
-                TarefaInteracao.TEXTO,
+                tarefaInteracao,
                 categoria,
                 CHAVE_PROPRIETARIO,
                 chavePapelDesignado,

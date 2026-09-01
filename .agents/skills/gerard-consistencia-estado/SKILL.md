@@ -46,6 +46,12 @@ Isto não é uma especificação para implementar do zero. É a documentação d
    já existentes. Não usar a migração do veredito como autorização para
    recalcular, desfazer ou antecipar a sincronização.
 
+9. **Projeções remotas.** Web e mobile devem receber, pela API semântica do
+   Gérard, projeções do mesmo estado e comandos avaliados pelos mesmos
+   proprietários usados no desktop. O contrato JSON não cria uma segunda fonte
+   de verdade e o cliente não recompõe relações ausentes. Consulte
+   `gerard-api-semantica` para versionamento e maturidade do contrato.
+
 ## Termo desconhecido / incógnita — corrigido
 
 `termo_desconhecido` **não é** a fonte única de verdade para a incógnita. `gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada` mostra que dois mecanismos coexistem por design: o símbolo "?" digitado diretamente no campo do papel semântico, e o campo `termo_desconhecido`. Quando eles divergem, a classe sinaliza um conflito curatorial (`mensagemInconsistencia`) em vez de escolher um como autoritativo. Ao mexer nessa área: não presuma que gravar em `termo_desconhecido` basta, e não crie uma regra permanente que "resolve" a divergência escolhendo um lado — trate como o conflito que `ResolvedorIncognitaCurada` já modela, e corrija a inconsistência na origem dos dados quando possível.

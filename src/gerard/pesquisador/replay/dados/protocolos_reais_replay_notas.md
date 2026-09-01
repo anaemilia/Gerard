@@ -79,7 +79,7 @@ Total: 11+4+2+2+1 = 20. Nenhum arquivo novo/desconhecido sobrou.
 Cada quadro tem muito mais linhas do que aparece no TSV. Só os passos em que
 a pessoa arrasta um número presente no ENUNCIADO para um elemento do
 diagrama entraram — o único tipo de ação cujo par de papéis semânticos
-corresponde exatamente ao contrato real de `AgenteMonitor.avaliarPosicionamento`
+corresponde exatamente ao contrato real de `DescritorPapelQuantitativo.avaliarPosicionamento`
 (via `Main.avaliarQuestionamentoPosicionamento`). Quatro categorias de passo
 dos quadros originais foram propositalmente deixadas de fora, porque não
 havia caminho de código real para reproduzi-las neste nível de API (até
@@ -91,7 +91,7 @@ havia caminho de código real para reproduzi-las neste nível de API (até
    mecanismo.
 2. Erros exclusivamente de sinal no número relativo/diferença — o sinal é
    resolvido por um menu da interface (`ScaffoldingNumeroRelativo`), sem
-   nenhuma notificação a `AgenteMonitor`/`AgenteZDP`/`AgenteModelador`.
+   avaliação pelo número e pelo papel semântico e encaminhamento factual ao `AgenteModelador`.
 3. Manipulação interna das ajudas concretas (fábrica de quadradinhos, motor
    come-come) — mecânica própria da ajuda, não do diagrama principal.
 4. Escolha da legenda/categoria (Composição/Transformação/Comparação) — até
@@ -105,7 +105,7 @@ mesmo sendo estranho de propósito: o quadro original marca a ação como "C"
 (correta) mas a nota entre parênteses diz "o computador deveria ter agido
 aqui, mas não o fez" — a própria pesquisadora registrou que o protótipo da
 época deixou passar um erro que deveria ter sido sinalizado. Incluído
-justamente para conferir se o Agente Monitor de hoje relata esse caso como
+justamente para conferir se a avaliação factual atual relata esse caso como
 divergente do veredito humano original (ver campo `correto` da linha
 POSICIONAR correspondente e o relatório de divergências em
 `TesteReplayProtocolosReais`).
@@ -116,8 +116,8 @@ Até 2026-07-30, a escolha de categoria (Composição/Transformação/Comparaç�
 não tinha caminho de código para ser avaliada como certo/errado — por isso
 CatalogoProtocolosReaisReplay excluía esses passos de todas as 96 sessões,
 mesmo eles existindo abundantemente nas transcrições brutas (ex.: "4 erros
-consecutivos de categorização" já citados em `agente-zdp.md`). Nesse mesmo
-dia, `AgenteMonitor.avaliarCategoria` foi criado, e as 11 sessões do
+consecutivos de categorização" já citados na fonte de ajuda adaptativa). Nesse mesmo
+dia, a avaliação semântica da categoria foi criada, e as 11 sessões do
 doutorado (que têm transcrição bruta, não quadro tabulado) foram
 re-mineradas para extrair essas sequências. As 5 sessões do mestrado (só
 quadro tabulado, não transcrição bruta) e a sessão "Jamile S8" (arquivo-fonte
@@ -218,9 +218,9 @@ mais simples/menos técnicas.
 
 A Questão 4 de 15-06-10 (Ana/vestidos) é a mais rica das 96 sessões em erro
 de categorização — 4 tentativas erradas (comparação x3, transformação x1)
-antes de acertar composição. Já citada em `agente-zdp.md`
-("4 erros consecutivos de categorização") e foi a motivação original para
-construir `AgenteMonitor.avaliarCategoria`.
+antes de acertar composição. O caso dos quatro erros consecutivos de
+categorização foi a motivação original para
+construir a avaliação semântica da categoria.
 
 ## Doutorado — pasta Jamilly
 
@@ -262,8 +262,8 @@ por digitação de um resultado já calculado (ex.: "insira o resultado no
 quadrado que representa uma interrogação" → sujeito digita 54). Essa lacuna
 existia apesar de o código já ter a lógica de comparação necessária
 (`Main.valorDigitadoCorrespondeAoCurado`) havia tempo — só faltava o caminho
-de avaliação nos agentes (`AgenteMonitor.avaliarValorIncognita`, criado nesse
-mesmo dia) e o tipo `PassoTextoReplayHumano` no catálogo de replay.
+de avaliação na `IncognitaQuantitativa`, criado nesse mesmo dia, e o tipo
+`PassoTextoReplayHumano` no catálogo de replay.
 
 Três agentes em paralelo re-mineraram as 11 sessões do doutorado (as 5
 quadros do mestrado ficam de fora desta rodada — ver pendência abaixo) em

@@ -91,8 +91,8 @@ Em qual categoria de estruturas aditivas o usuário tem maior domínio, e qual e
   publicada mais recente para o usuário.
 - Cada proprietário semântico consulta apenas uma projeção de leitura dessa
   fotografia e escolhe uma ajuda do próprio repertório.
-- O **Agente ZDP** é legado da arquitetura anterior e não é consumidor na
-  arquitetura-alvo.
+- A seleção da ajuda pertence ao proprietário semântico, dentro de seu
+  repertório local.
 
 ## Regras adaptativas publicadas
 

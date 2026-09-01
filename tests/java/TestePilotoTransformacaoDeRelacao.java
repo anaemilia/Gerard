@@ -16,11 +16,9 @@ import java.util.Optional;
 
 /**
  * Harness executável do piloto Transformação de Relação — categoria
- * "Relações" de Vergnaud, não "Medidas": os três papéis (RelacaoInicial,
- * Transformacao, RelacaoFinal) são todos INTEIROS, sem restrição de sinal —
- * por isso, diferente dos harnesses de Composição/Transformação/Comparação
- * de Medidas, não há cenário de rejeição por domínio aqui. Mesmo padrão dos
- * outros harnesses do piloto quanto ao resto.
+ * "Relações" de Vergnaud, não "Medidas": RelacaoInicial e RelacaoFinal são
+ * inteiras; a transformação é inteira não nula porque deve alterar a relação.
+ * Mesmo padrão dos outros harnesses do piloto quanto ao resto.
  *
  * Não toca em Main.java nem em nenhum caminho de produção.
  */
@@ -44,11 +42,14 @@ public class TestePilotoTransformacaoDeRelacao {
                 String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador).ehIncognita()), "true");
 
         System.out.println();
-        System.out.println("=== Os três aceitam positivo, negativo e nulo (domínio INTEIROS nos três) ===");
+        System.out.println("=== Relações são inteiras; transformação é inteira não nula ===");
         PapelQuantitativo t1 = FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador);
         checar("positivo (+5) é aceito", String.valueOf(t1.posicionar(new NumeroInteiro(5)).isPresent()), "false");
         PapelQuantitativo t2 = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
         checar("negativo (-3) é aceito", String.valueOf(t2.posicionar(new NumeroInteiro(-3)).isPresent()), "false");
+        PapelQuantitativo transformacaoNula = FabricaPapeisTransformacaoDeRelacao.transformacao(publicador);
+        checar("transformação nula é rejeitada",
+                String.valueOf(transformacaoNula.posicionar(new NumeroInteiro(0)).isPresent()), "true");
         PapelQuantitativo t3 = FabricaPapeisTransformacaoDeRelacao.relacaoFinal(publicador);
         checar("nulo (0) é aceito", String.valueOf(t3.posicionar(new NumeroInteiro(0)).isPresent()), "false");
 
@@ -149,12 +150,12 @@ public class TestePilotoTransformacaoDeRelacao {
                 relacao.verificarConsistencia(h1, h2, hf).name(), "REPRESENTACAO_INCOMPLETA");
 
         System.out.println();
-        System.out.println("=== Eventos semânticos (só ACEITO — INTEIROS nos três nunca rejeita) ===");
+        System.out.println("=== Eventos semânticos dos domínios distintos ===");
         long aceitos = eventos.stream().filter(e -> "ACEITO".equals(e.paraMapa().get("resultado"))).count();
         long rejeitados = eventos.stream().filter(e -> "REJEITADO".equals(e.paraMapa().get("resultado"))).count();
         System.out.println("total de eventos: " + eventos.size() + " (aceitos=" + aceitos + ", rejeitados=" + rejeitados + ")");
         checar("existe ao menos um evento de valor aceito", String.valueOf(aceitos > 0), "true");
-        checar("nenhum evento de rejeição (domínio INTEIROS nos três nunca rejeita)", String.valueOf(rejeitados), "0");
+        checar("a tentativa de transformação nula foi rejeitada", String.valueOf(rejeitados), "1");
 
         System.out.println();
         System.out.println("=== Null Object do publicador ===");
@@ -264,7 +265,7 @@ public class TestePilotoTransformacaoDeRelacao {
         checar("RelacaoInicial (INTEIROS) necessita representação de sinal",
                 String.valueOf(FabricaPapeisTransformacaoDeRelacao.relacaoInicial(publicador).necessitaRepresentacaoDeSinal()),
                 "true");
-        checar("Transformacao (INTEIROS) necessita representação de sinal",
+        checar("Transformacao (INTEIROS_NAO_NULOS) necessita representação de sinal",
                 String.valueOf(FabricaPapeisTransformacaoDeRelacao.transformacao(publicador).necessitaRepresentacaoDeSinal()),
                 "true");
         checar("RelacaoFinal (INTEIROS) necessita representação de sinal",

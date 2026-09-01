@@ -134,11 +134,33 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   Venn foi transferido para `HandlerInteracaoQuadradinhoVenn`. A tela faz o
   hit-testing e encaminha início, movimento, conclusão e cancelamento. O
   teste `TesteAffordancePickupUI` usa o acesso encapsulado
-  `obterQuadradinhoAtivo()`. Resta do roteiro conhecido o eixo de inteiros e a
-  revisão incremental dos trechos particulares ainda presentes nos métodos
-  centrais.
+  `obterQuadradinhoAtivo()`.
+- **Fase 7.6 — validada.** O protocolo do eixo flutuante único foi transferido
+  para `HandlerInteracaoEixoInteiros`, que depende somente da porta
+  `AlvoInteracaoEixoInteiros`. `AdaptadorInteracaoEixoInteiros` e
+  `FonteGeometriaInteracaoEixoInteiros` mantêm `Rectangle`, dimensões reais e
+  hit-testing no lado desktop. A `Main` preserva somente a autorização
+  contextual, o registro factual e a solicitação de sincronização; não chama
+  mais diretamente o pressionamento, o arraste, a conclusão nem a
+  classificação do eixo único. `TesteHandlerInteracaoEixoInteiros`, o
+  verificador completo, 86 testes executáveis e o Robot de 60 segundos (56
+  iterações, zero erros) foram aprovados em 2026-08-28. Os painéis individuais
+  das categorias de Relações não pertenciam a este recorte e só podem ser
+  revistos como outro protocolo, com nova autorização explícita.
+- **Fase 7.7 — validada.** Após autorização explícita da usuária, o protocolo
+  dos painéis individuais de eixo das categorias de Relações foi transferido
+  para `HandlerInteracaoPaineisEixosRelacoes`, que depende somente da porta
+  `AlvoInteracaoPaineisEixosRelacoes`. A tradução de `Rectangle`, dimensões
+  reais, hit-testing e estado visual pertence a
+  `AdaptadorInteracaoPaineisEixosRelacoes` e
+  `FonteGeometriaInteracaoPaineisEixosRelacoes`, na fronteira desktop. A
+  `Main` preserva a autorização contextual, solicita a sincronização antes da
+  conclusão visual e roteia o repaint; o handler não conhece Swing/AWT,
+  semântica, logs, scaffolding nem Modelo do Usuário. Em 2026-08-30 passaram o
+  build de 533 fontes, o verificador completo, 96 testes executáveis e o Robot
+  de 60 segundos (58 iterações, zero erros).
 
-`mousePressed` com 423 linhas concentra risco alto para uma mudança só;
+`mousePressed` com 442 linhas ainda concentra risco alto para uma mudança só;
 extrações grandes de uma vez são exatamente o tipo de refatoração que
 `gerard-consistencia-estado` pede pra não presumir como "melhoria" sem
 confirmação.

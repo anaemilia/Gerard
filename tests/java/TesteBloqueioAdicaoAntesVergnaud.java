@@ -3,15 +3,22 @@ import gerard.Scaffolding.venn.CondicaoHabilitacaoAdicaoUnidades;
 import gerard.Scaffolding.venn.EstadoModelagemVergnaud;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
-import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.venn.interacao.RepresentacaoVennEditavel;
+import gerard.dominio.campoaditivo.ContextoAcao;
+import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
+import gerard.dominio.campoaditivo.OrigemAcao;
+import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.dominio.campoaditivo.TipoErroPapel;
 import gerard.idioma.IdiomaInterface;
+import gerard.semantica.numero.NumeroNatural;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import javax.swing.SwingUtilities;
 
 public final class TesteBloqueioAdicaoAntesVergnaud {
@@ -179,12 +186,27 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
 
     private static void ativarRepresentacaoComplementar(Main.TelaGerard tela)
             throws Exception {
-        Method registrar = Main.TelaGerard.class.getDeclaredMethod(
-                "registrarTentativaIncognita",
-                String.class, boolean.class, ItemTextoArrastavel.class);
-        registrar.setAccessible(true);
+        Method garantirPapel = Main.TelaGerard.class.getDeclaredMethod(
+                "garantirTentativasIncognitaAtual", String.class);
+        garantirPapel.setAccessible(true);
+        garantirPapel.invoke(tela, "papel.referido");
+
+        Field campoPapel = Main.TelaGerard.class.getDeclaredField(
+                "tentativasIncognitaAtual");
+        campoPapel.setAccessible(true);
+        PapelQuantitativo papel = (PapelQuantitativo) campoPapel.get(tela);
+        ContextoAcao contexto = new ContextoAcao(
+                "sessao-teste-controles", "usuario-teste", "tentativa-teste",
+                "situacao-teste", "diagrama-teste");
+        Optional<DiagnosticoErroPapel> rejeicao = Optional.of(
+                new DiagnosticoErroPapel(
+                        TipoErroPapel.VALOR_INCORRETO,
+                        "erro.papel.valorIncorreto",
+                        "feedback.papel.valorIncorreto",
+                        "correcao.papel.valorIncorreto"));
         for (int i = 0; i < 3; i++) {
-            registrar.invoke(tela, "Referido", Boolean.FALSE, null);
+            papel.registrarTentativa(rejeicao, OrigemAcao.ORIGEM_USUARIO,
+                    contexto, new NumeroNatural(i + 1));
         }
     }
 

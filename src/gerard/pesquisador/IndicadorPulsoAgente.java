@@ -9,13 +9,9 @@ import javax.swing.Timer;
 
 /**
  * LED genérico que pulsa brevemente toda vez que pulsar() é chamado — mesmo
- * mecanismo de gerard.agente.monitor.IndicadorAgenteMonitor (ambient/
- * peripheral display), mas com a cor configurável no construtor em vez de
- * fixa, para reaproveitar entre os três agentes da Ajuda Adaptativa (Monitor,
- * ZDP, Modelador) sem duplicar a lógica do timer três vezes.
+ * mecanismo ambient/peripheral display, com cor configurável no construtor.
  *
- * Ao contrário de IndicadorAgenteMonitor, este componente não implementa
- * nenhuma interface de ouvinte de agente específica — quem instancia conecta
+ * Este componente não implementa nenhuma interface de ouvinte específica — quem instancia conecta
  * o ouvinte do agente correspondente e chama pulsar() de dentro dele. Isso
  * mantém este LED genérico e reutilizável.
  */
