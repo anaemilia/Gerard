@@ -1,6 +1,6 @@
 ---
 name: gerard-scaffolding-interacao
-description: Taxonomia aberta dos tipos de scaffolding do Gérard — (1) estilo de interação (protocolo de mouse: arrastar, proximidade, atração magnética; cores de significado), (2) mensagens (informativa e questionamento), (3) material concreto (quadradinhos — mecanismo já existente de adicionar/remover uma unidade por vez cobre AG_AC/automatização da contagem, confirmado pela usuária em 2026-08-08), (4) automatização de passos (AG_AE implementado em 2026-08-08). Use sempre que for criar, revisar ou discutir feedback de erro/acerto, protocolos de arraste/posicionamento, ou qualquer dica/scaffold oferecido ao usuário no Gérard. Lista extensível — podem surgir novos tipos. A maior parte deste domínio já é comportamento validado (ver "Status de verificação"); tratar como referência de convenções estabelecidas, não como espaço livre para redesenhar.
+description: Exemplos teóricos e repertório operacional de scaffolding do Gérard — estilo de interação, mensagens, material concreto, automatização de passos e mostrar modelo completo. A literatura não é uma taxonomia fechada, mas o repertório operacional atual (validado por `CodigosAjudaAdaptativa`) tem exatamente seis códigos: AG_EMLQ, AG_EMS, AG_EME, AG_EMCME, AG_AC, AG_AE. Use sempre que for criar, revisar ou discutir feedback de erro/acerto, protocolos de arraste/posicionamento, ou qualquer dica/scaffold oferecido ao usuário no Gérard. Esta skill nunca deve ser interpretada isoladamente: confronte-a com as skills de domínio, localidade, consistência, ajuda adaptativa, interação e registro pertinentes ao caso.
 ---
 
 # Categorização de scaffolding — Gérard
@@ -9,14 +9,40 @@ description: Taxonomia aberta dos tipos de scaffolding do Gérard — (1) estilo
 
 8 das 9 regras abaixo foram conferidas linha a linha contra o código atual e se confirmam. A única exceção é a seção 2 ("duas categorias de mensagem"): o código tem uma classe dedicada para questionamento, mas **não** tem uma estrutura equivalente para "mensagem informativa" — corrigido na seção correspondente. Não trate versões anteriores deste texto como válidas.
 
+## Regra de interpretação integrada
+
+Não usar esta skill como fonte autossuficiente de uma decisão. Antes de planejar ou implementar um scaffolding, identificar quais conhecimentos o caso cruza e ler integralmente as skills correspondentes:
+
+- significado e limites semânticos: `gerard-domain-model-first`, `gerard-knowledge-locality-principle` e o modelo semântico normativo;
+- aprendizagem das regras de ajuda: `gerard-ajuda-adaptativa` e a referência
+  do Modelador; aplicação: proprietário semântico do repertório local usando
+  uma projeção imutável do Modelo do Usuário;
+- propagação entre representações: `gerard-consistencia-estado`;
+- protocolo e localização do código de interação: `gerard-handlers-de-interacao` e `gerard-posicionamento-relativo`;
+- fatos que precisam ser registrados: `gerard-log-acao-instrumental` e `gerard-semantic-event-logging`;
+- efeitos sobre o modelo do usuário: `gerard-modelo-usuario`;
+- aparência visual: `gerard-identidade-visual`, sem transferir para ela o significado pedagógico das cores.
+
+Produzir a decisão somente depois de separar: conhecimento semântico, sintaxe de cada representação, mecânica de interação, estratégia pedagógica, evento factual e interpretação exclusiva do pesquisador. Se as skills parecerem conflitantes, não escolher uma isoladamente: confrontar seus escopos, o status de verificação e as decisões explícitas mais recentes da usuária.
+
 ## Escopo desta skill
 
-O scaffolding do Gérard é um conjunto aberto de tipos de apoio pedagógico. Por enquanto são estes quatro, mas a lista pode crescer — não tratar como taxonomia fechada:
+O scaffolding do Gérard é um conjunto aberto de tipos de apoio pedagógico teórico — isso não autoriza criar códigos operacionais adicionais. Por decisão explícita da usuária em 2026-08-13, o repertório operacional atual do Gérard possui exatamente seis códigos, validados por `gerard.adaptacao.CodigosAjudaAdaptativa` (verificado: os seis abaixo, nem mais nem menos):
+
+1. `AG_EMLQ` — exibir mensagens de questionamento;
+2. `AG_EMS` — exibir mensagem de sucesso;
+3. `AG_EME` — exibir mensagem explicativa;
+4. `AG_EMCME` — exibir material concreto e mensagem explicativa sobre o uso do material;
+5. `AG_AC` — automatizar a contagem por meio dos quadradinhos do material concreto;
+6. `AG_AE` — dica de posicionamento sob demanda (ver seção 4 — não confundir com uma automação por atração magnética; ver ressalva na seção 4).
+
+Essa validação de vocabulário fechado não substitui o repertório local: cada proprietário semântico continua aceitando somente o subconjunto de ajudas que ele próprio possui. Os quatro grupos teóricos abaixo (mais a seção 5, "mostrar modelo completo") organizam esses códigos e outros exemplos da literatura, sem ampliar automaticamente o repertório operacional:
 
 1. Estilo de interação (protocolo de mouse + cores de significado do feedback)
 2. Mensagens (informativa e questionamento)
 3. Material concreto (quadradinhos arrastáveis e manipuláveis — ver seção 3 sobre AG_AC)
 4. Automatização de passos (AG_AE implementado em 2026-08-08 — ver seção 4)
+5. Mostrar modelo completo — teórico, sem implementação confirmada (ver seção 5)
 
 **Fora do escopo**: a paleta neutra/tokens visuais e a consistência entre Windows e mobile — isso pertence à skill de identidade visual. Esta skill decide *o que* uma cor significa (ex.: erro=vermelho); a de identidade visual decide *o tom exato* dessa cor e sua aplicação cross-platform.
 
@@ -76,9 +102,36 @@ Princípio já definido, documentado na literatura da área, e que vale para a i
 
 Ao trabalhar em qualquer extensão futura deste tipo de scaffolding (ex.: ampliar o escopo de AG_AE), tratar como requisito a ser desenhado sob orientação direta do usuário sobre como cada automação deve ser autorizada — não como comportamento já validado. (AG_AC não pertence mais a esta seção — ver seção 3.)
 
+**Nota de reconciliação (2026-09-03):** a cópia desta skill em `.agents/skills`
+descreve uma reclassificação de `AG_AE` para atração magnética adaptativa
+gerida pelo Modelador (`MaterializadorAtracaoMagneticaAdaptativa`,
+`PapelQuantitativoPosicionavel`, datada P2.4A/2026-08-13), chamando a
+classificação acima ("Ver dica") de divergência a corrigir. Verificado nesta
+sessão: nenhuma das duas classes existe em `src/`, e o código real ainda
+registra `"AG_AE"` nos pontos de "Ver dica" (`Main.java:5736`, `6403`).
+Decisão explícita da usuária (2026-09-03): manter esta seção como está —
+a versão de `.agents` descreve um design não integrado ao código atual, não
+uma correção perdida. Reavaliar apenas se `MaterializadorAtracaoMagneticaAdaptativa`
+aparecer em `src/`.
+
+## 5. Mostrar modelo completo — DEFINIÇÃO TEÓRICA (2026-08-09)
+
+Tipo de scaffolding que apresenta ao participante o modelo já completo, podendo eliminar ou reduzir deliberadamente o obstáculo de coordenar sistemas de representação com sintaxes diferentes.
+
+Não confundir com **automatização de passos**:
+
+- **Mostrar modelo completo** apresenta o estado/modelo final completo e suas correspondências.
+- **Automatização de passos** realiza, antecipa ou guia um ou mais passos do processo de construção.
+
+Ambos podem reduzir a dificuldade representacional e são recursos pedagógicos legítimos quando acionados por uma estratégia de scaffolding explicitamente autorizada. Essa redução não deve ser proibida pela arquitetura nem surgir acidentalmente como efeito colateral da sincronização de estado.
+
+Quando utilizado, o sistema deve registrar factualmente o tipo de scaffolding exibido, a estratégia que o acionou, as representações afetadas, o estado anterior e o posterior e a origem `SISTEMA`. O registro da exposição ao scaffold não autoriza o sistema a concluir que o participante construiu a correspondência entre as representações; qualquer hipótese analítica permanece exclusiva do pesquisador humano.
+
+**Status de implementação:** esta seção registra a definição teórica confirmada pela usuária em 2026-08-09. Não presumir que exista hoje uma implementação validada de "mostrar modelo completo"; auditar e obter autorização específica antes de criar ou alterar esse comportamento.
+
 ## Este conjunto pode crescer
 
-Os quatro tipos acima são os mapeados até agora. Se surgir um novo tipo de apoio pedagógico que não se encaixe claramente em nenhum dos quatro, sinalizar isso ao usuário em vez de forçar o encaixe — pode ser um quinto tipo a documentar.
+Os cinco tipos acima são os mapeados até agora. Se surgir um novo tipo de apoio pedagógico que não se encaixe claramente em nenhum deles, sinalizar isso ao usuário em vez de forçar o encaixe — pode ser um sexto tipo teórico a documentar (o repertório *operacional* de seis códigos, na seção "Escopo desta skill", é separado e fechado).
 
 ## Regra de segurança
 
