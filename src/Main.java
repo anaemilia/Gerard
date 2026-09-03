@@ -209,7 +209,6 @@ import gerard.campoaditivo.diagrama.elementos.Seta;
 import gerard.suporte.RegistroRelatoBug;
 import gerard.suporte.PreparadorEmailRelatoBug;
 import gerard.ui.conclusao.CalculadorAreaVisualDiagramaVergnaud;
-import gerard.desktop.composicaomedidas.JanelaComposicaoMedidasDesktop;
 import gerard.ui.conclusao.SeloConclusaoModelagem;
 import gerard.ui.conclusao.SequenciadorFeedbackConclusao;
 import gerard.ui.conclusao.TipConclusaoModelagem;
