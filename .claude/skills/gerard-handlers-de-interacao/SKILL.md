@@ -153,6 +153,23 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   build de 533 fontes, o verificador completo, 96 testes executáveis e o Robot
   de 60 segundos (58 iterações, zero erros).
 
+- **Fase 7.8 — validada.** Candidato original (controles de clique de
+  adicionar/remover unidade do Venn) reavaliado antes de qualquer extração:
+  a decisão de permissão já estava inteiramente delegada aos proprietários
+  semânticos, sem gesto com estado a extrair — criar um handler ali seria
+  indireção sem ganho. Trocado, com autorização explícita, pelo arraste do
+  ponto de controle da barra de Comparação de Medidas
+  (`arrastandoControleComparacao`), que tem a mesma forma dos protocolos já
+  extraídos. `HandlerInteracaoControleComparacao` concentra o único fato
+  mecânico do gesto — estar ou não em curso — já que a conversão de posição
+  em valor já delegava a `RecalculoComparacaoMedidas`/
+  `RelacaoEstruturalComparacao` antes desta extração. O harness Robot
+  (`TesteMonkeySemiGuiado`) não dirige este controle especificamente (só
+  item textual, digitação de incógnita, troca de categoria e nova
+  situação); a validação automatizada real desta fase é
+  `TesteHandlerInteracaoControleComparacao`, unitário. Ver
+  `RELATORIO_FASE_7_8_HANDLER_CONTROLE_COMPARACAO_2026-09-03.md`.
+
 `mousePressed` com 401 linhas ainda concentra risco alto para uma mudança só;
 extrações grandes de uma vez são exatamente o tipo de refatoração que
 `gerard-consistencia-estado` pede pra não presumir como "melhoria" sem

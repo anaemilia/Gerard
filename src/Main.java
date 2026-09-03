@@ -190,6 +190,7 @@ import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
 import gerard.interacao.arraste.HandlerInteracaoArrasteIncremental;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.HandlerInteracaoQuadradinhoVenn;
+import gerard.interacao.arraste.HandlerInteracaoControleComparacao;
 import gerard.interacao.arraste.AlvoInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.HandlerInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
@@ -958,6 +959,8 @@ public class Main extends JFrame {
                 new HandlerInteracaoArrasteIncremental<AdaptadorMovimentoConectorVergnaud>();
         final HandlerInteracaoQuadradinhoVenn handlerQuadradinhoVenn =
                 new HandlerInteracaoQuadradinhoVenn();
+        final HandlerInteracaoControleComparacao handlerControleComparacao =
+                new HandlerInteracaoControleComparacao();
         final HandlerInteracaoPaineisEixosRelacoes
                 handlerPaineisEixosRelacoes =
                 new HandlerInteracaoPaineisEixosRelacoes();
@@ -976,15 +979,14 @@ public class Main extends JFrame {
         ElementoVergnaud alvoRealcadoPorProximidade = null;
         final int DISTANCIA_REALCE_ALVO = 48;
 
-        boolean arrastandoControleComparacao = false;
         double proporcaoControleComparacao = -1.0;
         int ultimoValorInteiroControleComparacao = -1;
         // Throttling do log CONSISTENCIA_AUTOMATICA durante o arraste
         // contínuo do controle das barras de Comparação — decisão da
         // usuária, 2026-08-16 (item 3 do levantamento de pendências de
         // 2026-08-11, ver TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md).
-        // Guarda só o snapshot mais recente enquanto arrastandoControleComparacao
-        // é verdadeiro; o log em si só é escrito quando o gesto termina (ver
+        // Guarda só o snapshot mais recente enquanto handlerControleComparacao
+        // está ativo; o log em si só é escrito quando o gesto termina (ver
         // registrarLogConsistenciaAutomaticaSeHouve/
         // flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao). Não
         // afeta a propagação de estado, que continua acontecendo a cada
@@ -7350,7 +7352,7 @@ public class Main extends JFrame {
                 });
             }
 
-            if (arrastandoControleComparacao) {
+            if (handlerControleComparacao.estaAtivo()) {
                 renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         Rectangle area = obterRetanguloPontoControleComparacao();
@@ -8035,7 +8037,7 @@ public class Main extends JFrame {
             if (snapshot == null) {
                 return;
             }
-            if (arrastandoControleComparacao) {
+            if (handlerControleComparacao.estaAtivo()) {
                 // Arraste contínuo do controle das barras de Comparação:
                 // adia o log até o fim do gesto (ver
                 // flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao),
@@ -8073,7 +8075,7 @@ public class Main extends JFrame {
         /**
          * Escreve, se houver, o log CONSISTENCIA_AUTOMATICA represado durante
          * o arraste contínuo do controle das barras de Comparação — chamar
-         * sempre que arrastandoControleComparacao voltar a false (soltura
+         * sempre que handlerControleComparacao deixar de estar ativo (soltura
          * normal em mouseReleased, ou reset defensivo no início de um novo
          * mousePressed, caso um arraste anterior tenha sido interrompido sem
          * passar por mouseReleased).
@@ -10523,7 +10525,7 @@ public class Main extends JFrame {
                     || handlerElementoTextoMovel.estaAtivo()
                     || handlerQuadradinhoVenn.estaAtivo()
                     || handlerConectorVergnaud.estaAtivo()
-                    || arrastandoControleComparacao
+                    || handlerControleComparacao.estaAtivo()
                     || handlerPaineisEixosRelacoes.estaAtivo();
         }
 
@@ -10700,7 +10702,7 @@ public class Main extends JFrame {
             limparRealceAlvoProximidade();
             mostrarAnotacaoMouseOver = false;
             flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
-            arrastandoControleComparacao = false;
+            handlerControleComparacao.concluir();
 
             RepresentacaoComUnidadesRemoviveis representacaoRemover =
                     encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);
@@ -10824,7 +10826,7 @@ public class Main extends JFrame {
             if (ehGraficoBarrasComparacao() && (contemPontoControleComparacao(x, y) || contemEscalaComparacao(x, y))) {
                 Rectangle origemControleComparacao = obterRetanguloPontoControleComparacao();
                 iniciarFantasmaRetangular(origemControleComparacao, 18, true);
-                arrastandoControleComparacao = true;
+                handlerControleComparacao.iniciar();
                 definirCursorMaoFechada();
                 aplicarControleComparacaoPeloMouse(y);
                 iniciarArrasteElastico(x, y);
@@ -11117,7 +11119,7 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (arrastandoControleComparacao) {
+            if (handlerControleComparacao.estaAtivo()) {
                 aplicarControleComparacaoPeloMouse(y);
                 repaint();
                 return;
@@ -11188,8 +11190,8 @@ public class Main extends JFrame {
                 return;
             }
 
-            if (arrastandoControleComparacao) {
-                arrastandoControleComparacao = false;
+            if (handlerControleComparacao.estaAtivo()) {
+                handlerControleComparacao.concluir();
                 flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
                 marcadorOrigemArraste.limpar();
                 // Ao soltar o controle do gráfico de barras (comparação de
