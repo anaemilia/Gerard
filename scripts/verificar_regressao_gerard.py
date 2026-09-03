@@ -478,7 +478,7 @@ check('definirCursorMaoAberta' in main and 'definirCursorMaoFechada' in main,
 print('== Arraste físico ==')
 arraste_contrato=text('src/gerard/Scaffolding/arraste/ControladorArrasteElastico.java')
 arraste_base=text('src/gerard/Scaffolding/arraste/ControladorArrasteElasticoAbstrato.java')
-arraste_mola=text('src/gerard/Scaffolding/arraste/ControladorArrasteElasticoMola.java')
+arraste_mola=text('src/gerard/Scaffolding/arraste/ControladorArrasteMolaMomento.java')
 fantasma_contrato=text('src/gerard/Scaffolding/arraste/MarcadorOrigemArraste.java')
 fantasma_base=text('src/gerard/Scaffolding/arraste/MarcadorOrigemArrasteAbstrato.java')
 check('interface ControladorArrasteElastico' in arraste_contrato,
@@ -486,8 +486,8 @@ check('interface ControladorArrasteElastico' in arraste_contrato,
 check('abstract class ControladorArrasteElasticoAbstrato' in arraste_base
       and 'Timer' in arraste_base and 'executarPasso' in arraste_base,
       'herança centraliza mola, amortecimento e temporização')
-check('return 26.0d' in arraste_mola and 'return 0.34d' in arraste_mola,
-      'mola concreta limita o atraso e preserva resposta discreta')
+check('return 26.0d' in arraste_mola and 'return 0.48d' in arraste_mola,
+      'mola com momento limita o atraso e preserva resposta discreta')
 check('interface MarcadorOrigemArraste' in fantasma_contrato
       and 'abstract class MarcadorOrigemArrasteAbstrato' in fantasma_base,
       'buraco de origem usa contrato e implementação herdada')

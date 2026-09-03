@@ -964,3 +964,27 @@ reprovação. TypeScript/Vite compilou 199 módulos.
   testava o wrapper agora removido, foi apagado (chamada, método e import).
 - Verificação: compilação completa, 112 testes executáveis aprovados,
   verificador estrutural aprovado sem falhas.
+
+## Corte: implementação órfã do arraste elástico (2026-09-03)
+
+Não veio de um item específico deste levantamento — surgiu de uma varredura
+por classes de `gerard.Scaffolding` sem nenhuma referência fora do próprio
+arquivo, no mesmo espírito dos dois cortes de wrappers mortos acima.
+
+- `ControladorArrasteElasticoMola` (relatório C116, 2026-07-16) foi a
+  primeira implementação concreta de `ControladorArrasteElasticoAbstrato`.
+  O relatório C121 (mesma data) a substituiu explicitamente por
+  `ControladorArrasteMolaMomento` ("A tela principal passa a usar
+  `ControladorArrasteMolaMomento`"), mas a classe C116 nunca foi apagada —
+  zero referências a ela em `src/` ou `tests/` fora de si mesma.
+- `scripts/verificar_regressao_gerard.py`, seção "Arraste físico", ainda
+  verificava a implementação abandonada (`ControladorArrasteElasticoMola`,
+  `return 0.34d`) em vez da que `Main` realmente instancia
+  (`ControladorArrasteMolaMomento`, `return 0.48d`) — um falso positivo
+  estrutural: a checagem passava sem examinar o código em uso. Corrigida
+  para apontar à classe real, mantendo `return 26.0d` (atraso máximo, igual
+  nas duas implementações).
+- Classe órfã apagada. Nenhum outro arquivo (fonte, teste, script) a
+  referenciava.
+- Verificação: compilação completa, 112 testes executáveis aprovados,
+  verificador estrutural aprovado sem falhas, incluindo a seção corrigida.
