@@ -988,3 +988,51 @@ arquivo, no mesmo espírito dos dois cortes de wrappers mortos acima.
   referenciava.
 - Verificação: compilação completa, 112 testes executáveis aprovados,
   verificador estrutural aprovado sem falhas, incluindo a seção corrigida.
+
+## Corte: remanescentes inalcançáveis do modelo semântico explícito C147 (2026-09-03)
+
+Varredura ampliada a todo `src/gerard` (não só `Scaffolding`) por classes sem
+nenhuma referência textual fora de si mesmas encontrou 14 candidatas.
+`ServidorPrototipoWeb` é falso positivo (ponto de entrada com `main`,
+invocado pelo classpath no deploy Render — descartada). As outras 13 foram
+inspecionadas uma a uma; 10 permanecem como estão porque representam
+infraestrutura de iniciativas ativas ou ambíguas (identidade visual
+`PainelCartaoArredondado`, instrumentação de pesquisa em
+`gerard.pesquisador`, base de conhecimento do Agente Modelador
+`LeitorBaseConhecimentoGerard`, `InterpretadorLinguistico`,
+`RepositorioSituacoesProblema`) — nenhuma tem a mesma prova documental clara
+de substituição que justificou os cortes anteriores, e removê-las sem
+confrontar o proprietário violaria o princípio deste levantamento.
+
+Três, porém, tinham prova mais forte que "sem referência textual": são
+provadamente inalcançáveis por construção, não só por citação.
+
+- `CategoriaComposta` (`gerard.semantica.categoria`), parte do modelo
+  semântico explícito do relatório C147 (2026-07-17). `ComponenteCategoria`
+  tem só dois implementadores, `CategoriaSimples` e `CategoriaComposta`; a
+  única fábrica do pacote, `CatalogoEsquemasCategoriasAditivas`, só
+  instancia `CategoriaSimples` — nenhum `new CategoriaComposta` existe em
+  todo o repositório. O C147 já registrava que categorias de vários passos
+  usariam esta classe "sem duplicar regras numéricas", mas a modelagem de
+  categorias compostas acabou implementada de outra forma, na camada
+  `campoaditivo` (`EstadoComposicaoTransformacoes`,
+  `RelacaoEstruturalComposicao`, etc., já cobertas por cortes anteriores
+  deste levantamento), e as próprias categorias compostas legadas foram
+  removidas do modelo canônico (ver primeiro item do P0, acima). O ramo do
+  C147 nunca foi conectado.
+- `ElementoContextual` (`gerard.semantica.elemento`): nenhum `new
+  ElementoContextual` no repositório, e `TipoElementoSemantico.CONTEXTUAL`
+  — o valor de enum que só esta classe declarava representar — não é lido
+  por nenhum `switch`/consumidor. O enum em si foi preservado (documenta a
+  taxonomia pretendida do C147 mesmo sem implementação viva).
+- `GrupoPersonagens` (`gerard.semantica.entidade`): nenhum `new
+  GrupoPersonagens` no repositório. O tratamento de personagens que
+  efetivamente entrou em produção é o da curadoria narrativa rica
+  (`ConversorSituacaoProblemaRica`, sidecar XML, `Personagem` nominal —
+  seção "Auditoria das categorias de Relações" acima), um design posterior
+  e independente do C147.
+- Nenhum dos três aparecia em `TesteModeloSemanticoExplicito.java`, o teste
+  dedicado ao próprio modelo C147 — nem o teste escrito para esta
+  arquitetura os exercitava.
+- Verificação: compilação completa, 112 testes executáveis aprovados,
+  verificador estrutural aprovado sem falhas.
