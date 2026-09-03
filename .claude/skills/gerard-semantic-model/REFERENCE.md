@@ -81,6 +81,22 @@ Essas condições não substituem a distinção binária entre valor conhecido e
 desconhecido; elas qualificam como e por que um valor chegou a um desses dois
 estados.
 
+### 4.2.2 Designação da incógnita original
+
+A incógnita original é o papel quantitativo designado pela situação-problema
+para ser determinado pelo participante. Essa identidade contextual permanece
+estável depois que um valor é proposto ou aceito.
+
+Na implementação, a designação não pode ser recuperada apenas perguntando se o
+valor atual está ausente: durante a montagem, um papel dado ainda não
+preenchido também pode estar momentaneamente sem valor. A ausência descreve o
+estado atual; a designação de incógnita descreve o papel na situação.
+
+> **Status de implementação (P2.2B, 2026-08-13):**
+> `IncognitaQuantitativa` registra explicitamente essa designação no pacote
+> piloto. O objeto referencia o `PapelQuantitativo` e a categoria da situação,
+> sem duplicar o valor nem inferir novamente a incógnita pela ausência atual.
+
 ### 4.3 Relações estruturais formais
 
 Expressões como:
@@ -440,6 +456,108 @@ Uma hipótese deve registrar:
 - autor ou agente responsável pela interpretação.
 
 A ausência de evidência suficiente deve resultar em **nenhuma hipótese**, e não em inferência forçada.
+
+### 4.11 Modelo do Usuário e decisão adaptativa distribuída
+
+Decisão arquitetural da usuária em 2026-08-11:
+
+1. Os objetos ricos da representação possuem e produzem os logs factuais dos
+   gestos que os envolvem. Os objetos semânticos ou relações estruturais
+   possuem e produzem os logs das ações instrumentais e das ajudas que lhes
+   pertencem. Cada ação possui um único `action_id`; quando envolve vários
+   objetos, o menor proprietário relacional ou agregado registra a ação uma
+   vez e referencia seus participantes. Esses registros fornecem casos para o
+   Agente Modelador.
+2. O Agente Modelador executa J48/PART e Apriori, mantém a proveniência das
+   regras e publica uma nova versão explicável do Modelo do Usuário.
+3. No login, o sistema carrega uma fotografia versionada do modelo. Essa
+   fotografia permanece estável durante a sessão; uma versão publicada pelo
+   Modelador só é usada em um login posterior.
+4. Cada proprietário semântico recebe apenas um `ContextoAdaptativoUsuario`
+   de leitura, projetado para o seu escopo. Ele combina esse contexto com o
+   diagnóstico factual que possui e seleciona uma ajuda do próprio repertório.
+5. A decisão resultante deve identificar a regra e a versão do modelo usadas.
+   A camada de apresentação concretiza a modalidade escolhida; o objeto rico
+   correspondente produz separadamente os registros da decisão e da exibição
+   confirmada.
+
+O aprendizado de padrões fica concentrado no Modelador; a aplicação das
+regras fica distribuída nos objetos que possuem o conhecimento semântico e o
+repertório correspondente. Como consequência, a arquitetura possui somente o
+Agente Modelador, porque a ele pertencem J48/PART, Apriori e a publicação das
+regras aprendidas. A Zona de Desenvolvimento Proximal continua sendo
+fundamento pedagógico, sem se tornar um componente de software.
+
+A autoridade sobre certo/errado e a propriedade do log da ação pertencem ao
+objeto semântico ou à relação estrutural que valida a ação. Esses proprietários
+produzem registros factuais tipados, incluindo C/E e contexto quando
+aplicável. O registro do gesto pertence ao objeto rico da representação, sem
+avaliação semântica. A infraestrutura apenas transporta, persiste e consulta
+esses registros, preservando seus proprietários, e os disponibiliza ao
+Modelador. A seleção da ajuda pertence ao proprietário semântico do repertório
+correspondente. O Agente Modelador é o único agente da arquitetura vigente.
+
+Os protocolos `TEXTO` e `QUANTIFICAR` da incógnita, a classificação de
+categoria, a escolha de sinal e o posicionamento materializam essa fronteira:
+o proprietário semântico produz um único registro factual e o Modelador o
+recebe diretamente. A participação de vários objetos semânticos é representada
+no mesmo registro, sem multiplicar a ação.
+
+Regras mineradas são artefatos computacionais versionados para adaptação, não
+invariantes operatórios nem hipóteses automáticas sobre conceitos-em-ação. Os
+campos interpretativos continuam sendo preenchidos exclusivamente pelo
+pesquisador humano. Um objeto semântico nunca conclui o que o participante
+"sabe"; ele somente aplica uma regra publicada aos fatos e ao contexto
+permitido.
+
+#### 4.11.1 Dois níveis temporais de contexto
+
+A arquitetura distingue, sem os transformar em dois decisores centrais:
+
+- **Modelo do Usuário**: contexto histórico/intersessões, versionado e
+  congelado no login;
+- **Modelo da Situação/Solução**: estado contextual intrasseção da estrutura
+  semântica construída pelas ações do participante sobre elementos da
+  interface, incluindo os fatos da tentativa e do curso das situações
+  interativas pertinentes à decisão corrente.
+
+O Modelo da Situação/Solução não é um mapa global entregue a todos os objetos.
+Cada proprietário recebe somente a projeção factual tipada que pertence à sua
+decisão. Para a incógnita, essa projeção já aparece como
+`FatosSelecaoAjudaIncognita` (verificado em `src/`, 2026-09-03). A referência
+equivalente para o posicionamento, `FatosSelecaoAjudaPosicionamento`, é citada
+na fonte de origem deste parágrafo mas **não foi encontrada em `src/`** nesta
+verificação — tratar como projeto ainda não integrado, não como fato atual,
+até confirmar.
+
+O mesmo proprietário semântico combina seus conhecimentos, seu estado e suas
+relações com esses fatos correntes e com a projeção histórica do Modelo do
+Usuário. A decisão pode mudar durante a sessão porque os fatos correntes
+mudaram, sem que a fotografia histórica seja atualizada. Progressão de
+complexidade da situação e intensidade do scaffolding são decisões distintas
+e devem permanecer em proprietários/repertórios compatíveis com seus escopos.
+
+Fonte conceitual para preservar o curso e o contexto das situações
+interativas: AKHRAS, F. N.; SELF, J. A. System Intelligence in Constructivist
+Learning. *International Journal of Artificial Intelligence in Education*,
+v. 11, n. 4, p. 344--376, 2000. A observação empírica da usuária, oriunda das
+sessões de mestrado/doutorado, é que a ausência de progressão de dificuldade
+podia produzir tédio. Esse registro fundamenta a investigação da progressão,
+mas não autoriza o sistema a diagnosticar automaticamente tédio nem a inventar
+limiares de progressão.
+
+> **Status de implementação (P2.3C, 2026-08-13):** o login real cria a
+> fotografia por `SessaoAdaptativaUsuario` e mantém a mesma instância até o
+> logout. Na ausência de um repositório editorial de versões publicadas, o
+> código identifica o conteúdo congelado por `conteudo-sha256:`. A base JSON
+> histórica e as regras TSV experimentais não são promovidas por esse
+> carregamento. A situação atual já é ligada à `IncognitaQuantitativa` por sua
+> designação curada e recebe somente `NIVEL_TAREFAS` e
+> `DIAGNOSTICO_TAREFA`. Conflitos de designação permanecem explícitos. Havendo
+> regra publicada aplicável, a decisão local é materializada pela representação
+> e decisão/apresentação são registradas separadamente. A produção ainda usa
+> fonte vazia de regras publicadas; nesse caso, `SEM_REGRA_APLICAVEL` é
+> registrado e o comportamento visual legado permanece como fallback explícito.
 
 ### 4.12 Situação-problema rica e narrativa independente de mídia
 
