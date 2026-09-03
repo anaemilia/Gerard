@@ -45,6 +45,10 @@ Sempre que aplicável, registrar:
 - resultado da validação;
 - diagnóstico factual;
 - feedback apresentado, quando houver;
+- versão do Modelo do Usuário e regra adaptativa aplicada, quando houver
+  decisão de ajuda;
+- algoritmo de origem e proveniência dos casos da regra publicada, quando uma
+  regra tiver sido aplicada;
 - data e hora;
 - versão do modelo ou esquema de evento.
 
