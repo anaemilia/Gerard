@@ -1,7 +1,7 @@
 # Modelo Semântico de Referência do GERARD
 
-**Versão:** 2.0  
-**Data:** 2026-08-01  
+**Versão:** 3.0
+**Data:** 2026-08-15
 **Status:** documento normativo; não é uma skill operacional.
 
 ## 1. Finalidade
@@ -214,14 +214,39 @@ existe só em `gerard.dominio.campoaditivo`, sem conexão com o log de ações
 de produção (`LoggerInteracaoGerard`/`EventoLogGerard`) — ver registro
 separado sobre a lacuna de log em `TAREFA_PENDENTE_LOG_CONSISTENCIA_AUTOMATICA.md`.
 
-Cardinalidade ação:evento: adotada a Alternativa B (1:N). Uma ação começa
-na primeira tentativa de posicionamento de um item; se aceita, a ação
-termina ali, um único evento. Se rejeitada, cada nova tentativa do mesmo
-item é um evento correlacionado à mesma ação (mesmo `action_id`), até um
-limite de `N=3` tentativas rejeitadas — fixo, para não repetir a mesma
-mensagem de ajuda mais de três vezes ao participante. Na terceira
-rejeição, o sistema exibe uma tela de ajuda; essa exibição fecha a ação.
-Acionar o botão "restaurar" depois disso inicia uma ação nova, separada.
+Cardinalidade ação:evento: adotada a relação 1:N. Uma ação semanticamente
+constituída pode produzir vários eventos factuais — comando, recálculos do
+sistema, resultado da validação e apoios apresentados — correlacionados pelo
+mesmo `action_id`.
+
+Decisão corrigida pela usuária em 2026-08-11: **`ARRASTAR → POSICIONAR` é a
+fronteira do gesto, não a definição suficiente de uma ação instrumental**.
+`POSICIONAR` estabelece a posição final do gesto em qualquer ponto. Se o
+ponto estiver fora de qualquer elemento do diagrama, o registro termina como
+gesto com destino geométrico ausente; não há comando semântico, `action_id`,
+avaliação C/E nem rejeição pedagógica. Se houver um elemento de destino, a
+camada de interação pode produzir uma ação instrumental semanticamente
+identificada, que então recebe `action_id` e pode ser avaliada.
+
+Pressionamento, movimento e soltura são fatos técnicos correlacionados por
+`gesture_id` em log próprio. Recálculos automáticos intermediários pertencem
+à ação somente depois que ela existe e têm origem `SISTEMA`. Um novo gesto
+não pode fabricar ação ausente nem reutilizar o `action_id` de uma ação
+anterior.
+
+O limite pedagógico de `N=3` continua sendo uma sequência de três ações
+instrumentais rejeitadas do mesmo item. As ações possuem três `action_id`
+distintos e são correlacionadas por `rejection_sequence_id`. Gestos sem ação
+não entram na sequência. Acionar o botão "restaurar" também constitui outra
+ação separada.
+
+> **Status de implementação (P3.2, 2026-08-24):** os dois comandos Restaurar
+> da interface são tipos distintos de ação da tentativa/modelagem e recebem
+> novo `action_id`. A ação de restauração encerra sequências anteriores, mas
+> não recebe o `rejection_sequence_id` encerrado como se fosse uma quarta
+> rejeição; essas identidades permanecem somente no contexto factual do
+> registro. `TentativaModelagemAditiva` é o proprietário semântico da ação, e
+> os papéis envolvidos aplicam apenas sua mudança local.
 
 Isso introduz um novo campo, `action_id`, que correlaciona os eventos de
 uma mesma ação — distinto de `event_id` (o identificador de cada evento
@@ -232,9 +257,19 @@ Cada objeto semântico deve carregar seu próprio repertório de Scaffolding
 (estilos de interação possíveis — manipulação, som, vibração, atração
 magnética, etc. — mensagens e tipos de ajuda concreta) como conhecimento
 local, consistente com o princípio da localidade do conhecimento: manter
-esse repertório espalhado pela interface causaria inconsistência. A
-seleção de qual elemento do repertório usar em cada situação é uma decisão
-separada e ainda em aberto — não resolvida por este registro.
+esse repertório espalhado pela interface causaria inconsistência. Decisão da
+usuária em 2026-08-11: o proprietário semântico também seleciona, entre os
+itens do seu repertório, a ajuda aplicável ao diagnóstico factual corrente,
+consultando somente uma projeção imutável e relevante do Modelo do Usuário.
+Essa seleção devolve um descritor semântico de ajuda; a interface apenas o
+materializa e registra o que foi efetivamente apresentado.
+
+"Proprietário semântico" não significa necessariamente um papel isolado. A
+localidade acompanha o escopo do conhecimento: uma restrição de um papel
+pertence ao papel; uma relação entre papéis pertence à relação estrutural;
+uma regra sobre a tentativa inteira pertence à tentativa; uma regra sobre a
+situação pertence à situação-problema. Nenhum desses objetos conhece Swing,
+geometria, persistência, Weka, Apriori ou o modelo mutável completo.
 
 Vocabulário de modalidade de interação (já citado em
 `gerard-semantic-event-logging/SKILL.md:41` como "modalidade de
@@ -763,7 +798,9 @@ status editorial é interpretado conservadoramente como
 3. Elementos puramente visuais ou interativos não pertencem ao domínio.
 4. Regras locais pertencem aos objetos responsáveis por elas.
 5. Relações que envolvem vários objetos pertencem a coordenadores de escopo fechado.
-6. Políticas pedagógicas gerais pertencem a skills ou serviços especializados.
+6. Aprendizado, publicação e política pedagógica transversal pertencem ao
+   Modelador ou a serviços especializados; a seleção entre ajudas de um
+   repertório local pertence ao proprietário semântico desse repertório.
 7. Eventos registram fatos; hipóteses analíticas registram interpretações.
 8. Valores calculados pelo sistema nunca devem ser registrados como ações do usuário.
 9. A arquitetura deve preservar a possibilidade de resultado inconclusivo na análise do conhecimento-em-ação.
