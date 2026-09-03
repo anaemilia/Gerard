@@ -11,11 +11,12 @@ Um gesto é uma ocorrência física observável na interface. Uma ação
 instrumental só existe quando a camada de interação consegue produzir um
 comando com significado semântico.
 
-- `ARRASTAR -> POSICIONAR` pode formar um gesto concluído.
-- Soltar fora de qualquer elemento produz destino geométrico
+- `ARRASTAR → POSICIONAR` sempre pode formar um gesto concluído.
+- Soltar fora de qualquer elemento do diagrama produz destino geométrico
   `FORA_DE_ELEMENTO_DO_DIAGRAMA`, mas não produz ação instrumental.
 - Soltar sobre um elemento pode constituir uma ação. O proprietário semântico
-  produz sua validação e seu único registro instrumental.
+  produz sua validação e seu único registro instrumental. Nada disso pertence
+  ao log de gestos.
 
 Decisão da usuária em 2026-08-14: o registro do gesto pertence ao objeto rico
 da representação participante. Esse objeto o produz a partir das observações
@@ -30,7 +31,7 @@ Registrar somente fatos observáveis:
 - tipo do gesto;
 - objeto e artefato manipulados como referências de interface;
 - coordenadas inicial e final;
-- amostras, mudanças de orientação e distância;
+- resumo da trajetória: amostras, mudanças de orientação e distância;
 - destino geométrico: sobre elemento, fora de elemento ou não classificado.
 
 Não incluir `C/E`, diagnóstico, invariante inferido, papel de destino,
@@ -38,14 +39,17 @@ Não incluir `C/E`, diagnóstico, invariante inferido, papel de destino,
 
 ## Regras de implementação
 
-1. Derivar destino e coordenadas da geometria real da representação.
+1. Derivar destino e coordenadas da geometria real da representação; nunca
+   usar pixels fixos nem inferir alvo sem hit-test.
 2. Registrar o gesto independentemente de ele produzir ação.
 3. Deixar o handler encerrar apenas o protocolo físico e entregar suas
    observações; ele não conhece o significado do destino.
 4. Deixar a camada de interação reconhecer, pela geometria real, se existe
    um comando semântico e encaminhar somente comandos constituídos ao
    proprietário semântico.
-5. Não usar ausência de ação como erro matemático ou rejeição pedagógica.
+5. Somente o proprietário semântico produz o registro instrumental e seu
+   resultado factual.
+6. Não usar ausência de ação como erro matemático ou rejeição pedagógica.
 
 ## Estado da versão correta
 
@@ -75,4 +79,5 @@ gestos.
   observações à camada de interação, sem conhecer o destino semântico.
 - `gerard-posicionamento-relativo`: fornece a geometria real do hit-test.
 - `gerard-log-acao-instrumental`: recebe somente a ação constituída.
-- `gerard-semantic-event-logging`: registra fatos semânticos posteriores.
+- `gerard-semantic-event-logging`: registra fatos semânticos posteriores, não
+  eventos técnicos do mouse.
