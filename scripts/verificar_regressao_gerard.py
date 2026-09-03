@@ -1416,31 +1416,35 @@ for lang in ('pt', 'en', 'es', 'fr'):
 
 print('== Item 22 (2026-08-18): seletor soma/subtração no diagrama do aluno ==')
 seletor_op = text('src/gerard/ui/vergnaud/SeletorOperacaoRelacaoAluno.java')
+avaliacao_op = text('src/gerard/campoaditivo/curadoria/sinal/AvaliacaoEscolhaOperacaoRelacao.java')
 check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao' in seletor_op
       and 'public boolean processarPressionamento(int mouseX, int mouseY)' in seletor_op
       and 'public boolean respondeuCorretamente()' in seletor_op
       and 'public void desenhar(Graphics2D g2, ServicoLocalizacao localizacao)' in seletor_op,
       'SeletorOperacaoRelacaoAluno tem a API mínima: ativar por situação, processar clique, saber se '
       'a escolha do aluno bateu com a curada, e desenhar')
-check('OpcaoOperacaoCuradoria.aPartirDoEstado(operacaoCurada)' in seletor_op
-      and 'situacao.getOperacaoEstadoTransformacao()\n                : situacao.getOperacaoRelacao();' in seletor_op,
+check('OpcaoOperacaoCuradoria.aPartirDoEstado(operacaoCurada)' in avaliacao_op
+      and 'situacao.getOperacaoEstadoTransformacao()\n                : situacao.getOperacaoRelacao();' in avaliacao_op,
       'a resposta certa vem da mesma operação curada em TelaCuradoriaSituacoes (item 21), sem duplicar '
       'lógica de cálculo — só lê o que já foi decidido na curadoria')
-check("if (!escolhaCorreta.isEscolhaValida())" in seletor_op,
+check('escolhaCorreta.isEscolhaValida()\n                ? escolhaCorreta : OpcaoOperacaoCuradoria.NAO_SELECIONADO;' in avaliacao_op,
       'situações antigas, sem operação curada, não ativam o seletor — nada a avaliar')
 check('static boolean aplicavel(TipoSituacaoAditiva tipo)' in seletor_op
-      and seletor_op.count('TipoSituacaoAditiva.TRANSFORMACAO_RELACAO') >= 1
-      and seletor_op.count('TipoSituacaoAditiva.COMPOSICAO_RELACOES') >= 1
-      and seletor_op.count('TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES') >= 1,
+      and 'static boolean aplicavel(TipoSituacaoAditiva tipo)' in avaliacao_op
+      and avaliacao_op.count('TipoSituacaoAditiva.TRANSFORMACAO_RELACAO') >= 1
+      and avaliacao_op.count('TipoSituacaoAditiva.COMPOSICAO_RELACOES') >= 1
+      and avaliacao_op.count('TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES') >= 1,
       'presente nas 3 categorias — decisão da usuária: "coloque nas três, pois essa base bruta de '
-      'situações curadas pode aumentar"')
+      'situações curadas pode aumentar" (extraído para AvaliacaoEscolhaOperacaoRelacao em 2026-09-03; '
+      'SeletorOperacaoRelacaoAluno.aplicavel delega)')
 check('preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao)' in seletor_op
-      and '.replace("{Personagem_1}", personagem1)' in seletor_op
-      and '.replace("{Personagem_2}", personagem2)' in seletor_op
-      and '.replace("{Personagem_3}", personagem3)' in seletor_op
+      and '.replace("{Personagem_1}", personagem1)' in avaliacao_op
+      and '.replace("{Personagem_2}", personagem2)' in avaliacao_op
+      and '.replace("{Personagem_3}", personagem3)' in avaliacao_op
       and 'loc.formatar(chaveExplicacao' not in seletor_op,
       'a explicação substitui cada marcador nomeado pelo campo curado homônimo, sem associar personagens '
-      'pela posição no diagrama nem inferir seus papéis')
+      'pela posição no diagrama nem inferir seus papéis (preencherPersonagensCurados extraído para '
+      'AvaliacaoEscolhaOperacaoRelacao em 2026-09-03)')
 chaves_explicacao_operacao = (
     'operacao.explicacao.transformacaoRelacao.soma',
     'operacao.explicacao.transformacaoRelacao.subtracao',
@@ -1472,7 +1476,9 @@ check(main.count('seletorOperacaoRelacaoAluno.desativar();') >= 2,
       'para não sobreviver a uma troca de situação/categoria')
 check('seletorOperacaoRelacaoAluno.ativar(\n'
       '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
-      '                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,\n'
+      '                    conectoresVergnaud,\n'
+      '                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao\n'
+      '                            .TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,\n'
       '                    localizacao);' in main,
       'seletor é (re)ativado ao final de inicializarDiagramaVergnaud, com os elementos e conectores já '
       'posicionados/centralizados na tela — mesma fonte de coordenadas do resto do diagrama')
@@ -1496,7 +1502,7 @@ for chave in (
 print('== Item 22b (2026-08-23): posição do seletor relativa à geometria real do diagrama ==')
 check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,\n'
       '            List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,\n'
-      '            TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
+      '            AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
       and 'import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;' in seletor_op,
       'ativar() recebe também os conectores do diagrama — a posição deixa de vir só dos 3 elementos '
       'e passa a usar a mesma geometria que o diagrama já desenha (parâmetro papel acrescentado no '
@@ -1734,17 +1740,18 @@ check('linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorC
 check('public enum TipoOperacaoSeletor {\n'
       '        ENTRE_TRANSFORMACOES,\n'
       '        ENTRE_ESTADO_E_TRANSFORMACAO\n'
-      '    }' in seletor_op,
-      'SeletorOperacaoRelacaoAluno ganha um enum para diferenciar as duas operações de Composição de '
-      'Transformações — cada uma usa sua própria instância da classe (sem estado compartilhado)')
+      '    }' in avaliacao_op,
+      'AvaliacaoEscolhaOperacaoRelacao (extraída de SeletorOperacaoRelacaoAluno em 2026-09-03) tem um enum '
+      'para diferenciar as duas operações de Composição de Transformações — cada uma usa sua própria '
+      'instância do widget (sem estado compartilhado)')
 check('TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
-      and 'boolean papelEstadoTransformacao = papelEfetivo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;' in seletor_op
-      and 'if (papelEstadoTransformacao && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {' in seletor_op,
+      and 'boolean papelEstadoTransformacao =\n                papelEfetivo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;' in avaliacao_op
+      and 'if (papelEstadoTransformacao && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {' in avaliacao_op,
       'a segunda operação só ativa em Composição de Transformações — nas outras duas categorias, que só '
       'têm uma operação, ativar() com ENTRE_ESTADO_E_TRANSFORMACAO é no-op')
 check('String operacaoCurada = papelEstadoTransformacao\n'
       '                ? situacao.getOperacaoEstadoTransformacao()\n'
-      '                : situacao.getOperacaoRelacao();' in seletor_op,
+      '                : situacao.getOperacaoRelacao();' in avaliacao_op,
       'cada instância lê o campo curado correspondente ao seu papel — a resposta certa nunca se mistura '
       'entre as duas operações')
 check('centroX = left(e2) - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO;\n'
@@ -1757,8 +1764,8 @@ check('centroX = (centroX(e0) + centroX(e1)) / 2;\n'
       'operação (entre transformação_1 e transformação_2) fica acima de e0/e1 (t1/t2), não mais no vão '
       'abaixo deles como antes do Item 30')
 check('if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {\n'
-      '            // Só existe para Composição de Transformações (ver ativar()).\n'
-      '            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"' in seletor_op,
+      '            // Só existe para Composição de Transformações (ver determinarOperacaoCorreta()).\n'
+      '            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"' in avaliacao_op,
       'chaveExplicacao() ganha um ramo próprio para a segunda operação, com chaves de i18n distintas das '
       'da primeira operação')
 
@@ -1769,7 +1776,9 @@ check(main.count('seletorOperacaoEstadoTransformacaoAluno.desativar();') >= 2,
       'a segunda instância é desativada nos mesmos pontos de reset que a primeira')
 check('seletorOperacaoEstadoTransformacaoAluno.ativar(\n'
       '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
-      '                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,\n'
+      '                    conectoresVergnaud,\n'
+      '                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao\n'
+      '                            .TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,\n'
       '                    localizacao);' in main,
       'a segunda instância é ativada com o papel ENTRE_ESTADO_E_TRANSFORMACAO, junto com a primeira '
       '(ENTRE_TRANSFORMACOES) em inicializarDiagramaVergnaud')

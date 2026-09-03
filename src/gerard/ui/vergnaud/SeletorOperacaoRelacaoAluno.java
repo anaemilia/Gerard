@@ -1,5 +1,6 @@
 package gerard.ui.vergnaud;
 
+import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
@@ -53,7 +54,8 @@ import java.util.List;
  * resultante, e estado_inicial [op] transformação_resultante = estado_final.
  * Cada operação usa sua PRÓPRIA instância desta classe — não há estado
  * compartilhado entre elas — diferenciadas pelo parâmetro
- * {@link TipoOperacaoSeletor} passado a {@link #ativar}. Nas outras duas
+ * {@link AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor} passado a
+ * {@link #ativar}. Nas outras duas
  * categorias (Transformação de Relação, Composição de Relações) só existe
  * uma operação; passar ENTRE_ESTADO_E_TRANSFORMACAO nelas é a no-op.
  */
@@ -92,16 +94,6 @@ public final class SeletorOperacaoRelacaoAluno {
     // ajuste por captura de tela como já ocorreu com ELEVACAO_ACIMA_DO_SEGMENTO.
     private static final int DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO = 110;
 
-    /**
-     * Qual das duas operações de Composição de Transformações esta instância
-     * avalia — ver Javadoc da classe. Nas demais categorias, que só têm uma
-     * operação, use sempre ENTRE_TRANSFORMACOES.
-     */
-    public enum TipoOperacaoSeletor {
-        ENTRE_TRANSFORMACOES,
-        ENTRE_ESTADO_E_TRANSFORMACAO
-    }
-
     private boolean ativo;
     private Rectangle areaSoma;
     private Rectangle areaSubtracao;
@@ -121,8 +113,8 @@ public final class SeletorOperacaoRelacaoAluno {
     }
 
     public boolean respondeuCorretamente() {
-        return ativo && escolhaAluno != OpcaoOperacaoCuradoria.NAO_SELECIONADO
-                && escolhaAluno == escolhaCorreta;
+        return ativo && AvaliacaoEscolhaOperacaoRelacao
+                .respondeuCorretamente(escolhaAluno, escolhaCorreta);
     }
 
     public void desativar() {
@@ -136,9 +128,7 @@ public final class SeletorOperacaoRelacaoAluno {
     }
 
     public static boolean aplicavel(TipoSituacaoAditiva tipo) {
-        return tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                || tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES
-                || tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES;
+        return AvaliacaoEscolhaOperacaoRelacao.aplicavel(tipo);
     }
 
     /**
@@ -164,31 +154,30 @@ public final class SeletorOperacaoRelacaoAluno {
      */
     public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,
             List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,
-            TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {
+            AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {
         desativar();
         if (!aplicavel(tipo) || situacao == null || elementos == null || elementos.size() < 3) {
             return;
         }
-        TipoOperacaoSeletor papelEfetivo = papel == null ? TipoOperacaoSeletor.ENTRE_TRANSFORMACOES : papel;
-        boolean papelEstadoTransformacao = papelEfetivo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
-        if (papelEstadoTransformacao && tipo != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            // A segunda operação só existe em Composição de Transformações.
-            return;
-        }
+        AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papelEfetivo = papel == null
+                ? AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES : papel;
+        boolean papelEstadoTransformacao = papelEfetivo
+                == AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
         ServicoLocalizacao loc = localizacao == null ? ServicoLocalizacao.getInstancia() : localizacao;
-        String operacaoCurada = papelEstadoTransformacao
-                ? situacao.getOperacaoEstadoTransformacao()
-                : situacao.getOperacaoRelacao();
-        escolhaCorreta = OpcaoOperacaoCuradoria.aPartirDoEstado(operacaoCurada);
-        if (!escolhaCorreta.isEscolhaValida()) {
-            // Situação sem operação curada (base antiga) — nada a perguntar.
-            escolhaCorreta = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
+        escolhaCorreta = AvaliacaoEscolhaOperacaoRelacao
+                .determinarOperacaoCorreta(tipo, situacao, papelEfetivo);
+        if (escolhaCorreta == OpcaoOperacaoCuradoria.NAO_SELECIONADO) {
+            // Segunda operação fora de Composição de Transformações, ou
+            // situação sem operação curada válida (base antiga) — nada a
+            // perguntar.
             return;
         }
 
-        String chaveExplicacao = chaveExplicacao(tipo, papelEfetivo, escolhaCorreta);
+        String chaveExplicacao = AvaliacaoEscolhaOperacaoRelacao
+                .chaveExplicacao(tipo, papelEfetivo, escolhaCorreta);
         textoExplicacaoCorreta = chaveExplicacao == null ? ""
-                : preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao);
+                : AvaliacaoEscolhaOperacaoRelacao
+                        .preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao);
 
         ElementoVergnaud e0 = elementos.get(0);
         ElementoVergnaud e1 = elementos.get(1);
@@ -263,44 +252,6 @@ public final class SeletorOperacaoRelacaoAluno {
         if (areaSubtracao != null) {
             areaSubtracao.translate(dx, dy);
         }
-    }
-
-    private static String textoOu(String valor) {
-        return valor == null ? "" : valor;
-    }
-
-    private static String preencherPersonagensCurados(String modelo,
-            SituacaoProblemaAditiva situacao) {
-        String personagem1 = textoOu(situacao.getPersonagem1());
-        String personagem2 = textoOu(situacao.getPersonagem2());
-        String personagem3 = textoOu(situacao.getPersonagem3());
-        return textoOu(modelo)
-                .replace("{Personagem_1}", personagem1)
-                .replace("{Personagem_2}", personagem2)
-                .replace("{Personagem_3}", personagem3);
-    }
-
-    private static String chaveExplicacao(TipoSituacaoAditiva tipo, TipoOperacaoSeletor papel,
-            OpcaoOperacaoCuradoria operacao) {
-        boolean soma = operacao == OpcaoOperacaoCuradoria.SOMA;
-        if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {
-            // Só existe para Composição de Transformações (ver ativar()).
-            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"
-                    : "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-            return soma ? "operacao.explicacao.transformacaoRelacao.soma"
-                    : "operacao.explicacao.transformacaoRelacao.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            return soma ? "operacao.explicacao.composicaoRelacoes.soma"
-                    : "operacao.explicacao.composicaoRelacoes.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            return soma ? "operacao.explicacao.composicaoTransformacoes.soma"
-                    : "operacao.explicacao.composicaoTransformacoes.subtracao";
-        }
-        return null;
     }
 
     private static int centroX(ElementoVergnaud e) {

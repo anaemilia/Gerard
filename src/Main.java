@@ -749,7 +749,7 @@ public class Main extends JFrame {
          * Transformações — estado_inicial [op] transformação_resultante =
          * estado_final. Instância independente da acima (que avalia
          * transformação_1 [op] transformação_2); ver Javadoc de
-         * SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.
+         * gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.
          */
         final SeletorOperacaoRelacaoAluno seletorOperacaoEstadoTransformacaoAluno = new SeletorOperacaoRelacaoAluno();
         final FornecedorCursoresPickup fornecedorCursoresPickup = new FornecedorCursoresPickupSwing();
@@ -8554,11 +8554,15 @@ public class Main extends JFrame {
             aplicarSubtitulosPersonagensNoDiagramaVergnaud();
             seletorOperacaoRelacaoAluno.ativar(
                     tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
-                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                    conectoresVergnaud,
+                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
+                            .TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
                     localizacao);
             seletorOperacaoEstadoTransformacaoAluno.ativar(
                     tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
-                    conectoresVergnaud, SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,
+                    conectoresVergnaud,
+                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
+                            .TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,
                     localizacao);
         }
 

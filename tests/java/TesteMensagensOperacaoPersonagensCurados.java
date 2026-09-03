@@ -1,5 +1,6 @@
 package gerard.ui.vergnaud;
 
+import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
@@ -103,7 +104,7 @@ public final class TesteMensagensOperacaoPersonagensCurados {
         SeletorOperacaoRelacaoAluno seletor = new SeletorOperacaoRelacaoAluno();
         seletor.ativar(caso.tipo, situacao, elementos,
                 Collections.emptyList(),
-                SeletorOperacaoRelacaoAluno.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
                 localizacao);
 
         exigir(seletor.estaAtivo(),
