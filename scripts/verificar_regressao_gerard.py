@@ -436,9 +436,13 @@ check('class PoliticaValoresAditivos' in politica_valores
       and 'valorEhValidoParaElemento' in politica_valores
       and 'valorEhValidoNoEstadoCompartilhado' in politica_valores,
       'política única impede quantidade negativa sem bloquear relações')
-check('catalogoPapeis.obterChavePapelDoElemento' in questionamento
-      and 'catalogoPapeis.obterIndiceElementoPorPapel' in questionamento,
-      'questionamento delega mapeamento ao catálogo central')
+check('catalogoPapeis.obterDescritor' in questionamento
+      and 'obterChavePapelDoElemento' not in questionamento
+      and 'obterIndiceElementoPorPapel' not in questionamento,
+      'questionamento não reimplementa nem envolve o mapeamento índice/papel — quem precisa '
+      'consulta CatalogoPapeisSemanticosAditivos diretamente; questionamento só usa o catálogo '
+      'para comparar descritores de compatibilidade entre papéis (2026-09-02: removidos os dois '
+      'métodos wrapper que só delegavam, sem uso próprio)')
 check('ConversorValoresEstadoAditivo' in estado_compartilhado
       and 'conversorValores.normalizarEntrada' in estado_compartilhado
       and 'politicaValores.valorEhValidoNoEstadoCompartilhado' in conversor_valores,

@@ -1,6 +1,7 @@
 import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.idioma.IdiomaInterface;
 import gerard.i18n.ServicoLocalizacao;
 
@@ -8,6 +9,7 @@ public class TesteFeedbackMultissensorialPosicionamento {
     public static void main(String[] args) {
         ServicoLocalizacao.getInstancia().definirIdioma(IdiomaInterface.PORTUGUES);
         ScaffoldingQuestionamento s = new ScaffoldingQuestionamento();
+        CatalogoPapeisSemanticosAditivos catalogo = new CatalogoPapeisSemanticosAditivos();
         int categorias = 0;
 
         for (TipoSituacaoAditiva tipo : TipoSituacaoAditiva.values()) {
@@ -19,7 +21,7 @@ public class TesteFeedbackMultissensorialPosicionamento {
             String categoria = ServicoLocalizacao.getInstancia().descricaoTipo(tipo);
             boolean verificouIncompatibilidade = false;
             for (int i = 0; i < max; i++) {
-                String alvo = s.obterChavePapelDoElemento(tipo, i, encadeada, quantidade);
+                String alvo = catalogo.obterChavePapelDoElemento(tipo, i, encadeada, quantidade);
                 if ("papel.valor".equals(alvo)) continue;
                 String incorreto = papelDiferente(alvo);
                 ResultadoQuestionamento r = s.avaliarPosicionamento(

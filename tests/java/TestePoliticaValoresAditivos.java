@@ -1,4 +1,3 @@
-import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.campoaditivo.semantica.NaturezaPapelAditivo;
@@ -16,7 +15,6 @@ public final class TestePoliticaValoresAditivos {
         testarNaturezaDosPapeis(catalogo);
         testarPoliticaPorCategoria(politica);
         testarEstadoCompartilhado(politica);
-        testarDelegacaoQuestionamento(catalogo);
 
         System.out.println("TestePoliticaValoresAditivos: OK");
     }
@@ -128,17 +126,6 @@ public final class TestePoliticaValoresAditivos {
                 EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
         exigir(relacoes.isConhecido(0) && relacoes.valorOuZero(0) == -2,
                 "Relações assinadas não podem ser tratadas como quantidades.");
-    }
-
-    private static void testarDelegacaoQuestionamento(
-            CatalogoPapeisSemanticosAditivos catalogo) {
-        ScaffoldingQuestionamento questionamento = new ScaffoldingQuestionamento();
-        String esperado = catalogo.obterChavePapelDoElemento(
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS, 2, false, 1);
-        String obtido = questionamento.obterChavePapelDoElemento(
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS, 2, false, 1);
-        exigir(esperado.equals(obtido),
-                "O questionamento deve delegar o mapeamento ao catálogo central.");
     }
 
     private static void exigir(boolean condicao, String mensagem) {

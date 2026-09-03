@@ -945,3 +945,22 @@ reprovação. TypeScript/Vite compilou 199 módulos.
   e `EstadoSemanticoCompartilhado`, ainda vivos, permanece intocado.
 - Verificação: compilação completa, bateria de testes e verificador
   estrutural aprovados sem falhas.
+
+## Corte: wrappers mortos de índice/papel em ScaffoldingQuestionamento (2026-09-02)
+
+- `ScaffoldingQuestionamento.obterIndiceElementoPorPapel`/
+  `obterChavePapelDoElemento` eram wrappers finos que só repassavam para
+  `CatalogoPapeisSemanticosAditivos` — órfãos desde que os chamadores
+  externos migraram para o catálogo diretamente (cortes anteriores desta
+  mesma data). Removidos os dois métodos e o import agora não usado de
+  `TipoSituacaoAditiva`; o campo `catalogoPapeis` permanece, ainda usado por
+  `papeisCompativeis`.
+- Um consumidor real (não apenas um teste do wrapper) apareceu no meio do
+  corte: `TesteFeedbackMultissensorialPosicionamento` usava o wrapper para
+  enumerar chaves de papel por categoria/índice, sem testar o wrapper em si.
+  Migrado para instanciar `CatalogoPapeisSemanticosAditivos` diretamente,
+  igual a todo outro chamador.
+- `TestePoliticaValoresAditivos.testarDelegacaoQuestionamento`, que só
+  testava o wrapper agora removido, foi apagado (chamada, método e import).
+- Verificação: compilação completa, 112 testes executáveis aprovados,
+  verificador estrutural aprovado sem falhas.

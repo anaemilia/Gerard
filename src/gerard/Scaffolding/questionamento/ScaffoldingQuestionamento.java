@@ -1,6 +1,5 @@
 package gerard.Scaffolding.questionamento;
 
-import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.i18n.ServicoLocalizacao;
 import gerard.semantica.papel.DescritorPapelQuantitativo;
@@ -77,28 +76,6 @@ public class ScaffoldingQuestionamento {
                 && resultado != null
                 && resultado.isAplicavel()
                 && !resultado.isCorreto();
-    }
-
-    public int obterIndiceElementoPorPapel(
-            String chavePapel,
-            TipoSituacaoAditiva tipo,
-            boolean transformacaoCompostaEncadeada,
-            int quantidadePassosTransformacaoComposta
-    ) {
-        return catalogoPapeis.obterIndiceElementoPorPapel(
-                chavePapel, tipo, transformacaoCompostaEncadeada,
-                quantidadePassosTransformacaoComposta);
-    }
-
-    public String obterChavePapelDoElemento(
-            TipoSituacaoAditiva tipo,
-            int indiceElemento,
-            boolean transformacaoCompostaEncadeada,
-            int quantidadePassosTransformacaoComposta
-    ) {
-        return catalogoPapeis.obterChavePapelDoElemento(
-                tipo, indiceElemento, transformacaoCompostaEncadeada,
-                quantidadePassosTransformacaoComposta);
     }
 
     private boolean papelValido(String chavePapel) {
