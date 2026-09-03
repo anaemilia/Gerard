@@ -175,6 +175,43 @@ extrações grandes de uma vez são exatamente o tipo de refatoração que
 `gerard-consistencia-estado` pede pra não presumir como "melhoria" sem
 confirmação.
 
+### Auditoria de encerramento do roteiro incremental (2026-09-03)
+
+Depois da Fase 7.8, li `mousePressed` (401 linhas), `mouseMoved` (205),
+`mouseDragged` (20), `processarMovimentoArraste` (60) e `mouseClicked` (34)
+por inteiro, bloco por bloco, procurando algum gesto com estado ainda solto
+em `Main` — o mesmo critério usado para aceitar ou rejeitar cada fase
+anterior. Não encontrei nenhum. Todo bloco restante se encaixa em uma das
+três categorias que esta skill já reconhece como legítimas em `Main`:
+
+1. **Hit-testing/geometria real** (`encontrarQuadradinhoVenn`,
+   `encontrarConectorVergnaud`, `encontrarElementoVergnaud`,
+   `contemPontoControleComparacao`...) — depende de `Rectangle`/`Graphics2D`
+   reais da árvore de componentes; é trabalho do adaptador da plataforma,
+   não mecânica de gesto.
+2. **Composição/roteamento** para handlers já extraídos (Fases
+   7.2–7.5, 7.7, 7.8) — `Main` monta o fantasma, aciona o arraste elástico
+   compartilhado, define cursor e encaminha ao handler; não guarda estado
+   próprio do gesto.
+3. **Despacho para proprietário semântico já portátil** — cliques em
+   `seletorOperacaoRelacaoAluno`, `seletorOperacaoEstadoTransformacaoAluno`
+   e `paineisEixosRelacoes.processarPressionamentoLupa` já delegam a
+   objetos que fazem seu próprio hit-testing e guardam seu próprio estado;
+   `Main` só encaminha coordenadas e reage ao resultado.
+
+Os controles de clique de adicionar/remover unidade do Venn (candidato
+descartado antes da Fase 7.8) continuam na categoria 1: hit-test mais
+decisão já delegada, sem gesto a extrair.
+
+**Conclusão:** o roteiro incremental desta skill está, por ora, sem próximo
+candidato — não porque `mousePressed`/`mouseMoved` ficaram pequenos (o
+ratchet segue nos mesmos limites), mas porque o que resta neles já é
+exatamente o papel de compositora/roteadora que a regra determinística
+abaixo pede. Uma nova extração só deveria ser cogitada se a tela voltar a
+concentrar mecânica particular de um protocolo — o próprio gatilho que esta
+skill já lista no seu resumo — não por buscar ativamente um próximo alvo
+onde não há mais nenhum.
+
 ## Regra determinística: Main compositora e roteadora
 
 > A Main deve progressivamente se tornar uma compositora e roteadora, sem
