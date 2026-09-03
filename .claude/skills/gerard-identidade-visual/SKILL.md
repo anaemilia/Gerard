@@ -38,6 +38,18 @@ Cobre apenas a paleta neutra/tokens visuais e a consistência de estilo entre as
 
 Parte da suavidade percebida no protótipo mobile pode estar relacionada ao próprio uso do dedo/touch em vez do mouse com clique (Windows), não só à tecnologia de renderização (Swing vs. tecnologia mobile). Ao replicar uma sensação visual entre plataformas, considerar essa diferença de input, não só cor/estilo. **Esta observação vem do relato do usuário sobre o protótipo mobile — não há código mobile neste repositório para conferir.**
 
+## Acessibilidade de controles visuais
+
+Quando um ícone substitui um rótulo textual, preserve o nome localizado como
+`tooltip` e `accessibleName`; use `accessibleDescription` quando o nome não
+explicar a ação. Controles interativos devem continuar alcançáveis pelo
+teclado e não podem depender somente da cor para comunicar estado ou função.
+
+Esse padrão já aparece parcialmente em `TelaMontagemSituacao`,
+`PainelValorComSinalCuradoria` e `SeloConclusaoModelagem`. A presença nesses
+componentes não prova cobertura global: ao alterar uma tela, verifique
+explicitamente foco, teclado, tooltip, nome e descrição acessíveis.
+
 ## Regra de segurança
 
 Antes de alterar a paleta neutra em uma plataforma, verificar se a mudança precisa ser espelhada na outra para manter consistência — mas sem tocar em nenhuma cor de significado de feedback (isso está fora do escopo desta skill). Lembre-se de que, no lado Windows, paleta neutra e cores de feedback vivem no mesmo arquivo (`UITemaGerard.java`) — confira linha por linha quais constantes está tocando antes de editar.
