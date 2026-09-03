@@ -1,4 +1,4 @@
-import type { FiguraCena } from "../contratos";
+import type { FiguraCena, InteracaoPermitidaFigura } from "../contratos";
 import { coordenadaYDoRotulo } from "./geometriaSvg";
 
 function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
@@ -10,8 +10,26 @@ function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
   </g>;
 }
 
-export function FiguraCenaGerard({ figura }: { figura: FiguraCena }) {
-  return <g className="scene-figure" data-figura-id={figura.id}>
+export function FiguraCenaGerard({ figura, aoEditarValor }: {
+  figura: FiguraCena;
+  aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+}) {
+  const interacao = figura.interacoes_permitidas.find(
+    (item) => item.tipo === "EDITAR_VALOR");
+  const editavel = Boolean(interacao && aoEditarValor);
+  const iniciarEdicao = () => {
+    if (interacao && aoEditarValor) aoEditarValor(figura, interacao);
+  };
+  return <g className={`scene-figure${editavel ? " scene-figure-editable" : ""}`}
+      data-figura-id={figura.id} data-editavel={editavel || undefined}
+      role={editavel ? "button" : undefined} tabIndex={editavel ? 0 : undefined}
+      aria-label={editavel ? `Editar ${figura.rotulo}` : undefined}
+      onClick={editavel ? iniciarEdicao : undefined}
+      onKeyDown={editavel ? (evento) => {
+        if (evento.key === "Enter" || evento.key === " ") {
+          evento.preventDefault(); iniciarEdicao();
+        }
+      } : undefined}>
     {figura.tipo === "ELIPSE"
       ? <ellipse cx={figura.x + figura.largura / 2} cy={figura.y + figura.altura / 2}
           rx={figura.largura / 2} ry={figura.altura / 2} />

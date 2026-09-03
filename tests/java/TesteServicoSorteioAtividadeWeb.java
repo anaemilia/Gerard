@@ -27,6 +27,8 @@ public class TesteServicoSorteioAtividadeWeb {
                 "categoria e cena são publicadas somente depois do acerto");
         Map<String, Object> cena = (Map<String, Object>) estadoAceito.get("cena");
         List<Object> figuras = (List<Object>) cena.get("figuras");
+        String papelEditavel = papelAlvoDaAcao(
+                (List<Object>) estadoAceito.get("acoes_disponiveis"));
         exigir(figuras != null && !figuras.isEmpty(), "cena contém figuras");
         for (Object objeto : figuras) {
             Map<String, Object> figura = (Map<String, Object>) objeto;
@@ -35,11 +37,29 @@ public class TesteServicoSorteioAtividadeWeb {
                     "cada figura da API transporta identidade semântica explícita");
             exigir(figura.containsKey("subtitulo"),
                     "a API projeta o participante curado da figura, ainda que vazio");
+            List<Object> interacoes = (List<Object>) figura.get("interacoes_permitidas");
+            exigir(interacoes != null,
+                    "cada figura declara capacidades, ainda que vazias");
+            exigir(interacoes.isEmpty() == !papel.equals(papelEditavel),
+                    "somente o papel anunciado pela ação pode ser editado");
         }
         exigir(!estadoAceito.containsKey("curadoria"),
                 "API não expõe a resposta armazenada na curadoria");
         verificar(servico.sortearRelacoes(), "RELACOES");
         System.out.println("APROVADO: sorteios web retornam atividade curada completa.");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String papelAlvoDaAcao(List<Object> acoes) {
+        if (acoes == null) return null;
+        for (Object item : acoes) {
+            Map<String, Object> acao = (Map<String, Object>) item;
+            if ("PROPOR_VALOR_PAPEL".equals(acao.get("id"))) {
+                return String.valueOf(((Map<String, Object>) acao.get("corpo"))
+                        .get("papel_id"));
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

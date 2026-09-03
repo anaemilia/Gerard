@@ -14,6 +14,11 @@ public final class CatalogoPapeisSemanticosAditivos {
     private final CatalogoPapeisSemanticos catalogoConceitual =
             new CatalogoPapeisSemanticos();
 
+    public int obterIndiceElementoPorPapel(String chavePapel,
+            TipoSituacaoAditiva tipo) {
+        return obterIndiceElementoPorPapel(chavePapel, tipo, false, 1);
+    }
+
 
     public int obterIndiceElementoPorPapel(
             String chavePapel,
@@ -187,6 +192,11 @@ public final class CatalogoPapeisSemanticosAditivos {
         return catalogoConceitual.dominioDoPapel(chavePapel);
     }
 
+    public String obterChavePapelDoElemento(TipoSituacaoAditiva tipo,
+            int indiceElemento) {
+        return obterChavePapelDoElemento(tipo, indiceElemento, false, 1);
+    }
+
     public DescritorPapelQuantitativo obterDescritor(String chavePapel) {
         return catalogoConceitual.obter(chavePapel);
     }
@@ -197,5 +207,31 @@ public final class CatalogoPapeisSemanticosAditivos {
 
     public boolean papelPodeReceberSinal(String chavePapel) {
         return catalogoConceitual.papelPermiteSinal(chavePapel);
+    }
+
+    /**
+     * Indica se a chave identifica um papel específico aceito pelos
+     * adaptadores legados, em vez do fallback genérico {@code papel.valor}.
+     */
+    public boolean chavePapelEspecifica(String chavePapel) {
+        if (chavePapel == null) {
+            return false;
+        }
+        return "papel.parte1".equals(chavePapel)
+                || "papel.parte2".equals(chavePapel)
+                || "papel.todo".equals(chavePapel)
+                || "papel.estadoInicial".equals(chavePapel)
+                || "papel.estadoFinal".equals(chavePapel)
+                || "papel.referendo".equals(chavePapel)
+                || "papel.referente".equals(chavePapel)
+                || "papel.referido".equals(chavePapel)
+                || "papel.diferenca".equals(chavePapel)
+                || "papel.transformacao".equals(chavePapel)
+                || chavePapel.startsWith("papel.transformacao")
+                || "papel.transformacaoFinal".equals(chavePapel)
+                || "papel.relacaoInicial".equals(chavePapel)
+                || "papel.relacaoFinal".equals(chavePapel)
+                || "papel.relacao1".equals(chavePapel)
+                || "papel.relacao2".equals(chavePapel);
     }
 }

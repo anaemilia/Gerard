@@ -1,8 +1,13 @@
 import gerard.campoaditivo.curadoria.ConversorSituacaoProblemaRica;
 import gerard.campoaditivo.curadoria.ResultadoConversaoSituacaoProblemaRica;
+import gerard.aplicacao.portabilidade.ServicoAtividadeWebTransformacaoRelacaoRica;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.OperacaoAditiva;
+import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoDeRelacao;
+import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.dominio.campoaditivo.RelacaoEstruturalDiagnosticavel;
+import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.dominio.campoaditivo.situacao.CorrespondenciaPapelNarrativa;
 import gerard.dominio.campoaditivo.situacao.EstadoNarrativo;
 import gerard.dominio.campoaditivo.situacao.EventoNarrativoCurado;
@@ -15,6 +20,7 @@ import gerard.dominio.campoaditivo.situacao.ParticipanteNarrativo;
 import gerard.dominio.campoaditivo.situacao.ReferenciaValorNarrativo;
 import gerard.dominio.campoaditivo.situacao.SituacaoProblema;
 import gerard.semantica.numero.NumeroNatural;
+import gerard.semantica.numero.NumeroInteiro;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,6 +56,40 @@ public class TesteConversorTransformacaoRelacaoRica {
         checar("subtração curada permanece resposta correta independente",
                 situacao.getEstrutura().getCriteriosOperacao().get(0)
                         .correspondeA(OperacaoAditiva.SUBTRACAO), true);
+        RelacaoEstruturalDiagnosticavel relacaoOrientada =
+                (RelacaoEstruturalDiagnosticavel) situacao.getEstrutura()
+                        .getRelacoes().get(0).getRelacao();
+        PapelQuantitativo inicial = FabricaPapeisTransformacaoDeRelacao
+                .relacaoInicial(PublicadorEventoDominio.NENHUM);
+        PapelQuantitativo transformacao = FabricaPapeisTransformacaoDeRelacao
+                .transformacao(PublicadorEventoDominio.NENHUM);
+        PapelQuantitativo finalIncognita = FabricaPapeisTransformacaoDeRelacao
+                .relacaoFinal(PublicadorEventoDominio.NENHUM);
+        inicial.posicionar(new NumeroInteiro(3));
+        transformacao.posicionar(new NumeroInteiro(5));
+        checar("relação orientada aceita +2 para a incógnita final",
+                !relacaoOrientada.diagnosticarValorProposto(
+                        inicial, transformacao, finalIncognita,
+                        finalIncognita, new NumeroInteiro(2)).isPresent(), true);
+        checar("relação orientada rejeita a soma superficial +8",
+                relacaoOrientada.diagnosticarValorProposto(
+                        inicial, transformacao, finalIncognita,
+                        finalIncognita, new NumeroInteiro(8)).isPresent(), true);
+        ServicoAtividadeWebTransformacaoRelacaoRica servicoWeb =
+                new ServicoAtividadeWebTransformacaoRelacaoRica(
+                        "tentativa.web.rica.bonecas", situacao);
+        Map<String, Object> rejeicaoWeb = servicoWeb.proporValor(
+                "papel.relacaoFinal", 8);
+        checar("serviço web rico rejeita +8 sem concluir",
+                Boolean.FALSE.equals(rejeicaoWeb.get("aceita"))
+                        && Boolean.FALSE.equals(((Map<String, Object>)
+                                rejeicaoWeb.get("estado")).get("concluida")), true);
+        Map<String, Object> aceiteWeb = servicoWeb.proporValor(
+                "papel.relacaoFinal", 2);
+        checar("serviço web rico aceita +2 e conclui",
+                Boolean.TRUE.equals(aceiteWeb.get("aceita"))
+                        && Boolean.TRUE.equals(((Map<String, Object>)
+                                aceiteWeb.get("estado")).get("concluida")), true);
 
         Cenario empate = cenarioEmpate();
         ResultadoConversaoSituacaoProblemaRica zeroFinal = conversor.converter(

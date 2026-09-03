@@ -272,12 +272,12 @@ print('== Main compositora e roteadora: ratchet dos protocolos de interação ==
 # justificar que a mecânica particular volte aos protocolos centrais. Cada
 # extração deve reduzir o método e, na mesma alteração, reduzir este limite.
 LIMITES_PROTOCOLOS_MAIN = {
-    'public void mousePressed(MouseEvent e)': 442,
+    'public void mousePressed(MouseEvent e)': 401,
     'public void mouseDragged(MouseEvent e)': 20,
-    'private void processarMovimentoArraste(int x, int y)': 67,
-    'public void mouseReleased(MouseEvent e)': 111,
+    'private void processarMovimentoArraste(int x, int y)': 60,
+    'public void mouseReleased(MouseEvent e)': 103,
     'public void mouseClicked(MouseEvent e)': 34,
-    'public void mouseMoved(MouseEvent e)': 229,
+    'public void mouseMoved(MouseEvent e)': 205,
 }
 for assinatura, limite in LIMITES_PROTOCOLOS_MAIN.items():
     linhas=linhas_metodo_java(main,assinatura)
@@ -695,49 +695,43 @@ check('quadradinhoVennFocado' in main,
 check(main.count('encontrarQuadradinhoVenn(x, y)') >= 1,
       'tela continua responsável por decidir qual quadradinho foi alvo do pickup')
 
-print('== Fase 7.6: protocolo portátil do eixo flutuante de inteiros ==')
-alvo_eixo=text('src/gerard/interacao/arraste/AlvoInteracaoEixoInteiros.java')
-handler_eixo=text('src/gerard/interacao/arraste/HandlerInteracaoEixoInteiros.java')
-adaptador_eixo=text('src/gerard/ui/vergnaud/AdaptadorInteracaoEixoInteiros.java')
-fonte_geometria_eixo=text('src/gerard/ui/vergnaud/FonteGeometriaInteracaoEixoInteiros.java')
-teste_handler_eixo=text('tests/java/TesteHandlerInteracaoEixoInteiros.java')
-check('interface AlvoInteracaoEixoInteiros' in alvo_eixo
-      and 'identificarNatureza' in alvo_eixo
-      and 'processarPressionamento' in alvo_eixo
-      and 'moverPara' in alvo_eixo
-      and 'finalizarManipulacao' in alvo_eixo,
-      'porta portátil separa o protocolo da representação concreta do eixo')
-check('class HandlerInteracaoEixoInteiros' in handler_eixo
-      and 'ResultadoPressionamento iniciar' in handler_eixo
-      and 'public boolean mover' in handler_eixo
-      and 'public boolean concluir' in handler_eixo
-      and 'public void cancelar' in handler_eixo,
-      'handler do eixo expõe pressionamento, movimento, conclusão e cancelamento')
-check(all(token not in handler_eixo + alvo_eixo for token in
-          ('java.awt', 'javax.swing', 'Rectangle', 'ScaffoldingGraficoInteiros',
-           'Main', 'getWidth()', 'getHeight()')),
-      'protocolo do eixo permanece independente de Swing/AWT, tela, layout e scaffolding visual')
-check('implements AlvoInteracaoEixoInteiros' in adaptador_eixo
-      and 'ScaffoldingGraficoInteiros' in adaptador_eixo
-      and 'Rectangle' in adaptador_eixo
-      and 'FonteGeometriaInteracaoEixoInteiros' in adaptador_eixo
-      and 'Rectangle obterAreaDiagrama()' in fonte_geometria_eixo,
-      'adaptador desktop concentra a tradução do scaffolding e da geometria Rectangle')
-check('handlerEixoInteiros.iniciar' in main
-      and 'handlerEixoInteiros.mover' in main
-      and 'handlerEixoInteiros.concluir' in main
-      and 'handlerEixoInteiros.cancelar' in main,
-      'Main compõe e roteia o protocolo do eixo pelo handler portátil')
-check('scaffoldingGraficoInteiros.processarPressionamento' not in main
-      and 'scaffoldingGraficoInteiros.arrastarPara' not in main
-      and 'scaffoldingGraficoInteiros.finalizarArraste' not in main
-      and 'scaffoldingGraficoInteiros.identificarNaturezaInteracao' not in main,
-      'Main não duplica pressionamento, arraste, conclusão nem classificação do eixo único')
-check('class TesteHandlerInteracaoEixoInteiros' in teste_handler_eixo
-      and 'testarBloqueioSemanticoSemConhecerPolitica' in teste_handler_eixo
-      and 'testarCicloPortatilDeManipulacao' in teste_handler_eixo
-      and 'testarAdaptadorDaRepresentacaoDesktop' in teste_handler_eixo,
-      'teste do handler cobre bloqueio contextual, ciclo portátil e adaptação desktop')
+print('== Fase 7.6 (retirada em 2026-09-01): eixo único antigo removido, não unificado ==')
+# O eixo flutuante de inteiros (itemGraficoInteiros/numeroRelativoGraficoInteiros/
+# scaffoldingGraficoInteiros/handlerEixoInteiros e o protocolo portátil desta
+# fase) foi removido por inteiro, não mantido nem unificado com os painéis de
+# eixo das Relações (Fase 7.7, abaixo). Motivo verificado nesta data: a regra
+# generalizada 2026-08-18 ("todo número relativo ou transformação carrega uma
+# lupa") é aplicada sem exceção pelos seis renderizadores canônicos
+# (RenderizadorDiagramaAditivoBase.relacao/transformacao/relacaoGrande sempre
+# passam exibirLupa=true), então devemExibirPaineisEixosRelacoes() é sempre
+# verdadeiro em qualquer diagrama com número relativo — o guard
+# "if (devemExibirPaineisEixosRelacoes()) return;" que os dois gatilhos deste
+# mecanismo antigo já tinham (desde a Fase 7.7) tornava-os inalcançáveis nas
+# seis categorias. Confirmado por leitura estática de todos os renderizadores
+# e por dois runs do harness Robot (TesteMonkeySemiGuiado) cobrindo 5 das 6
+# categorias com arrastes diretos em figuras de número relativo, zero
+# ocorrências do mecanismo antigo.
+check(all(not (ROOT/caminho).exists() for caminho in (
+        'src/gerard/interacao/arraste/AlvoInteracaoEixoInteiros.java',
+        'src/gerard/interacao/arraste/HandlerInteracaoEixoInteiros.java',
+        'src/gerard/ui/vergnaud/AdaptadorInteracaoEixoInteiros.java',
+        'src/gerard/ui/vergnaud/FonteGeometriaInteracaoEixoInteiros.java',
+        'tests/java/TesteHandlerInteracaoEixoInteiros.java')),
+      'protocolo portátil da Fase 7.6 (Alvo/Handler/Adaptador/FonteGeometria + teste) removido por inteiro')
+check(all(token not in main for token in (
+          'itemGraficoInteiros', 'numeroRelativoGraficoInteiros',
+          'apresentadorGraficoInteiros', 'scaffoldingGraficoInteiros',
+          'adaptadorInteracaoEixoInteiros', 'handlerEixoInteiros',
+          'mostrarGraficoInteirosNumeroRelativo', 'registrarEscolhaGraficoInteiros',
+          'AlvoInteracaoEixoInteiros', 'HandlerInteracaoEixoInteiros',
+          'AdaptadorInteracaoEixoInteiros', 'FonteGeometriaInteracaoEixoInteiros')),
+      'Main não retém nenhum campo, chamada ou import do mecanismo antigo removido')
+check('ApresentadorGraficoInteiros' in text('src/gerard/ui/vergnaud/PaineisEixosRelacoes.java')
+      and 'new ScaffoldingGraficoInteiros()' in text('src/gerard/ui/vergnaud/PaineisEixosRelacoes.java'),
+      'as duas classes concretas reaproveitadas pelo mecanismo antigo '
+      '(ApresentadorGraficoInteiros, ScaffoldingGraficoInteiros) continuam vivas — '
+      'só a instância única de Main e o protocolo dedicado a ela foram removidos, '
+      'não as classes, que os painéis de Relações continuam usando por instância')
 
 print('== Fase 7.7: protocolo portátil dos painéis de eixo das Relações ==')
 alvo_paineis_relacoes=text(
@@ -845,30 +839,11 @@ check('existeAlgumComLupa' in decisao_exibicao_paineis
 check('elemento != null && elemento.exibirLupa' in paineis_relacoes,
       'PaineisEixosRelacoes.ativar cria painel somente quando o descritor semântico solicita lupa — '
       'filtra fora âncoras de medida sem inferir significado de quadrado/elipse')
-check('scaffoldingGraficoInteiros' in main
-      and 'itemGraficoInteiros' in main
-      and 'numeroRelativoGraficoInteiros' in main
-      and 'apresentadorGraficoInteiros' in main,
-      'mecanismo já existente de escolha de sinal sob demanda (Comparação de Medidas e outros usos) '
-      'continua presente e intocado, sem ser substituído pelo coordenador novo')
-check(main.count(
-        'private void mostrarGraficoInteirosNumeroRelativo(ItemTextoArrastavel item, '
-        'ElementoVergnaud numeroRelativo, String valorBase) {\n'
-        '            if (numeroRelativo == null) {\n'
-        '                return;\n'
-        '            }') == 1
-      and main.count(
-        'private void registrarEscolhaGraficoInteiros(ItemTextoArrastavel item, ElementoVergnaud '
-        'numeroRelativo, String valorBase, String sinal) {\n'
-        '            if (numeroRelativo == null) {\n'
-        '                return;\n'
-        '            }') == 1,
-      'assinatura original dos dois pontos de entrada do eixo antigo preservada (guard novo é aditivo)')
-check(main.count('if (devemExibirPaineisEixosRelacoes()) {\n                return;\n            }') == 2,
-      'eixo único antigo é suprimido em qualquer diagrama com número relativo (regra generalizada '
-      '2026-08-18), já que os painéis novos por papel cobrem o mesmo lugar em qualquer categoria — só o '
-      'menu de escolha de sinal continua aparecendo à parte; categorias só com medidas (ex.: Composição '
-      'de Medidas) continuam sem nenhum painel, pois não há elemento elipse')
+check('devemExibirPaineisEixosRelacoes' in main
+      and main.count('devemExibirPaineisEixosRelacoes()') == 2,
+      'a decisão de disponibilidade dos painéis permanece — usada pela ativação/desativação e '
+      'nenhum outro chamador residual do mecanismo antigo restou (dois usos: a definição do '
+      'método e a leitura em atualizarPaineisEixosRelacoesConformeVisibilidade)')
 check('private void atualizarValorPainelEixoRelacao(PaineisEixosRelacoes.Painel painel)' in main
       and 'private void atualizarPaineisEixosRelacoesComValoresAtuais()' in main
       and 'painel.grafico.estaArrastando()' in main
@@ -1829,30 +1804,39 @@ check('private boolean operacoesDeSomaSubtracaoRespondidasCorretamente() {' in m
       'Transformações, operação entre estado e transformação); seletor inativo (categoria sem '
       'operação, ou situação sem operação curada) não bloqueia nada, sem código específico por '
       'categoria — cobre as 3 categorias com radiobutton soma/subtração automaticamente')
-check('boolean modelagemPlenamenteConcluidaAnteriormente = false;' in main,
-      'novo campo rastreia a transição para "plenamente concluída" (papéis + operação) de forma '
-      'independente da fase interna de ControladorConclusaoModelagem, que só conhece papéis/'
-      'posicionamentos e não recalcularia CONCLUIDA_AGORA quando o único gatilho foi a escolha da '
-      'operação com os papéis já corretos antes')
-check('boolean concluida = controladorConclusaoModelagem.isConcluida()\n'
-      '                    && operacoesDeSomaSubtracaoRespondidasCorretamente();' in main
-      and 'boolean acabouDeConcluirPlenamente = concluida && !modelagemPlenamenteConcluidaAnteriormente;' in main
-      and 'modelagemPlenamenteConcluidaAnteriormente = concluida;' in main,
-      'a condição de conclusão exibida (destaque azul + sequência de tip) combina papéis/'
-      'posicionamentos com a operação correta; o gatilho do tip usa a transição própria '
-      '(acabouDeConcluirPlenamente), não mais a transição bruta do controlador')
+atualizacao_conclusao = text(
+    'src/gerard/campoaditivo/conclusao/AtualizacaoConclusaoModelagem.java')
+seletor_papeis_conclusao = text(
+    'src/gerard/campoaditivo/conclusao/SeletorPapeisConclusaoModelagem.java')
+check('CONCLUIDA_AGORA' in atualizacao_conclusao
+      and 'CONTINUA_CONCLUIDA' in atualizacao_conclusao
+      and all(token not in atualizacao_conclusao for token in ('javax.swing', 'java.awt')),
+      'a transição para "plenamente concluída" (papéis + operação) é um enum próprio de '
+      'ControladorConclusaoModelagem (2026-09), não mais um campo booleano solto em Main — '
+      'CONCLUIDA_AGORA é a mesma detecção de borda que antes vivia em Main')
+check('AtualizacaoConclusaoModelagem atualizacaoConclusao =\n'
+      '                    controladorConclusaoModelagem.atualizar(' in main
+      and 'boolean acabouDeConcluirPlenamente = atualizacaoConclusao\n'
+      '                    == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA;' in main,
+      'verificarConclusaoModelagem lê a transição já resolvida pelo controlador em vez de '
+      'recalculá-la comparando com um campo anterior em Main')
 check('private void suspenderConclusaoDuranteManipulacao() {\n'
-      '            if (!modelagemPlenamenteConcluidaAnteriormente) return;\n'
-      '            controladorConclusaoModelagem.reiniciar();\n'
-      '            modelagemPlenamenteConcluidaAnteriormente = false;' in main,
-      'suspenderConclusaoDuranteManipulacao passa a guardar pela condição combinada (o mesmo '
-      'estado que controla o azul exibido), não mais só pelos papéis — evita reiniciar o '
-      'controlador sem necessidade quando o azul nunca chegou a aparecer (operação ainda pendente)')
+      '            if (!controladorConclusaoModelagem.isConcluida()) return;\n'
+      '            controladorConclusaoModelagem.reiniciar();' in main,
+      'suspenderConclusaoDuranteManipulacao guarda diretamente por '
+      'controladorConclusaoModelagem.isConcluida() — o controlador já sabe se está concluído, '
+      'Main não precisa mais de um campo-espelho próprio para essa mesma pergunta')
 check('private void reiniciarConclusaoModelagem() {\n'
-      '            controladorConclusaoModelagem.reiniciar();\n'
-      '            modelagemPlenamenteConcluidaAnteriormente = false;' in main,
-      'reiniciarConclusaoModelagem (nova situação/categoria) também zera o rastreamento da '
-      'condição combinada, evitando um "já concluiu antes" falso na próxima situação')
+      '            controladorConclusaoModelagem.reiniciar();' in main,
+      'reiniciarConclusaoModelagem (nova situação/categoria) reinicia o controlador, que por si só '
+      'já limpa o estado "concluída anteriormente" — sem campo espelho para zerar em Main')
+check('SituacaoProblemaAditiva situacao' in seletor_papeis_conclusao
+      and 'SemanticaCuradaSituacao' in seletor_papeis_conclusao
+      and '.papelExigidoNaModelagem(situacao, localizacao, chave)' in seletor_papeis_conclusao
+      and all(token not in seletor_papeis_conclusao for token in ('javax.swing', 'java.awt')),
+      'SeletorPapeisConclusaoModelagem substitui o antigo papelValidoParaConclusao inline em Main — '
+      'filtra os papéis da cena delegando a SemanticaCuradaSituacao.papelExigidoNaModelagem, mesma '
+      'regra "a curadoria decide quais papéis a conclusão cobra", agora em objeto portátil testável')
 check(main.count('verificarConclusaoModelagem();') >= 2
       and 'seletorOperacaoRelacaoAluno.obterEscolhaAluno().name(),\n'
       '                        "OBJ4",\n'
@@ -1954,17 +1938,26 @@ check('public static boolean papelExigidoNaModelagem(SituacaoProblemaAditiva sit
       '    }' in semantica_curada,
       'a consulta delega ao papel curado em vez de reimplementar a regra — quem pergunta não '
       'inspeciona campo nenhum da situação')
-check('return SemanticaCuradaSituacao.papelExigidoNaModelagem(\n'
-      '                    situacaoProblemaAtual, localizacao, papel.trim());' in main
-      and 'situacaoProblemaAtual.getEstadoInicial()' not in main.split(
-          'private boolean papelValidoParaConclusao')[1].split('}')[0],
-      'Main pergunta a SemanticaCuradaSituacao (dona do conhecimento curado) e NÃO lê campos da '
-      'situação nem tem regra por categoria dentro de papelValidoParaConclusao — sem isso, a cena '
-      'de Composição de Transformações (6 figuras) cobraria papéis que a curadoria não definiu, '
-      'tornando ~90% das situações da categoria impossíveis de concluir')
-check('if (!papelDeVerdade || situacaoProblemaAtual == null) {\n'
-      '                return papelDeVerdade;\n'
-      '            }' in main,
+inicio_captura_papeis = main.find(
+    'private java.util.List<String> capturarPapeisEsperadosConclusao() {')
+fim_captura_papeis = main.find(
+    'private java.util.List<EstadoPosicionamentoModelagem> capturarPosicionamentosConclusao(',
+    inicio_captura_papeis)
+corpo_captura_papeis = (main[inicio_captura_papeis:fim_captura_papeis]
+                        if inicio_captura_papeis >= 0
+                        and fim_captura_papeis > inicio_captura_papeis else '')
+check(bool(corpo_captura_papeis)
+      and 'seletorPapeisConclusaoModelagem.selecionar(' in corpo_captura_papeis
+      and 'situacaoProblemaAtual.getEstadoInicial()' not in corpo_captura_papeis,
+      'Main não tem mais regra por categoria inline para decidir quais papéis a conclusão cobra — '
+      'capturarPapeisEsperadosConclusao delega a seletorPapeisConclusaoModelagem '
+      '(SeletorPapeisConclusaoModelagem), que por sua vez pergunta a SemanticaCuradaSituacao (dona '
+      'do conhecimento curado) — sem isso, a cena de Composição de Transformações (6 figuras) '
+      'cobraria papéis que a curadoria não definiu, tornando ~90% das situações da categoria '
+      'impossíveis de concluir')
+check('if (situacao == null || SemanticaCuradaSituacao\n'
+      '                    .papelExigidoNaModelagem(situacao, localizacao, chave)) {'
+          in seletor_papeis_conclusao,
       'sem situação curada carregada (problema digitado livremente) o comportamento anterior é '
       'preservado integralmente — o filtro novo só age quando há curadoria para consultar')
 check('if (esperados.isEmpty() || posicionamentos == null' in text(

@@ -37,6 +37,7 @@ public final class RelacaoEstruturalVinculada {
 
     public String getChave() { return chave; }
     public String descreverRelacao() { return relacao.descreverRelacao(); }
+    public RelacaoEstruturalAditiva getRelacao() { return relacao; }
 
     public List<PapelQuantitativo> getPapeis() {
         return Collections.unmodifiableList(Arrays.asList(papel0, papel1, papel2));

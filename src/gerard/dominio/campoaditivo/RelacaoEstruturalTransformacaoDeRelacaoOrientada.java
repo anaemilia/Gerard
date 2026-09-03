@@ -13,7 +13,7 @@ import gerard.semantica.numero.NumeroInteiro;
  * não ao conversor tabular nem à interface.
  */
 public final class RelacaoEstruturalTransformacaoDeRelacaoOrientada
-        implements RelacaoEstruturalAditiva {
+        implements RelacaoEstruturalDiagnosticavel {
     private final int efeitoDaTransformacao;
     private final int orientacaoDaRelacaoFinal;
 
@@ -171,6 +171,48 @@ public final class RelacaoEstruturalTransformacaoDeRelacaoOrientada
         } catch (ArithmeticException estouro) {
             return naoResolvido("o valor excede o intervalo dos inteiros");
         }
+    }
+
+    public java.util.Optional<DiagnosticoErroPapel> diagnosticarValorProposto(
+            PapelQuantitativo relacaoInicial,
+            PapelQuantitativo transformacao,
+            PapelQuantitativo relacaoFinal,
+            PapelQuantitativo papelAlvo,
+            gerard.semantica.numero.ValorNumerico valorProposto) {
+        exigirPapeis(relacaoInicial, transformacao, relacaoFinal);
+        if (papelAlvo == null || valorProposto == null
+                || !valorProposto.ehConhecido()) {
+            throw new IllegalArgumentException(
+                    "papel alvo e valor proposto conhecido são obrigatórios");
+        }
+        if (!papelAlvo.aceita(valorProposto)) {
+            return java.util.Optional.of(new DiagnosticoErroPapel(
+                    TipoErroPapel.VALOR_FORA_DO_DOMINIO,
+                    "erro.papel.valorForaDoDominio",
+                    "feedback.papel.valorForaDoDominio",
+                    "correcao.papel.valorForaDoDominio"));
+        }
+        if (!papelAlvo.ehIncognita()
+                || contarIncognitas(relacaoInicial, transformacao, relacaoFinal) != 1) {
+            throw new IllegalStateException(
+                    "papel alvo precisa ser a única incógnita da relação orientada");
+        }
+        ResultadoCalculo esperado = calcularValorAusente(
+                relacaoInicial, transformacao, relacaoFinal);
+        if (!esperado.temValorCalculavel()
+                || esperado.getPapelCalculado() != papelAlvo) {
+            throw new ArithmeticException(
+                    "não há valor orientado calculável para avaliar a proposta");
+        }
+        if (esperado.getValorCalculado().valorOuNull().intValue()
+                == valorProposto.valorOuNull().intValue()) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.of(new DiagnosticoErroPapel(
+                TipoErroPapel.VALOR_INCORRETO,
+                "erro.papel.valorIncorreto",
+                "feedback.papel.valorIncorreto",
+                "correcao.papel.valorIncorreto"));
     }
 
     private int somarComEfeito(int relacaoInicial, int transformacao) {

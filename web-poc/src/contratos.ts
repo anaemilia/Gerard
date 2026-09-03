@@ -22,10 +22,24 @@ export type EstadoClassificacao = Readonly<{
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   questionamento?: string; categoria_revelada?: string;
-  cena?: CenaDiagrama; modelagem?: EstadoAtividade;
+  cena?: CenaDiagrama; modelagem?: EstadoAtividade | EstadoModelagemTernaria;
+}>;
+export type EstadoModelagemTernaria = Readonly<{
+  schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
+  categoria: "TRANSFORMACAO_MEDIDAS" | "COMPARACAO_MEDIDAS" |
+    "TRANSFORMACAO_RELACAO"; relacao: string;
+  papel_desconhecido_original: string; papeis: readonly PapelProjetado[];
+  concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
+}>;
+export type InteracaoPermitidaFigura = Readonly<{
+  tipo: "EDITAR_VALOR";
+  acao_id: "PROPOR_VALOR_PAPEL";
+  fase_envio: "CONFIRMACAO";
+  papel_id: string;
 }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO"; x: number; y: number; largura: number; altura: number; rotulo: string;
-  posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string }>;
+  posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
+  interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CenaDiagrama = Readonly<{ titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }> }>;

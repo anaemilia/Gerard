@@ -1,9 +1,14 @@
-import type { CenaDiagrama } from "../contratos";
+import type { CenaDiagrama, FiguraCena, InteracaoPermitidaFigura } from "../contratos";
 import { ConectorCenaGerard } from "./ConectorCenaGerard";
 import { FiguraCenaGerard } from "./FiguraCenaGerard";
+import type { PosicaoVisual } from "../estadoRepresentacoes";
 
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
-export function GeradorCenaGerard({ cena }: { cena: CenaDiagrama }) {
+export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor }: {
+  cena: CenaDiagrama;
+  posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
+  aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+}) {
   const v = cena.viewport;
   return <svg className="portable-scene" viewBox={`${v.x} ${v.y} ${v.largura} ${v.altura}`}
       preserveAspectRatio="xMidYMid meet" role="img" aria-label={cena.descricao || cena.titulo}>
@@ -13,6 +18,11 @@ export function GeradorCenaGerard({ cena }: { cena: CenaDiagrama }) {
     </marker></defs>
     {cena.conectores.map((conector, indice) =>
       <ConectorCenaGerard key={`conector-${indice}`} conector={conector} indice={indice} />)}
-    {cena.figuras.map((figura) => <FiguraCenaGerard key={figura.id} figura={figura} />)}
+    {cena.figuras.map((figura) => {
+      const posicao = posicoesEmEdicao[figura.id];
+      const figuraProjetada = posicao ? { ...figura, ...posicao } : figura;
+      return <FiguraCenaGerard key={figura.id} figura={figuraProjetada}
+        aoEditarValor={aoEditarValor} />;
+    })}
   </svg>;
 }

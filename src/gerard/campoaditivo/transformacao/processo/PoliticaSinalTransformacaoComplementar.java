@@ -14,12 +14,16 @@ public final class PoliticaSinalTransformacaoComplementar {
 
     public int aplicarSinal(int magnitude, int valorReferencia,
                             Integer valorAnterior) {
-        int absoluto = Math.abs(magnitude);
+        int absoluto = magnitudeParaUnidades(magnitude);
         int referencia = valorReferencia;
         if (referencia == 0 && valorAnterior != null) {
             referencia = valorAnterior.intValue();
         }
         return referencia < 0 ? -absoluto : absoluto;
+    }
+
+    public int magnitudeParaUnidades(int valorAssinado) {
+        return Math.abs(valorAssinado);
     }
 
     public boolean permiteValorAssinado(int indiceSemantico) {
@@ -42,7 +46,7 @@ public final class PoliticaSinalTransformacaoComplementar {
         return permiteValorAssinado(
                         TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                         indiceSemantico)
-                ? Integer.valueOf(Math.abs(limite.intValue()))
+                ? Integer.valueOf(magnitudeParaUnidades(limite.intValue()))
                 : limite;
     }
 }

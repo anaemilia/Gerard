@@ -39,13 +39,13 @@ public final class LayoutProcessoTransformacao {
 
         nos.add(new NoDiagramaVenn(xInicial, yEstado,
                 larguraEstado, alturaEstado, definicao.getRotulo1(),
-                valor(valores, 0), true));
+                valor(valores, 0), true, NoDiagramaVenn.Forma.RETANGULO));
         nos.add(new NoDiagramaVenn(xProcesso, yProcesso,
                 larguraProcesso, alturaProcesso, definicao.getRotulo2(),
-                valor(valores, 1), true));
+                valor(valores, 1), true, NoDiagramaVenn.Forma.RETANGULO));
         nos.add(new NoDiagramaVenn(xFinal, yEstado,
                 larguraEstado, alturaEstado, definicao.getRotulo3(),
-                valor(valores, 2), true));
+                valor(valores, 2), true, NoDiagramaVenn.Forma.RETANGULO));
 
         // O canal e os funis são desenhados pelo renderizador especializado.
         return new CenaDiagramaVenn(nos, conectores);

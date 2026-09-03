@@ -78,6 +78,14 @@ public final class SemanticaCuradaSituacao {
         }
 
         /**
+         * Valor que uma representação pode exibir sem revelar a incógnita.
+         * A decisão de ocultação pertence ao papel curado, não à tela.
+         */
+        public Integer getValorInteiroVisivel() {
+            return desconhecido ? null : getValorInteiro();
+        }
+
+        /**
          * Compara um valor materializado pela atividade com o valor deste
          * papel na curadoria. A ausência de qualquer um dos dois valores
          * numéricos produz {@code null}: não há base factual para afirmar que
@@ -152,6 +160,20 @@ public final class SemanticaCuradaSituacao {
             }
         }
         return null;
+    }
+
+    /** Consulta portátil para clientes que podem apresentar um valor curado. */
+    public static Integer buscarValorInteiroVisivel(SituacaoProblemaAditiva situacao,
+            ServicoLocalizacao localizacao, String chave) {
+        PapelCurado papel = buscar(situacao, localizacao, chave);
+        return papel == null ? null : papel.getValorInteiroVisivel();
+    }
+
+    /** Consulta portátil do participante associado a um papel curado. */
+    public static String buscarParticipante(SituacaoProblemaAditiva situacao,
+            ServicoLocalizacao localizacao, String chave) {
+        PapelCurado papel = buscar(situacao, localizacao, chave);
+        return papel == null ? "" : papel.getParticipante();
     }
 
     /**

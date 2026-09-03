@@ -2,6 +2,9 @@ package gerard.aplicacao;
 
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
+import gerard.campoaditivo.curadoria.RepositorioCuradoriaNarrativaRica;
+import gerard.campoaditivo.curadoria.ResultadoConversaoSituacaoProblemaRica;
+import gerard.campoaditivo.curadoria.ServicoSituacaoProblemaRicaCurada;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -18,15 +21,30 @@ public final class FachadaCarregamentoAtividade {
     private final RepositorioSituacoesAditivas repositorio;
     private final CatalogoDefinicoesAditivas catalogo;
     private final ConstrutorResultadoCurado construtor;
+    private final ServicoSituacaoProblemaRicaCurada servicoSituacaoRica;
     private final MaterializadorEnunciadoCurado materializador =
             new MaterializadorEnunciadoCurado();
 
     public FachadaCarregamentoAtividade(RepositorioSituacoesAditivas repositorio,
             CatalogoDefinicoesAditivas catalogo,
             ConstrutorResultadoCurado construtor) {
+        this(repositorio, catalogo, construtor,
+                new ServicoSituacaoProblemaRicaCurada(
+                        new RepositorioCuradoriaNarrativaRica()));
+    }
+
+    public FachadaCarregamentoAtividade(RepositorioSituacoesAditivas repositorio,
+            CatalogoDefinicoesAditivas catalogo,
+            ConstrutorResultadoCurado construtor,
+            ServicoSituacaoProblemaRicaCurada servicoSituacaoRica) {
         this.repositorio = repositorio;
         this.catalogo = catalogo;
         this.construtor = construtor;
+        if (servicoSituacaoRica == null) {
+            throw new IllegalArgumentException(
+                    "serviço de situação rica é obrigatório");
+        }
+        this.servicoSituacaoRica = servicoSituacaoRica;
     }
 
     public ContextoCarregamentoAtividade carregarNova(
@@ -52,7 +70,11 @@ public final class FachadaCarregamentoAtividade {
                 ? materializador.materializar(situacao) : "";
         ResultadoInterpretacao interpretacao = situacao != null
                 ? construtor.construir(situacao, enunciadoExibido) : null;
+        ResultadoConversaoSituacaoProblemaRica resultadoSituacaoRica =
+                situacao == null ? null
+                        : servicoSituacaoRica.converterDiagnosticado(situacao);
         return new ContextoCarregamentoAtividade(
-                situacao, definicao, interpretacao, enunciadoExibido);
+                situacao, definicao, interpretacao, enunciadoExibido,
+                resultadoSituacaoRica);
     }
 }

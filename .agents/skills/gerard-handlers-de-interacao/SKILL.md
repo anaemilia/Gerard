@@ -135,18 +135,27 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   hit-testing e encaminha início, movimento, conclusão e cancelamento. O
   teste `TesteAffordancePickupUI` usa o acesso encapsulado
   `obterQuadradinhoAtivo()`.
-- **Fase 7.6 — validada.** O protocolo do eixo flutuante único foi transferido
-  para `HandlerInteracaoEixoInteiros`, que depende somente da porta
-  `AlvoInteracaoEixoInteiros`. `AdaptadorInteracaoEixoInteiros` e
-  `FonteGeometriaInteracaoEixoInteiros` mantêm `Rectangle`, dimensões reais e
-  hit-testing no lado desktop. A `Main` preserva somente a autorização
-  contextual, o registro factual e a solicitação de sincronização; não chama
-  mais diretamente o pressionamento, o arraste, a conclusão nem a
-  classificação do eixo único. `TesteHandlerInteracaoEixoInteiros`, o
-  verificador completo, 86 testes executáveis e o Robot de 60 segundos (56
-  iterações, zero erros) foram aprovados em 2026-08-28. Os painéis individuais
-  das categorias de Relações não pertenciam a este recorte e só podem ser
-  revistos como outro protocolo, com nova autorização explícita.
+- **Fase 7.6 — retirada em 2026-09-01, não mantida.** O protocolo do eixo
+  flutuante único (`HandlerInteracaoEixoInteiros`, `AlvoInteracaoEixoInteiros`,
+  `AdaptadorInteracaoEixoInteiros`, `FonteGeometriaInteracaoEixoInteiros`) foi
+  validado e aprovado em 2026-08-28 (ver histórico abaixo), mas o mecanismo
+  desktop que ele envolvia (`itemGraficoInteiros`/`numeroRelativoGraficoInteiros`/
+  `scaffoldingGraficoInteiros` em `Main`) acabou se revelando código morto:
+  a regra generalizada 2026-08-18 ("todo número relativo ou transformação
+  carrega uma lupa") é aplicada sem exceção pelos seis renderizadores
+  canônicos, então `devemExibirPaineisEixosRelacoes()` é sempre verdadeiro em
+  qualquer diagrama com número relativo — o guard que os dois gatilhos deste
+  mecanismo já tinham desde a Fase 7.7 os tornava inalcançáveis nas seis
+  categorias, não só nas de Relações. Confirmado por leitura estática de
+  todos os renderizadores e por dois runs do harness Robot cobrindo 5 das 6
+  categorias com arrastes diretos em número relativo, zero ocorrências.
+  Removido por inteiro (protocolo, classes concretas de instância única e
+  teste) em vez de unificado com a Fase 7.7 — não havia o que unificar, um
+  dos dois lados já não existia na prática. `Main.java`, o verificador
+  completo e a bateria de testes foram reaprovados após a remoção
+  (`LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md` tem o registro
+  completo). Os painéis individuais das categorias de Relações (Fase 7.7,
+  abaixo) não foram afetados e continuam sendo o único mecanismo de eixo.
 - **Fase 7.7 — validada.** Após autorização explícita da usuária, o protocolo
   dos painéis individuais de eixo das categorias de Relações foi transferido
   para `HandlerInteracaoPaineisEixosRelacoes`, que depende somente da porta
@@ -160,7 +169,7 @@ da usuária — mesma regra de segurança de `gerard-consistencia-estado`.
   build de 533 fontes, o verificador completo, 96 testes executáveis e o Robot
   de 60 segundos (58 iterações, zero erros).
 
-`mousePressed` com 442 linhas ainda concentra risco alto para uma mudança só;
+`mousePressed` com 401 linhas ainda concentra risco alto para uma mudança só;
 extrações grandes de uma vez são exatamente o tipo de refatoração que
 `gerard-consistencia-estado` pede pra não presumir como "melhoria" sem
 confirmação.

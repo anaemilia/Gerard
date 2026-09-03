@@ -26,10 +26,13 @@ import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
 import gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas;
+import gerard.campoaditivo.sincronizacao.representacoes.ProjetorValoresComparacaoComplementar;
 import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
+import gerard.campoaditivo.conclusao.AtualizacaoConclusaoModelagem;
 import gerard.campoaditivo.conclusao.ControladorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.EstadoPosicionamentoModelagem;
 import gerard.campoaditivo.conclusao.PoliticaPreenchimentoIncognita;
+import gerard.campoaditivo.conclusao.SeletorPapeisConclusaoModelagem;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.campoaditivo.semantica.PoliticaValoresAditivos;
 import gerard.campoaditivo.sincronizacao.texto.ElementoSemanticoTexto;
@@ -43,6 +46,7 @@ import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.montagem.TelaMontagemSituacao;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
+import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.TipoConectorDiagrama;
@@ -60,13 +64,13 @@ import gerard.campoaditivo.venn.apresentacao.FabricaRenderizadoresUnidadeVenn;
 import gerard.campoaditivo.venn.apresentacao.RenderizadorUnidadeVenn;
 import gerard.campoaditivo.venn.apresentacao.ProjetorValorPapelDiagramaComplementar;
 import gerard.campoaditivo.representacao.SeletorRepresentacaoComplementar;
+import gerard.campoaditivo.representacao.SelecionadorPlanoUnidadesTransformacao;
 import gerard.campoaditivo.representacao.TipoRepresentacaoComplementar;
 import gerard.campoaditivo.transformacao.processo.PoliticaSinalTransformacaoComplementar;
 import gerard.campoaditivo.transformacao.processo.ControleSinalProcessoTransformacao;
 import gerard.campoaditivo.transformacao.processo.EstadoProcessoTransformacao;
 import gerard.campoaditivo.transformacao.processo.LayoutUnidadesProcessoTransformacao;
 import gerard.campoaditivo.transformacao.processo.PlanoUnidadesProcessoTransformacao;
-import gerard.campoaditivo.transformacao.processo.SincronizadorUnidadesProcessoTransformacao;
 import gerard.campoaditivo.transformacao.processo.RenderizadorProcessoTransformacao;
 import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
@@ -88,6 +92,7 @@ import gerard.dominio.campoaditivo.RegistroAcaoEscolhaSinalPapelQuantitativo;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
 import gerard.dominio.campoaditivo.TentativaEscolhaSinalPapelQuantitativo;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
+import gerard.dominio.atividade.CatalogoObjetosLogAcaoInstrumental;
 import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.aplicacao.adaptacao.ContextoRegistroAjuda;
 import gerard.aplicacao.adaptacao.ExecutorAjudaIncognita;
@@ -165,12 +170,9 @@ import gerard.ui.vergnaud.SeletorIndicesEstadoCompartilhado;
 import gerard.ui.vergnaud.AtualizacaoElementoVergnaud;
 import gerard.ui.vergnaud.PlanejadorAplicacaoEstadoVergnaud;
 import gerard.ui.vergnaud.ApresentadorItemVergnaud;
-import gerard.ui.vergnaud.ApresentadorGraficoInteiros;
 import gerard.ui.vergnaud.PaineisEixosRelacoes;
 import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;
 import gerard.ui.vergnaud.AdaptadorMovimentoConectorVergnaud;
-import gerard.ui.vergnaud.AdaptadorInteracaoEixoInteiros;
-import gerard.ui.vergnaud.FonteGeometriaInteracaoEixoInteiros;
 import gerard.ui.vergnaud.AdaptadorInteracaoPaineisEixosRelacoes;
 import gerard.ui.vergnaud.FonteGeometriaInteracaoPaineisEixosRelacoes;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
@@ -188,8 +190,6 @@ import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
 import gerard.interacao.arraste.HandlerInteracaoArrasteIncremental;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.HandlerInteracaoQuadradinhoVenn;
-import gerard.interacao.arraste.AlvoInteracaoEixoInteiros;
-import gerard.interacao.arraste.HandlerInteracaoEixoInteiros;
 import gerard.interacao.arraste.AlvoInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.HandlerInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
@@ -577,9 +577,9 @@ public class Main extends JFrame {
                 simuladorEstadoComplementarVenn =
                 new gerard.campoaditivo.sincronizacao.SimuladorEstadoComplementarVenn(
                         politicaSinalTransformacaoComplementar);
-        final SincronizadorUnidadesProcessoTransformacao
-                sincronizadorUnidadesProcessoTransformacao =
-                new SincronizadorUnidadesProcessoTransformacao();
+        final SelecionadorPlanoUnidadesTransformacao
+                selecionadorPlanoUnidadesTransformacao =
+                new SelecionadorPlanoUnidadesTransformacao();
         // Composição de Transformações (2026-08-07) — mesma família visual
         // do Processo de Transformação acima, mas com três funis
         // independentes (Transformação 1, 2 e Final) num único canal, sem
@@ -594,9 +594,6 @@ public class Main extends JFrame {
         final gerard.campoaditivo.transformacao.composicao.LayoutUnidadesComposicaoTransformacoes
                 layoutUnidadesComposicaoTransformacoes =
                 new gerard.campoaditivo.transformacao.composicao.LayoutUnidadesComposicaoTransformacoes();
-        final gerard.campoaditivo.transformacao.composicao.SincronizadorUnidadesComposicaoTransformacoes
-                sincronizadorUnidadesComposicaoTransformacoes =
-                new gerard.campoaditivo.transformacao.composicao.SincronizadorUnidadesComposicaoTransformacoes();
         final ConversorTextoParaInteiroSemantico conversorTextoParaInteiroSemantico =
                 new ConversorTextoParaInteiroSemantico();
         final ServicoQuantidadeContextual servicoQuantidadeContextual =
@@ -710,28 +707,6 @@ public class Main extends JFrame {
         CatalogoPapeisSemanticosAditivos catalogoPapeisSemanticos = new CatalogoPapeisSemanticosAditivos();
         PoliticaValoresAditivos politicaValoresAditivos = new PoliticaValoresAditivos(catalogoPapeisSemanticos);
         ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
-        ScaffoldingGraficoInteiros scaffoldingGraficoInteiros = new ScaffoldingGraficoInteiros();
-        final ApresentadorGraficoInteiros apresentadorGraficoInteiros =
-                new ApresentadorGraficoInteiros(scaffoldingGraficoInteiros);
-        final AdaptadorInteracaoEixoInteiros adaptadorInteracaoEixoInteiros =
-                new AdaptadorInteracaoEixoInteiros(
-                        scaffoldingGraficoInteiros,
-                        new FonteGeometriaInteracaoEixoInteiros() {
-                            @Override
-                            public int obterLarguraTela() {
-                                return TelaGerard.this.getWidth();
-                            }
-
-                            @Override
-                            public int obterAlturaTela() {
-                                return TelaGerard.this.getHeight();
-                            }
-
-                            @Override
-                            public Rectangle obterAreaDiagrama() {
-                                return obterAreaVisivelDiagramasVergnaud();
-                            }
-                        });
         PoliticaRestauracaoValorRelativo politicaRestauracaoValorRelativo =
                 new PoliticaRestauracaoValorRelativo();
         /**
@@ -739,9 +714,7 @@ public class Main extends JFrame {
          * concreto próprio de TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES —
          * um eixo dos inteiros por papel, todos visíveis e manipuláveis ao
          * mesmo tempo, ativados pelo mesmo gatilho de todo outro material
-         * concreto do app (deveExibirDiagramaComplementar). Coordenador
-         * novo e paralelo ao scaffoldingGraficoInteiros já existente acima
-         * (decisão da usuária, 2026-08-16) — não o modifica.
+         * concreto do app (deveExibirDiagramaComplementar).
          */
         final PaineisEixosRelacoes paineisEixosRelacoes = new PaineisEixosRelacoes();
         final AdaptadorInteracaoPaineisEixosRelacoes
@@ -799,24 +772,14 @@ public class Main extends JFrame {
                 new PoliticaGestoEstrutural();
         final ControladorConclusaoModelagem controladorConclusaoModelagem =
                 new ControladorConclusaoModelagem();
+        final SeletorPapeisConclusaoModelagem seletorPapeisConclusaoModelagem =
+                new SeletorPapeisConclusaoModelagem();
+        final CatalogoObjetosLogAcaoInstrumental catalogoObjetosLogAcaoInstrumental =
+                new CatalogoObjetosLogAcaoInstrumental();
         final PoliticaPreenchimentoIncognita politicaPreenchimentoIncognita =
                 new PoliticaPreenchimentoIncognita();
         final AplicadorDestaqueConclusaoDiagrama aplicadorDestaqueConclusaoDiagrama =
                 new AplicadorDestaqueConclusaoDiagrama();
-        /**
-         * Segunda condição da conclusão (2026-08-23), independente da malha
-         * de papéis/posicionamentos que ControladorConclusaoModelagem já
-         * avalia: "só deixe azulzinho depois que for escolhida as operações
-         * corretamente" — quando há radiobutton(s) de soma/subtração ativos
-         * (Transformação de Relação, Composição de Relações, Composição de
-         * Transformações — inclusive as DUAS operações desta última), eles
-         * também precisam estar corretos. Rastreada aqui, fora do
-         * controlador, porque ele só conhece papéis/posicionamentos — nunca
-         * saberia recalcular a transição "CONCLUIDA_AGORA" quando o que
-         * mudou foi só a escolha da operação, com os papéis já posicionados
-         * antes. Ver verificarConclusaoModelagem().
-         */
-        boolean modelagemPlenamenteConcluidaAnteriormente = false;
         final SeloConclusaoModelagem seloConclusaoModelagem =
                 new SeloConclusaoModelagem();
         final TipConclusaoModelagem tipConclusaoModelagem =
@@ -852,7 +815,6 @@ public class Main extends JFrame {
         // era o único ponto de reatribuição além deste default (o botão
         // "Teste: ..." que permitia trocar o estilo foi removido junto).
         EstiloInteracao modoFeedbackTeste = EstiloInteracao.SNAP_TO_TARGET;
-        final int quantidadePassosTransformacaoComposta = 1;
 
         // Paleta única em gerard.ui.UITemaGerard — mudar o tema é editar só aquele
         // arquivo. Os nomes locais são mantidos para não alterar cada uso abaixo.
@@ -973,6 +935,8 @@ public class Main extends JFrame {
                  new ServicoAvaliacaoAcaoIncognita();
         final ProjetorValorPapelDiagramaComplementar projetorValorPapelDiagramaComplementar =
                 new ProjetorValorPapelDiagramaComplementar();
+        final ProjetorValoresComparacaoComplementar projetorValoresComparacaoComplementar =
+                new ProjetorValoresComparacaoComplementar();
         final SincronizadorElementosSemanticosTexto sincronizadorElementosSemanticosTexto =
                 new SincronizadorElementosSemanticosTextoAditivo();
         final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
@@ -994,8 +958,6 @@ public class Main extends JFrame {
                 new HandlerInteracaoArrasteIncremental<AdaptadorMovimentoConectorVergnaud>();
         final HandlerInteracaoQuadradinhoVenn handlerQuadradinhoVenn =
                 new HandlerInteracaoQuadradinhoVenn();
-        final HandlerInteracaoEixoInteiros handlerEixoInteiros =
-                new HandlerInteracaoEixoInteiros();
         final HandlerInteracaoPaineisEixosRelacoes
                 handlerPaineisEixosRelacoes =
                 new HandlerInteracaoPaineisEixosRelacoes();
@@ -1085,8 +1047,6 @@ public class Main extends JFrame {
         final ScaffoldingAutomatizacaoPassos scaffoldingAutomatizacaoPassos =
                 new ScaffoldingAutomatizacaoPassos();
         JButton botaoVerDicaPosicionamento;
-        ItemTextoArrastavel itemGraficoInteiros = null;
-        ElementoVergnaud numeroRelativoGraficoInteiros = null;
         boolean sincronizacaoEstadoFinalHabilitada = false;
         ItemTextoArrastavel itemIncognitaEstadoFinal = null;
         ElementoVergnaud elementoEstadoFinalSincronizado = null;
@@ -2087,10 +2047,6 @@ public class Main extends JFrame {
                 }
             }
 
-            if (scaffoldingGraficoInteiros != null
-                    && scaffoldingGraficoInteiros.isVisivel()) {
-                representacoes.add(localizacao.texto("ui.bug.representation.integerAxis"));
-            }
             if (paineisEixosRelacoes.estaAtivo()) {
                 representacoes.add(localizacao.texto("ui.bug.representation.integerAxis"));
             }
@@ -4781,7 +4737,6 @@ public class Main extends JFrame {
             limparRealceAlvoProximidade();
             limparQuestionamentoPersistente();
             limparSinalDivergentePersistente();
-            limparGraficoInteiros();
             desativarPaineisEixosRelacoes();
             seletorOperacaoRelacaoAluno.desativar();
             seletorOperacaoEstadoTransformacaoAluno.desativar();
@@ -4887,7 +4842,6 @@ public class Main extends JFrame {
             mostrarAnotacaoMouseOver = false;
             limparQuestionamentoPersistente();
             limparSinalDivergentePersistente();
-            limparGraficoInteiros();
             desabilitarSincronizacaoEstadoFinal();
             estadoSemanticoCompartilhado.limpar(tipoSituacaoSelecionada);
             indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
@@ -5009,16 +4963,10 @@ public class Main extends JFrame {
             int[] valores = obterValoresSincronizadosParaDiagramaVenn();
             EstadoSemanticoCompartilhado.Snapshot snapshotTabuleiro =
                     estadoSemanticoCompartilhado.snapshot();
-            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso;
-            if (ehProcessoTransformacaoMedidas()) {
-                planoUnidadesProcesso = sincronizadorUnidadesProcessoTransformacao
-                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
-            } else if (ehComposicaoTransformacoesProcesso()) {
-                planoUnidadesProcesso = sincronizadorUnidadesComposicaoTransformacoes
-                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
-            } else {
-                planoUnidadesProcesso = null;
-            }
+            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso =
+                    selecionadorPlanoUnidadesTransformacao.criarPlano(
+                            obterTipoRepresentacaoComplementarAtual(),
+                            snapshotTabuleiro, situacaoProblemaAtual);
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
             TipoSituacaoAditiva tipoVenn = tipoSituacaoSelecionada;
             cenaDiagramaVennAtual = geradorCenaDiagramaVenn.gerar(tipoVenn, ultimaAreaDiagramaVenn, definicaoDiagramaAtual, valores);
@@ -5034,9 +4982,8 @@ public class Main extends JFrame {
                             no.getValorReferencia(),
                             no.isExibirQuadradinhos()
                     );
-                    circulo.formaRetangular = (tipoVenn == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                        || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-                        || tipoVenn == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
+                    circulo.formaRetangular = no.getForma()
+                            == NoDiagramaVenn.Forma.RETANGULO;
                     circulosVenn.add(circulo);
                 }
             }
@@ -5191,7 +5138,7 @@ public class Main extends JFrame {
             // permanecer a frente dos componentes estaticos da tela.
             // Mantemos apenas overlays transitorios (pickup, feedback e
             // anotacoes) acima dele.
-            desenharGraficoInteiros(g2);
+            desenharPaineisEixoRelacoes(g2);
             desenharPickupEmPrimeiroPlano(g2);
             desenharFeedbackExplicitoProximidade(g2);
             desenharAnotacaoMouseOver(g2);
@@ -5412,9 +5359,6 @@ public class Main extends JFrame {
                     if (item == itemQuestionadoPersistente) {
                         limparQuestionamentoPersistente();
                     }
-                    if (item == itemGraficoInteiros) {
-                        limparGraficoInteiros();
-                    }
                     iterador.remove();
                 }
             }
@@ -5458,8 +5402,6 @@ public class Main extends JFrame {
             controladorEstadoAtividade.registrar(AcaoAtividade.RESTAURAR);
             handlerItemTextoArrastavel.cancelar();
             itemFocado = null;
-            itemGraficoInteiros = null;
-            numeroRelativoGraficoInteiros = null;
             handlerElementoTextoMovel.cancelar();
             elementoTextoFocado = null;
             handlerQuadradinhoVenn.cancelar();
@@ -5482,7 +5424,6 @@ public class Main extends JFrame {
             limparRealceAlvoProximidade();
             limparQuestionamentoPersistente();
             limparSinalDivergentePersistente();
-            limparGraficoInteiros();
             desabilitarSincronizacaoEstadoFinal();
             mostrarAnotacaoMouseOver = false;
             textoAnotacaoMouseOver = "";
@@ -5614,63 +5555,28 @@ public class Main extends JFrame {
         }
 
         private String obterPapelElementoParaConclusao(int indiceElemento) {
-            return scaffoldingQuestionamento.obterChavePapelDoElemento(
-                    tipoSituacaoSelecionada,
-                    indiceElemento,
-                    false,
-                    quantidadePassosTransformacaoComposta);
-        }
-
-        /**
-         * Um papel entra na avaliação da conclusão quando (1) é um papel de
-         * verdade (não o genérico "papel.valor") e (2) a curadoria da
-         * situação atual de fato o definiu.
-         *
-         * A segunda condição (2026-08-23) não é decidida aqui: quem sabe se
-         * existe curadoria para um papel é o papel curado
-         * (SemanticaCuradaSituacao.papelExigidoNaModelagem ->
-         * PapelCurado.isExigidoNaModelagem). Esta tela só pergunta; não lê
-         * campo nenhum da situação nem tem regra por categoria.
-         *
-         * Motivo: a cena de uma categoria pode desenhar mais figuras do que
-         * a curadoria preencheu — Composição de Transformações desenha 6
-         * papéis (3 transformações + 3 estados) e boa parte da base só tem
-         * os 3 primeiros curados. Cobrar um papel sem curadoria tornaria a
-         * situação impossível de concluir: não há o que o aluno colocar ali
-         * nem com o que conferir. Quando a curadoria for completada, os
-         * papéis restantes passam a ser exigidos sozinhos, sem mudar código.
-         *
-         * Sem situação curada carregada (problema digitado livremente), o
-         * comportamento anterior é preservado integralmente: vale só (1).
-         */
-        private boolean papelValidoParaConclusao(String papel) {
-            boolean papelDeVerdade = papel != null && papel.trim().length() > 0
-                    && !"papel.valor".equals(papel.trim());
-            if (!papelDeVerdade || situacaoProblemaAtual == null) {
-                return papelDeVerdade;
-            }
-            return SemanticaCuradaSituacao.papelExigidoNaModelagem(
-                    situacaoProblemaAtual, localizacao, papel.trim());
+            return catalogoPapeisSemanticos.obterChavePapelDoElemento(
+                    tipoSituacaoSelecionada, indiceElemento);
         }
 
         private java.util.List<String> capturarPapeisEsperadosConclusao() {
-            java.util.List<String> papeis = new ArrayList<String>();
+            java.util.List<String> papeisDaCena = new ArrayList<String>();
             for (int i = 0; i < elementosVergnaud.size(); i++) {
-                String papel = obterPapelElementoParaConclusao(i);
-                if (papelValidoParaConclusao(papel)) {
-                    papeis.add(papel.trim());
-                }
+                papeisDaCena.add(obterPapelElementoParaConclusao(i));
             }
-            return papeis;
+            return seletorPapeisConclusaoModelagem.selecionar(
+                    papeisDaCena, situacaoProblemaAtual, localizacao);
         }
 
         private java.util.List<EstadoPosicionamentoModelagem> capturarPosicionamentosConclusao() {
             java.util.List<EstadoPosicionamentoModelagem> estados =
                     new ArrayList<EstadoPosicionamentoModelagem>();
+            java.util.List<String> papeisEsperados =
+                    capturarPapeisEsperadosConclusao();
             for (int i = 0; i < elementosVergnaud.size(); i++) {
                 ElementoVergnaud alvo = elementosVergnaud.get(i);
                 String papelAlvo = obterPapelElementoParaConclusao(i);
-                if (!papelValidoParaConclusao(papelAlvo)) {
+                if (!papeisEsperados.contains(papelAlvo)) {
                     continue;
                 }
 
@@ -6524,24 +6430,14 @@ public class Main extends JFrame {
         }
 
         private void verificarConclusaoModelagem() {
-            // O retorno (AtualizacaoConclusaoModelagem) não é mais usado aqui
-            // — ver comentário abaixo sobre por que a transição precisou de
-            // rastreamento próprio. A chamada continua necessária pelo efeito
-            // colateral: atualiza a fase interna do controlador.
-            controladorConclusaoModelagem.atualizar(
+            AtualizacaoConclusaoModelagem atualizacaoConclusao =
+                    controladorConclusaoModelagem.atualizar(
                     capturarPapeisEsperadosConclusao(),
-                    capturarPosicionamentosConclusao());
-            // controladorConclusaoModelagem só conhece papéis/posicionamentos
-            // — a segunda condição (operação escolhida certa) é combinada
-            // aqui, com detecção de transição própria
-            // (modelagemPlenamenteConcluidaAnteriormente), já que a
-            // transição CONCLUIDA_AGORA do controlador não é recalculada
-            // quando o único gatilho da chamada foi a escolha da operação
-            // (papéis já estavam iguais à chamada anterior).
-            boolean concluida = controladorConclusaoModelagem.isConcluida()
-                    && operacoesDeSomaSubtracaoRespondidasCorretamente();
-            boolean acabouDeConcluirPlenamente = concluida && !modelagemPlenamenteConcluidaAnteriormente;
-            modelagemPlenamenteConcluidaAnteriormente = concluida;
+                    capturarPosicionamentosConclusao(),
+                    operacoesDeSomaSubtracaoRespondidasCorretamente());
+            boolean concluida = controladorConclusaoModelagem.isConcluida();
+            boolean acabouDeConcluirPlenamente = atualizacaoConclusao
+                    == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA;
             if (!concluida) {
                 aplicadorDestaqueConclusaoDiagrama.aplicar(
                         false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
@@ -6565,9 +6461,8 @@ public class Main extends JFrame {
         }
 
         private void suspenderConclusaoDuranteManipulacao() {
-            if (!modelagemPlenamenteConcluidaAnteriormente) return;
+            if (!controladorConclusaoModelagem.isConcluida()) return;
             controladorConclusaoModelagem.reiniciar();
-            modelagemPlenamenteConcluidaAnteriormente = false;
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                     quadradinhosVenn);
@@ -6576,7 +6471,6 @@ public class Main extends JFrame {
 
         private void reiniciarConclusaoModelagem() {
             controladorConclusaoModelagem.reiniciar();
-            modelagemPlenamenteConcluidaAnteriormente = false;
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                     quadradinhosVenn);
@@ -7150,13 +7044,7 @@ public class Main extends JFrame {
             g2.setStroke(strokeOriginal);
         }
 
-        private void desenharGraficoInteiros(Graphics2D g2) {
-            scaffoldingGraficoInteiros.desenhar(
-                    g2,
-                    getWidth(),
-                    getHeight(),
-                    obterAreaVisivelDiagramasVergnaud()
-            );
+        private void desenharPaineisEixoRelacoes(Graphics2D g2) {
             atualizarPaineisEixosRelacoesConformeVisibilidade();
             paineisEixosRelacoes.desenhar(
                     g2,
@@ -7310,9 +7198,9 @@ public class Main extends JFrame {
         /**
          * Corrige o bug relatado pela usuária em 2026-08-17 ("eixos não
          * mudam com a mudança dos elementos no diagrama"): como o eixo
-         * único antigo foi suprimido nas categorias de Relações (ver
-         * {@code mostrarGraficoInteirosNumeroRelativo}/
-         * {@code registrarEscolhaGraficoInteiros}), o único ponto que
+         * único antigo foi suprimido nas categorias de Relações (mecanismo
+         * removido por completo em 2026-09-01, por ter se tornado
+         * inalcançável em todas as 6 categorias), o único ponto que
          * atualizava o eixo quando o valor mudava por outro caminho (menu
          * de escolha de sinal, protocolo da incógnita) deixou de alcançar
          * os painéis novos. Chamado do mesmo ponto central por onde toda
@@ -7444,17 +7332,6 @@ public class Main extends JFrame {
                     }
                     public void desenharConteudo(Graphics2D grafico) {
                         conector.desenhar(grafico);
-                    }
-                });
-            }
-
-            if (scaffoldingGraficoInteiros.estaArrastandoPontoControle()) {
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
-                    public Rectangle obterLimitesVisuais() {
-                        return scaffoldingGraficoInteiros.obterAreaVisualPontoControle();
-                    }
-                    public void desenharConteudo(Graphics2D grafico) {
-                        scaffoldingGraficoInteiros.desenharPontoControleEmPrimeiroPlano(grafico);
                     }
                 });
             }
@@ -7958,16 +7835,10 @@ public class Main extends JFrame {
                 // conclusão da modelagem não é antecipada).
                 valores[2] = valores[0];
             }
-            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso;
-            if (ehProcessoTransformacaoMedidas()) {
-                planoUnidadesProcesso = sincronizadorUnidadesProcessoTransformacao
-                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
-            } else if (ehComposicaoTransformacoesProcesso()) {
-                planoUnidadesProcesso = sincronizadorUnidadesComposicaoTransformacoes
-                        .criarPlano(snapshotTabuleiro, situacaoProblemaAtual);
-            } else {
-                planoUnidadesProcesso = null;
-            }
+            PlanoUnidadesProcessoTransformacao planoUnidadesProcesso =
+                    selecionadorPlanoUnidadesTransformacao.criarPlano(
+                            obterTipoRepresentacaoComplementarAtual(),
+                            snapshotTabuleiro, situacaoProblemaAtual);
             planoUnidadesProcessoAtual = planoUnidadesProcesso;
             TipoSituacaoAditiva tipoVenn = tipoSituacaoSelecionada;
             String assinatura = criarAssinaturaDiagramaVenn(tipoVenn, areaAtual, valores);
@@ -7993,10 +7864,8 @@ public class Main extends JFrame {
                         no.getValorReferencia(),
                         no.isExibirQuadradinhos()
                 );
-                circulo.formaRetangular = ehProcessoTransformacaoMedidas()
-                        || ehComposicaoTransformacoesProcesso()
-                        || ((tipoVenn == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                                || tipoVenn == TipoSituacaoAditiva.COMPARACAO_MEDIDAS));
+                circulo.formaRetangular = no.getForma()
+                        == NoDiagramaVenn.Forma.RETANGULO;
                 circulosVenn.add(circulo);
             }
             // Depois distribui as unidades, garantindo que o layout especializado
@@ -8051,20 +7920,6 @@ public class Main extends JFrame {
                 proporcaoControleComparacao = 0.0;
                 ultimoValorInteiroControleComparacao = 0;
             }
-
-            ElementoVergnaud numeroRelativo = encontrarElementoVergnaudPorPapel(
-                    "papel.diferenca");
-            if (numeroRelativo != null) {
-                if (ehElementoNumeroRelativo(numeroRelativo)) {
-                    String textoRelativo = servicoQuantidadeContextual
-                            .formatarNumeroRelativoParaDiagrama(
-                                    valorRelativo, situacaoProblemaAtual);
-                    String base = scaffoldingNumeroRelativo.removerSinal(textoRelativo);
-                    String sinal = obterSinalAtual(textoRelativo);
-                    ItemTextoArrastavel item = encontrarItemSobreElemento(numeroRelativo);
-                    registrarEscolhaGraficoInteiros(item, numeroRelativo, base, sinal);
-                }
-            }
         }
 
         private String criarAssinaturaDiagramaVenn(TipoSituacaoAditiva tipoVenn, Rectangle area, int[] valores) {
@@ -8111,10 +7966,7 @@ public class Main extends JFrame {
         private void atualizarIndicesEstadoCompartilhado(int indiceAlteradoReal) {
             int quantidadeElementos = elementosVergnaud == null
                     ? 0 : elementosVergnaud.size();
-            int indiceNumeroRelativo = elementosVergnaud == null
-                    || numeroRelativoGraficoInteiros == null
-                    ? -1 : obterIndiceVisualPorIdentidadeSemantica(
-                            numeroRelativoGraficoInteiros);
+            int indiceNumeroRelativo = -1;
             int indiceInicialAtual = indicesElementosEstadoCompartilhado == null
                     || indicesElementosEstadoCompartilhado.length == 0
                     ? 0 : indicesElementosEstadoCompartilhado[0];
@@ -8287,7 +8139,7 @@ public class Main extends JFrame {
                 int valor = atualizacao.getValor();
                 if (atualizacao.getNaturezaVisual()
                         == AtualizacaoElementoVergnaud.NaturezaVisual.NUMERO_RELATIVO) {
-                    definirValorNoElementoNumeroRelativo(elemento, valor, true);
+                    definirValorNoElementoNumeroRelativo(elemento, valor);
                 } else {
                     definirValorNoElementoMedida(elemento,
                             servicoQuantidadeContextual.formatarMedidaParaDiagrama(
@@ -8305,10 +8157,7 @@ public class Main extends JFrame {
 
             MapeadorPapelSemanticoTexto mapeador =
                     new gerard.ui.enunciado.MapeadorPapelSemanticoTextoPadrao(
-                            scaffoldingQuestionamento,
                             tipoSituacaoSelecionada,
-                            false,
-                            quantidadePassosTransformacaoComposta,
                             indicesElementosEstadoCompartilhado);
 
             sincronizadorElementosSemanticosTexto.sincronizar(
@@ -8342,13 +8191,6 @@ public class Main extends JFrame {
                 return;
             }
             int valor = snapshot.valorOuZero(1);
-            String texto = servicoQuantidadeContextual
-                    .formatarNumeroRelativoParaDiagrama(
-                            valor, situacaoProblemaAtual);
-            registrarEscolhaGraficoInteiros(
-                    encontrarItemSobreElemento(relacao), relacao,
-                    scaffoldingNumeroRelativo.removerSinal(texto),
-                    obterSinalAtual(texto));
             if (ehGraficoBarrasComparacao()) {
                 int maximo = Math.max(1, obterValorMaximoEscalaComparacao());
                 int modulo = relacaoEstruturalComparacao()
@@ -8375,9 +8217,7 @@ public class Main extends JFrame {
             }
             return catalogoPapeisSemanticos.obterIndiceElementoPorPapel(
                     obterPapelSemanticoDoElemento(elemento),
-                    tipoSituacaoSelecionada,
-                    false,
-                    quantidadePassosTransformacaoComposta);
+                    tipoSituacaoSelecionada);
         }
 
         private void sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
@@ -8394,106 +8234,17 @@ public class Main extends JFrame {
          * na ordem: referido, valor relativo e referendo.
          */
         private int[] obterValoresSemanticosComparacao() {
-            Integer referidoCurado = null;
-            Integer valorRelativoCurado = null;
-            Integer referendoCurado = null;
-
-            if (situacaoProblemaAtual != null) {
-                SemanticaCuradaSituacao.PapelCurado papelReferido = SemanticaCuradaSituacao.buscar(
-                        situacaoProblemaAtual, localizacao, "papel.referido");
-                SemanticaCuradaSituacao.PapelCurado papelReferendo = SemanticaCuradaSituacao.buscar(
-                        situacaoProblemaAtual, localizacao, "papel.referendo");
-                SemanticaCuradaSituacao.PapelCurado papelValorRelativo = SemanticaCuradaSituacao.buscar(
-                        situacaoProblemaAtual, localizacao, "papel.diferenca");
-                // Nunca usar o valor curado de um papel que é a incógnita: ele
-                // não pode vazar para uma representação visível antes de o
-                // aluno resolvê-lo (ver gerard-consistencia-estado).
-                if (papelReferido != null && !papelReferido.isDesconhecido()) {
-                    referidoCurado = converterTextoParaInteiro(papelReferido.getValor());
-                }
-                if (papelReferendo != null && !papelReferendo.isDesconhecido()) {
-                    referendoCurado = converterTextoParaInteiro(papelReferendo.getValor());
-                }
-                if (papelValorRelativo != null && !papelValorRelativo.isDesconhecido()) {
-                    valorRelativoCurado = converterTextoParaInteiro(papelValorRelativo.getValor());
-                }
-            }
-
-            Integer referido = null;
-            Integer valorRelativo = null;
-            Integer referendo = null;
-            boolean existeModelagemDoUsuario = false;
-
             ElementoVergnaud elementoReferido = encontrarElementoVergnaudPorPapel(
                     "papel.referido");
             ElementoVergnaud elementoRelativo = encontrarElementoVergnaudPorPapel(
                     "papel.diferenca");
             ElementoVergnaud elementoReferendo = encontrarElementoVergnaudPorPapel(
                     "papel.referendo");
-            if (elementoReferido != null || elementoRelativo != null
-                    || elementoReferendo != null) {
-                Integer referidoModelado = obterValorNumericoDoElemento(elementoReferido);
-                Integer relativoModelado = obterValorNumericoDoElemento(elementoRelativo);
-                Integer referendoModelado = obterValorNumericoDoElemento(elementoReferendo);
-                existeModelagemDoUsuario = referidoModelado != null || relativoModelado != null || referendoModelado != null;
-                if (referidoModelado != null) referido = referidoModelado;
-                if (relativoModelado != null) valorRelativo = relativoModelado;
-                if (referendoModelado != null) referendo = referendoModelado;
-            }
-
-            // Antes de o usuário posicionar números no diagrama, o gráfico de
-            // barras deve permanecer vazio, sem antecipar as quantidades da
-            // curadoria na representação manipulável.
-            if (!existeModelagemDoUsuario) {
-                return new int[] {0, 0, 0};
-            }
-
-            // As barras de referido e referendo só devem refletir valores
-            // explicitamente posicionados pelo usuário no diagrama de Vergnaud.
-            // A curadoria pode abastecer o valor relativo, mas não deve
-            // preencher automaticamente a barra do outro papel semântico.
-            if (valorRelativo == null) {
-                valorRelativo = valorRelativoCurado;
-            }
-            if (valorRelativo == null && referido != null && referendo != null) {
-                ResolvedorRelacoesEstruturaisAditivas.ResolucaoAutomatica resolucao =
-                        resolvedorRelacoesEstruturais.resolverValores(
-                                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
-                                new Integer[] {referido, null, referendo},
-                                new boolean[] {true, false, true}, -1);
-                if (resolucao.foiResolvida() && resolucao.getIndice() == 1) {
-                    valorRelativo = Integer.valueOf(resolucao.getValor());
-                }
-            }
-
-            return new int[] {
-                Math.max(0, referido == null ? 0 : referido.intValue()),
-                valorRelativo == null ? 0 : valorRelativo.intValue(),
-                Math.max(0, referendo == null ? 0 : referendo.intValue())
-            };
-        }
-
-        private int obterValorElementoModeladoOuZero(int indiceElemento) {
-            if (elementosVergnaud != null && indiceElemento >= 0 && indiceElemento < elementosVergnaud.size()) {
-                Integer valor = obterValorNumericoDoElemento(elementosVergnaud.get(indiceElemento));
-                if (valor != null) {
-                    return valor.intValue();
-                }
-            }
-            return 0;
-        }
-
-        private int obterValorElementoOuOriginal(int indiceElemento, int[] originais, int indiceOriginal) {
-            if (indiceElemento >= 0 && indiceElemento < elementosVergnaud.size()) {
-                Integer valor = obterValorNumericoDoElemento(elementosVergnaud.get(indiceElemento));
-                if (valor != null) {
-                    return valor.intValue();
-                }
-            }
-            if (originais != null && indiceOriginal >= 0 && indiceOriginal < originais.length) {
-                return originais[indiceOriginal];
-            }
-            return 0;
+            return projetorValoresComparacaoComplementar.projetar(
+                    situacaoProblemaAtual, localizacao,
+                    obterValorNumericoDoElemento(elementoReferido),
+                    obterValorNumericoDoElemento(elementoRelativo),
+                    obterValorNumericoDoElemento(elementoReferendo));
         }
 
         private static final int LARGURA_BASE_TELA = 1240;
@@ -8633,18 +8384,19 @@ public class Main extends JFrame {
         }
 
         private boolean ehProcessoTransformacaoMedidas() {
-            return seletorRepresentacaoComplementar.selecionar(
-                    tipoSituacaoSelecionada,
-                    false)
+            return obterTipoRepresentacaoComplementarAtual()
                     == TipoRepresentacaoComplementar.PROCESSO_TRANSFORMACAO;
         }
 
         /** Composição de Transformações (2026-08-07) — três funis, um canal. */
         private boolean ehComposicaoTransformacoesProcesso() {
-            return seletorRepresentacaoComplementar.selecionar(
-                    tipoSituacaoSelecionada,
-                    false)
+            return obterTipoRepresentacaoComplementarAtual()
                     == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
+        }
+
+        private TipoRepresentacaoComplementar obterTipoRepresentacaoComplementarAtual() {
+            return seletorRepresentacaoComplementar.selecionar(
+                    tipoSituacaoSelecionada, false);
         }
 
         /**
@@ -8680,8 +8432,15 @@ public class Main extends JFrame {
                     && obterAreaVisivelDiagramasVergnaud().contains(x, y);
         }
 
-        private Rectangle criarZonaSemanticaElemento(Rectangle limite, TipoSituacaoAditiva tipo, int indiceElemento, int largura, int altura) {
-            Rectangle zonaBase = obterZonaBaseElementoPorCategoria(limite, tipo, indiceElemento);
+        private Rectangle criarZonaSemanticaElemento(Rectangle limite,
+                int indiceElemento, int largura, int altura) {
+            AreaDiagrama projetada = geradorCenaDiagrama
+                    .projetarZonaFigura(cenaDiagramaAtual,
+                            new AreaDiagrama(limite.x, limite.y,
+                                    limite.width, limite.height),
+                            indiceElemento);
+            Rectangle zonaBase = new Rectangle(projetada.x, projetada.y,
+                    projetada.largura, projetada.altura);
             int margemX = 12;
             int margemY = 12;
             int x = zonaBase.x + margemX;
@@ -8693,72 +8452,15 @@ public class Main extends JFrame {
             return new Rectangle(x, y, Math.max(largura, Math.min(w, maxW)), Math.max(altura, Math.min(h, maxH)));
         }
 
-        private Rectangle criarZonaSemanticaConector(Rectangle limite, TipoSituacaoAditiva tipo, int indiceConector) {
-            return obterZonaBaseConectorPorCategoria(limite, tipo, indiceConector);
-        }
-
-        private Rectangle obterZonaBaseElementoPorCategoria(Rectangle limite, TipoSituacaoAditiva tipo, int indiceElemento) {
-            int x = limite.x;
-            int y = limite.y;
-            int w = limite.width;
-            int h = limite.height;
-
-            switch (tipo) {
-                case COMPOSICAO_MEDIDAS:
-                    if (indiceElemento == 0) return new Rectangle(x + 25, y + 20, 150, h / 2 - 20);
-                    if (indiceElemento == 1) return new Rectangle(x + 25, y + h / 2, 150, h / 2 - 20);
-                    return new Rectangle(x + 155, y + 60, 170, h - 120);
-                case TRANSFORMACAO_MEDIDAS:
-                    if (indiceElemento == 0) return new Rectangle(x + 10, y + h / 2 - 70, 150, 140);
-                    if (indiceElemento == 1) return new Rectangle(x + w / 2 - 90, y + 10, 180, 140);
-                    return new Rectangle(x + w - 170, y + h / 2 - 70, 160, 140);
-                case COMPARACAO_MEDIDAS:
-                    if (indiceElemento == 0) return new Rectangle(x + 35, y + h / 2, 150, h / 2 - 20);
-                    if (indiceElemento == 1) return new Rectangle(x + 150, y + h / 2 - 80, 160, 160);
-                    return new Rectangle(x + 35, y + 20, 150, h / 2 - 20);
-                case COMPOSICAO_TRANSFORMACOES:
-                    if (indiceElemento == 0) return new Rectangle(x + 105, y + 10, 170, 130);
-                    if (indiceElemento == 1) return new Rectangle(x + 290, y + 10, 170, 130);
-                    if (indiceElemento == 2) return new Rectangle(x + w / 2 - 110, y + h - 130, 220, 120);
-                    if (indiceElemento == 3) return new Rectangle(x + 10, y + h / 2 - 70, 120, 140);
-                    if (indiceElemento == 4) return new Rectangle(x + w / 2 - 70, y + h / 2 - 70, 140, 140);
-                    return new Rectangle(x + w - 130, y + h / 2 - 70, 120, 140);
-                case TRANSFORMACAO_RELACAO:
-                    if (indiceElemento == 0) return new Rectangle(x + 10, y + h / 2 - 80, 170, 160);
-                    if (indiceElemento == 1) return new Rectangle(x + w / 2 - 90, y + 10, 180, 140);
-                    return new Rectangle(x + w - 180, y + h / 2 - 80, 170, 160);
-                case COMPOSICAO_RELACOES:
-                    if (indiceElemento == 0) return new Rectangle(x + 40, y + 20, 160, h / 2 - 20);
-                    if (indiceElemento == 1) return new Rectangle(x + 40, y + h / 2, 160, h / 2 - 20);
-                    return new Rectangle(x + 220, y + 60, 180, h - 120);
-                default:
-                    return new Rectangle(x, y, w, h);
-            }
-        }
-
-        private Rectangle obterZonaBaseConectorPorCategoria(Rectangle limite, TipoSituacaoAditiva tipo, int indiceConector) {
-            int x = limite.x;
-            int y = limite.y;
-            int w = limite.width;
-            int h = limite.height;
-
-            switch (tipo) {
-                case COMPOSICAO_MEDIDAS:
-                    return new Rectangle(x + 85, y + 30, 100, h - 60);
-                case TRANSFORMACAO_MEDIDAS:
-                case TRANSFORMACAO_RELACAO:
-                    return new Rectangle(x + 120, y + h / 2 - 70, w - 240, 140);
-                case COMPARACAO_MEDIDAS:
-                    return new Rectangle(x + 60, y + 45, 90, h - 90);
-                case COMPOSICAO_TRANSFORMACOES:
-                    if (indiceConector == 0) return new Rectangle(x + 90, y + h / 2 - 70, w / 2 - 80, 120);
-                    if (indiceConector == 1) return new Rectangle(x + w / 2, y + h / 2 - 70, w / 2 - 90, 120);
-                    return new Rectangle(x + 55, y + h / 2, w - 110, h / 2 - 10);
-                case COMPOSICAO_RELACOES:
-                    return new Rectangle(x + 120, y + 30, 110, h - 60);
-                default:
-                    return new Rectangle(x, y, w, h);
-            }
+        private Rectangle criarZonaSemanticaConector(Rectangle limite,
+                int indiceConector) {
+            AreaDiagrama projetada = geradorCenaDiagrama
+                    .projetarZonaConector(cenaDiagramaAtual,
+                            new AreaDiagrama(limite.x, limite.y,
+                                    limite.width, limite.height),
+                            indiceConector);
+            return new Rectangle(projetada.x, projetada.y,
+                    projetada.largura, projetada.altura);
         }
 
         private void inicializarDiagramaVergnaud() {
@@ -8795,8 +8497,7 @@ public class Main extends JFrame {
 
             for (int i = 0; i < cenaDiagramaAtual.getConectores().size(); i++) {
                 ConectorDiagrama conector = cenaDiagramaAtual.getConectores().get(i);
-                Rectangle zona = criarZonaSemanticaConector(
-                        area, tipoSituacaoSelecionada, i);
+                Rectangle zona = criarZonaSemanticaConector(area, i);
                 zona = deslocarZonaSemantica(
                         zona, deslocamentoCentroX, deslocamentoCentroY, area);
                 if (conector.temAlvo()) {
@@ -8828,7 +8529,7 @@ public class Main extends JFrame {
             for (int i = 0; i < cenaDiagramaAtual.getFiguras().size(); i++) {
                 FiguraDiagrama figura = cenaDiagramaAtual.getFiguras().get(i);
                 Rectangle zona = criarZonaSemanticaElemento(
-                        area, tipoSituacaoSelecionada, i,
+                        area, i,
                         figura.getLargura(), figura.getAltura());
                 zona = deslocarZonaSemantica(
                         zona, deslocamentoCentroX, deslocamentoCentroY, area);
@@ -8960,10 +8661,9 @@ public class Main extends JFrame {
             if (situacaoProblemaAtual == null || elemento == null) {
                 return "";
             }
-            SemanticaCuradaSituacao.PapelCurado papel =
-                    SemanticaCuradaSituacao.buscar(situacaoProblemaAtual,
-                            localizacao, elemento.chavePapelSemantico);
-            return papel == null ? "" : valorSeguroPersonagem(papel.getParticipante());
+            return valorSeguroPersonagem(SemanticaCuradaSituacao.buscarParticipante(
+                    situacaoProblemaAtual, localizacao,
+                    elemento.chavePapelSemantico));
         }
 
         private String valorSeguroPersonagem(String personagem) {
@@ -9329,11 +9029,9 @@ public class Main extends JFrame {
             String papelSemantico = "";
             if (indiceAgrupamento >= 0) {
                 int indiceReal = obterIndiceRealDoAgrupamento(indiceAgrupamento);
-                String chave = scaffoldingQuestionamento.obterChavePapelDoElemento(
-                        tipoSituacaoSelecionada,
-                        indiceReal,
-                        false,
-                        quantidadePassosTransformacaoComposta);
+                String chave = catalogoPapeisSemanticos
+                        .obterChavePapelDoElemento(
+                                tipoSituacaoSelecionada, indiceReal);
                 papelSemantico = localizacao.texto(chave);
             }
             return new RepresentacaoVennEditavel(
@@ -9689,7 +9387,8 @@ public class Main extends JFrame {
                     if (indiceVisual == indiceAlteradoVisual) {
                         quantidade = ehAgrupamentoTransformacaoComSinal(no)
                                 ? valorAssinadoProposto
-                                : Math.abs(valorAssinadoProposto);
+                                : politicaSinalTransformacaoComplementar
+                                        .magnitudeParaUnidades(valorAssinadoProposto);
                     } else if ((ehProcessoTransformacaoMedidas()
                                     || ehComposicaoTransformacoesProcesso())
                             && politicaSinalTransformacaoComplementar
@@ -9703,7 +9402,8 @@ public class Main extends JFrame {
                                         no.valorReferencia, valorAnterior);
                     }
                     valores[indiceSemantico] = Integer.valueOf(quantidade);
-                    conhecidos[indiceSemantico] = Math.abs(quantidade) > 0
+                    conhecidos[indiceSemantico] = politicaSinalTransformacaoComplementar
+                            .magnitudeParaUnidades(quantidade) > 0
                             || indiceVisual == indiceAlteradoVisual
                             || (anterior != null
                                 && anterior.isConhecido(indiceSemantico));
@@ -9815,7 +9515,8 @@ public class Main extends JFrame {
             agrupamento.valorReferencia = novoValor;
             relayoutQuadradinhosDoAgrupamento(
                     agrupamento,
-                    Math.abs(novoValor),
+                    politicaSinalTransformacaoComplementar
+                            .magnitudeParaUnidades(novoValor),
                     novoValor < 0 ? "transformacao_negativa" : "usuario");
 
             registrarAcaoGranular(
@@ -9958,12 +9659,9 @@ public class Main extends JFrame {
                 if (indiceSemantico < 0 || indiceReal < 0) {
                     continue;
                 }
-                chaves[indiceSemantico] =
-                        scaffoldingQuestionamento.obterChavePapelDoElemento(
-                                tipoSituacaoSelecionada,
-                                indiceReal,
-                                false,
-                                quantidadePassosTransformacaoComposta);
+                chaves[indiceSemantico] = catalogoPapeisSemanticos
+                        .obterChavePapelDoElemento(
+                                tipoSituacaoSelecionada, indiceReal);
                 valores[indiceSemantico] = obterValorCuradoPorChave(
                         chaves[indiceSemantico]);
             }
@@ -10002,9 +9700,8 @@ public class Main extends JFrame {
                 return null;
             }
 
-            SemanticaCuradaSituacao.PapelCurado papel = SemanticaCuradaSituacao.buscar(
+            return SemanticaCuradaSituacao.buscarValorInteiroVisivel(
                     situacaoProblemaAtual, localizacao, chave);
-            return converterTextoParaInteiro(papel == null ? "" : papel.getValor());
         }
 
         private void removerQuadradinhoDoAgrupamentoInterno(CirculoVenn agrupamento) {
@@ -10096,11 +9793,13 @@ public class Main extends JFrame {
         }
 
         private boolean ehDiagramaVennComposicaoMedidas() {
-            return tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS;
+            return CenaDiagramaVenn.naturezaPara(tipoSituacaoSelecionada)
+                    == CenaDiagramaVenn.Natureza.COLECOES;
         }
 
         private boolean ehGraficoBarrasComparacao() {
-            return tipoSituacaoSelecionada == TipoSituacaoAditiva.COMPARACAO_MEDIDAS;
+            return CenaDiagramaVenn.naturezaPara(tipoSituacaoSelecionada)
+                    == CenaDiagramaVenn.Natureza.BARRAS_COMPARACAO;
         }
 
         private void desenharCirculoVenn(Graphics2D g2, CirculoVenn circulo, boolean composicaoMedidas, boolean comparacaoMedidas) {
@@ -10200,7 +9899,9 @@ public class Main extends JFrame {
                 g2.setStroke(new BasicStroke(1.2f));
                 g2.drawRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 12, 12);
 
-                String valor = valorAtual > 0 ? "+" + valorAtual : String.valueOf(valorAtual);
+                String valor = servicoQuantidadeContextual
+                        .formatarNumeroRelativoParaDiagrama(
+                                valorAtual, situacaoProblemaAtual);
                 g2.setColor(COR_TEXTO);
                 g2.setFont(new Font("Arial", Font.BOLD, 26));
                 FontMetrics fmValor = g2.getFontMetrics();
@@ -10276,9 +9977,8 @@ public class Main extends JFrame {
                 return "";
             }
             String chave = indice == 1 ? "papel.referido" : (indice == 2 ? "papel.referendo" : "papel.diferenca");
-            SemanticaCuradaSituacao.PapelCurado papel = SemanticaCuradaSituacao.buscar(
+            return SemanticaCuradaSituacao.buscarParticipante(
                     situacaoProblemaAtual, localizacao, chave);
-            return papel == null ? "" : papel.getParticipante();
         }
 
         private int obterValorAtualControleComparacao() {
@@ -10298,17 +9998,14 @@ public class Main extends JFrame {
         private int obterValorMaximoEscalaComparacao() {
             int maximo = 0;
             if (situacaoProblemaAtual != null) {
-                SemanticaCuradaSituacao.PapelCurado papelValorRelativo = SemanticaCuradaSituacao.buscar(
-                        situacaoProblemaAtual, localizacao, "papel.diferenca");
                 // Idem: se este papel for a incógnita, seu valor curado não
                 // pode influenciar a escala visível (vazaria a resposta nos
                 // números do eixo antes do aluno resolver).
-                if (papelValorRelativo != null && !papelValorRelativo.isDesconhecido()) {
-                    Integer valorCurado = converterTextoParaInteiro(papelValorRelativo.getValor());
-                    if (valorCurado != null) {
-                        maximo = Math.max(maximo, relacaoEstruturalComparacao()
-                                .calcularModuloDoValorRelativo(valorCurado.intValue()));
-                    }
+                Integer valorCurado = SemanticaCuradaSituacao.buscarValorInteiroVisivel(
+                        situacaoProblemaAtual, localizacao, "papel.diferenca");
+                if (valorCurado != null) {
+                    maximo = Math.max(maximo, relacaoEstruturalComparacao()
+                            .calcularModuloDoValorRelativo(valorCurado.intValue()));
                 }
             }
             ElementoVergnaud elementoValorRelativo = encontrarElementoVergnaudPorPapel(
@@ -10531,7 +10228,7 @@ public class Main extends JFrame {
             ElementoVergnaud diferenca = encontrarElementoVergnaudPorPapel(
                     "papel.diferenca");
             if (diferenca != null) {
-                definirValorNoElementoNumeroRelativo(diferenca, valorControle, true);
+                definirValorNoElementoNumeroRelativo(diferenca, valorControle);
                 // Durante o arrasto (chamado a cada movimento do mouse), só
                 // checa em silêncio se a incógnita ainda diverge do curado —
                 // sem diálogo, que só deve aparecer ao soltar (ver
@@ -10566,7 +10263,7 @@ public class Main extends JFrame {
             definirValorNoElementoMedida(elementoReferido,
                     Integer.toString(Math.max(0, quantidadeReferido)));
             definirValorNoElementoNumeroRelativo(elementoRelativo,
-                    valorControle, true);
+                    valorControle);
             definirValorNoElementoMedida(elementoReferendo,
                     Integer.toString(Math.max(0, quantidadeReferendo)));
         }
@@ -10827,16 +10524,11 @@ public class Main extends JFrame {
                     || handlerQuadradinhoVenn.estaAtivo()
                     || handlerConectorVergnaud.estaAtivo()
                     || arrastandoControleComparacao
-                    || handlerEixoInteiros.estaAtivo()
                     || handlerPaineisEixosRelacoes.estaAtivo();
         }
 
         private boolean pontoSobreElementoArrastavel(int x, int y) {
             boolean representacoesLiberadas = interacaoRepresentacoesLiberadaPelaModelagem();
-            if (representacoesLiberadas
-                    && scaffoldingGraficoInteiros.contemPontoControle(x, y)) {
-                return true;
-            }
             if (representacoesLiberadas
                     && paineisEixosRelacoes.contemPontoControle(x, y)) {
                 return true;
@@ -10878,7 +10570,6 @@ public class Main extends JFrame {
         private void cancelarEfeitosArraste() {
             controladorArrasteElastico.cancelar();
             handlerConectorVergnaud.finalizarLimiar();
-            handlerEixoInteiros.cancelar();
             handlerPaineisEixosRelacoes.cancelar();
             marcadorOrigemArraste.limpar();
             scaffoldingFeedbackProxyPosicionamento.cancelar();
@@ -11137,47 +10828,6 @@ public class Main extends JFrame {
                 definirCursorMaoFechada();
                 aplicarControleComparacaoPeloMouse(y);
                 iniciarArrasteElastico(x, y);
-                repaint();
-                return;
-            }
-
-            Rectangle origemPontoGraficoInteiros =
-                    adaptadorInteracaoEixoInteiros.obterAreaVisualPontoControle();
-            Rectangle origemPainelGraficoInteiros =
-                    adaptadorInteracaoEixoInteiros.obterAreaVisualPainel();
-            HandlerInteracaoEixoInteiros.ResultadoPressionamento resultadoEixo =
-                    handlerEixoInteiros.iniciar(
-                            adaptadorInteracaoEixoInteiros, x, y,
-                            interacaoRepresentacoesLiberadaPelaModelagem());
-            if (resultadoEixo.foiBloqueado()) {
-                informarBloqueioInteracaoRepresentacao(
-                        x, y, "Valor semântico no eixo x dos inteiros");
-                return;
-            }
-            if (resultadoEixo.foiConsumido()) {
-                if (resultadoEixo.getModoManipulacao()
-                        == AlvoInteracaoEixoInteiros.ModoManipulacao.PONTO_CONTROLE) {
-                    iniciarFantasmaRetangular(origemPontoGraficoInteiros, 14, true);
-                    iniciarArrasteElastico(x, y);
-                    definirCursorMaoFechada();
-                } else if (resultadoEixo.getModoManipulacao()
-                        == AlvoInteracaoEixoInteiros.ModoManipulacao.PAINEL) {
-                    iniciarFantasmaRetangular(origemPainelGraficoInteiros, 16, false);
-                    iniciarArrasteElastico(x, y);
-                    definirCursorMaoFechada();
-                }
-                if (resultadoEixo.foiOcultado()) {
-                    registrarAcaoGranular("SELECIONAR", "Ocultar eixo X",
-                            "Alterar visibilidade de apoio visual", "BOTAO_VISIBILIDADE_EIXO_X",
-                            "ocultar_eixo_x", "estado_anterior=visivel;estado_atual=oculto",
-                            "O eixo X deixou de ser exibido.");
-                    itemGraficoInteiros = null;
-                    numeroRelativoGraficoInteiros = null;
-                } else {
-                    sincronizarNumeroRelativoComGraficoSeNecessario(false);
-                }
-                itemFocado = null;
-                quadradinhoVennFocado = null;
                 repaint();
                 return;
             }
@@ -11461,12 +11111,6 @@ public class Main extends JFrame {
         }
 
         private void processarMovimentoArraste(int x, int y) {
-            if (handlerEixoInteiros.mover(x, y)) {
-                sincronizarNumeroRelativoComGraficoSeNecessario(false);
-                repaint();
-                return;
-            }
-
             if (handlerPaineisEixosRelacoes.mover(x, y)) {
                 sincronizarPainelEixoRelacaoSeNecessario(false);
                 repaint();
@@ -11514,7 +11158,6 @@ public class Main extends JFrame {
             if (itemMovido != null) {
                 atualizarRealceAlvoProximidade(itemMovido);
                 atualizarQuestionamentoPersistenteDuranteMovimento(itemMovido);
-                atualizarGraficoInteirosDuranteMovimento(itemMovido);
                 repaint();
                 return;
             }
@@ -11536,14 +11179,6 @@ public class Main extends JFrame {
             HandlerInteracaoQuadradinhoVenn.ResultadoSoltura resultadoSolturaQuadradinho =
                     handlerQuadradinhoVenn.concluir(circulosVenn);
             finalizarRastreamentoGranular(e.getX(), e.getY());
-            if (handlerEixoInteiros.concluir()) {
-                sincronizarNumeroRelativoComGraficoSeNecessario(true);
-                marcadorOrigemArraste.limpar();
-                atualizarCursorDepoisDoPickup(e.getX(), e.getY());
-                repaint();
-                return;
-            }
-
             if (handlerPaineisEixosRelacoes.estaAtivo()) {
                 sincronizarPainelEixoRelacaoSeNecessario(true);
                 handlerPaineisEixosRelacoes.concluir();
@@ -11948,54 +11583,25 @@ public class Main extends JFrame {
             if (elemento == null) {
                 return "";
             }
-            if (ehElementoNumeroRelativo(elemento)) {
-                return "OBJ4";
-            }
-            String descricao = descreverElementoVergnaudParaLog(elemento).toLowerCase();
-            if (descricao.indexOf("estado inicial") >= 0) {
-                return "OBJ1";
-            }
-            if (descricao.indexOf("estado final") >= 0) {
-                return "OBJ2";
-            }
-            if (descricao.indexOf("referente") >= 0) {
-                return "OBJ3";
-            }
-            if (descricao.indexOf("referido") >= 0) {
-                return "OBJ5";
-            }
-            if (descricao.indexOf("todo") >= 0) {
-                return "OBJ6";
-            }
-            if (descricao.indexOf("parte") >= 0) {
-                return "OBJ7";
-            }
-            return "OBJ8";
+            return catalogoObjetosLogAcaoInstrumental.obterCodigo(
+                    obterPapelSemanticoDoElemento(elemento));
         }
 
         private void processarSolturaEmNumeroRelativo(ItemTextoArrastavel item) {
             if (item == null || !item.estaNoDiagrama()) {
-                limparGraficoInteirosSeForItemAtivo(item);
                 return;
             }
             ElementoVergnaud numeroRelativo = encontrarNumeroRelativoPorItem(item);
             if (numeroRelativo == null) {
-                limparGraficoInteirosSeForItemAtivo(item);
                 return;
             }
             if (!scaffoldingNumeroRelativo.ehNumeroOuInterrogacao(item.valor)) {
-                limparGraficoInteirosSeForItemAtivo(item);
                 return;
             }
             if (deveBloquearMenuNumeroRelativoPorQuestionamento(item, numeroRelativo)) {
-                limparGraficoInteiros();
                 return;
             }
             if (scaffoldingNumeroRelativo.temSinal(item.valor)) {
-                String base = scaffoldingNumeroRelativo.removerSinal(item.valor);
-                String sinal = obterSinalAtual(item.valor);
-                mostrarGraficoInteirosNumeroRelativo(item, numeroRelativo, base);
-                registrarEscolhaGraficoInteiros(item, numeroRelativo, base, sinal);
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         numeroRelativo, EstadoSemanticoCompartilhado.Origem.ARRASTE);
                 return;
@@ -12171,43 +11777,6 @@ public class Main extends JFrame {
             mostrarQuestionamentoPersistente = true;
         }
 
-        private void mostrarGraficoInteirosNumeroRelativo(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo, String valorBase) {
-            if (numeroRelativo == null) {
-                return;
-            }
-            // Decisão da usuária (2026-08-17): nas categorias de Relações os
-            // painéis novos (paineisEixosRelacoes) já cobrem esse mesmo papel
-            // com um eixo próprio e persistente — mostrar também o eixo único
-            // antigo aqui seria redundante e sobrepunha o enunciado. Nas
-            // demais categorias (ex.: Comparação de Medidas) nada muda: o
-            // menu de escolha de sinal (radio buttons, tratado à parte por
-            // scaffoldingNumeroRelativo) continua funcionando igual, só o
-            // eixo antigo é que fica de fora aqui.
-            if (devemExibirPaineisEixosRelacoes()) {
-                return;
-            }
-            itemGraficoInteiros = item;
-            numeroRelativoGraficoInteiros = numeroRelativo;
-            apresentadorGraficoInteiros.mostrar(
-                    retanguloDoElemento(numeroRelativo), valorBase);
-        }
-
-        private void registrarEscolhaGraficoInteiros(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo, String valorBase, String sinal) {
-            if (numeroRelativo == null) {
-                return;
-            }
-            // Mesma razão do guard em mostrarGraficoInteirosNumeroRelativo
-            // acima: nas categorias de Relações o eixo antigo fica suprimido,
-            // os painéis novos (por papel) já assumem esse papel.
-            if (devemExibirPaineisEixosRelacoes()) {
-                return;
-            }
-            itemGraficoInteiros = item;
-            numeroRelativoGraficoInteiros = numeroRelativo;
-            apresentadorGraficoInteiros.registrarEscolha(
-                    retanguloDoElemento(numeroRelativo), valorBase, sinal);
-        }
-
         /**
          * @param confirmarAoFinalizar false durante o arrasto (chamadas
          *        contínuas a cada movimento do mouse): só bloqueia a
@@ -12216,75 +11785,6 @@ public class Main extends JFrame {
          *        aplicado ao gráfico de barras da comparação). true ao
          *        soltar/finalizar a interação: mostra a mesma pergunta de
          *        confirmação e dica usadas nos outros protocolos.
-         */
-        private void sincronizarNumeroRelativoComGraficoSeNecessario(boolean confirmarAoFinalizar) {
-            if (!scaffoldingGraficoInteiros.houveAlteracaoValorPorInteracao()) {
-                return;
-            }
-            if (numeroRelativoGraficoInteiros == null) {
-                scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
-                return;
-            }
-
-            int valor = scaffoldingGraficoInteiros.getValorNavegavel();
-            Integer valorAnterior = obterValorNumericoDoElemento(
-                    numeroRelativoGraficoInteiros);
-            if (!valorRelativoPreservaQuantidadesNaoNegativas(
-                    numeroRelativoGraficoInteiros, valor)) {
-                int seguro = politicaRestauracaoValorRelativo
-                        .escolherValorSeguro(valorAnterior, valor);
-                aplicarValorRelativoNoDiagrama(
-                        numeroRelativoGraficoInteiros,
-                        itemGraficoInteiros,
-                        seguro,
-                        true
-                );
-                informarBloqueioQuantidadeNegativa();
-                scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
-                repaint();
-                return;
-            }
-            registrarLogUsuario(
-                    "Navegar no eixo x dos inteiros",
-                    "-",
-                    "Eixo x navegável",
-                    "Ponto de controle do eixo",
-                    "Quantificar o número relativo e manter consistência entre representações",
-                    "OBJ4",
-                    "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
-                    "EIXO_X",
-                    "valorRelativo=" + valor
-            );
-            aplicarValorRelativoNoDiagrama(
-                    numeroRelativoGraficoInteiros,
-                    itemGraficoInteiros,
-                    valor,
-                    true
-            );
-            ItemTextoArrastavel itemIncognita = itemGraficoInteiros != null
-                    ? itemGraficoInteiros : encontrarItemSobreElemento(numeroRelativoGraficoInteiros);
-            boolean liberadoParaPropagar = confirmarAoFinalizar
-                    ? confirmarValorIncognitaAceito(itemIncognita)
-                    : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
-            if (liberadoParaPropagar) {
-                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                        numeroRelativoGraficoInteiros,
-                        EstadoSemanticoCompartilhado.Origem.EIXO_X);
-            }
-            if (confirmarAoFinalizar) {
-                verificarConclusaoModelagem();
-            }
-            apresentadorGraficoInteiros.atualizarGeometria(
-                    retanguloDoElemento(numeroRelativoGraficoInteiros));
-            scaffoldingGraficoInteiros.limparAlteracaoValorPorInteracao();
-        }
-
-        /**
-         * Mesma lógica de {@link #sincronizarNumeroRelativoComGraficoSeNecessario(boolean)},
-         * generalizada para o painel de {@code paineisEixosRelacoes} que
-         * teve alteração pendente — mecanismo novo e paralelo (item 4 do
-         * levantamento de pendências), não substitui nem compartilha
-         * estado com o mecanismo já existente acima.
          */
         private void sincronizarPainelEixoRelacaoSeNecessario(boolean confirmarAoFinalizar) {
             PaineisEixosRelacoes.Painel painel = paineisEixosRelacoes.encontrarComAlteracaoPorInteracao();
@@ -12297,7 +11797,7 @@ public class Main extends JFrame {
             if (!valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valor)) {
                 int seguro = politicaRestauracaoValorRelativo
                         .escolherValorSeguro(valorAnterior, valor);
-                aplicarValorRelativoNoDiagrama(numeroRelativo, null, seguro, false);
+                aplicarValorRelativoNoDiagrama(numeroRelativo, null, seguro);
                 painel.apresentador.registrarEscolha(
                         retanguloDoElemento(numeroRelativo),
                         servicoQuantidadeContextual.formatarMagnitudeNumeroRelativo(
@@ -12319,7 +11819,7 @@ public class Main extends JFrame {
                     "EIXO_X_RELACOES",
                     "valorRelativo=" + valor
             );
-            aplicarValorRelativoNoDiagrama(numeroRelativo, null, valor, false);
+            aplicarValorRelativoNoDiagrama(numeroRelativo, null, valor);
             ItemTextoArrastavel itemIncognita = encontrarItemSobreElemento(numeroRelativo);
             boolean liberadoParaPropagar = confirmarAoFinalizar
                     ? confirmarValorIncognitaAceito(itemIncognita)
@@ -12433,8 +11933,7 @@ public class Main extends JFrame {
 
         private void aplicarValorRelativoNoDiagrama(ElementoVergnaud numeroRelativo,
                 ItemTextoArrastavel itemPreferencial,
-                int valorRelativo,
-                boolean atualizarGrafico) {
+                int valorRelativo) {
             if (numeroRelativo == null
                     || devePreservarMarcadorIncognita(numeroRelativo)) {
                 return;
@@ -12453,26 +11952,13 @@ public class Main extends JFrame {
             } else {
                 numeroRelativo.textoEditavel = textoRelativo;
             }
-
-            if (atualizarGrafico) {
-                registrarEscolhaGraficoInteiros(
-                        item,
-                        numeroRelativo,
-                        servicoQuantidadeContextual.formatarMagnitudeNumeroRelativo(
-                                valorRelativo, situacaoProblemaAtual),
-                        servicoQuantidadeContextual.sinalNumeroRelativo(valorRelativo)
-                );
-            }
         }
 
-        private void definirValorNoElementoNumeroRelativo(ElementoVergnaud numeroRelativo, int valorRelativo, boolean atualizarGrafico) {
-            aplicarValorRelativoNoDiagrama(numeroRelativo, null, valorRelativo, atualizarGrafico);
+        private void definirValorNoElementoNumeroRelativo(ElementoVergnaud numeroRelativo, int valorRelativo) {
+            aplicarValorRelativoNoDiagrama(numeroRelativo, null, valorRelativo);
         }
 
         private ElementoVergnaud encontrarNumeroRelativoParaSincronizacaoEstadoFinal() {
-            if (numeroRelativoGraficoInteiros != null && elementosVergnaud.contains(numeroRelativoGraficoInteiros)) {
-                return numeroRelativoGraficoInteiros;
-            }
             for (int i = 0; i < elementosVergnaud.size(); i++) {
                 ElementoVergnaud elemento = elementosVergnaud.get(i);
                 if (ehElementoNumeroRelativo(elemento) && obterValorNumericoDoElemento(elemento) != null) {
@@ -12541,32 +12027,6 @@ public class Main extends JFrame {
             }
         }
 
-        private void atualizarGraficoInteirosDuranteMovimento(ItemTextoArrastavel item) {
-            if (item == null || item != itemGraficoInteiros) {
-                return;
-            }
-            ElementoVergnaud numeroRelativoAtual = encontrarNumeroRelativoPorItem(item);
-            if (numeroRelativoAtual == null || numeroRelativoAtual != numeroRelativoGraficoInteiros) {
-                limparGraficoInteiros();
-                return;
-            }
-            apresentadorGraficoInteiros.atualizarGeometria(
-                    retanguloDoElemento(numeroRelativoAtual));
-        }
-
-        private void limparGraficoInteirosSeForItemAtivo(ItemTextoArrastavel item) {
-            if (item != null && item == itemGraficoInteiros) {
-                limparGraficoInteiros();
-            }
-        }
-
-        private void limparGraficoInteiros() {
-            itemGraficoInteiros = null;
-            numeroRelativoGraficoInteiros = null;
-            handlerEixoInteiros.cancelar();
-            scaffoldingGraficoInteiros.ocultar();
-        }
-
         private Rectangle retanguloDoElemento(ElementoVergnaud elemento) {
             if (elemento == null) {
                 return null;
@@ -12619,17 +12079,15 @@ public class Main extends JFrame {
         }
 
         private void informarBloqueioQuantidadeNegativa() {
-            informarBloqueioQuantidadeNegativa(itemGraficoInteiros, numeroRelativoGraficoInteiros);
+            informarBloqueioQuantidadeNegativa(null, null);
         }
 
         /**
          * Mesma mensagem/anotação de bloqueio, com âncora explícita — usada
          * por {@link #sincronizarPainelEixoRelacaoSeNecessario(boolean)}
          * (painéis persistentes de Relações), que tem seu próprio par
-         * item/elemento, independente dos campos
-         * itemGraficoInteiros/numeroRelativoGraficoInteiros do mecanismo já
-         * existente. O overload sem parâmetros acima preserva exatamente o
-         * comportamento anterior para todos os chamadores já existentes.
+         * item/elemento. O overload sem parâmetros acima é usado onde não
+         * há item/elemento específico para ancorar a anotação.
          */
         private void informarBloqueioQuantidadeNegativa(
                 final ItemTextoArrastavel itemAncora, ElementoVergnaud elementoAncora) {
@@ -12763,14 +12221,13 @@ public class Main extends JFrame {
                 ElementoVergnaud relacao, ItemTextoArrastavel item, String base) {
             int valorSeguro = politicaRestauracaoValorRelativo
                     .restaurarComoPositivo(calcularValorRelativo(base, "+"));
-            aplicarValorRelativoNoDiagrama(relacao, item, valorSeguro, true);
+            aplicarValorRelativoNoDiagrama(relacao, item, valorSeguro);
             sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                     relacao, EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
         }
 
         private void solicitarSinalNumeroRelativoParaTexto(final ElementoVergnaud elemento) {
             final String base = scaffoldingNumeroRelativo.removerSinal(elemento.textoEditavel);
-            mostrarGraficoInteirosNumeroRelativo(null, elemento, base);
             scaffoldingNumeroRelativo.mostrarMenuEscolhaSinal(
                     this,
                     new Rectangle(elemento.x, elemento.y, elemento.largura, elemento.altura),
@@ -12798,7 +12255,6 @@ public class Main extends JFrame {
                             if (registroSinal == null) {
                                 registrarEscolhaSinalSemCriterio(base, sinal);
                             }
-                            registrarEscolhaGraficoInteiros(null, elemento, base, sinal);
                             sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                                     elemento, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO);
                             verificarConclusaoModelagem();
@@ -12823,7 +12279,6 @@ public class Main extends JFrame {
                 return;
             }
             final String base = scaffoldingNumeroRelativo.removerSinal(item.valor);
-            mostrarGraficoInteirosNumeroRelativo(item, numeroRelativo, base);
             final ElementoVergnaud numeroRelativoFinal = numeroRelativo;
             scaffoldingNumeroRelativo.mostrarMenuEscolhaSinal(
                     this,
@@ -12860,7 +12315,6 @@ public class Main extends JFrame {
                             }
                             ajustarTamanhoDoItem(item);
                             centralizarItemNoNumeroRelativoSeNecessario(item);
-                            registrarEscolhaGraficoInteiros(item, numeroRelativoFinal, base, sinal);
                             // Pergunta de confirmação (nudge) se o valor divergir do
                             // curado; "Não" só adia a propagação às outras
                             // representações — o item mantém o valor digitado e o
@@ -13004,7 +12458,7 @@ public class Main extends JFrame {
                 repaint();
                 return;
             }
-            definirValorNoElementoNumeroRelativo(relacao, valorRelativo, true);
+            definirValorNoElementoNumeroRelativo(relacao, valorRelativo);
 
             Integer valorReferido = obterValorNumericoDoElemento(referido);
             Integer valorReferendo = obterValorNumericoDoElemento(referendo);
@@ -13255,7 +12709,6 @@ public class Main extends JFrame {
             mostrarAnotacaoMouseOver = false;
             agrupamentoAdicionarQuadradinhoFocado = null;
             agrupamentoRemoverQuadradinhoFocado = null;
-            scaffoldingGraficoInteiros.limparFocoBotaoEsconder();
             paineisEixosRelacoes.limparFocoBotaoEsconder();
             limparRealceAlvoProximidade();
             setCursor(Cursor.getDefaultCursor());
@@ -13269,14 +12722,10 @@ public class Main extends JFrame {
             boolean interacaoRepresentacoesLiberada =
                     interacaoRepresentacoesLiberadaPelaModelagem();
             if (interacaoRepresentacoesLiberada) {
-                scaffoldingGraficoInteiros.atualizarFocoBotaoEsconder(e.getX(), e.getY());
                 paineisEixosRelacoes.atualizarFocoBotaoEsconder(e.getX(), e.getY());
             } else {
-                scaffoldingGraficoInteiros.limparFocoBotaoEsconder();
                 paineisEixosRelacoes.limparFocoBotaoEsconder();
-                Rectangle areaEixo = scaffoldingGraficoInteiros.obterAreaVisualPainel();
-                if (areaEixo.contains(e.getX(), e.getY())
-                        || paineisEixosRelacoes.contemAlgumPainel(e.getX(), e.getY())) {
+                if (paineisEixosRelacoes.contemAlgumPainel(e.getX(), e.getY())) {
                     elementoTextoFocado = null;
                     itemFocado = null;
                     quadradinhoVennFocado = null;
@@ -13356,26 +12805,6 @@ public class Main extends JFrame {
                 setCursor(adicaoLiberada
                         ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                         : Cursor.getDefaultCursor());
-                repaint();
-                return;
-            }
-
-            if (scaffoldingGraficoInteiros.contemBotaoEsconder(e.getX(), e.getY())) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                textoAnotacaoMouseOver = scaffoldingGraficoInteiros.obterDicaBotaoEsconder();
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                repaint();
-                return;
-            }
-
-            if (scaffoldingGraficoInteiros.contemPontoControle(e.getX(), e.getY())) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                textoAnotacaoMouseOver = scaffoldingGraficoInteiros.obterDicaPontoControle();
-                definirCursorMaoAberta();
                 repaint();
                 return;
             }
@@ -13575,35 +13004,12 @@ public class Main extends JFrame {
         }
 
         private boolean chavePapelEspecifica(String chavePapel) {
-            if (chavePapel == null) {
-                return false;
-            }
-
-            return "papel.parte1".equals(chavePapel) ||
-                   "papel.parte2".equals(chavePapel) ||
-                   "papel.todo".equals(chavePapel) ||
-                   "papel.estadoInicial".equals(chavePapel) ||
-                   "papel.estadoFinal".equals(chavePapel) ||
-                   "papel.referendo".equals(chavePapel) ||
-                   "papel.referente".equals(chavePapel) ||
-                   "papel.referido".equals(chavePapel) ||
-                   "papel.diferenca".equals(chavePapel) ||
-                   "papel.transformacao".equals(chavePapel) ||
-                   chavePapel.startsWith("papel.transformacao") ||
-                   "papel.transformacaoFinal".equals(chavePapel) ||
-                   "papel.relacaoInicial".equals(chavePapel) ||
-                   "papel.relacaoFinal".equals(chavePapel) ||
-                   "papel.relacao1".equals(chavePapel) ||
-                   "papel.relacao2".equals(chavePapel);
+            return catalogoPapeisSemanticos.chavePapelEspecifica(chavePapel);
         }
 
         private int obterIndiceElementoVergnaudPorPapel(String chavePapel) {
-            return scaffoldingQuestionamento.obterIndiceElementoPorPapel(
-                    chavePapel,
-                    tipoSituacaoSelecionada,
-                    false,
-                    quantidadePassosTransformacaoComposta
-            );
+            return catalogoPapeisSemanticos.obterIndiceElementoPorPapel(
+                    chavePapel, tipoSituacaoSelecionada);
         }
 
         private boolean centroDoItemDentroDoElemento(ItemTextoArrastavel item, ElementoVergnaud elemento) {
@@ -13794,9 +13200,6 @@ public class Main extends JFrame {
                 if (itemFocado != null) {
                     if (itemFocado == itemQuestionadoPersistente) {
                         limparQuestionamentoPersistente();
-                    }
-                    if (itemFocado == itemGraficoInteiros) {
-                        limparGraficoInteiros();
                     }
                     if (itemFocado == itemIncognitaEstadoFinal) {
                         desabilitarSincronizacaoEstadoFinal();

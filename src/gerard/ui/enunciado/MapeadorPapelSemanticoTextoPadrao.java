@@ -1,7 +1,7 @@
 package gerard.ui.enunciado;
 
-import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.campoaditivo.sincronizacao.texto.MapeadorPapelSemanticoTexto;
 
 /**
@@ -17,32 +17,22 @@ import gerard.campoaditivo.sincronizacao.texto.MapeadorPapelSemanticoTexto;
  */
 public final class MapeadorPapelSemanticoTextoPadrao implements MapeadorPapelSemanticoTexto {
 
-    private final ScaffoldingQuestionamento scaffoldingQuestionamento;
+    private final CatalogoPapeisSemanticosAditivos catalogoPapeis =
+            new CatalogoPapeisSemanticosAditivos();
     private final TipoSituacaoAditiva tipoSituacaoSelecionada;
-    private final boolean usaDiagramasEncadeadosTransformacaoComposta;
-    private final int quantidadePassosTransformacaoComposta;
     private final int[] indicesElementosEstadoCompartilhado;
 
     public MapeadorPapelSemanticoTextoPadrao(
-            ScaffoldingQuestionamento scaffoldingQuestionamento,
             TipoSituacaoAditiva tipoSituacaoSelecionada,
-            boolean usaDiagramasEncadeadosTransformacaoComposta,
-            int quantidadePassosTransformacaoComposta,
             int[] indicesElementosEstadoCompartilhado) {
-        this.scaffoldingQuestionamento = scaffoldingQuestionamento;
         this.tipoSituacaoSelecionada = tipoSituacaoSelecionada;
-        this.usaDiagramasEncadeadosTransformacaoComposta = usaDiagramasEncadeadosTransformacaoComposta;
-        this.quantidadePassosTransformacaoComposta = quantidadePassosTransformacaoComposta;
         this.indicesElementosEstadoCompartilhado = indicesElementosEstadoCompartilhado;
     }
 
     @Override
     public int paraIndiceSemantico(String chavePapel) {
-        int indiceReal = scaffoldingQuestionamento.obterIndiceElementoPorPapel(
-                chavePapel,
-                tipoSituacaoSelecionada,
-                usaDiagramasEncadeadosTransformacaoComposta,
-                quantidadePassosTransformacaoComposta);
+        int indiceReal = catalogoPapeis.obterIndiceElementoPorPapel(
+                chavePapel, tipoSituacaoSelecionada);
         return ConversorIndiceEstadoCompartilhado.converterIndiceRealParaPapel(
                 indicesElementosEstadoCompartilhado, indiceReal);
     }

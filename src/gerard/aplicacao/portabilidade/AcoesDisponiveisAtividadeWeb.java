@@ -42,7 +42,7 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
-    public static List<Object> composicaoMedidas(boolean concluida, String papelAlvo) {
+    public static List<Object> modelagemPapel(boolean concluida, String papelAlvo) {
         List<Object> acoes = sorteios();
         acoes.add(acao("REINICIAR_TENTATIVA", "POST", "/api/reiniciar"));
         if (!concluida) {

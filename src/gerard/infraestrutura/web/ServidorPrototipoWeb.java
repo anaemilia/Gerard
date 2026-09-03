@@ -71,7 +71,7 @@ public final class ServidorPrototipoWeb {
             Object bruto = ((Map<String, Object>) analisado).get("valor");
             String papelId = String.valueOf(((Map<String, Object>) analisado).get("papel_id"));
             int valor = ((Number) bruto).intValue();
-            responder(troca, 200, sorteios.possuiAtividadeComposicaoAtiva()
+            responder(troca, 200, sorteios.possuiAtividadeModelagemAtiva()
                     ? sorteios.proporValor(papelId, valor)
                     : atividade.proporValor(papelId, valor));
         } catch (RuntimeException erro) {
@@ -84,7 +84,7 @@ public final class ServidorPrototipoWeb {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
-        responder(troca, 200, sorteios.possuiAtividadeComposicaoAtiva()
+        responder(troca, 200, sorteios.possuiAtividadeModelagemAtiva()
                 ? sorteios.reiniciarAtividadeAtual() : atividade.reiniciar());
     }
 

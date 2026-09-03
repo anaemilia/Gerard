@@ -58,9 +58,9 @@ public class GeradorCenaDiagramaVenn {
                 int xResultado = ax + w - ladoResultado - margemDireitaResultado;
                 int yResultado = ySuperior + Math.max(0, (alturaBlocoEsquerdo - ladoResultado) / 2);
 
-                nos.add(new NoDiagramaVenn(xEsquerda, ySuperior, ladoParcela, ladoParcela, definicao.getRotulo1(), valor(valores, 0), true));
-                nos.add(new NoDiagramaVenn(xEsquerda, yInferior, ladoParcela, ladoParcela, definicao.getRotulo2(), valor(valores, 1), true));
-                nos.add(new NoDiagramaVenn(xResultado, yResultado, ladoResultado, ladoResultado, definicao.getRotulo3(), valor(valores, 2), true));
+                nos.add(new NoDiagramaVenn(xEsquerda, ySuperior, ladoParcela, ladoParcela, definicao.getRotulo1(), valor(valores, 0), true, NoDiagramaVenn.Forma.RETANGULO));
+                nos.add(new NoDiagramaVenn(xEsquerda, yInferior, ladoParcela, ladoParcela, definicao.getRotulo2(), valor(valores, 1), true, NoDiagramaVenn.Forma.RETANGULO));
+                nos.add(new NoDiagramaVenn(xResultado, yResultado, ladoResultado, ladoResultado, definicao.getRotulo3(), valor(valores, 2), true, NoDiagramaVenn.Forma.RETANGULO));
                 int inicioSeta = xEsquerda + ladoParcela + Math.max(20, w / 34);
                 int fimSeta = xResultado - Math.max(16, w / 50);
                 conectores.add(seta(inicioSeta, ySuperior + alturaBlocoEsquerdo / 2, fimSeta, yResultado + ladoResultado / 2));
@@ -89,11 +89,11 @@ public class GeradorCenaDiagramaVenn {
 
                 ServicoLocalizacao loc = ServicoLocalizacao.getInstancia();
                 nos.add(new NoDiagramaVenn(xBarra1, yBarra, larguraBarra, alturaBarra,
-                        loc.texto("ui.comparisonBars.referred"), valor(valores, 0), true));
+                        loc.texto("ui.comparisonBars.referred"), valor(valores, 0), true, NoDiagramaVenn.Forma.RETANGULO));
                 nos.add(new NoDiagramaVenn(xBarra2, yBarra, larguraBarra, alturaBarra,
-                        loc.texto("ui.comparisonBars.referendo"), valor(valores, 2), true));
+                        loc.texto("ui.comparisonBars.referendo"), valor(valores, 2), true, NoDiagramaVenn.Forma.RETANGULO));
                 nos.add(new NoDiagramaVenn(xCartao, yCartao, larguraCartao, alturaCartao,
-                        loc.texto("ui.comparisonBars.relative"), valor(valores, 1), false));
+                        loc.texto("ui.comparisonBars.relative"), valor(valores, 1), false, NoDiagramaVenn.Forma.RETANGULO));
                 break;
             case COMPOSICAO_TRANSFORMACOES:
                 // Antes (até 2026-08-07): três círculos com duas setas
@@ -123,7 +123,8 @@ public class GeradorCenaDiagramaVenn {
                 return gerar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, area, definicao, valores);
         }
 
-        return new CenaDiagramaVenn(nos, conectores);
+        return new CenaDiagramaVenn(nos, conectores,
+                CenaDiagramaVenn.naturezaPara(tipo));
     }
 
     private ConectorDiagramaVenn seta(int x1, int y1, int x2, int y2) {

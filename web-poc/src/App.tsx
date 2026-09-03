@@ -1,21 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { api } from "./api";
-import type { AcaoDisponivel, EstadoAtividade, EstadoWeb } from "./contratos";
+import type { AcaoDisponivel, EstadoAtividade, EstadoWeb, FiguraCena,
+  InteracaoPermitidaFigura } from "./contratos";
 import { Diagrama } from "./Diagrama";
 import { BarraCategorias } from "./BarraCategorias";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
+import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
 type Mensagem = { texto: string; tipo: "neutra" | "erro" | "sucesso" };
 
 export default function App() {
-  const [estado, setEstado] = useState<EstadoWeb | null>(null);
+  const [representacoes, enviarEventoRepresentacional] = useReducer(
+    reduzirEstadoRepresentacoes, estadoRepresentacoesInicial);
+  const estado = representacoes.snapshotServidor;
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({ texto: "Carregando situação…", tipo: "neutra" });
 
   useEffect(() => {
-    api.carregar().then((e) => { setEstado(e); setMensagem({ texto: "Preencha a incógnita e confirme.", tipo: "neutra" }); })
+    api.carregar().then((e) => { receberSnapshot(e); setMensagem({ texto: "Preencha a incógnita e confirme.", tipo: "neutra" }); })
       .catch((erro: Error) => setMensagem({ texto: erro.message, tipo: "erro" }));
   }, []);
+
+  function receberSnapshot(snapshot: EstadoWeb) {
+    enviarEventoRepresentacional({ tipo: "SNAPSHOT_SERVIDOR_RECEBIDO", snapshot });
+  }
 
   function acao(id: AcaoDisponivel["id"]): AcaoDisponivel | undefined {
     return estado?.acoes_disponiveis.find((item) => item.id === id);
@@ -26,7 +34,7 @@ export default function App() {
     if (!controle) return;
     setOcupado(true);
     try {
-      setEstado(await api.executar(controle));
+      receberSnapshot(await api.executar(controle));
       setMensagem({ texto: "Escolha a categoria correspondente à situação.", tipo: "neutra" });
     } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
     finally { setOcupado(false); }
@@ -40,7 +48,7 @@ export default function App() {
     setOcupado(true);
     try {
       const resultado = await api.classificar(controle);
-      setEstado(resultado.estado);
+      receberSnapshot(resultado.estado);
       setMensagem(resultado.correta
         ? { texto: "Categoria aceita pelo domínio.", tipo: "sucesso" }
         : { texto: resultado.desfecho === "REEXPLICAR_CATEGORIA_APOS_LIMITE"
@@ -61,6 +69,40 @@ export default function App() {
     if (controle) void executarClassificacao(controle);
   }
 
+  function iniciarEdicaoValor(figura: FiguraCena, interacao: InteracaoPermitidaFigura) {
+    enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
+      elementoId: figura.id, actionId: interacao.acao_id });
+  }
+
+  async function confirmarValorEditado() {
+    if (!estado || !("modo" in estado) || !representacoes.elementoEmEdicao) return;
+    const figura = estado.cena?.figuras.find(
+      (item) => item.id === representacoes.elementoEmEdicao);
+    const interacao = figura?.interacoes_permitidas.find(
+      (item) => item.tipo === "EDITAR_VALOR");
+    const controle = estado.acoes_disponiveis.find((item) =>
+      item.id === interacao?.acao_id && item.corpo?.papel_id === interacao.papel_id);
+    const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
+    const valor = Number(texto);
+    if (!figura || !interacao || !controle || !Number.isInteger(valor)) {
+      setMensagem({ texto: "Digite um número inteiro.", tipo: "erro" });
+      return;
+    }
+    setOcupado(true);
+    try {
+      const resultado = await api.posicionar(controle, valor);
+      receberSnapshot(resultado.estado);
+      setMensagem(resultado.aceita
+        ? { texto: "Valor aceito pelo domínio.", tipo: "sucesso" }
+        : { texto: resultado.chave_mensagem ?? "Valor rejeitado pelo domínio.", tipo: "erro" });
+    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    finally { setOcupado(false); }
+  }
+
+  const figuraEmEdicao = estado && "modo" in estado && representacoes.elementoEmEdicao
+    ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
+    : undefined;
+
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
       podeSortearMedidas={Boolean(acao("SORTEAR_MEDIDAS"))}
@@ -77,9 +119,24 @@ export default function App() {
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className="diagram-panel" aria-label="Área do diagrama">
-          {"modo" in estado ? estado.cena && <GeradorCenaGerard cena={estado.cena} /> : <Diagrama estado={estado} />}
+          {"modo" in estado ? estado.cena && <GeradorCenaGerard cena={estado.cena}
+            posicoesEmEdicao={representacoes.posicoesEmEdicao}
+            aoEditarValor={iniciarEdicaoValor} /> : <Diagrama estado={estado} />}
         </section>
-        <aside className="response-panel" aria-label="Área complementar" />
+        <aside className="response-panel" aria-label="Área complementar">
+          {figuraEmEdicao && <div className="value-editor">
+            <label htmlFor="valor-papel">{figuraEmEdicao.rotulo}</label>
+            <input id="valor-papel" type="number" step="1" inputMode="numeric" autoFocus
+              value={representacoes.valoresEmEdicao[figuraEmEdicao.id] ?? ""}
+              onChange={(evento) => enviarEventoRepresentacional({
+                tipo: "VALOR_EM_EDICAO_ALTERADO", elementoId: figuraEmEdicao.id,
+                valor: evento.target.value })} disabled={ocupado} />
+            <div className="dialog-actions"><button type="button"
+              onClick={() => void confirmarValorEditado()} disabled={ocupado}>Confirmar</button>
+              <button type="button" onClick={() => enviarEventoRepresentacional(
+                { tipo: "RASCUNHO_DESCARTADO" })} disabled={ocupado}>Cancelar</button></div>
+          </div>}
+        </aside>
       </div>
       {"modo" in estado && estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&
         <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="pergunta-categoria">

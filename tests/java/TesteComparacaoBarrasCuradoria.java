@@ -32,6 +32,24 @@ public final class TesteComparacaoBarrasCuradoria {
         exigir(referendo.getValorReferencia() == 14, "Extensão visual do referendo incorreta");
         exigir("Valor relativo".equals(relativo.getRotulo()), "Rótulo do valor relativo incorreto");
         exigir(relativo.getValorReferencia() == 8, "Valor relativo incorreto");
+        exigir(cena.getNatureza() == CenaDiagramaVenn.Natureza.BARRAS_COMPARACAO,
+                "Cena gerada não declara barras de comparação");
+
+        for (TipoSituacaoAditiva tipo : TipoSituacaoAditiva.values()) {
+            CenaDiagramaVenn cenaDaCategoria = new GeradorCenaDiagramaVenn().gerar(
+                    tipo, area, new CatalogoDefinicoesAditivas().obter(tipo),
+                    new int[] {6, 8, 14});
+            exigir(cenaDaCategoria.getNatureza()
+                            == CenaDiagramaVenn.naturezaPara(tipo),
+                    "Natureza não materializada na cena de " + tipo);
+            boolean nosRetangulares = tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                    && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES;
+            for (NoDiagramaVenn no : cenaDaCategoria.getNos()) {
+                exigir((no.getForma() == NoDiagramaVenn.Forma.RETANGULO)
+                                == nosRetangulares,
+                        "Forma não materializada no nó de " + tipo);
+            }
+        }
 
         int topoEsperado = area.y + area.height / 2 - 70;
         exigir(referido.getY() == topoEsperado,

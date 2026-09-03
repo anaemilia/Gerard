@@ -48,6 +48,22 @@ public final class ServicoSituacaoProblemaRicaCurada {
                 curadoria.getStatusCuradoria());
     }
 
+    /** Fronteira de aplicação: transforma falha técnica em indisponibilidade diagnosticada. */
+    public ResultadoConversaoSituacaoProblemaRica converterDiagnosticado(
+            SituacaoProblemaAditiva registro) {
+        try {
+            return converter(registro);
+        } catch (IOException falhaLeitura) {
+            return new ResultadoConversaoSituacaoProblemaRica(
+                    null,
+                    Collections.singletonList(new DiagnosticoSituacao(
+                            "conversao.narrativa_persistida.falha_leitura",
+                            falhaLeitura.getMessage() == null
+                                    ? falhaLeitura.getClass().getSimpleName()
+                                    : falhaLeitura.getMessage())));
+        }
+    }
+
     /**
      * A semântica narrativa pertence à versão original. Traduções mudam a
      * realização textual e referenciam explicitamente o mesmo complemento;

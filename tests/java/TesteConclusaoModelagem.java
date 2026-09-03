@@ -21,6 +21,7 @@ public final class TesteConclusaoModelagem {
         testarValoresAssinadosEDecimais();
         testarIncompletaEIncorreta();
         testarCicloDoControlador();
+        testarRequisitosAdicionaisDoControlador();
         testarDestaqueVisual();
         testarRegistroDoProtocoloNoItem();
         System.out.println("Teste de conclusão da modelagem aprovado: "
@@ -173,6 +174,28 @@ public final class TesteConclusaoModelagem {
                         && !conector.isConclusaoDestacada()
                         && item.isConclusaoDestacada(),
                 "somente elementos e itens numéricos devem receber destaque azul");
+    }
+
+    private static void testarRequisitosAdicionaisDoControlador() {
+        ControladorConclusaoModelagem controlador = new ControladorConclusaoModelagem();
+        List<String> esperados = Arrays.asList(
+                "papel.relacaoInicial", "papel.transformacao", "papel.relacaoFinal");
+        List<EstadoPosicionamentoModelagem> completos = Arrays.asList(
+                estado("papel.relacaoInicial", "papel.relacaoInicial", "3"),
+                estado("papel.transformacao", "papel.transformacao", "+5"),
+                incognita("papel.relacaoFinal", "papel.relacaoFinal", "2", true));
+
+        confirmar(controlador.atualizar(esperados, completos, false)
+                        == AtualizacaoConclusaoModelagem.CONTINUA_INCOMPLETA,
+                "operacao pendente deve impedir a conclusao mesmo com papeis completos");
+        confirmar(!controlador.isConcluida(),
+                "controlador deve possuir a conclusao integral da atividade");
+        confirmar(controlador.atualizar(esperados, completos, true)
+                        == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA,
+                "responder corretamente a operacao deve produzir a transicao de conclusao");
+        confirmar(controlador.atualizar(esperados, completos, false)
+                        == AtualizacaoConclusaoModelagem.DEIXOU_DE_ESTAR_CONCLUIDA,
+                "invalidar requisito adicional deve retirar a conclusao");
     }
 
     private static void testarRegistroDoProtocoloNoItem() {

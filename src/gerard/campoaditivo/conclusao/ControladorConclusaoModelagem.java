@@ -13,8 +13,19 @@ public final class ControladorConclusaoModelagem {
     public AtualizacaoConclusaoModelagem atualizar(
             Collection<String> papeisEsperados,
             List<EstadoPosicionamentoModelagem> posicionamentos) {
+        return atualizar(papeisEsperados, posicionamentos, true);
+    }
+
+    public AtualizacaoConclusaoModelagem atualizar(
+            Collection<String> papeisEsperados,
+            List<EstadoPosicionamentoModelagem> posicionamentos,
+            boolean requisitosAdicionaisSatisfeitos) {
         FaseConclusaoModelagem novaFase = avaliador.avaliar(
                 papeisEsperados, posicionamentos);
+        if (novaFase == FaseConclusaoModelagem.CONCLUIDA
+                && !requisitosAdicionaisSatisfeitos) {
+            novaFase = FaseConclusaoModelagem.INCOMPLETA;
+        }
         boolean estavaConcluida = fase == FaseConclusaoModelagem.CONCLUIDA;
         boolean novaConclusao = novaFase == FaseConclusaoModelagem.CONCLUIDA;
         fase = novaFase;

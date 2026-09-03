@@ -55,9 +55,8 @@ final class SemanticComponentLocator {
     }
 
     static ComponenteLocalizado localizarDestino(Main.TelaGerard tela, String chavePapelAlvo) {
-        int indiceAlvo = tela.scaffoldingQuestionamento.obterIndiceElementoPorPapel(
-                chavePapelAlvo, tela.tipoSituacaoSelecionada, false,
-                tela.quantidadePassosTransformacaoComposta);
+        int indiceAlvo = tela.catalogoPapeisSemanticos.obterIndiceElementoPorPapel(
+                chavePapelAlvo, tela.tipoSituacaoSelecionada);
         if (indiceAlvo < 0 || indiceAlvo >= tela.elementosVergnaud.size()) {
             return null;
         }

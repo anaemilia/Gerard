@@ -9,9 +9,13 @@ import java.util.Arrays;
 public final class TesteCapturadorValoresRepresentacaoComplementar {
 
     public static void main(String[] args) {
+        PoliticaSinalTransformacaoComplementar politica =
+                new PoliticaSinalTransformacaoComplementar();
+        exigir(politica.magnitudeParaUnidades(-3) == 3,
+                "unidades devem representar a magnitude do valor assinado");
         CapturadorValoresRepresentacaoComplementar capturador =
                 new CapturadorValoresRepresentacaoComplementar(
-                        new PoliticaSinalTransformacaoComplementar());
+                        politica);
         CirculoVenn referido = no(true, 0, "");
         CirculoVenn referendo = no(true, 0, "");
         CirculoVenn relativo = no(false, -3, "-3");

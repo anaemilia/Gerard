@@ -162,26 +162,14 @@ public final class TesteTemporarioItem4Relacoes {
 
             tela.paineisEixosRelacoes.finalizarArraste();
 
-            // Decisão da usuária (2026-08-17, depois de ver o print real):
-            // nas categorias de Relações o eixo único antigo (mecanismo de
-            // instância única, mostrado junto do menu de escolha de sinal)
-            // fica suprimido, já que os painéis novos por papel cobrem o
-            // mesmo lugar — chamando o ponto de entrada real diretamente
-            // (mesmo método usado pelo fluxo de escolha de sinal) para
-            // confirmar que ele não torna o eixo antigo visível nesta
-            // categoria.
-            Method metodoMostrarEixoAntigo = tela.getClass().getDeclaredMethod(
-                    "mostrarGraficoInteirosNumeroRelativo",
-                    gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel.class,
-                    ElementoVergnaud.class, String.class);
-            metodoMostrarEixoAntigo.setAccessible(true);
-            metodoMostrarEixoAntigo.invoke(tela,
-                    (gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel) null,
-                    transformacao, "3");
-            exigir(!tela.scaffoldingGraficoInteiros.isVisivel(),
-                    "Nas categorias de Relações o eixo único antigo não deveria mais aparecer — "
-                            + "os painéis novos (um por papel) já cobrem esse lugar (decisão revista "
-                            + "2026-08-17), mas scaffoldingGraficoInteiros.isVisivel() retornou true.");
+            // O eixo único antigo (mecanismo de instância única, mostrado
+            // junto do menu de escolha de sinal) foi removido por inteiro em
+            // 2026-09-01 — inalcançável desde a regra generalizada
+            // 2026-08-18 ("todo número relativo carrega uma lupa"), que já o
+            // suprimia em qualquer categoria com número relativo, não só em
+            // Relações. Não há mais o que verificar aqui: não existe mais
+            // scaffoldingGraficoInteiros nem mostrarGraficoInteirosNumeroRelativo
+            // para confirmar que "não aparece".
 
             // Bug relatado pela usuária em 2026-08-17 ("eixos não mudam com
             // a mudança dos elementos no diagrama"): quando o valor de um

@@ -402,6 +402,57 @@ registrados acima.
 - `Main.java` compilou; passaram `TestePilotoComparacaoMedidas`, ampliado com
   a projeção de módulo, e `TesteComparacaoBarrasCuradoria`.
 
+## Corte: magnitude das transformações complementares e limpeza morta (2026-09-01)
+
+- A conversão de valor assinado em quantidade de unidades saiu da `Main` e
+  passou para `PoliticaSinalTransformacaoComplementar.magnitudeParaUnidades`.
+  Captura, relayout e detecção de presença usam agora a mesma política que já
+  preservava o sinal do agrupamento.
+- O texto assinado desenhado no cartão complementar deixou de concatenar
+  `"+" + valor` e usa `ServicoQuantidadeContextual`, preservando grandeza e
+  idioma.
+- `converterValorRelativoCurado` e seu normalizador auxiliar foram removidos
+  de `Main`: não possuíam consumidores e duplicavam a aplicação de sinal já
+  realizada por `SemanticaCuradaSituacao`.
+- `Main.java` compilou; passaram
+  `TesteCapturadorValoresRepresentacaoComplementar`, ampliado com a magnitude,
+  os pilotos de Transformação de Medidas e Composição de Transformações, e
+  `TesteFormatacaoValoresVergnaud`.
+
+## Corte: contrato canônico do catálogo de papéis (2026-09-01)
+
+- `quantidadePassosTransformacaoComposta = 1` e todas as combinações
+  constantes `false, 1` foram removidas de `Main`.
+- `CatalogoPapeisSemanticosAditivos` oferece agora os contratos canônicos
+  `tipo + papel -> índice` e `tipo + índice -> papel`. Os contratos encadeados
+  antigos permanecem somente para consumidores legados fora do fluxo atual.
+- Consultas de conclusão, Venn, limites e interação deixaram de atravessar
+  `ScaffoldingQuestionamento`: o mapeamento pertence diretamente ao catálogo.
+- `MapeadorPapelSemanticoTextoPadrao` também deixou de depender de
+  scaffolding e de flags da cena removida; recebe apenas categoria e o
+  mapeamento atual do estado compartilhado.
+- `Main.java` compilou; passaram `TestePoliticaValoresAditivos`, ampliado com
+  os contratos canônicos e o mapeador textual, `TesteP4_1FluxoTextoIncognita`
+  e o piloto de Composição de Transformações.
+
+## Corte: zonas de interação derivadas da cena portátil (2026-09-01)
+
+- Foram removidos de `Main` os dois `switch` por categoria que definiam zonas
+  de arraste de figuras e conectores com dezenas de coordenadas fixas.
+- `GeradorCenaDiagramaAditivo` agora projeta a zona de cada figura pelas
+  bissetrizes entre os centros reais das figuras da cena; a zona sempre inclui
+  a própria figura e é recortada pela `AreaDiagrama`.
+- A zona do conector é derivada de seus extremos/alvo e de margens
+  proporcionais à área. Nenhum dos dois cálculos conhece Swing ou categoria.
+- `Main` apenas converte `AreaDiagrama` para `Rectangle` no adaptador e aplica
+  a margem mecânica do objeto arrastável.
+- Também saíram dois helpers posicionais mortos de leitura numérica, sem
+  consumidores desde a adoção das identidades semânticas.
+- `TesteAreaDiagramaPortatil` agora valida, nas seis categorias, que toda zona
+  permanece dentro da área e contém sua figura/conector. `Main.java` compilou;
+  passaram o teste portátil, os seis pilotos estruturais e
+  `TesteFeedbackMultissensorialPosicionamento`.
+
 ## Corte: estado revelado/fechado do eixo extraído para fora de Swing (2026-09-01)
 
 Este corte não estava registrado neste levantamento — encontrado só ao investigar
@@ -420,10 +471,12 @@ exato ponto como o candidato de menor risco).
   arraste, botão de esconder) passaram a chamar `painel.estaRevelado()`.
 - Isso é exatamente o "estado fechado/revelado por papel" que a fronteira
   recomendada apontava como pré-requisito do protocolo portátil
-  `REVELAR_EIXO`/`OCULTAR_EIXO` — a pergunta de design que ficou em aberto
+  `REVELAR_EIXO`/`OCULTAR_EIXO`. A pergunta de design que ficou em aberto
   (unificar com o mecanismo antigo do eixo de inteiros, ou manter os dois
-  protocolos) **continua em aberto**; este corte só move o estado do papel
-  novo (Relações) para um objeto portátil, não decide a unificação.
+  protocolos) foi respondida em 2026-09-01 — ver "Corte: mecanismo antigo do
+  eixo de inteiros removido por inteiro" ao final deste documento. A resposta
+  não foi unificação: o mecanismo antigo era código morto, então não havia o
+  que unificar.
 - Verificação: `TesteControleVisibilidadeEixoPapel` (já existente, não
   documentado aqui) cobre transição de estado; a bateria completa (105/105
   testes) e o verificador estrutural (agora com todas as ~2000 checagens
@@ -434,3 +487,445 @@ exato ponto como o candidato de menor risco).
   inferência geométrica) — desatualizado desde que o critério virou o
   descritor semântico `elemento.exibirLupa`. Comentário corrigido e import
   não utilizado de `TipoFiguraDiagrama` removido.
+
+## Corte: mecanismo antigo do eixo de inteiros removido por inteiro (2026-09-01)
+
+Resolve a pergunta de design deixada em aberto na fronteira acima (unificar
+os dois mecanismos de eixo, ou mantê-los separados). A resposta não foi
+unificação — foi remoção. Autorizado explicitamente pela usuária depois de
+apresentado o escopo real (não são só os dois métodos-gatilho: é toda a
+Fase 7.6, incluindo `mousePressed`/`mouseDragged`/`mouseReleased`).
+
+**Achado que motivou a remoção.** Rastreando todos os pontos onde uma figura
+de "número relativo" é construída — os seis renderizadores canônicos
+(`RenderizadorComparacaoMedidas`, `RenderizadorTransformacaoMedidas`,
+`RenderizadorComposicaoTransformacoes`, `RenderizadorTransformacaoRelacao`,
+`RenderizadorComposicaoRelacoes`, e a variante grande) — todos passam
+exclusivamente por `RenderizadorDiagramaAditivoBase.relacao()`,
+`.transformacao()` ou `.relacaoGrande()`, e essas três chamam `new
+FiguraDiagrama(..., exibirLupa=true, ...)` sem nenhuma exceção; `medida()`
+(o papel de medida/quadrado) sempre passa `exibirLupa=false`. Não existe
+nenhum caminho de código que construa uma figura de número relativo sem a
+lupa. Como `devemExibirPaineisEixosRelacoes()` é verdadeiro sempre que existe
+pelo menos um `exibirLupa=true` no diagrama, e os dois pontos de entrada do
+mecanismo antigo (`mostrarGraficoInteirosNumeroRelativo`,
+`registrarEscolhaGraficoInteiros`) já continham `if
+(devemExibirPaineisEixosRelacoes()) return;` desde a Fase 7.7, o mecanismo
+antigo era inalcançável em qualquer uma das seis categorias — não só nas de
+Relações, como o comentário original do guard sugeria ("nas demais
+categorias... nada muda"). O próprio comentário do guard já continha a pista:
+"só o eixo antigo é que fica de fora aqui" — escrito para valer em toda
+categoria, não só Relações.
+
+**Verificação antes de agir.** Confirmado por dois caminhos independentes
+nesta sessão, na máquina Windows com JDK/Ant reais (a primeira vez que este
+código roda de fato, não só compila, desde as extrações de 2026-09-01):
+
+- Leitura estática de todos os seis renderizadores (acima).
+- Dois runs do harness Robot (`TesteMonkeySemiGuiado`, seeds `20260901` e
+  `777888`, ~200 iterações combinadas) cobrindo 5 das 6 categorias
+  (Composição de Medidas, Transformação de Medidas, Comparação de Medidas,
+  Transformação de uma Relação, Composição de Transformações), incluindo
+  arrastes diretos em figuras de número relativo (`papel.diferenca`,
+  `papel.transformacao2`, `papel.transformacaoFinal`) — zero ocorrências do
+  mecanismo antigo em instrumentação temporária (adicionada só numa cópia
+  não rastreada de `Main.java` fora do repositório, nunca no arquivo real,
+  e descartada depois). Composição de Relações (6ª categoria) não foi
+  alcançada pelo sorteio aleatório do harness nas duas rodadas, mas usa a
+  mesma `relacaoGrande()` já exercitada nas outras categorias de Relações —
+  mesma garantia estática.
+- Durante essa investigação, dois JVMs Robot ficaram vivos além do esperado
+  (a classe de teste nunca chama `System.exit()`, e o Swing/AWT mantém a
+  JVM viva mesmo com o loop de iterações já terminado) — encerrados
+  manualmente depois de confirmado, sem impacto no achado.
+
+**O que foi removido.**
+
+- `Main.java`: campos `itemGraficoInteiros`, `numeroRelativoGraficoInteiros`,
+  a instância única `scaffoldingGraficoInteiros`, `apresentadorGraficoInteiros`,
+  `adaptadorInteracaoEixoInteiros`, `handlerEixoInteiros`; os métodos
+  `mostrarGraficoInteirosNumeroRelativo`, `registrarEscolhaGraficoInteiros`,
+  `sincronizarNumeroRelativoComGraficoSeNecessario`,
+  `atualizarGraficoInteirosDuranteMovimento`,
+  `limparGraficoInteirosSeForItemAtivo`, `limparGraficoInteiros`; os blocos
+  correspondentes em `mousePressed`, `processarMovimentoArraste` (chamado por
+  `mouseDragged`), `mouseReleased`, `mouseMoved`/`mouseExited` (foco e dica
+  do botão de esconder e do ponto de controle do eixo único) e no handler de
+  tecla Delete. O parâmetro `atualizarGrafico`, que não fazia mais nada,
+  saiu de `aplicarValorRelativoNoDiagrama`/`definirValorNoElementoNumeroRelativo`
+  (9 chamadores ajustados). `desenharGraficoInteiros` virou
+  `desenharPaineisEixoRelacoes` (só desenha o que ainda existe). O overload
+  sem parâmetros de `informarBloqueioQuantidadeNegativa` passou a ancorar em
+  `(null, null)` diretamente — comportamento idêntico, já que os campos que
+  alimentava eram sempre nulos.
+- Arquivos apagados: `src/gerard/interacao/arraste/AlvoInteracaoEixoInteiros.java`,
+  `src/gerard/interacao/arraste/HandlerInteracaoEixoInteiros.java`,
+  `src/gerard/ui/vergnaud/AdaptadorInteracaoEixoInteiros.java`,
+  `src/gerard/ui/vergnaud/FonteGeometriaInteracaoEixoInteiros.java`,
+  `tests/java/TesteHandlerInteracaoEixoInteiros.java`.
+- `tests/java/TesteTemporarioItem4Relacoes.java`: removido o trecho que
+  invocava `mostrarGraficoInteirosNumeroRelativo` por reflexão e checava
+  `scaffoldingGraficoInteiros.isVisivel()` — não havia mais o que verificar
+  (o resto do teste, sobre os painéis novos, continua intacto e passando).
+- `scripts/verificar_regressao_gerard.py`: a seção "Fase 7.6" virou uma
+  verificação de que o mecanismo antigo foi removido por inteiro (arquivos
+  ausentes, nenhum símbolo residual em `Main`), em vez de verificar sua
+  presença. Duas checagens que dependiam de contagens/padrões literais do
+  mecanismo antigo foram reescritas. O ratchet de `LIMITES_PROTOCOLOS_MAIN`
+  foi atualizado para os tamanhos reais depois do corte: `mousePressed`
+  442→401, `processarMovimentoArraste` 67→60, `mouseReleased` 111→103,
+  `mouseMoved` 229→205 (`mouseDragged` e `mouseClicked` não mudaram).
+
+**Não removido, propositalmente.** As classes concretas `ApresentadorGraficoInteiros`
+e `ScaffoldingGraficoInteiros` continuam existindo — cada `PaineisEixosRelacoes.Painel`
+instancia a sua própria `ScaffoldingGraficoInteiros`, e `PaineisEixosRelacoes`
+usa `ApresentadorGraficoInteiros`. Só a instância única de `Main` e o
+protocolo dedicado a ela (Fase 7.6) foram removidos — não as classes que o
+mecanismo novo (Fase 7.7) continua reaproveitando.
+
+**Verificação depois de agir.** `Main.java` compilou isoladamente sem erros;
+`verificar_linha_base_windows.py` aprovou 104/104 testes executáveis (105→104,
+a diferença é `TesteHandlerInteracaoEixoInteiros`, apagado); o verificador
+estrutural completo terminou `APROVADO`, nenhuma falha.
+
+## Corte: proteção de valores curados visíveis fora da tela (2026-09-01)
+
+A auditoria encontrou a `Main` repetindo, em caminhos de comparação e de
+representação complementar, a regra `papel != null && !papel.isDesconhecido()`
+antes de converter um valor curado. Essa não é uma decisão gráfica: é a
+proteção semântica que impede a resposta curada de vazar para uma
+representação antes de o aluno resolver a incógnita.
+
+`SemanticaCuradaSituacao.PapelCurado` passou a fornecer
+`getValorInteiroVisivel()`, que devolve `null` para a incógnita e o inteiro
+materializado para um papel conhecido. A fonte semântica também passou a
+oferecer as consultas portáteis `buscarValorInteiroVisivel(...)` e
+`buscarParticipante(...)`. A `Main` usa essas consultas prontas e não
+inspeciona mais `isDesconhecido()` nem converte texto curado nos caminhos de
+renderização. O mesmo contrato pode ser consumido pela API sem duplicar a
+regra no React ou no futuro cliente móvel.
+
+Não houve mudança funcional: valores conhecidos continuam disponíveis,
+incógnitas continuam ocultas, e participantes continuam vindo da curadoria.
+Verificação: compilação isolada de `Main.java`,
+`TesteComparacaoBarrasCuradoria` aprovado e
+`TesteProtecaoIncognitaEstadoCompartilhado` aprovado com 11 verificações.
+
+## Corte: natureza da representação complementar declarada pela cena (2026-09-01)
+
+A `Main` inferia diretamente pela categoria se a representação complementar
+era uma coleção, um gráfico de barras de comparação ou o Venn usado nas
+demais categorias. Essa classificação aparecia em relato de erro, ajuda,
+desenho, interação, escala e tooltips, embora seja uma propriedade portátil
+da cena e não do Swing.
+
+`CenaDiagramaVenn` passou a declarar `Natureza` com os valores `COLECOES`,
+`BARRAS_COMPARACAO` e `VENN`, além de carregar a natureza materializada em
+cada instância. `GeradorCenaDiagramaVenn` atribui essa informação ao criar a
+cena. Os predicados transitórios da `Main`, usados pelos adaptadores Swing,
+consultam agora a classificação pertencente à cena em vez de codificar as
+categorias localmente.
+
+Esse metadado pode integrar a projeção JSON da API: o React ou um cliente
+móvel escolhe o componente gráfico solicitado, mas não decide qual
+representação corresponde à situação. Não houve mudança visual ou
+interativa. Verificação: compilação isolada de `Main.java`, construção das
+seis categorias em `TesteAreaDiagramaPortatil`, materialização da natureza
+nas seis cenas em `TesteComparacaoBarrasCuradoria`, dois pilotos estruturais
+e servidor web respondendo HTTP 200.
+
+## Corte: forma dos nós declarada pela cena complementar (2026-09-01)
+
+Mesmo após a extração da natureza, a `Main` ainda deduzia em dois pontos se
+cada zona complementar deveria ser retangular ou elíptica, comparando a
+categoria da situação. `NoDiagramaVenn` passou a declarar `Forma.ELIPSE` ou
+`Forma.RETANGULO`; geradores e layouts materializam a forma juntamente com
+posição, tamanho, rótulo e valor. A adaptação Swing apenas copia
+`no.getForma()` para o componente legado.
+
+Não houve mudança visual: Composição de Medidas, Transformação de Medidas,
+Comparação de Medidas e Composição de Transformações preservam zonas
+retangulares; Transformação de Relação e Composição de Relações preservam
+elipses. A forma passa a estar disponível para serialização pela API sem o
+React inferir categorias. Verificação: `Main.java` compilou, testes de cena
+portátil e barras passaram para as seis categorias, e o servidor permaneceu
+respondendo HTTP 200.
+
+## Direção acordada: rascunho de consistência visual no cliente
+
+Estados intermediários de arraste/edição serão efêmeros e mantidos somente
+em memória no cliente. Não serão persistidos em arquivo, banco, curadoria ou
+`localStorage`. O React pode propagar imediatamente o mesmo rascunho entre
+suas representações sem requisições por movimento; somente uma ação
+semanticamente concluída (`drop`, confirmação de valor ou mudança de sinal)
+é enviada ao servidor. O servidor continua proprietário da validação
+matemática, recálculo, proteção da incógnita e scaffolding, devolvendo então
+um novo snapshot autoritativo. A implementação desse fluxo depende de diff
+prévio e aprovação explícita, conforme a proteção registrada na skill de
+consistência de estado.
+
+### Implementação inicial do rascunho efêmero
+
+`web-poc/src/estadoRepresentacoes.ts` introduz um reducer exclusivamente em
+memória, separado da API. Ele mantém o último snapshot autoritativo recebido,
+posições visuais provisórias por identidade de figura e o identificador de
+uma ação pendente. Receber qualquer novo snapshot do servidor descarta todo
+o rascunho. O reducer não importa `api.ts`, não conhece `fetch`, relações
+matemáticas, curadoria ou persistência do navegador.
+
+`App.tsx` passou a receber snapshots por esse reducer, e
+`GeradorCenaGerard.tsx` projeta posições efêmeras quando existirem, usando a
+geometria da API nos demais casos. Nenhum gesto foi habilitado ainda: a API
+precisa publicar previamente as capacidades permitidas por figura, para que
+o React não as infira pela categoria.
+
+Verificação atual:
+
+- teste isolado do reducer confirmou retenção do rascunho entre snapshots e
+  descarte ao chegar um novo snapshot;
+- busca estática confirmou que `fetch` continua restrito a `api.ts` e não há
+  `localStorage`/`sessionStorage`;
+- TypeScript e Vite compilaram 199 módulos;
+- linha de base antes e depois: 104 testes Java aprovados, 5 gráficos
+  compilados/não executados por exigirem display e zero reprovações;
+- servidor respondeu HTTP 200 com o novo bundle.
+
+Durante a criação da linha de base foi corrigido um vestígio independente:
+`SemanticComponentLocator` ainda referenciava o campo removido
+`quantidadePassosTransformacaoComposta`. Ele agora usa diretamente o overload
+canônico de `CatalogoPapeisSemanticosAditivos`, permitindo novamente a
+compilação completa das 548 fontes.
+
+## Corte: capacidades de interação publicadas pela API (2026-09-02)
+
+A cena portátil não autorizava interações por figura. Habilitar o primeiro
+editor diretamente no React pela categoria, forma ou posição recriaria
+conhecimento de aplicação no cliente. `ServicoSorteioAtividadeWeb` passou a
+projetar `interacoes_permitidas` em cada figura a partir das ações que o
+servidor já anunciou no mesmo snapshot.
+
+Para a modelagem web hoje existente, somente a figura cujo
+`chave_papel_semantico` coincide com o `papel_id` de
+`PROPOR_VALOR_PAPEL` recebe:
+
+```json
+{
+  "tipo": "EDITAR_VALOR",
+  "acao_id": "PROPOR_VALOR_PAPEL",
+  "fase_envio": "CONFIRMACAO",
+  "papel_id": "papel.todo"
+}
+```
+
+Todas as demais figuras recebem uma lista vazia. Assim, as cinco categorias
+sem serviço de modelagem web permanecem visíveis, mas não são tornadas
+interativas por suposição do cliente.
+
+O React consome essa capacidade para permitir clique ou teclado somente na
+figura autorizada. Digitação fica em `EstadoRepresentacoes` na memória e não
+faz HTTP. `Confirmar` localiza a ação anunciada pelo servidor e chama uma
+única vez `api.posicionar`; `Cancelar` apenas descarta o rascunho. O servidor
+continua validando a proposta e devolvendo o snapshot autoritativo.
+
+Verificação:
+
+- resposta HTTP real de Composição de Medidas: Parte 1 e Parte 2 sem
+  capacidades; Todo com `EDITAR_VALOR`;
+- resposta HTTP real de Comparação de Medidas: três listas vazias;
+- `TesteServicoSorteioAtividadeWeb` verifica identidade semântica e
+  autorização por papel;
+- teste isolado do reducer confirma digitação efêmera e descarte no snapshot;
+- TypeScript/Vite: 199 módulos compilados;
+- regressão Java pós-contrato: 104 aprovados, 5 gráficos compilados/não
+  executados, zero reprovações.
+
+## Corte: modelagem web de Transformação de Medidas (2026-09-02)
+
+O ciclo funcional foi ampliado sem ensinar semântica ao React.
+`ServicoAtividadeWebTransformacaoMedidas` constrói os papéis pela
+`FabricaPapeisTransformacaoMedidas`, identifica a incógnita curada e delega
+a validação da proposta à `RelacaoEstruturalTransformacao`. O serviço comum
+`ServicoAtividadeWeb` permite que o sorteio coordene Composição e
+Transformação de Medidas sem depender de uma implementação específica.
+
+Depois do acerto da categoria, a API publica `EDITAR_VALOR` somente na figura
+correspondente à incógnita. A digitação continua efêmera no cliente e apenas
+a confirmação produz uma requisição; propostas incorretas não alteram o
+estado semântico do servidor. As outras quatro categorias permanecem sem
+modelagem interativa, em vez de receberem comportamento inferido no cliente.
+
+Verificação:
+
+- `TesteServicoAtividadeWebTransformacaoMedidas`: rejeição sem mutação e
+  aceitação/conclusão pelo valor curado;
+- `TestePilotoTransformacaoMedidas` e `TesteServicoSorteioAtividadeWeb`
+  aprovados;
+- API HTTP real: três figuras e uma única capacidade, no papel curado
+  `papel.estadoFinal` da situação sorteada;
+- TypeScript/Vite: 199 módulos compilados;
+- regressão integral: 105 testes aprovados, 5 gráficos compilados/não
+  executados e zero reprovações.
+
+## Corte: modelagem web de Comparação de Medidas (2026-09-02)
+
+`ServicoAtividadeWebComparacaoMedidas` coordena os três papéis produzidos por
+`FabricaPapeisComparacaoMedidas` e delega o diagnóstico matemático a
+`RelacaoEstruturalComparacao`. A equação, os domínios (medidas naturais e
+valor relativo inteiro), a orientação do valor relativo e o reconhecimento
+de operação invertida permanecem no domínio; o cliente recebe somente o
+snapshot e a capacidade associada à incógnita curada.
+
+Propostas rejeitadas não preenchem o papel. Uma proposta aceita é aplicada
+ao proprietário semântico e a conclusão depende da consistência da relação
+`Referendo = Referido + ValorRelativo`. Não foi acrescentada consulta durante
+a digitação: o envio continua ocorrendo apenas em `CONFIRMACAO`.
+
+Verificação:
+
+- teste próprio do serviço cobre anúncio da incógnita, rejeição sem mutação e
+  conclusão pelo valor curado;
+- o piloto de Comparação preservou diferenças positivas, negativas e nulas,
+  os domínios dos papéis, diagnóstico e proteção contra overflow;
+- API HTTP real: três figuras e uma única capacidade `EDITAR_VALOR`, no papel
+  curado `papel.referido` da situação sorteada;
+- regressão integral repetida: 106 testes aprovados, 5 gráficos
+  compilados/não executados e zero reprovações. Uma execução anterior teve
+  oscilação temporal isolada em `TesteSequenciadorFeedbackConclusao`; o mesmo
+  binário passou isoladamente e na repetição integral, sem alteração nesse
+  componente.
+
+## Auditoria das categorias de Relações (2026-09-02)
+
+A tentativa de ampliar o mesmo serviço ternário para Transformação de
+Relação foi interrompida antes de ser publicada porque um teste com a primeira
+situação validada revelou que a soma simples não preserva a semântica curada.
+Na situação das bonecas, a relação inicial `+3`, a transformação `+5` e a
+relação final `+2` dependem de quem sofreu o evento e da inversão dos
+participantes entre as relações inicial e final. Tratar o resultado como
+`+3 + +5` produziria `+8`, matematicamente errado para a narrativa.
+
+O domínio já contém `RelacaoEstruturalTransformacaoDeRelacaoOrientada`, que
+possui esse conhecimento a partir de referências narrativas explícitas, e
+`ConversorSituacaoProblemaRica` sabe construí-la. Contudo, o
+`ContextoCarregamentoAtividade` consumido pela API ainda transporta apenas o
+registro tabular, a definição e a interpretação textual; não transporta a
+`EstruturaAditiva` rica. O runtime de consistência do desktop também chega à
+relação pelo `CatalogoRelacoesEstruturaisAditivas`, que usa a versão ternária
+simples. A ponte rica permanece concentrada no fluxo de curadoria.
+
+Não há sidecars de narrativas ricas no diretório padrão desta instalação.
+Assim, inventar orientação a partir de personagens posicionais ou apenas de
+`operacao_relacao` violaria a localidade do conhecimento. O próximo corte
+necessário é integrar ao carregamento um resultado rico explicitamente
+curado (ou uma indisponibilidade diagnosticada), para que desktop e API
+consumam a mesma relação estrutural. A tentativa simplificada e seu teste
+foram removidos; Transformação de Relação continua visível, mas sem capacidade
+interativa na API.
+
+### Ponte rica entregue à aplicação
+
+`FachadaCarregamentoAtividade` passou a consultar
+`ServicoSituacaoProblemaRicaCurada` e incluir seu resultado em
+`ContextoCarregamentoAtividade`. A compatibilidade é conservadora: ausência
+ou falha de leitura do sidecar não impede a exibição tabular e produz um
+diagnóstico explícito; não há inferência por texto, posição ou personagem.
+
+`RelacaoEstruturalTransformacaoDeRelacaoOrientada` agora implementa o mesmo
+contrato de diagnóstico de propostas das demais relações. O serviço
+`ServicoAtividadeWebTransformacaoRelacaoRica` cria a tentativa a partir do
+agregado validado e deixa vazia somente a incógnita original. O sorteio o
+ativa exclusivamente quando o contexto informa uma situação rica válida.
+Logo, a instalação atual, sem sidecars ricos, continua sem oferecer uma
+capacidade enganosa; quando a curadoria existir, API e cliente não precisarão
+reinterpretar sua orientação.
+
+O teste rico das bonecas confirma a diferença essencial: proposta `+8`
+(soma superficial) é rejeitada sem concluir, enquanto `+2` é aceita e conclui
+a relação orientada. A regressão integral compilou 552 fontes e 112 testes:
+107 executáveis aprovados, 5 gráficos compilados/não executados e nenhuma
+reprovação. TypeScript/Vite compilou 199 módulos.
+### Corte incremental: seleção do plano de unidades de transformação
+
+- A `Main.TelaGerard` não instancia mais os dois sincronizadores semânticos
+  nem repete o despacho entre processo simples e composição de
+  transformações.
+- `SelecionadorPlanoUnidadesTransformacao`, independente de Swing, recebe o
+  tipo de representação já decidido por `SeletorRepresentacaoComplementar` e
+  delega ao sincronizador proprietário. As outras representações retornam
+  `null`, preservando o comportamento anterior.
+- A categoria não é reinferida pelo estado nem pelo cliente: a decisão
+  existente continua centralizada no seletor de representação.
+- Verificação posterior: 553 fontes compiladas; 108 testes executáveis
+  aprovados; 5 testes gráficos compilados e não executados por exigirem
+  display; zero reprovações.
+
+### Corte incremental: conclusão integral fora da Main
+
+- `ControladorConclusaoModelagem` passou a receber também o fato de que os
+  requisitos adicionais da atividade foram satisfeitos. A sobrecarga anterior
+  permanece compatível e assume que não existem requisitos adicionais.
+- A `Main` ainda adapta o estado dos seletores Swing, mas não combina mais
+  esse resultado com a conclusão dos papéis nem mantém uma segunda memória de
+  transição. `CONCLUIDA_AGORA` é produzido pelo controlador portátil e pode
+  ser consumido futuramente por API, desktop ou mobile.
+- O protocolo visual de feedback permaneceu intacto: destaque, atraso, selo,
+  tip, cancelamento e mensagens continuam sendo materializados pelo Swing.
+- `TesteConclusaoModelagem` cobre agora papéis completos com operação
+  pendente, conclusão ao responder a operação e retorno ao estado incompleto.
+- Verificação posterior: 553 fontes compiladas; 108 testes executáveis
+  aprovados; 5 testes gráficos compilados e não executados por exigirem
+  display; zero reprovações.
+
+### Corte incremental: identidade específica de papel fora da Main
+
+- A enumeração de chaves de papéis consideradas específicas deixou
+  `Main.obterChavePapelExataDoItem` e passou para
+  `CatalogoPapeisSemanticosAditivos.chavePapelEspecifica`.
+- O conjunto anterior foi preservado exatamente, incluindo o sinônimo
+  histórico `papel.referente` e o prefixo legado `papel.transformacao*`;
+  `papel.valor`, `null` e chaves desconhecidas continuam rejeitados.
+- A tela conserva somente a adaptação de `ItemTextoArrastavel`; o critério
+  de identidade pode agora ser consumido pelos adaptadores desktop, web e
+  mobile sem dependência de Swing.
+- Verificação posterior: 553 fontes compiladas; 109 testes executáveis
+  aprovados; 5 testes gráficos compilados e não executados por exigirem
+  display; zero reprovações.
+
+### Corte incremental: projeção dos valores da comparação fora da Main
+
+- `ProjetorValoresComparacaoComplementar`, independente de Swing e de
+  geometria, passou a possuir a precedência entre valores modelados,
+  valor relativo curado visível e resolução pela relação estrutural.
+- A regra de não antecipar a curadoria antes de qualquer modelagem foi
+  preservada; Referido e Referendo continuam vindo apenas da modelagem, e a
+  incógnita continua protegida por `buscarValorInteiroVisivel`.
+- A `Main` agora apenas localiza os três elementos Swing, extrai seus valores
+  observados e solicita a projeção. As leituras curadas de Referido e
+  Referendo, que eram calculadas mas nunca usadas, foram removidas.
+- O teste dedicado cobre cena vazia, precedência do valor modelado, fallback
+  curado, resolução estrutural, domínio natural das medidas e preservação do
+  sinal relativo.
+- Verificação posterior: 554 fontes compiladas; 110 testes executáveis
+  aprovados; 5 testes gráficos compilados e não executados por exigirem
+  display; zero reprovações.
+
+### Corte incremental: objeto factual do log por identidade semântica
+
+- `Main.obterObjetoParaLog` deixou de inferir `OBJ1…OBJ8` por palavras do
+  rótulo localizado (`estado inicial`, `referente`, `parte` etc.) e pela
+  propriedade visual `exibirLupa`.
+- `CatalogoObjetosLogAcaoInstrumental`, independente de interface e idioma,
+  associa a chave semântica ao vocabulário factual legado. Papéis de
+  transformação/relação usam sua natureza semântica; Referendo e o alias
+  histórico Referente convergem em `OBJ3`.
+- A mudança corrige a divergência em que `papel.referendo` podia cair em
+  `OBJ8` porque a tradução exibida não continha a palavra portuguesa
+  `referente`.
+- Limite deste corte: a soltura `POSICIONAR` ainda grava pelo caminho legado
+  `registrarLogUsuario`. A migração para um único
+  `RegistroFactualAcaoInstrumental` produzido pelo proprietário semântico
+  permanece pendente; o catálogo não deve ser interpretado como conclusão
+  dessa migração.
+- Verificação posterior: 555 fontes compiladas; 111 testes executáveis
+  aprovados; 5 testes gráficos compilados e não executados por exigirem
+  display; zero reprovações.

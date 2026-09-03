@@ -5,6 +5,7 @@ import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.campoaditivo.semantica.NaturezaPapelAditivo;
 import gerard.campoaditivo.semantica.PoliticaValoresAditivos;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
+import gerard.ui.enunciado.MapeadorPapelSemanticoTextoPadrao;
 
 public final class TestePoliticaValoresAditivos {
     public static void main(String[] args) {
@@ -33,6 +34,18 @@ public final class TestePoliticaValoresAditivos {
         exigir("papel.diferenca".equals(catalogo.obterChavePapelDoElemento(
                 TipoSituacaoAditiva.COMPARACAO_MEDIDAS, 1, false, 1)),
                 "Comparação deveria mapear índice 1 para valor relativo.");
+        exigir("papel.diferenca".equals(catalogo.obterChavePapelDoElemento(
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS, 1)),
+                "Contrato canônico deveria mapear índice sem flags legadas.");
+        exigir(catalogo.obterIndiceElementoPorPapel("papel.diferenca",
+                TipoSituacaoAditiva.COMPARACAO_MEDIDAS) == 1,
+                "Contrato canônico deveria localizar o papel sem flags legadas.");
+        MapeadorPapelSemanticoTextoPadrao mapeador =
+                new MapeadorPapelSemanticoTextoPadrao(
+                        TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
+                        new int[] {0, 1, 2});
+        exigir(mapeador.paraIndiceSemantico("papel.diferenca") == 1,
+                "Mapeador textual deveria consumir o catálogo canônico.");
         exigir("papel.estadoIntermediario".equals(catalogo.obterChavePapelDoElemento(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 3, true, 2)),

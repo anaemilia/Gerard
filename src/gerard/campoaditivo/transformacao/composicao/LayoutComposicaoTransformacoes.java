@@ -36,11 +36,11 @@ public final class LayoutComposicaoTransformacoes {
         int x3 = x2 + larguraZona + espaco;
 
         nos.add(new NoDiagramaVenn(x1, yZona, larguraZona, alturaZona,
-                definicao.getRotulo1(), valor(valores, 0), true));
+                definicao.getRotulo1(), valor(valores, 0), true, NoDiagramaVenn.Forma.RETANGULO));
         nos.add(new NoDiagramaVenn(x2, yZona, larguraZona, alturaZona,
-                definicao.getRotulo2(), valor(valores, 1), true));
+                definicao.getRotulo2(), valor(valores, 1), true, NoDiagramaVenn.Forma.RETANGULO));
         nos.add(new NoDiagramaVenn(x3, yZona, larguraZona, alturaZona,
-                definicao.getRotulo3(), valor(valores, 2), true));
+                definicao.getRotulo3(), valor(valores, 2), true, NoDiagramaVenn.Forma.RETANGULO));
 
         // O canal e os três funis são desenhados pelo renderizador especializado.
         return new CenaDiagramaVenn(nos, conectores);

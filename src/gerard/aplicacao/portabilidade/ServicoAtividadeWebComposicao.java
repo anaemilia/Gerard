@@ -23,7 +23,7 @@ import java.util.Optional;
  * Medidas. Coordena a ação, mas deixa o diagnóstico com a relação estrutural
  * e a validação local com o papel quantitativo.
  */
-public final class ServicoAtividadeWebComposicao {
+public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb {
     private static final String SITUACAO_CURADA_ID =
             "PO_COMPOSICAO_MEDIDAS_bolas_1098018440";
     public static final String SCHEMA_ESTADO = "gerard.atividade-web.estado.v1";
@@ -78,7 +78,7 @@ public final class ServicoAtividadeWebComposicao {
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
         estado.put("acoes_disponiveis",
-                AcoesDisponiveisAtividadeWeb.composicaoMedidas(
+                AcoesDisponiveisAtividadeWeb.modelagemPapel(
                         concluida, papelDesconhecido.getChave()));
         return estado;
     }

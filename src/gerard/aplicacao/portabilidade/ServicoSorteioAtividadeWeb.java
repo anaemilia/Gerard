@@ -43,7 +43,7 @@ public final class ServicoSorteioAtividadeWeb {
     private TentativaClassificacaoCategoriaAditiva tentativaClassificacao;
     private TipoSituacaoAditiva categoriaSelecionada;
     private String questionamento;
-    private ServicoAtividadeWebComposicao atividadeComposicao;
+    private ServicoAtividadeWeb atividadeModelagem;
 
     public ServicoSorteioAtividadeWeb() {
         this(new PoliticaSorteioSituacoesAditivas(),
@@ -86,7 +86,7 @@ public final class ServicoSorteioAtividadeWeb {
                 contexto.getSituacao());
         categoriaSelecionada = null;
         questionamento = null;
-        atividadeComposicao = null;
+        atividadeModelagem = null;
         return projetarEstado();
     }
 
@@ -98,9 +98,25 @@ public final class ServicoSorteioAtividadeWeb {
         if (registro.foiCorreta()) {
             categoriaSelecionada = escolhida;
             if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
-                atividadeComposicao = new ServicoAtividadeWebComposicao(
+                atividadeModelagem = new ServicoAtividadeWebComposicao(
                         "tentativa.web." + contextoAtual.getSituacao().getId(),
                         contextoAtual.getSituacao());
+            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+                atividadeModelagem = new ServicoAtividadeWebTransformacaoMedidas(
+                        "tentativa.web." + contextoAtual.getSituacao().getId(),
+                        contextoAtual.getSituacao());
+            } else if (escolhida == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+                atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
+                        "tentativa.web." + contextoAtual.getSituacao().getId(),
+                        contextoAtual.getSituacao());
+            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                    && contextoAtual.possuiSituacaoRicaValida()) {
+                atividadeModelagem =
+                        new ServicoAtividadeWebTransformacaoRelacaoRica(
+                                "tentativa.web."
+                                        + contextoAtual.getSituacao().getId(),
+                                contextoAtual.getResultadoSituacaoRica()
+                                        .getSituacaoOuFalhar());
             }
         }
         questionamento = tentativaClassificacao.aguardaConfirmacao()
@@ -110,24 +126,24 @@ public final class ServicoSorteioAtividadeWeb {
         return resultadoClassificacao(registro);
     }
 
-    public synchronized boolean possuiAtividadeComposicaoAtiva() {
-        return atividadeComposicao != null;
+    public synchronized boolean possuiAtividadeModelagemAtiva() {
+        return atividadeModelagem != null;
     }
 
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
-        if (atividadeComposicao == null) {
+        if (atividadeModelagem == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
         }
-        Map<String, Object> resultado = atividadeComposicao.proporValor(papelId, valor);
+        Map<String, Object> resultado = atividadeModelagem.proporValor(papelId, valor);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
 
     public synchronized Map<String, Object> reiniciarAtividadeAtual() {
-        if (atividadeComposicao == null) {
+        if (atividadeModelagem == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
         }
-        atividadeComposicao.reiniciar();
+        atividadeModelagem.reiniciar();
         return projetarEstado();
     }
 
@@ -190,8 +206,8 @@ public final class ServicoSorteioAtividadeWeb {
                     AcoesDisponiveisAtividadeWeb.confirmacaoCategoria());
         } else if (categoriaSelecionada != null) {
             estado.put("modo", "CATEGORIA_CLASSIFICADA");
-            if (atividadeComposicao != null) {
-                Map<String, Object> modelagem = atividadeComposicao.estadoAtual();
+            if (atividadeModelagem != null) {
+                Map<String, Object> modelagem = atividadeModelagem.estadoAtual();
                 estado.put("modelagem", modelagem);
                 estado.put("concluida", modelagem.get("concluida"));
                 estado.put("acoes_disponiveis", modelagem.get("acoes_disponiveis"));
@@ -211,7 +227,8 @@ public final class ServicoSorteioAtividadeWeb {
                 || tentativaClassificacao.estaEncerrada();
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
-            estado.put("cena", projetarCena(contextoAtual));
+            estado.put("cena", projetarCena(contextoAtual,
+                    listaDeAcoes(estado.get("acoes_disponiveis"))));
         } else {
             estado.remove("categoria");
             estado.remove("subtipo");
@@ -230,7 +247,7 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     private static Map<String, Object> projetarCena(
-            ContextoCarregamentoAtividade contexto) {
+            ContextoCarregamentoAtividade contexto, List<Object> acoes) {
         CenaDiagramaAditivo cena = new GeradorCenaDiagramaAditivo().gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
                 contexto.getDefinicao(), new int[] {0, 0, 0});
@@ -256,6 +273,8 @@ public final class ServicoSorteioAtividadeWeb {
                             figura.getChavePapelSemantico());
             item.put("subtitulo", papel == null ? "" : papel.getParticipante());
             item.put("lupa_habilitada", Boolean.FALSE);
+            item.put("interacoes_permitidas", projetarInteracoesPermitidas(
+                    acoes, figura.getChavePapelSemantico()));
             figuras.add(item);
         }
         List<Object> conectores = new ArrayList<Object>();
@@ -402,6 +421,37 @@ public final class ServicoSorteioAtividadeWeb {
         c.put("valor_relativo", vazioComoNulo(s.getValorRelativo()));
         c.put("sinal_valor_relativo", vazioComoNulo(s.getSinalValorRelativo()));
         return c;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> listaDeAcoes(Object valor) {
+        return valor instanceof List
+                ? (List<Object>) valor : Collections.<Object>emptyList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> projetarInteracoesPermitidas(
+            List<Object> acoes, String chavePapel) {
+        List<Object> interacoes = new ArrayList<Object>();
+        if (chavePapel == null || acoes == null) {
+            return interacoes;
+        }
+        for (Object valor : acoes) {
+            if (!(valor instanceof Map)) continue;
+            Map<String, Object> acao = (Map<String, Object>) valor;
+            if (!"PROPOR_VALOR_PAPEL".equals(acao.get("id"))) continue;
+            Object corpoValor = acao.get("corpo");
+            if (!(corpoValor instanceof Map)) continue;
+            Map<String, Object> corpo = (Map<String, Object>) corpoValor;
+            if (!chavePapel.equals(corpo.get("papel_id"))) continue;
+            Map<String, Object> interacao = mapa();
+            interacao.put("tipo", "EDITAR_VALOR");
+            interacao.put("acao_id", "PROPOR_VALOR_PAPEL");
+            interacao.put("fase_envio", "CONFIRMACAO");
+            interacao.put("papel_id", chavePapel);
+            interacoes.add(interacao);
+        }
+        return interacoes;
     }
 
     private static String vazioComoNulo(String valor) {
