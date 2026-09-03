@@ -1053,7 +1053,7 @@ construtor_src = (ROOT / 'src' / 'gerard' / 'campoaditivo' / 'curadoria' / 'Cons
 checks_semanticos = [
     ('interpretação usa o texto efetivamente renderizado', 'construir(SituacaoProblemaAditiva s, String textoExibido)' in construtor_src),
     ('todos os números recebem o papel pela ordem curada', 'obterChavePapelDoNumero' in main_src),
-    ('interrogação recebe o papel desconhecido curado', 'obterChavePapelExataPorValor("?")' in main_src),
+    ('interrogação recebe o papel desconhecido curado', 'obterChavePapelExataPorValor(resultadoInterpretacao, "?")' in main_src),
     ('realce visual depende do papel semântico', 'corFundoDoPapel(m.chavePapel)' in main_src and 'corTextoDoPapel(chavePapel)' in main_src),
     ('mobilidade dos elementos textuais permanece', 'desenharElementoTextoMovel' in main_src and 'converterElementoTextoEmItemDiagrama' in main_src),
     ('símbolo canônico de desconhecido preservado como interrogação ocidental', 'SimboloDesconhecido.eh' in main_src and 'regexClasse()' in main_src),

@@ -1036,3 +1036,105 @@ provadamente inalcançáveis por construção, não só por citação.
   arquitetura os exercitava.
 - Verificação: compilação completa, 112 testes executáveis aprovados,
   verificador estrutural aprovado sem falhas.
+
+## Continuação do item P0 "resolução de papéis por posição, índice ou valor textual" (2026-09-03)
+
+Revisitei o item aberto ao final da entrada de 2026-09-01 sobre
+`ResolvedorPapelInterpretado`: "o destino completo (identidade explícita em
+todo elemento, eliminando a busca posicional) permanece em aberto." Duas
+conclusões, uma de código e uma de escopo.
+
+**Os seis wrappers finos em `Main` foram removidos.** Em 2026-09-01, ao
+extrair a lógica para `ResolvedorPapelInterpretado`, a extração preservou
+deliberadamente wrappers de mesmo nome em `Main` "sem alterar nenhum ponto
+de chamada existente" — não havia `javac`/`ant` disponíveis naquela sessão
+para validar a alternativa mais direta. Agora, com compilação e bateria
+completas disponíveis, os pontos de chamada dentro de `Main`
+(`obterChavePapelExataDoItem`, `criarMensagemPapelElementoTexto`,
+`criarMensagemPapelItemArrastavel`, `obterChavePapelExataDoElemento`,
+`obterChavePapelCanonicoDoElemento`, `adicionarMarcador`, e o vínculo de
+interrogação em `elemento.vincularSemantica`) foram migrados para chamar
+`ResolvedorPapelInterpretado` diretamente, e os seis wrappers
+(`aplicarFallbackCuradoItemDesconhecido`, `obterChavePapelExataPorValor`,
+`obterChavePapelExataPorIndice`, `obterChavePapelCanonicoPorValor`,
+`obterChavePapelCanonicoPorIndice`, `converterParaPapelCanonico`) foram
+apagados de `Main`. Mesmo padrão do corte de wrappers em
+`ScaffoldingQuestionamento` (2026-09-02, acima): remoção de indireção, sem
+mudança de comportamento.
+- `scripts/verificar_regressao_gerard.py` tinha um check textual literal
+  (`'obterChavePapelExataPorValor("?")' in main_src`) que dependia da
+  chamada não qualificada — atualizado para o texto qualificado real
+  (`'obterChavePapelExataPorValor(resultadoInterpretacao, "?")'`). O check
+  irmão (`'papel semântico do desconhecido independe do glifo'`) não
+  dependia da assinatura exata e continuou passando sem alteração.
+- Verificação: compilação completa, 112 testes executáveis aprovados,
+  verificador estrutural aprovado sem falhas (incluindo o check corrigido).
+
+**O "destino completo" citado em 2026-09-01 não é, na inspeção, um alvo
+coerente.** Li os call sites reais em `Main` (interpretação de texto livre:
+`adicionarMarcador`, `obterChavePapelPorPosicaoTexto`,
+`obterChavePapelExataDoElemento`). A busca por posição/valor não é uma
+alternativa mais pobre a uma identidade explícita já disponível — é o
+mecanismo pelo qual a identidade é atribuída em primeiro lugar, a partir de
+onde um numeral aparece no enunciado digitado. Um elemento não pode "já
+carregar" `chavePapelSemantico` antes de a interpretação linguística
+decidir qual papel ele ocupa; a busca posicional É essa decisão, não um
+substituto adiado dela. (Elementos que já têm identidade — vindos do
+diagrama de Vergnaud, por exemplo — não passam por este caminho; ver
+`elemento.chavePapelSemantico != null` no início de
+`obterChavePapelExataDoElemento`/`obterChavePapelCanonicoDoElemento`, que
+já é o atalho de identidade explícita quando ela existe.) Considero este
+item do P0 concluído: a lógica já é portátil
+(`ResolvedorPapelInterpretado`, sem Swing), a indireção residual foi
+removida nesta sessão, e a natureza posicional do que resta é inerente ao
+problema de interpretação de linguagem natural, não um acoplamento a
+corrigir.
+
+## Reconciliação do P1 com o estado atual (2026-09-03)
+
+A lista original de P1 (2026-08-31) nunca foi riscada conforme os cortes
+posteriores a resolveram — cada "Corte:" abaixo dela ficou registrado, mas
+os itens do topo continuaram parecendo em aberto. Revisitei os quatro
+itens restantes contra o `Main.java` atual:
+
+- `8156–8305` e `8866–9630` (escolha de representação complementar,
+  montagem, cenas compostas): resolvido pelos cortes "natureza da
+  representação complementar declarada pela cena" e "forma dos nós
+  declarada pela cena complementar" (ambos 2026-09-01). Confirmado por
+  inspeção: `Main` só lê `CenaDiagramaVenn.naturezaPara(tipoSituacaoSelecionada)`
+  para decidir entre Coleções/Barras/Venn — nenhuma ramificação local por
+  categoria restante nesse trecho.
+- `9747–11238` e `10802–11184` (renderização/controles do Venn, barras,
+  equações visuais): os valores numéricos, o módulo do valor relativo e a
+  equação de composição (`desenharContagensComposicaoMedidasVenn`) já
+  delegam ao domínio (`RelacaoEstruturalComposicao.calcularTodo`,
+  `RelacaoEstruturalComparacao`, `ProjetorValoresComparacaoComplementar`).
+  O que sobra nas linhas inspecionadas é geometria/desenho genuíno
+  (posição de círculos, fontes, cores) — mesma conclusão já registrada
+  acima para a equação do diagrama principal ("apresentação genuína").
+  `circulosVenn.get(0/1/2)` ainda indexa por posição, mas — diferente de
+  `elementosVergnaud`, que representa elementos manipuláveis e por isso
+  teve a ordem removida como identidade — `circulosVenn` é reconstruído a
+  cada `geradorCenaDiagramaVenn.gerar(...)` em ordem fixa pelo gerador, não
+  pela interação do usuário; indexar por posição aqui é sintaxe de
+  desenho, não uma identidade semântica inferida.
+- `15123–15292` ("segunda implementação de miniaturas das categorias"):
+  identifiquei como a classe interna `MiniRepresentacao`, do diálogo
+  "Comparar categorias" (`ui.compare.*` — uma janela de pesquisa/desktop
+  que desenha as três categorias de medidas lado a lado, sem porta web).
+  Inspecionei `desenharComposicao`/`desenharTransformacao`/
+  `desenharComparacao`/suas variantes vazias: nenhuma aritmética própria —
+  os valores vêm de `EstadoNumericoComparacaoCategorias` (já extraído em
+  "Corte: estado numérico da comparação entre categorias"), e o desenho é
+  geometria proporcional ao painel (arcos, setas, retângulos), específica
+  desta janela de comparação, sem equivalente a portar. Não é a mesma
+  situação do diagrama principal, que tem paridade web via
+  `GeradorCenaDiagramaAditivo`: aqui não há um segundo consumidor a
+  justificar um descritor portátil. Concluo que este item não precisa de
+  extração — decisão por inspeção, não uma pendência esquecida.
+
+Com isso, o P1 original de 2026-08-31 está encerrado: todos os quatro itens
+foram resolvidos por cortes já registrados ou concluídos como apresentação
+legítima, sem novo código necessário. Não restam itens abertos no
+levantamento original de P0/P1 — os próximos candidatos a corte
+precisarão vir de uma nova varredura, não desta fila.

@@ -6593,7 +6593,7 @@ public class Main extends JFrame {
                     int indiceInterrogacao = elemento.valorOriginal.indexOf('?');
                     if (indiceInterrogacao >= 0) {
                         elemento.vincularSemantica(
-                                obterChavePapelExataPorValor("?"),
+                                ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?"),
                                 indiceInterrogacao,
                                 indiceInterrogacao + 1,
                                 "?");
@@ -6795,7 +6795,7 @@ public class Main extends JFrame {
                 String valor,
                 boolean editavel
         ) {
-            adicionarMarcadorComPapel(fm, palavra, xPalavra, yBase, indiceInicio, indiceFim, valor, editavel, obterChavePapelExataPorIndice(marcadoresFixosTexto.size()));
+            adicionarMarcadorComPapel(fm, palavra, xPalavra, yBase, indiceInicio, indiceFim, valor, editavel, ResolvedorPapelInterpretado.obterChavePapelExataPorIndice(resultadoInterpretacao, marcadoresFixosTexto.size()));
         }
 
         private void adicionarMarcadorComPapel(
@@ -6850,7 +6850,7 @@ public class Main extends JFrame {
 
         private String obterChavePapelPorPosicaoTexto(int posicaoGlobal, String valor) {
             if (SimboloDesconhecido.eh(valor)) {
-                return obterChavePapelExataPorValor("?");
+                return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
             }
             java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
             for (int i = 0; i < numeros.size(); i++) {
@@ -12980,12 +12980,12 @@ public class Main extends JFrame {
             boolean incognita = SimboloDesconhecido.eh(item.origemValor)
                     || SimboloDesconhecido.eh(item.valor);
             if (incognita) {
-                String chaveIncognita = aplicarFallbackCuradoItemDesconhecido(
-                        item.chavePapel == null ? "papel.valor" : item.chavePapel);
+                String chaveIncognita = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(
+                        resultadoInterpretacao, item.chavePapel == null ? "papel.valor" : item.chavePapel);
                 if (chavePapelEspecifica(chaveIncognita)) {
                     return chaveIncognita;
                 }
-                String chavePorInterrogacao = obterChavePapelExataPorValor("?");
+                String chavePorInterrogacao = ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
                 if (chavePapelEspecifica(chavePorInterrogacao)) {
                     return chavePorInterrogacao;
                 }
@@ -12995,7 +12995,7 @@ public class Main extends JFrame {
                 return item.chavePapel;
             }
 
-            String chavePorValor = obterChavePapelExataPorValor(item.origemValor);
+            String chavePorValor = ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, item.origemValor);
             if (chavePapelEspecifica(chavePorValor)) {
                 return chavePorValor;
             }
@@ -13069,7 +13069,7 @@ public class Main extends JFrame {
 
         private String criarMensagemPapelElementoTexto(ElementoTextoMovel elemento) {
             String chavePapel = obterChavePapelCanonicoDoElemento(elemento);
-            chavePapel = aplicarFallbackCuradoItemDesconhecido(chavePapel);
+            chavePapel = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(resultadoInterpretacao, chavePapel);
             String papel = localizacao.texto(chavePapel);
             return localizacao.formatar("ui.hover.role", papel);
         }
@@ -13078,12 +13078,12 @@ public class Main extends JFrame {
             String chavePapel = item.chavePapel;
 
             if (chavePapel == null || chavePapel.length() == 0) {
-                chavePapel = obterChavePapelCanonicoPorValor(item.origemValor);
+                chavePapel = ResolvedorPapelInterpretado.obterChavePapelCanonicoPorValor(resultadoInterpretacao, item.origemValor);
             } else {
-                chavePapel = converterParaPapelCanonico(chavePapel);
+                chavePapel = ResolvedorPapelInterpretado.converterParaPapelCanonico(chavePapel);
             }
 
-            chavePapel = aplicarFallbackCuradoItemDesconhecido(chavePapel);
+            chavePapel = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(resultadoInterpretacao, chavePapel);
             String papel = localizacao.texto(chavePapel);
             return localizacao.formatar("ui.hover.role", papel);
         }
@@ -13103,43 +13103,29 @@ public class Main extends JFrame {
          * preserva o nome e a assinatura para todos os pontos de chamada
          * existentes.
          */
-        private String aplicarFallbackCuradoItemDesconhecido(String chavePapel) {
-            return ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(
-                    resultadoInterpretacao, chavePapel);
-        }
-
         private String obterChavePapelExataDoElemento(ElementoTextoMovel elemento) {
             if (elemento != null && elemento.possuiVinculoSemantico()
                     && elemento.chavePapelSemantico != null) {
                 return elemento.chavePapelSemantico;
             }
             if (ehInterrogacaoDoTexto(elemento)) {
-                return obterChavePapelExataPorValor("?");
+                return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
             }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            return obterChavePapelExataPorIndice(indice);
-        }
-
-        private String obterChavePapelExataPorValor(String valor) {
-            return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(
-                    resultadoInterpretacao, valor);
-        }
-
-        private String obterChavePapelExataPorIndice(int indice) {
-            return ResolvedorPapelInterpretado.obterChavePapelExataPorIndice(
-                    resultadoInterpretacao, indice);
+            return ResolvedorPapelInterpretado.obterChavePapelExataPorIndice(resultadoInterpretacao, indice);
         }
 
         private String obterChavePapelCanonicoDoElemento(ElementoTextoMovel elemento) {
             if (elemento != null && elemento.possuiVinculoSemantico()
                     && elemento.chavePapelSemantico != null) {
-                return converterParaPapelCanonico(elemento.chavePapelSemantico);
+                return ResolvedorPapelInterpretado.converterParaPapelCanonico(elemento.chavePapelSemantico);
             }
             if (ehInterrogacaoDoTexto(elemento)) {
-                return converterParaPapelCanonico(obterChavePapelExataPorValor("?"));
+                return ResolvedorPapelInterpretado.converterParaPapelCanonico(
+                        ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?"));
             }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            return obterChavePapelCanonicoPorIndice(indice);
+            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorIndice(resultadoInterpretacao, indice);
         }
 
         private int obterIndiceSimboloArrastavel(ElementoTextoMovel alvo) {
@@ -13157,21 +13143,6 @@ public class Main extends JFrame {
             }
 
             return -1;
-        }
-
-        private String obterChavePapelCanonicoPorValor(String valor) {
-            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorValor(
-                    resultadoInterpretacao, valor);
-        }
-
-        private String obterChavePapelCanonicoPorIndice(int indice) {
-            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorIndice(
-                    resultadoInterpretacao, indice);
-        }
-
-        /** Ver {@link gerard.interpretacao.modelo.ResolvedorPapelInterpretado#converterParaPapelCanonico}. */
-        private String converterParaPapelCanonico(String chavePapel) {
-            return ResolvedorPapelInterpretado.converterParaPapelCanonico(chavePapel);
         }
 
         public void keyPressed(KeyEvent e) {
