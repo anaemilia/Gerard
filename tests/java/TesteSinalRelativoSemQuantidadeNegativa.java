@@ -1,4 +1,3 @@
-import gerard.Scaffolding.reacao.ScaffoldingReacaoRepresentacoes;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
@@ -12,7 +11,6 @@ import javax.swing.SwingUtilities;
 
 public final class TesteSinalRelativoSemQuantidadeNegativa {
     public static void main(String[] args) throws Exception {
-        testarRegraPura();
         testarPoliticaRestauracao();
         testarEstadoCompartilhado();
 
@@ -34,18 +32,6 @@ public final class TesteSinalRelativoSemQuantidadeNegativa {
 
         System.out.println("Teste aprovado: somente o valor relativo pode ser negativo; quantidades permanecem não negativas e sincronizadas.");
         System.exit(0);
-    }
-
-    private static void testarRegraPura() {
-        ScaffoldingReacaoRepresentacoes regra = new ScaffoldingReacaoRepresentacoes();
-        exigir(!regra.relacaoPreservaQuantidadeNaoNegativa(6, -8),
-                "6 + (-8) deveria ser rejeitado por produzir quantidade -2.");
-        exigir(regra.relacaoPreservaQuantidadeNaoNegativa(9, -6),
-                "9 + (-6) deveria ser aceito por produzir quantidade 3.");
-        exigir(regra.quantidadeEhNaoNegativa(0),
-                "Zero deve ser quantidade válida.");
-        exigir(!regra.quantidadeEhNaoNegativa(-1),
-                "Quantidade negativa não deve ser válida.");
     }
 
     private static void testarPoliticaRestauracao() {

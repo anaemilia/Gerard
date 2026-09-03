@@ -1,5 +1,4 @@
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
-import gerard.Scaffolding.reacao.ScaffoldingReacaoRepresentacoes;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.campoaditivo.semantica.NaturezaPapelAditivo;
@@ -17,7 +16,6 @@ public final class TestePoliticaValoresAditivos {
         testarNaturezaDosPapeis(catalogo);
         testarPoliticaPorCategoria(politica);
         testarEstadoCompartilhado(politica);
-        testarCalculoDependente();
         testarDelegacaoQuestionamento(catalogo);
 
         System.out.println("TestePoliticaValoresAditivos: OK");
@@ -130,24 +128,6 @@ public final class TestePoliticaValoresAditivos {
                 EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
         exigir(relacoes.isConhecido(0) && relacoes.valorOuZero(0) == -2,
                 "Relações assinadas não podem ser tratadas como quantidades.");
-    }
-
-    private static void testarCalculoDependente() {
-        ScaffoldingReacaoRepresentacoes reacao =
-                new ScaffoldingReacaoRepresentacoes();
-        ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente finalNegativo =
-                reacao.calcularQuantidadeDependente(1, 6, 14, false, -8);
-        exigir(finalNegativo.foiCalculado()
-                        && finalNegativo.getIndiceDependente() == 2
-                        && finalNegativo.getValor().intValue() == -2,
-                "O cálculo deveria identificar o elemento dependente e o valor -2.");
-
-        ScaffoldingReacaoRepresentacoes.ResultadoQuantidadeDependente inicial =
-                reacao.calcularQuantidadeDependente(1, null, 3, true, -6);
-        exigir(inicial.foiCalculado()
-                        && inicial.getIndiceDependente() == 0
-                        && inicial.getValor().intValue() == 9,
-                "O cálculo reverso deveria recuperar a quantidade inicial 9.");
     }
 
     private static void testarDelegacaoQuestionamento(

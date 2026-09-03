@@ -929,3 +929,19 @@ reprovação. TypeScript/Vite compilou 199 módulos.
 - Verificação posterior: 555 fontes compiladas; 111 testes executáveis
   aprovados; 5 testes gráficos compilados e não executados por exigirem
   display; zero reprovações.
+
+## Corte: remoção de ScaffoldingReacaoRepresentacoes (2026-09-02)
+
+- A classe `gerard.Scaffolding.reacao.ScaffoldingReacaoRepresentacoes` ficou
+  órfã desde o corte "remoção do scaffolding reativo legado da Main"
+  (2026-09-01, mais acima): `Main` parou de instanciá-la naquele corte, mas a
+  classe em si não tinha sido apagada. Grep confirmou zero referências fora
+  dela própria e de dois testes que a exercitavam isoladamente.
+- Classe apagada. `TestePoliticaValoresAditivos.testarCalculoDependente` e
+  `TesteSinalRelativoSemQuantidadeNegativa.testarRegraPura` — os dois únicos
+  consumidores, testes unitários puros da classe morta, sem relação com o
+  resto de cada arquivo — foram removidos junto (chamada, método e import).
+  O restante de ambos os arquivos, que testa `PoliticaRestauracaoValorRelativo`
+  e `EstadoSemanticoCompartilhado`, ainda vivos, permanece intocado.
+- Verificação: compilação completa, bateria de testes e verificador
+  estrutural aprovados sem falhas.
