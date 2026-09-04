@@ -27,9 +27,22 @@ button, input { font:inherit; } button { cursor:pointer; }
 .statement-panel { display:flex; align-items:flex-start; gap:22px; padding:18px 20px; }
 .statement-panel h1 { margin:7px 0 0; font-size:clamp(1.05rem,1.4vw,1.28rem); line-height:1.45; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
+.help-mark-wrap { position:relative; flex:none; }
+button.help-mark { background:var(--superficie); cursor:pointer; font:inherit; font-weight:700; }
+button.help-mark:hover,button.help-mark[aria-expanded="true"] { background:#fff3cd; }
+.help-tip { position:absolute; z-index:5; top:42px; left:0; width:max-content; max-width:260px; margin:0; padding:8px 10px; font-size:.85rem; line-height:1.4; background:var(--superficie); border:1px solid var(--borda); border-radius:8px; box-shadow:0 6px 18px rgba(54,51,45,.14); }
+.help-menu { position:absolute; z-index:5; top:42px; left:0; width:max-content; min-width:220px; max-width:280px; margin:0; padding:10px; display:flex; flex-direction:column; gap:8px; background:var(--superficie); border:1px solid var(--borda); border-radius:8px; box-shadow:0 6px 18px rgba(54,51,45,.14); }
+.help-menu-cabecalho { font-size:.82rem; color:var(--texto-secundario); }
+.help-menu-opcoes { display:flex; flex-direction:column; gap:6px; }
+.help-menu-opcoes button { min-height:auto; text-align:left; padding:7px 9px; border:1px solid var(--borda); border-radius:6px; background:var(--superficie); color:var(--texto); font-size:.83rem; }
+.help-menu-opcoes button:hover:not(:disabled) { background:#fff3cd; }
+.help-menu .help-tip { position:static; box-shadow:none; border:none; padding:2px 0 0; }
 .workspace { min-height:0; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr); gap:34px; }
-.diagram-panel { min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
-.response-panel { min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
+.diagram-panel { position:relative; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.response-panel { position:relative; min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
+.diagram-panel > .help-mark-wrap,.response-panel > .help-mark-wrap { position:absolute; top:10px; right:10px; z-index:4; }
+.diagram-panel > .help-mark-wrap .help-menu,.response-panel > .help-mark-wrap .help-menu,
+.diagram-panel > .help-mark-wrap .help-tip,.response-panel > .help-mark-wrap .help-tip { left:auto; right:0; }
 .response-panel h2 { margin:4px 0 8px; font-size:1.3rem; }
 .answer-form { margin-top:32px; } .answer-form label { display:block; margin-bottom:8px; font-weight:700; }
 .answer-controls { display:flex; flex-wrap:wrap; gap:10px; }
@@ -85,5 +98,6 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 /* Elementos do enunciado com vínculo semântico (arrastáveis) — marcador tracejado
    copiado de desenharMarcadoresFixosDoTexto em Main.java (COR_SUPERFICIE/COR_BORDA;
    igual pra qualquer papel, o desktop não diferencia cor por papel). */
-.enunciado-elemento-semantico { display:inline-block; padding:0 3px; border:1px dashed var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; }
+.enunciado-elemento-semantico { display:inline-block; padding:0 3px; border:1px dashed var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; user-select:none; }
 .enunciado-elemento-semantico:active { cursor:grabbing; }
+.enunciado-elemento-arrastando { opacity:.4; border-color:var(--texto); cursor:grabbing; }

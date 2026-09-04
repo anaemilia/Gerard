@@ -10,6 +10,12 @@ export type AcaoDisponivel = Readonly<{
 
 export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null }>;
 export type ElementoTexto = Readonly<{ valor: string; papel_id: string | null; incognita: boolean }>;
+export type AreaAjudaContextual = "TEXTO" | "VERGNAUD" | "COMPLEMENTAR";
+export type IntencaoAjuda = "DUVIDA" | "CONTINUAR" | "PROXIMO_PASSO";
+export type OpcaoAjudaContextual = Readonly<{ intencao: IntencaoAjuda; rotulo: string }>;
+export type ItemAjudaContextual = Readonly<{
+  area: AreaAjudaContextual; cabecalho: string; opcoes: readonly OpcaoAjudaContextual[];
+}>;
 export type EstadoAtividade = Readonly<{
   schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
   categoria: "COMPOSICAO_MEDIDAS"; enunciado: string; relacao: string;
@@ -25,6 +31,8 @@ export type EstadoClassificacao = Readonly<{
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   questionamento?: string; categoria_revelada?: string;
+  dica_proximo_passo?: string | null;
+  ajuda_contextual?: readonly ItemAjudaContextual[];
   cena?: CenaDiagrama;
   elementos_texto?: readonly ElementoTexto[];
   modelagem?: EstadoAtividade | EstadoModelagemTernaria
@@ -69,6 +77,7 @@ export type ResultadoPosicionarConhecido = Readonly<{
 }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
+  valor: number | null; conhecido: boolean;
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;
@@ -84,6 +93,9 @@ export type ResultadoClassificacao = Readonly<{
   schema: "gerard.atividade-web.resultado-classificacao.v1"; action_id: string;
   correta: boolean; diagnostico: string | null; desfecho: string;
   rejeicoes_consecutivas: number; estado: EstadoClassificacao;
+}>;
+export type ResultadoAjudaContextual = Readonly<{
+  schema: "gerard.atividade-web.resultado-ajuda-contextual.v1"; mensagem: string;
 }>;
 export type ResultadoQuadradinho = Readonly<{
   schema: typeof SCHEMA_RESULTADO; aceita: boolean; limite_atingido: boolean;

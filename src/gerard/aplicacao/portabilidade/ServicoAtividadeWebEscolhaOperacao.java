@@ -12,5 +12,11 @@ import java.util.Map;
 public interface ServicoAtividadeWebEscolhaOperacao {
     Map<String, Object> estadoAtual();
     Map<String, Object> escolherOperacao(String seletor, String operacao);
+    /**
+     * Posiciona um papel conhecido com o valor curado — ação que soltar um
+     * elemento do enunciado sobre sua caixa dispara (protocolo de mouse é
+     * posicionar; ver ServicoAtividadeWebComposicao).
+     */
+    Map<String, Object> posicionarValorConhecido(String papelId);
     Map<String, Object> reiniciar();
 }

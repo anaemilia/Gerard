@@ -1,6 +1,5 @@
 import gerard.campoaditivo.curadoria.ConversorSituacaoProblemaRica;
 import gerard.campoaditivo.curadoria.ResultadoConversaoSituacaoProblemaRica;
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebTransformacaoRelacaoRica;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.OperacaoAditiva;
@@ -75,21 +74,14 @@ public class TesteConversorTransformacaoRelacaoRica {
                 relacaoOrientada.diagnosticarValorProposto(
                         inicial, transformacao, finalIncognita,
                         finalIncognita, new NumeroInteiro(8)).isPresent(), true);
-        ServicoAtividadeWebTransformacaoRelacaoRica servicoWeb =
-                new ServicoAtividadeWebTransformacaoRelacaoRica(
-                        "tentativa.web.rica.bonecas", situacao);
-        Map<String, Object> rejeicaoWeb = servicoWeb.proporValor(
-                "papel.relacaoFinal", 8);
-        checar("serviço web rico rejeita +8 sem concluir",
-                Boolean.FALSE.equals(rejeicaoWeb.get("aceita"))
-                        && Boolean.FALSE.equals(((Map<String, Object>)
-                                rejeicaoWeb.get("estado")).get("concluida")), true);
-        Map<String, Object> aceiteWeb = servicoWeb.proporValor(
-                "papel.relacaoFinal", 2);
-        checar("serviço web rico aceita +2 e conclui",
-                Boolean.TRUE.equals(aceiteWeb.get("aceita"))
-                        && Boolean.TRUE.equals(((Map<String, Object>)
-                                aceiteWeb.get("estado")).get("concluida")), true);
+        // ServicoAtividadeWebTransformacaoRelacaoRica foi removido em
+        // 2026-09-04: a ponte rica (ConversorSituacaoProblemaRica, provada
+        // acima) é mecanismo de CURADORIA/validação — confirmado que
+        // Main.java nunca a referencia — não o caminho de atividade em
+        // tempo real do aluno. A web usa ServicoAtividadeWebTransformacaoRelacao
+        // (básica), o mesmo caminho canônico de CatalogoRelacoesEstruturaisAditivas
+        // usado pelo desktop de verdade; ver TesteServicoSorteioAtividadeWeb
+        // para a prova desse caminho.
 
         Cenario empate = cenarioEmpate();
         ResultadoConversaoSituacaoProblemaRica zeroFinal = conversor.converter(

@@ -39,6 +39,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
         servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
         servidor.createContext("/api/acoes/posicionar-conhecido", aplicacao::posicionarConhecido);
+        servidor.createContext("/api/acoes/ajuda-contextual", aplicacao::ajudaContextual);
         servidor.createContext("/api/gestos", aplicacao::registrarGesto);
         servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
         servidor.createContext("/api/sorteios/medidas", aplicacao::sortearMedidas);
@@ -129,6 +130,23 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             responder(troca, 200, sorteios.posicionarValorConhecido(papelId));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void ajudaContextual(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String area = String.valueOf(analisado.get("area"));
+            String intencao = String.valueOf(analisado.get("intencao"));
+            responder(troca, 200, sorteios.ajudaContextual(area, intencao));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -227,6 +245,10 @@ public final class ServidorPrototipoWeb {
         }
         byte[] bytes = Files.readAllBytes(arquivo);
         troca.getResponseHeaders().set("Content-Type", tipoConteudo(arquivo));
+        // Protótipo em iteração ativa: sem isso o navegador pode continuar
+        // servindo do cache um bundle JS/CSS antigo depois de um rebuild,
+        // fazendo uma correção parecer não aplicada.
+        troca.getResponseHeaders().set("Cache-Control", "no-store");
         troca.sendResponseHeaders(200, bytes.length);
         try (OutputStream saida = troca.getResponseBody()) {
             saida.write(bytes);
@@ -237,6 +259,11 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> corpo) throws IOException {
         byte[] bytes = EscritorJsonSimples.escrever(corpo).getBytes(StandardCharsets.UTF_8);
         troca.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        // Sem isso, GET /api/situacao pode ser servido do cache HTTP do
+        // navegador num F5, mostrando estado antigo mesmo com o servidor já
+        // tendo avançado — mesmo problema que motivou o no-store nos
+        // estáticos, só que na consulta em si.
+        troca.getResponseHeaders().set("Cache-Control", "no-store");
         troca.sendResponseHeaders(status, bytes.length);
         try (OutputStream saida = troca.getResponseBody()) {
             saida.write(bytes);

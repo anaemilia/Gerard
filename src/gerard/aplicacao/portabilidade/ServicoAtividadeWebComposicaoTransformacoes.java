@@ -10,6 +10,7 @@ import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.semantica.numero.NumeroInteiro;
 import gerard.semantica.numero.NumeroNatural;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -96,8 +97,22 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         estado.put("segunda_etapa_habilitada", Boolean.valueOf(primeiraCorreta));
         boolean concluida = primeiraCorreta && segundaCorreta;
         estado.put("concluida", Boolean.valueOf(concluida));
-        estado.put("acoes_disponiveis", AcoesDisponiveisAtividadeWeb
-                .escolhaOperacaoRelacao(primeiraCorreta, concluida));
+        // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
+        // os papéis com valor curado não vêm pré-preenchidos; escolher a
+        // operação só libera depois deles estarem posicionados. Papéis sem
+        // valor curado (tipicamente os 3 de estado nesta categoria) nunca
+        // bloqueiam — não têm o que posicionar.
+        boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
+        List<Object> acoes = AcoesDisponiveisAtividadeWeb.escolhaOperacaoRelacao(
+                primeiraCorreta, concluida || !papeisConhecidosProntos);
+        if (!papeisConhecidosProntos) {
+            for (PapelQuantitativo papel : todosOsPapeis()) {
+                if (temValorCurado(papel) && !papel.estaPreenchido()) {
+                    acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
+                }
+            }
+        }
+        estado.put("acoes_disponiveis", acoes);
         return estado;
     }
 
@@ -155,12 +170,9 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         // operacao_relacao/operacao_estado_transformacao. Por isso os 3
         // papéis de estado ficam "não conhecido" quando o campo está vazio,
         // em vez de lançar exceção.
-        posicionarSeCurado(estadoInicial, situacao.getEstadoInicial(), true);
-        posicionarSeCurado(transformacao1, situacao.getQuantidade1(), false);
-        posicionarSeCurado(estadoIntermediario, situacao.getEstadoIntermediario(), true);
-        posicionarSeCurado(transformacao2, situacao.getQuantidade2(), false);
-        posicionarSeCurado(transformacaoFinal, situacao.getResultado(), false);
-        posicionarSeCurado(estadoFinal, situacao.getEstadoFinal(), true);
+        // Nada é pré-posicionado — protocolo de mouse é posicionar: o aluno
+        // arrasta cada papel com valor curado do enunciado até o diagrama
+        // (ver posicionarValorConhecido).
 
         escolhaEntreTransformacoes = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         escolhaEntreEstadoTransformacao = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
@@ -209,21 +221,81 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
                 ? null : opcao.name();
     }
 
-    private static void posicionarSeCurado(PapelQuantitativo papel, String valorCurado,
-            boolean natural) {
-        String limpo = valorCurado == null ? "" : valorCurado.trim();
-        if (limpo.isEmpty()) {
-            return;
+    private PapelQuantitativo[] todosOsPapeis() {
+        return new PapelQuantitativo[] {estadoInicial, transformacao1, estadoIntermediario,
+                transformacao2, transformacaoFinal, estadoFinal};
+    }
+
+    private String valorCuradoDoPapel(PapelQuantitativo papel) {
+        if (papel == estadoInicial) return situacao.getEstadoInicial();
+        if (papel == transformacao1) return situacao.getQuantidade1();
+        if (papel == estadoIntermediario) return situacao.getEstadoIntermediario();
+        if (papel == transformacao2) return situacao.getQuantidade2();
+        if (papel == transformacaoFinal) return situacao.getResultado();
+        if (papel == estadoFinal) return situacao.getEstadoFinal();
+        throw new IllegalStateException("papel incompatível com Composição de Transformações");
+    }
+
+    private boolean ehNatural(PapelQuantitativo papel) {
+        return papel == estadoInicial || papel == estadoIntermediario || papel == estadoFinal;
+    }
+
+    private boolean temValorCurado(PapelQuantitativo papel) {
+        String valor = valorCuradoDoPapel(papel);
+        return valor != null && !valor.trim().isEmpty();
+    }
+
+    private boolean todosOsConhecidosPreenchidos() {
+        for (PapelQuantitativo papel : todosOsPapeis()) {
+            if (temValorCurado(papel) && !papel.estaPreenchido()) {
+                return false;
+            }
         }
-        int numero;
-        try {
-            numero = Integer.parseInt(limpo);
-        } catch (NumberFormatException invalido) {
-            throw new IllegalStateException(
-                    "Valor curado inválido para " + papel.getChave() + ": " + valorCurado,
-                    invalido);
+        return true;
+    }
+
+    private PapelQuantitativo papelPorChave(String chave) {
+        for (PapelQuantitativo papel : todosOsPapeis()) {
+            if (papel.getChave().equals(chave)) {
+                return papel;
+            }
         }
-        papel.posicionar(natural ? new NumeroNatural(numero) : new NumeroInteiro(numero));
+        throw new IllegalStateException(
+                "papel incompatível com Composição de Transformações: " + chave);
+    }
+
+    /**
+     * Posiciona um papel conhecido (só os que têm valor curado — os 3 de
+     * estado tipicamente não têm nesta categoria, ver reiniciar) com esse
+     * valor — ação que soltar um elemento do enunciado sobre sua caixa
+     * dispara (protocolo de mouse é posicionar).
+     */
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+        PapelQuantitativo papel = papelPorChave(papelId);
+        if (!temValorCurado(papel)) {
+            throw new IllegalArgumentException(
+                    "papel sem valor curado para posicionar: " + papelId);
+        }
+        if (!papel.estaPreenchido()) {
+            String limpo = valorCuradoDoPapel(papel).trim();
+            int numero;
+            try {
+                numero = Integer.parseInt(limpo);
+            } catch (NumberFormatException invalido) {
+                throw new IllegalStateException(
+                        "Valor curado inválido para " + papel.getChave() + ": " + limpo, invalido);
+            }
+            gerard.dominio.campoaditivo.ContextoAcao contexto = new gerard.dominio.campoaditivo.ContextoAcao(
+                    "sessao.web.local", "usuario.web.local", tentativaId,
+                    situacao.getId(), "diagrama.vergnaud.web");
+            papel.posicionar(ehNatural(papel) ? new NumeroNatural(numero) : new NumeroInteiro(numero),
+                    gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO, contexto);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
     }
 
     private static Map<String, Object> projetarPapel(PapelQuantitativo papel) {

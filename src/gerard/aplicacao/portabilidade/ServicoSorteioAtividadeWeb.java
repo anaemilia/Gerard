@@ -24,6 +24,9 @@ import gerard.interpretacao.modelo.ResultadoInterpretacao;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
+import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
+import gerard.campoaditivo.servico.ControladorContextoSituacao;
+import gerard.pesquisador.log.LoggerInteracaoGerard;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -46,6 +49,9 @@ public final class ServicoSorteioAtividadeWeb {
     private String questionamento;
     private ServicoAtividadeWeb atividadeModelagem;
     private ServicoAtividadeWebEscolhaOperacao atividadeEscolhaOperacao;
+    private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
+    private final ControladorContextoSituacao controladorContextoSituacao =
+            new ControladorContextoSituacao(LoggerInteracaoGerard.getInstancia());
 
     public ServicoSorteioAtividadeWeb() {
         this(new PoliticaSorteioSituacoesAditivas(),
@@ -70,17 +76,18 @@ public final class ServicoSorteioAtividadeWeb {
 
     /**
      * Estado a exibir na carga inicial da página — nunca um diagrama pronto:
-     * se ainda não há nenhuma situação sorteada nesta sessão, sorteia uma
-     * (grupo aleatório) e devolve o estado de classificação recém-criado,
+     * carregar a página inteira (F5 incluído) sorteia sempre uma situação
+     * nova (grupo aleatório) e devolve o estado de classificação recém-criado,
      * que por si só já esconde a cena até a categoria ser acertada (ver
-     * projetarEstado/revelar). Chamadas seguintes apenas reprojetam o estado
-     * corrente, sem sortear de novo.
+     * projetarEstado/revelar). Uma carga de página é sempre tratada como um
+     * recomeço — nunca reaproveita progresso de classificação/diagrama de
+     * uma chamada anterior a este método. GET /api/situacao (que chama este
+     * método) só é disparado uma vez, no mount da SPA — as demais interações
+     * do fluxo recebem o estado atualizado na própria resposta do POST, sem
+     * passar por aqui de novo.
      */
     public synchronized Map<String, Object> estadoInicial() {
-        if (contextoAtual == null) {
-            return sortear(aleatorio.nextBoolean() ? Grupo.MEDIDAS : Grupo.RELACOES);
-        }
-        return projetarEstado();
+        return sortear(aleatorio.nextBoolean() ? Grupo.MEDIDAS : Grupo.RELACOES);
     }
 
     public synchronized Map<String, Object> sortearMedidas() {
@@ -115,6 +122,13 @@ public final class ServicoSorteioAtividadeWeb {
                 .avaliarEscolha(escolhida, contextoEscolha(escolhida));
         if (registro.foiCorreta()) {
             categoriaSelecionada = escolhida;
+            // Mesmo ponto do desktop (confirmarCategoriaAdivinhada,
+            // Main.java): o contexto do log granular só é atualizado quando
+            // a categoria é confirmada, não a cada tentativa de
+            // classificação — comportamento existente, não uma escolha nova.
+            controladorContextoSituacao.registrarNovaSituacao(
+                    contextoAtual.getSituacao(), escolhida.name(),
+                    contextoAtual.getEnunciadoExibido());
             if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
                 atividadeModelagem = new ServicoAtividadeWebComposicao(
                         "tentativa.web." + contextoAtual.getSituacao().getId(),
@@ -127,14 +141,23 @@ public final class ServicoSorteioAtividadeWeb {
                 atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
                         "tentativa.web." + contextoAtual.getSituacao().getId(),
                         contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                    && contextoAtual.possuiSituacaoRicaValida()) {
-                atividadeModelagem =
-                        new ServicoAtividadeWebTransformacaoRelacaoRica(
-                                "tentativa.web."
-                                        + contextoAtual.getSituacao().getId(),
-                                contextoAtual.getResultadoSituacaoRica()
-                                        .getSituacaoOuFalhar());
+            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+                // RelacaoEstruturalTransformacaoDeRelacao (básica, só dado
+                // tabular) é o caminho CANÔNICO real — confirmado em
+                // CatalogoRelacoesEstruturaisAditivas, o resolvedor usado por
+                // EstadoSemanticoCompartilhado.resolverRelacaoAditiva em todo
+                // o desktop, que nunca referencia a variante "Orientada".
+                // A variante Orientada/rica só existe dentro de
+                // ConversorSituacaoProblemaRica, uma ponte de CURADORIA
+                // (gera SituacaoProblema validado para ferramentas de
+                // pesquisador) — não o caminho de resolução em tempo real.
+                // ServicoAtividadeWebTransformacaoRelacaoRica usava esse
+                // mecanismo secundário por engano; removido em 2026-09-04
+                // (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md-style
+                // achado: fonte de verdade divergente da canônica).
+                atividadeModelagem = new ServicoAtividadeWebTransformacaoRelacao(
+                        "tentativa.web." + contextoAtual.getSituacao().getId(),
+                        contextoAtual.getSituacao());
             } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
                 atividadeEscolhaOperacao =
                         new ServicoAtividadeWebComposicaoTransformacoes(
@@ -174,16 +197,22 @@ public final class ServicoSorteioAtividadeWeb {
     /**
      * Posiciona um papel conhecido (nunca a incógnita) — a ação que soltar
      * qualquer elemento não-incógnita do enunciado sobre sua caixa dispara
-     * (protocolo de mouse é posicionar). Só existe para Composição de
-     * Medidas hoje (piloto).
+     * (protocolo de mouse é posicionar). Vale para as 4 categorias com
+     * modelagem de papel (Composição/Transformação/Comparação de Medidas,
+     * Transformação de Relação); categorias de escolha de operação
+     * (Composição de Transformações/Relações) não têm papel desconhecido
+     * nesse sentido.
      */
     public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
-        if (!(atividadeModelagem instanceof ServicoAtividadeWebComposicao)) {
+        Map<String, Object> resultado;
+        if (atividadeModelagem != null) {
+            resultado = atividadeModelagem.posicionarValorConhecido(papelId);
+        } else if (atividadeEscolhaOperacao != null) {
+            resultado = atividadeEscolhaOperacao.posicionarValorConhecido(papelId);
+        } else {
             throw new IllegalStateException(
                     "a situação atual não possui posicionamento de papel conhecido implementado");
         }
-        Map<String, Object> resultado = ((ServicoAtividadeWebComposicao) atividadeModelagem)
-                .posicionarValorConhecido(papelId);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -308,12 +337,21 @@ public final class ServicoSorteioAtividadeWeb {
             estado.put("acoes_disponiveis",
                     AcoesDisponiveisAtividadeWeb.classificacaoCategoria());
         }
+        // Mesmo texto do "?" ao lado do enunciado no desktop
+        // (botaoAtalhoProximoPasso, Main.java), visível enquanto a categoria
+        // ainda não foi confirmada (!categoriaSelecionadaParaAtividade).
+        // Depois de confirmada, o desktop troca para o menu "E agora?"
+        // (botaoAjudaTexto/Vergnaud/Complementar, ver ajuda_contextual
+        // abaixo).
+        estado.put("dica_proximo_passo", categoriaSelecionada == null
+                ? AjudaContextualWeb.textoDicaProximoPasso()
+                : null);
         boolean revelar = categoriaSelecionada != null
                 || tentativaClassificacao.estaEncerrada();
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
             estado.put("cena", projetarCena(contextoAtual,
-                    listaDeAcoes(estado.get("acoes_disponiveis"))));
+                    listaDeAcoes(estado.get("acoes_disponiveis")), estado.get("modelagem")));
             estado.put("elementos_texto", projetarElementosTexto(contextoAtual));
         } else {
             estado.remove("categoria");
@@ -327,10 +365,84 @@ public final class ServicoSorteioAtividadeWeb {
             estado.remove("curadoria");
             estado.remove("elementos_texto");
         }
+        // Menu "E agora?" (botaoAjudaTexto/Vergnaud/Complementar, Main.java)
+        // só existe depois que a categoria foi de fato confirmada — mesma
+        // condição de reposicionarBotaoAjudaTexto (categoriaSelecionadaParaAtividade).
+        // REEXPLICACAO_CATEGORIA revela a cena mas não confirma categoria,
+        // então não entra aqui.
+        if (categoriaSelecionada != null) {
+            estado.put("ajuda_contextual", projetarAjudaContextual(estado.get("modelagem")));
+        } else {
+            estado.remove("ajuda_contextual");
+        }
         // A curadoria bruta contém a resposta da incógnita e nunca integra o
         // contrato público do participante, mesmo após a classificação.
         estado.remove("curadoria");
         return estado;
+    }
+
+    /**
+     * Estrutura do menu "E agora?" por área — cabeçalho e rótulos das 3
+     * opções (DUVIDA/CONTINUAR/PROXIMO_PASSO), sem a mensagem: igual ao
+     * desktop (mostrarMenuAjudaContextual/criarOpcaoAjudaContextual,
+     * Main.java), que só resolve a mensagem quando a opção é clicada (ver
+     * ajudaContextual). TEXTO e VERGNAUD sempre presentes quando a categoria
+     * está confirmada; COMPLEMENTAR só quando a modelagem atual expõe
+     * material_concreto_disponivel=true (único caso real portado hoje —
+     * quadradinhos de Composição de Medidas, liberados só após o erro
+     * consecutivo, nunca por padrão).
+     */
+    private List<Object> projetarAjudaContextual(Object modelagem) {
+        List<Object> areas = new ArrayList<Object>();
+        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.TEXTO));
+        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.VERGNAUD));
+        if (modelagem instanceof Map
+                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"))) {
+            areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.COMPLEMENTAR));
+        }
+        return areas;
+    }
+
+    /**
+     * Ação de clicar numa opção do menu "E agora?" — resolve a mensagem real
+     * (ui.help.<area>.<intencao>, mensagens_pt.properties) e grava o mesmo
+     * fato granular do desktop (registrarAcaoGranular, Main.java:2874-2892),
+     * agora via LoggerInteracaoGerard.getInstancia() — primeira vez que o
+     * pacote portabilidade grava nesse log. O contexto (categoria/enunciado)
+     * já foi carregado em escolherCategoria via controladorContextoSituacao.
+     */
+    public synchronized Map<String, Object> ajudaContextual(String areaTexto, String intencaoTexto) {
+        ScaffoldingAjudaContextual.Area area;
+        ScaffoldingAjudaContextual.Intencao intencao;
+        try {
+            area = ScaffoldingAjudaContextual.Area.valueOf(areaTexto);
+            intencao = ScaffoldingAjudaContextual.Intencao.valueOf(intencaoTexto);
+        } catch (RuntimeException erro) {
+            throw new IllegalArgumentException("área ou intenção de ajuda contextual inválida: "
+                    + areaTexto + "/" + intencaoTexto);
+        }
+        String nomeArea = AjudaContextualWeb.nomeArea(scaffoldingAjudaContextual, area);
+        String rotuloOpcao = AjudaContextualWeb.rotuloOpcao(scaffoldingAjudaContextual, intencao);
+        String mensagem = AjudaContextualWeb.mensagem(scaffoldingAjudaContextual, area, intencao);
+        // Mesmos 9 argumentos que o wrapper privado registrarAcaoGranular
+        // do desktop monta (Main.java:11063-11067) a partir dos 7 que
+        // criarOpcaoAjudaContextual passa — "OBJ_INTERACAO" e
+        // "ACAO_GRANULAR_SELECIONAR" são os dois fixos que o wrapper
+        // acrescenta antes de chamar registrarAcaoGranularUsuario.
+        LoggerInteracaoGerard.getInstancia().registrarAcaoGranularUsuario(
+                "SELECIONAR",
+                "Solicitar ajuda contextual",
+                nomeArea,
+                "MENU_E_AGORA",
+                rotuloOpcao,
+                "OBJ_INTERACAO",
+                "ACAO_GRANULAR_SELECIONAR",
+                "area=" + area.name() + "; intencao=" + intencao.name(),
+                "A orientação contextual da área foi apresentada.");
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", "gerard.atividade-web.resultado-ajuda-contextual.v1");
+        resultado.put("mensagem", mensagem);
+        return resultado;
     }
 
     /**
@@ -360,10 +472,11 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     private static Map<String, Object> projetarCena(
-            ContextoCarregamentoAtividade contexto, List<Object> acoes) {
+            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
         CenaDiagramaAditivo cena = new GeradorCenaDiagramaAditivo().gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
                 contexto.getDefinicao(), new int[] {0, 0, 0});
+        Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
@@ -386,6 +499,14 @@ public final class ServicoSorteioAtividadeWeb {
                             figura.getChavePapelSemantico());
             item.put("subtitulo", papel == null ? "" : papel.getParticipante());
             item.put("lupa_habilitada", Boolean.FALSE);
+            // Valor atual do papel (null enquanto não posicionado) — sem
+            // isso o cliente nunca saberia o que mostrar na caixa depois de
+            // arrastar/confirmar um valor (achado ao testar o arraste ao
+            // vivo: o valor era gravado no servidor, mas a caixa continuava
+            // vazia porque a cena nunca carregava esse dado).
+            Object papelProjetado = valoresPorChave.get(figura.getChavePapelSemantico());
+            item.put("valor", extrairCampo(papelProjetado, "valor"));
+            item.put("conhecido", extrairCampo(papelProjetado, "conhecido"));
             item.put("interacoes_permitidas", projetarInteracoesPermitidas(
                     acoes, figura.getChavePapelSemantico()));
             figuras.add(item);
@@ -425,6 +546,50 @@ public final class ServicoSorteioAtividadeWeb {
                 Boolean.valueOf(DecisaoExibicaoPaineisEixo.existeAlgumComLupa(
                         cena.getFiguras())));
         return resultado;
+    }
+
+    /**
+     * Varre o mapa de modelagem (formato varia por categoria: campos
+     * nomeados como parte1/parte2/todo, estado_inicial/transformacao_1/...,
+     * relacao_1/relacao_2/relacao_final, ou uma lista "papeis") e coleta,
+     * por chave de papel, o mapa já projetado por projetarPapel
+     * ({id, nome, conhecido, valor}) — sem precisar saber qual formato é
+     * qual, já que todos os projetarPapel* das 6 categorias produzem o
+     * mesmo formato de item.
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> extrairValoresDePapeisProjetados(Object modelagem) {
+        Map<String, Object> valores = new LinkedHashMap<String, Object>();
+        if (!(modelagem instanceof Map)) {
+            return valores;
+        }
+        for (Object valor : ((Map<String, Object>) modelagem).values()) {
+            coletarPapelProjetado(valor, valores);
+            if (valor instanceof List) {
+                for (Object item : (List<Object>) valor) {
+                    coletarPapelProjetado(item, valores);
+                }
+            }
+        }
+        return valores;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void coletarPapelProjetado(Object valor, Map<String, Object> destino) {
+        if (!(valor instanceof Map)) {
+            return;
+        }
+        Map<String, Object> papel = (Map<String, Object>) valor;
+        Object id = papel.get("id");
+        if (id instanceof String && papel.containsKey("valor") && papel.containsKey("conhecido")) {
+            destino.put((String) id, papel);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object extrairCampo(Object papelProjetado, String campo) {
+        return papelProjetado instanceof Map
+                ? ((Map<String, Object>) papelProjetado).get(campo) : null;
     }
 
     /**

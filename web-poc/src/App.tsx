@@ -5,6 +5,7 @@ import type { AcaoDisponivel, EstadoWeb, FiguraCena,
 import { BarraCategorias } from "./BarraCategorias";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { MaterialConcretoQuadradinhos } from "./MaterialConcretoQuadradinhos";
+import { MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
@@ -17,6 +18,7 @@ export default function App() {
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({ texto: "Carregando situação…", tipo: "neutra" });
   const [mensagemOperacao, setMensagemOperacao] = useState<string | null>(null);
+  const [dicaVisivel, setDicaVisivel] = useState(false);
 
   useEffect(() => {
     api.carregar().then((e) => { receberSnapshot(e); setMensagem({ texto: "Preencha a incógnita e confirme.", tipo: "neutra" }); })
@@ -73,10 +75,10 @@ export default function App() {
 
   function iniciarEdicaoValor(figura: FiguraCena, interacao: InteracaoPermitidaFigura) {
     const modelagem = estado?.modelagem;
-    const papel = modelagem && "parte1" in modelagem
+    const papeis = modelagem && "parte1" in modelagem
       ? [modelagem.parte1, modelagem.parte2, modelagem.todo]
-        .find((item) => item.id === interacao.papel_id)
-      : undefined;
+      : modelagem && "papeis" in modelagem ? modelagem.papeis : undefined;
+    const papel = papeis?.find((item) => item.id === interacao.papel_id);
     const valorInicial = papel?.conhecido && papel.valor !== null ? String(papel.valor) : undefined;
     enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
       elementoId: figura.id, actionId: interacao.acao_id, valorInicial });
@@ -121,6 +123,15 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  function aoSoltarNoDiagrama(papelId: string, x: number, y: number) {
+    const alvo = document.elementFromPoint(x, y)?.closest("[data-figura-id]");
+    const figuraId = alvo?.getAttribute("data-figura-id");
+    const figura = estado?.cena?.figuras.find((item) => item.id === figuraId);
+    // Soltar fora de qualquer figura só encerra o gesto, sem efeito — mesmo
+    // invariante do desktop (gerard-ajuda-adaptativa): não é erro nem ação.
+    if (figura) void aoSoltarElementoNoDiagrama(figura, papelId);
+  }
+
   async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
     // Erro só ao soltar, nunca durante o arrasto (protocolo de mouse, ver
     // gerard-scaffolding-interacao): soltar em cima da caixa errada é
@@ -136,7 +147,14 @@ export default function App() {
     }
     const posicionar = figura.interacoes_permitidas.find((item) => item.tipo === "POSICIONAR_CONHECIDO");
     if (!posicionar) {
-      setMensagem({ texto: "Esse valor já está posicionado.", tipo: "neutra" });
+      // Duas razões distintas pra não ter a ação: o valor já foi posicionado
+      // (normal, neutro) ou esta situação não tem nenhuma atividade
+      // implementada pra essa categoria (achado ao testar: acontece com
+      // Transformação de Relação sem dado rico curado — a caixa fica sem
+      // nenhuma interação desde o início, não é "já posicionado").
+      setMensagem(figura.conhecido
+        ? { texto: "Esse valor já está posicionado.", tipo: "neutra" }
+        : { texto: "Esta situação ainda não tem atividade implementada nesta categoria.", tipo: "erro" });
       return;
     }
     setOcupado(true);
@@ -180,6 +198,9 @@ export default function App() {
     && estado.modelagem.material_concreto_disponivel
     ? estado.modelagem
     : undefined;
+  function itemAjuda(area: "TEXTO" | "VERGNAUD" | "COMPLEMENTAR") {
+    return estado?.ajuda_contextual?.find((item) => item.area === area);
+  }
 
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
@@ -195,21 +216,33 @@ export default function App() {
     </p>}
     {estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
-        <span className="help-mark" aria-hidden="true">?</span>
+        {estado.dica_proximo_passo
+          ? <div className="help-mark-wrap" onMouseEnter={() => setDicaVisivel(true)}
+              onMouseLeave={() => setDicaVisivel(false)}
+              onFocus={() => setDicaVisivel(true)}
+              onBlur={(evento) => { if (!evento.currentTarget.contains(evento.relatedTarget as Node)) setDicaVisivel(false); }}>
+              <button type="button" className="help-mark" aria-expanded={dicaVisivel}
+                aria-label="Qual é o próximo passo?">?</button>
+              {dicaVisivel && <p className="help-tip" role="status">{estado.dica_proximo_passo}</p>}
+            </div>
+          : itemAjuda("TEXTO")
+            ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
+            : <span className="help-mark" aria-hidden="true">?</span>}
         {estado.elementos_texto
-          ? <EnunciadoInterativo elementos={estado.elementos_texto} />
+          ? <EnunciadoInterativo elementos={estado.elementos_texto} aoSoltar={aoSoltarNoDiagrama} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className="diagram-panel" aria-label="Área do diagrama">
+          <MenuAjudaContextual item={itemAjuda("VERGNAUD")} />
           {estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
-            aoSoltarElemento={aoSoltarElementoNoDiagrama}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
+          <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
           {modelagemMaterialConcreto && <MaterialConcretoQuadradinhos
             modelagem={modelagemMaterialConcreto} ocupado={ocupado}
             aoAjustar={(delta) => void ajustarQuadradinho(delta)} />}

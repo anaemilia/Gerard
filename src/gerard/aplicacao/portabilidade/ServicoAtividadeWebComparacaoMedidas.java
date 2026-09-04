@@ -60,10 +60,51 @@ public final class ServicoAtividadeWebComparacaoMedidas
                 && relacao.verificarConsistencia(referido, valorRelativo, referendo)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
-        estado.put("acoes_disponiveis",
-                AcoesDisponiveisAtividadeWeb.modelagemPapel(
-                        concluida, papelDesconhecido.getChave()));
+        // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
+        // os papéis conhecidos não vêm pré-preenchidos, só a incógnita fica
+        // disponível depois dos outros dois estarem posicionados.
+        boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
+        List<Object> acoes = AcoesDisponiveisAtividadeWeb.modelagemPapel(
+                concluida || !papeisConhecidosProntos, papelDesconhecido.getChave());
+        if (!papeisConhecidosProntos) {
+            for (PapelQuantitativo papel : new PapelQuantitativo[] {referido, valorRelativo, referendo}) {
+                if (papel != papelDesconhecido && !papel.estaPreenchido()) {
+                    acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
+                }
+            }
+        }
+        estado.put("acoes_disponiveis", acoes);
         return estado;
+    }
+
+    private boolean todosOsConhecidosPreenchidos() {
+        for (PapelQuantitativo papel : new PapelQuantitativo[] {referido, valorRelativo, referendo}) {
+            if (papel != papelDesconhecido && !papel.estaPreenchido()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Posiciona um papel conhecido (nunca a incógnita) com o valor curado —
+     * ação que soltar um elemento não-incógnita do enunciado sobre sua caixa
+     * dispara (protocolo de mouse é posicionar, ver ServicoAtividadeWebComposicao).
+     */
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+        PapelQuantitativo papel = papelPorChave(papelId);
+        if (papel == papelDesconhecido) {
+            throw new IllegalArgumentException(
+                    "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
+        }
+        if (!papel.estaPreenchido()) {
+            posicionarConhecido(papel);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
     }
 
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
@@ -120,23 +161,25 @@ public final class ServicoAtividadeWebComparacaoMedidas
                     + incognita.mensagemInconsistencia());
         }
         papelDesconhecido = papelPorChave(incognita.getChaveEfetiva());
-        posicionarConhecido(referido);
-        posicionarConhecido(valorRelativo);
-        posicionarConhecido(referendo);
+        // Nada é pré-posicionado — protocolo de mouse é posicionar: o aluno
+        // arrasta cada papel (conhecido ou incógnita) do enunciado até o
+        // diagrama (ver posicionarValorConhecido / proporValor).
         relacao = RelacaoEstruturalComparacao.comparacaoDeMedidas();
         return estadoAtual();
     }
 
     private void posicionarConhecido(PapelQuantitativo papel) {
-        if (papel == papelDesconhecido) return;
         Integer valor = SemanticaCuradaSituacao.buscarValorInteiroVisivel(
                 situacao, null, papel.getChave());
         if (valor == null) {
             throw new IllegalStateException(
                     "valor curado ausente para " + papel.getChave());
         }
+        ContextoAcao contexto = new ContextoAcao(
+                "sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "diagrama.vergnaud.web");
         papel.posicionar(new NumeroInteiro(valor.intValue()),
-                OrigemAcao.ORIGEM_SISTEMA, ContextoAcao.NAO_INFORMADO);
+                OrigemAcao.ORIGEM_USUARIO, contexto);
     }
 
     private PapelQuantitativo papelPorChave(String chave) {

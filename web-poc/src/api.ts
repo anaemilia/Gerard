@@ -1,4 +1,5 @@
-import type { AcaoDisponivel, EstadoWeb, ResultadoAcao, ResultadoClassificacao, ResultadoPosicionarConhecido, ResultadoQuadradinho } from "./contratos";
+import type { AcaoDisponivel, AreaAjudaContextual, EstadoWeb, IntencaoAjuda, ResultadoAcao,
+  ResultadoAjudaContextual, ResultadoClassificacao, ResultadoPosicionarConhecido, ResultadoQuadradinho } from "./contratos";
 
 async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
   const resposta = await fetch(url, init);
@@ -37,5 +38,10 @@ export const api = {
     requisitar<ResultadoPosicionarConhecido>(acao.href, {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
       body: JSON.stringify(acao.corpo ?? {})
+    }),
+  ajudaContextual: (area: AreaAjudaContextual, intencao: IntencaoAjuda) =>
+    requisitar<ResultadoAjudaContextual>("/api/acoes/ajuda-contextual", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ area, intencao })
     })
 };

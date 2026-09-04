@@ -6,11 +6,11 @@ import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
-import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoMedidas;
+import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoDeRelacao;
 import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
-import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacao;
+import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacaoDeRelacao;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.numero.NumeroInteiro;
@@ -20,23 +20,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Tentativa web portátil de Transformação de Medidas. */
-public final class ServicoAtividadeWebTransformacaoMedidas
+/**
+ * Tentativa web portátil de Transformação de Relação — caminho BÁSICO, sem
+ * depender de narrativa rica (ver {@link ServicoAtividadeWebTransformacaoRelacaoRica},
+ * que exige um XML sidecar em narrativas-ricas/ — pasta que hoje nem existe
+ * neste ambiente, deixando 100% das situações desta categoria sem nenhuma
+ * atividade, mesmo quando o dado tabular básico já é suficiente).
+ *
+ * Usa {@link RelacaoEstruturalTransformacaoDeRelacao} (RelacaoFinal =
+ * RelacaoInicial + Transformacao, sem orientação narrativa — a variante
+ * "Orientada" é que exige o dado rico) e
+ * {@link FabricaPapeisTransformacaoDeRelacao}, exatamente o mesmo padrão já
+ * usado por ServicoAtividadeWebTransformacaoMedidas/ComparacaoMedidas.
+ * Confirmado contra captura de tela do desktop (2026-09-04): a mesma
+ * situação ("Ana tem 5 figurinhas a mais que Bia...") funciona lá sem
+ * nenhuma narrativa rica — RelacaoInicial já aparece posicionada com "+5".
+ */
+public final class ServicoAtividadeWebTransformacaoRelacao
         implements ServicoAtividadeWeb {
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
-    private PapelQuantitativo estadoInicial;
+    private PapelQuantitativo relacaoInicial;
     private PapelQuantitativo transformacao;
-    private PapelQuantitativo estadoFinal;
+    private PapelQuantitativo relacaoFinal;
     private PapelQuantitativo papelDesconhecido;
-    private RelacaoEstruturalTransformacao relacao;
+    private RelacaoEstruturalTransformacaoDeRelacao relacao;
 
-    public ServicoAtividadeWebTransformacaoMedidas(String tentativaId,
+    public ServicoAtividadeWebTransformacaoRelacao(String tentativaId,
             SituacaoProblemaAditiva situacao) {
         if (situacao == null
-                || situacao.getTipo() != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+                || situacao.getTipo() != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             throw new IllegalArgumentException(
-                    "situação de Transformação de Medidas é obrigatória");
+                    "situação de Transformação de Relação é obrigatória");
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
@@ -48,17 +63,17 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         estado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_ESTADO);
         estado.put("situacao_id", situacao.getId());
         estado.put("tentativa_id", tentativaId);
-        estado.put("categoria", TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS.name());
+        estado.put("categoria", TipoSituacaoAditiva.TRANSFORMACAO_RELACAO.name());
         estado.put("relacao", relacao.descreverRelacao());
         estado.put("papel_desconhecido_original", papelDesconhecido.getChave());
         List<Object> papeis = new ArrayList<Object>();
-        papeis.add(projetarPapel(estadoInicial));
+        papeis.add(projetarPapel(relacaoInicial));
         papeis.add(projetarPapel(transformacao));
-        papeis.add(projetarPapel(estadoFinal));
+        papeis.add(projetarPapel(relacaoFinal));
         estado.put("papeis", papeis);
         boolean concluida = papelDesconhecido.estaPreenchido()
                 && relacao.verificarConsistencia(
-                        estadoInicial, transformacao, estadoFinal)
+                        relacaoInicial, transformacao, relacaoFinal)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
@@ -68,7 +83,7 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         List<Object> acoes = AcoesDisponiveisAtividadeWeb.modelagemPapel(
                 concluida || !papeisConhecidosProntos, papelDesconhecido.getChave());
         if (!papeisConhecidosProntos) {
-            for (PapelQuantitativo papel : new PapelQuantitativo[] {estadoInicial, transformacao, estadoFinal}) {
+            for (PapelQuantitativo papel : new PapelQuantitativo[] {relacaoInicial, transformacao, relacaoFinal}) {
                 if (papel != papelDesconhecido && !papel.estaPreenchido()) {
                     acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
                 }
@@ -79,7 +94,7 @@ public final class ServicoAtividadeWebTransformacaoMedidas
     }
 
     private boolean todosOsConhecidosPreenchidos() {
-        for (PapelQuantitativo papel : new PapelQuantitativo[] {estadoInicial, transformacao, estadoFinal}) {
+        for (PapelQuantitativo papel : new PapelQuantitativo[] {relacaoInicial, transformacao, relacaoFinal}) {
             if (papel != papelDesconhecido && !papel.estaPreenchido()) {
                 return false;
             }
@@ -120,8 +135,8 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         IdentidadeAcaoInstrumentalPapel identidade = papelDesconhecido
                 .iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO);
         Optional<DiagnosticoErroPapel> diagnostico = relacao
-                .diagnosticarValorProposto(estadoInicial, transformacao,
-                        estadoFinal, papelDesconhecido, proposta);
+                .diagnosticarValorProposto(relacaoInicial, transformacao,
+                        relacaoFinal, papelDesconhecido, proposta);
         ResultadoRegistroTentativaPapel registro = papelDesconhecido
                 .registrarTentativaComIdentidade(
                         identidade, diagnostico, contexto, proposta);
@@ -135,9 +150,6 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
         resultado.put("diagnostico", diagnostico.isPresent()
                 ? diagnostico.get().getTipo().name() : null);
-        // getChaveMensagem() não é texto exibível (ver o comentário em
-        // ServicoAtividadeWebComposicao.proporValor) — chave_mensagem usa o
-        // texto real via MensagemFeedbackIncognitaWeb.
         resultado.put("chave_mensagem", diagnostico.isPresent()
                 ? MensagemFeedbackIncognitaWeb.resolver(papelDesconhecido, registro) : null);
         resultado.put("limite_atingido", Boolean.valueOf(
@@ -149,12 +161,12 @@ public final class ServicoAtividadeWebTransformacaoMedidas
     }
 
     public synchronized Map<String, Object> reiniciar() {
-        estadoInicial = FabricaPapeisTransformacaoMedidas
-                .estadoInicial(PublicadorEventoDominio.NENHUM);
-        transformacao = FabricaPapeisTransformacaoMedidas
+        relacaoInicial = FabricaPapeisTransformacaoDeRelacao
+                .relacaoInicial(PublicadorEventoDominio.NENHUM);
+        transformacao = FabricaPapeisTransformacaoDeRelacao
                 .transformacao(PublicadorEventoDominio.NENHUM);
-        estadoFinal = FabricaPapeisTransformacaoMedidas
-                .estadoFinal(PublicadorEventoDominio.NENHUM);
+        relacaoFinal = FabricaPapeisTransformacaoDeRelacao
+                .relacaoFinal(PublicadorEventoDominio.NENHUM);
         ResolvedorIncognitaCurada.Resultado incognita =
                 new ResolvedorIncognitaCurada().resolver(situacao);
         if (!incognita.possuiIncognita() || incognita.possuiConflito()) {
@@ -165,7 +177,7 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         // Nada é pré-posicionado — protocolo de mouse é posicionar: o aluno
         // arrasta cada papel (conhecido ou incógnita) do enunciado até o
         // diagrama (ver posicionarValorConhecido / proporValor).
-        relacao = RelacaoEstruturalTransformacao.transformacaoDeMedidas();
+        relacao = RelacaoEstruturalTransformacaoDeRelacao.transformacaoDeRelacao();
         return estadoAtual();
     }
 
@@ -184,11 +196,11 @@ public final class ServicoAtividadeWebTransformacaoMedidas
     }
 
     private PapelQuantitativo papelPorChave(String chave) {
-        if (estadoInicial.getChave().equals(chave)) return estadoInicial;
+        if (relacaoInicial.getChave().equals(chave)) return relacaoInicial;
         if (transformacao.getChave().equals(chave)) return transformacao;
-        if (estadoFinal.getChave().equals(chave)) return estadoFinal;
+        if (relacaoFinal.getChave().equals(chave)) return relacaoFinal;
         throw new IllegalStateException(
-                "papel incompatível com Transformação de Medidas: " + chave);
+                "papel incompatível com Transformação de Relação: " + chave);
     }
 
     private static Map<String, Object> projetarPapel(PapelQuantitativo papel) {

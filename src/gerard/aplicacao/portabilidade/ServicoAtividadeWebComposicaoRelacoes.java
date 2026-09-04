@@ -5,11 +5,14 @@ import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoO
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.FabricaPapeisComposicaoDeRelacoes;
+import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.numero.NumeroInteiro;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,8 +70,20 @@ public final class ServicoAtividadeWebComposicaoRelacoes
         estado.put("correta", escolha == null || escolha == OpcaoOperacaoCuradoria.NAO_SELECIONADO
                 ? null : Boolean.valueOf(correta));
         estado.put("concluida", Boolean.valueOf(correta));
-        estado.put("acoes_disponiveis",
-                AcoesDisponiveisAtividadeWeb.escolhaOperacaoRelacao(false, correta));
+        // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
+        // os 3 papéis não vêm pré-preenchidos; escolher a operação só libera
+        // depois deles estarem posicionados.
+        boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
+        List<Object> acoes = AcoesDisponiveisAtividadeWeb.escolhaOperacaoRelacao(
+                false, correta || !papeisConhecidosProntos);
+        if (!papeisConhecidosProntos) {
+            for (PapelQuantitativo papel : todosOsPapeis()) {
+                if (!papel.estaPreenchido()) {
+                    acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
+                }
+            }
+        }
+        estado.put("acoes_disponiveis", acoes);
         return estado;
     }
 
@@ -99,9 +114,9 @@ public final class ServicoAtividadeWebComposicaoRelacoes
         relacao2 = FabricaPapeisComposicaoDeRelacoes.relacao2(nenhum);
         relacaoFinal = FabricaPapeisComposicaoDeRelacoes.relacaoFinal(nenhum);
 
-        posicionarSeCurado(relacao1, situacao.getQuantidade1(), "relacao_1");
-        posicionarSeCurado(relacao2, situacao.getQuantidade2(), "relacao_2");
-        posicionarSeCurado(relacaoFinal, situacao.getResultado(), "relacao_final");
+        // Nada é pré-posicionado — protocolo de mouse é posicionar: o aluno
+        // arrasta cada papel do enunciado até o diagrama (ver
+        // posicionarValorConhecido).
 
         escolha = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         return estadoAtual();
@@ -117,20 +132,62 @@ public final class ServicoAtividadeWebComposicaoRelacoes
         return AvaliacaoEscolhaOperacaoRelacao.respondeuCorretamente(escolhaAluno, escolhaCorreta);
     }
 
-    private static void posicionarSeCurado(PapelQuantitativo papel, String valorCurado,
-            String campo) {
-        String limpo = valorCurado == null ? "" : valorCurado.trim();
-        if (limpo.isEmpty()) {
-            return;
+    private PapelQuantitativo[] todosOsPapeis() {
+        return new PapelQuantitativo[] {relacao1, relacao2, relacaoFinal};
+    }
+
+    private boolean todosOsConhecidosPreenchidos() {
+        for (PapelQuantitativo papel : todosOsPapeis()) {
+            if (!papel.estaPreenchido()) {
+                return false;
+            }
         }
-        int numero;
-        try {
-            numero = Integer.parseInt(limpo);
-        } catch (NumberFormatException invalido) {
-            throw new IllegalStateException("Valor curado inválido em " + campo
-                    + " da situação curada: " + valorCurado, invalido);
+        return true;
+    }
+
+    private String valorCuradoDoPapel(PapelQuantitativo papel) {
+        if (papel == relacao1) return situacao.getQuantidade1();
+        if (papel == relacao2) return situacao.getQuantidade2();
+        if (papel == relacaoFinal) return situacao.getResultado();
+        throw new IllegalStateException("papel incompatível com Composição de Relações");
+    }
+
+    private PapelQuantitativo papelPorChave(String chave) {
+        for (PapelQuantitativo papel : todosOsPapeis()) {
+            if (papel.getChave().equals(chave)) {
+                return papel;
+            }
         }
-        papel.posicionar(new NumeroInteiro(numero));
+        throw new IllegalStateException(
+                "papel incompatível com Composição de Relações: " + chave);
+    }
+
+    /**
+     * Posiciona um papel conhecido com o valor curado — ação que soltar um
+     * elemento do enunciado sobre sua caixa dispara (protocolo de mouse é
+     * posicionar).
+     */
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+        PapelQuantitativo papel = papelPorChave(papelId);
+        if (!papel.estaPreenchido()) {
+            String limpo = valorCuradoDoPapel(papel) == null ? "" : valorCuradoDoPapel(papel).trim();
+            int numero;
+            try {
+                numero = Integer.parseInt(limpo);
+            } catch (NumberFormatException invalido) {
+                throw new IllegalStateException(
+                        "Valor curado inválido para " + papel.getChave() + ": " + limpo, invalido);
+            }
+            ContextoAcao contexto = new ContextoAcao(
+                    "sessao.web.local", "usuario.web.local", tentativaId,
+                    situacao.getId(), "diagrama.vergnaud.web");
+            papel.posicionar(new NumeroInteiro(numero), OrigemAcao.ORIGEM_USUARIO, contexto);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
     }
 
     /**
