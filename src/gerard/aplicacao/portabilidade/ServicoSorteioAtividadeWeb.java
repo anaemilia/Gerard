@@ -68,6 +68,21 @@ public final class ServicoSorteioAtividadeWeb {
         this.idioma = idioma;
     }
 
+    /**
+     * Estado a exibir na carga inicial da página — nunca um diagrama pronto:
+     * se ainda não há nenhuma situação sorteada nesta sessão, sorteia uma
+     * (grupo aleatório) e devolve o estado de classificação recém-criado,
+     * que por si só já esconde a cena até a categoria ser acertada (ver
+     * projetarEstado/revelar). Chamadas seguintes apenas reprojetam o estado
+     * corrente, sem sortear de novo.
+     */
+    public synchronized Map<String, Object> estadoInicial() {
+        if (contextoAtual == null) {
+            return sortear(aleatorio.nextBoolean() ? Grupo.MEDIDAS : Grupo.RELACOES);
+        }
+        return projetarEstado();
+    }
+
     public synchronized Map<String, Object> sortearMedidas() {
         return sortear(Grupo.MEDIDAS);
     }

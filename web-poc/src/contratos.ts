@@ -69,7 +69,10 @@ export type CenaDiagrama = Readonly<{ titulo: string; descricao: string; figuras
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;
   seletor_operacao?: Readonly<{ entre_transformacoes?: CentroSeletorOperacao;
     entre_estado_transformacao?: CentroSeletorOperacao; relacao?: CentroSeletorOperacao }> }>;
-export type EstadoWeb = EstadoAtividade | EstadoClassificacao;
+// O topo da resposta nunca é EstadoAtividade "puro" — só aparece aninhado em
+// EstadoClassificacao.modelagem (categoria COMPOSICAO_MEDIDAS). Todo estado
+// de topo passa pela classificação; ver ServicoSorteioAtividadeWeb.estadoInicial.
+export type EstadoWeb = EstadoClassificacao;
 export type ResultadoClassificacao = Readonly<{
   schema: "gerard.atividade-web.resultado-classificacao.v1"; action_id: string;
   correta: boolean; diagnostico: string | null; desfecho: string;

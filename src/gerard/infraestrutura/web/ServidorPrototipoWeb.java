@@ -3,7 +3,6 @@ package gerard.infraestrutura.web;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicao;
 import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
 import gerard.pesquisador.auditoria.EscritorJsonSimples;
 import java.io.IOException;
@@ -18,8 +17,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** Servidor local da prova funcional; HTTP e arquivos ficam na infraestrutura. */
 public final class ServidorPrototipoWeb {
-    private final ServicoAtividadeWebComposicao atividade =
-            new ServicoAtividadeWebComposicao();
     private final ServicoSorteioAtividadeWeb sorteios =
             new ServicoSorteioAtividadeWeb();
     private final Path raizWeb;
@@ -57,7 +54,10 @@ public final class ServidorPrototipoWeb {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
-        responder(troca, 200, atividade.estadoAtual());
+        // Carga inicial entra pelo fluxo de classificação (sorteios), nunca
+        // pelo widget fixo legado (atividade) — diagrama só depois de a
+        // categoria ser acertada, ver ServicoSorteioAtividadeWeb.estadoInicial.
+        responder(troca, 200, sorteios.estadoInicial());
     }
 
     @SuppressWarnings("unchecked")
@@ -72,9 +72,7 @@ public final class ServidorPrototipoWeb {
             Object bruto = ((Map<String, Object>) analisado).get("valor");
             String papelId = String.valueOf(((Map<String, Object>) analisado).get("papel_id"));
             int valor = ((Number) bruto).intValue();
-            responder(troca, 200, sorteios.possuiAtividadeModelagemAtiva()
-                    ? sorteios.proporValor(papelId, valor)
-                    : atividade.proporValor(papelId, valor));
+            responder(troca, 200, sorteios.proporValor(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -106,9 +104,11 @@ public final class ServidorPrototipoWeb {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
-        responder(troca, 200, sorteios.possuiAtividadeModelagemAtiva()
-                        || sorteios.possuiAtividadeEscolhaOperacaoAtiva()
-                ? sorteios.reiniciarAtividadeAtual() : atividade.reiniciar());
+        try {
+            responder(troca, 200, sorteios.reiniciarAtividadeAtual());
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
     }
 
     private void sortearMedidas(HttpExchange troca) throws IOException {

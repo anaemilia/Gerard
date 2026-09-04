@@ -1,8 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { api } from "./api";
-import type { AcaoDisponivel, EstadoAtividade, EstadoWeb, FiguraCena,
+import type { AcaoDisponivel, EstadoWeb, FiguraCena,
   InteracaoPermitidaFigura } from "./contratos";
-import { Diagrama } from "./Diagrama";
 import { BarraCategorias } from "./BarraCategorias";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
@@ -76,7 +75,7 @@ export default function App() {
   }
 
   async function confirmarValorEditado() {
-    if (!estado || !("modo" in estado) || !representacoes.elementoEmEdicao) return;
+    if (!estado || !representacoes.elementoEmEdicao) return;
     const figura = estado.cena?.figuras.find(
       (item) => item.id === representacoes.elementoEmEdicao);
     const interacao = figura?.interacoes_permitidas.find(
@@ -112,10 +111,10 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
-  const figuraEmEdicao = estado && "modo" in estado && representacoes.elementoEmEdicao
+  const figuraEmEdicao = estado && representacoes.elementoEmEdicao
     ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
     : undefined;
-  const modelagemEscolhaOperacao = estado && "modo" in estado && estado.modelagem
+  const modelagemEscolhaOperacao = estado && estado.modelagem
     && "categoria" in estado.modelagem
     && (estado.modelagem.categoria === "COMPOSICAO_TRANSFORMACOES"
       || estado.modelagem.categoria === "COMPOSICAO_RELACOES")
@@ -129,7 +128,7 @@ export default function App() {
       aoSortearMedidas={() => sortear("SORTEAR_MEDIDAS")}
       aoSortearRelacoes={() => sortear("SORTEAR_RELACOES")}
       categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
-      categoriaSelecionada={estado && "modo" in estado ? estado.categoria_selecionada : null}
+      categoriaSelecionada={estado ? estado.categoria_selecionada : null}
       aoEscolherCategoria={escolherCategoria} />
     {estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
@@ -138,12 +137,11 @@ export default function App() {
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className="diagram-panel" aria-label="Área do diagrama">
-          {"modo" in estado ? estado.cena && <GeradorCenaGerard cena={estado.cena}
+          {estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
-              mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />
-            : <Diagrama estado={estado} />}
+              mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           {figuraEmEdicao && <div className="value-editor">
@@ -160,7 +158,7 @@ export default function App() {
           </div>}
         </aside>
       </div>
-      {"modo" in estado && estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&
+      {estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&
         <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="pergunta-categoria">
           <h2 id="pergunta-categoria">Confirme sua escolha</h2><p>{estado.questionamento}</p>
           <div className="dialog-actions"><button type="button" onClick={() => confirmarCategoria(true)} disabled={ocupado}>Sim</button>

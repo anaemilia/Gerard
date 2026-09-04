@@ -30,17 +30,8 @@ button, input { font:inherit; } button { cursor:pointer; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
 .workspace { min-height:0; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr); gap:34px; }
 .diagram-panel { min-height:0; overflow:hidden; }
-.diagram { width:100%; height:100%; min-height:420px; background:var(--superficie); }
 .response-panel { min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
 .response-panel h2 { margin:4px 0 8px; font-size:1.3rem; }
-.eyebrow { margin:0; color:var(--texto-secundario); font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-.relation { margin:0; color:var(--texto-secundario); font-size:.9rem; }
-.react-flow__node-papel { border:0; background:transparent; }
-.papel-node { width:190px; min-height:98px; display:grid; place-content:center; gap:7px; border:2px solid var(--texto-secundario); border-radius:14px; background:var(--superficie); text-align:center; box-shadow:0 6px 18px rgb(51 46 40 / 7%); }
-.papel-node-incognita { border-width:3px; border-style:dashed; }
-.papel-nome { color:var(--texto-secundario); font-size:.78rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
-.papel-valor { font-size:1.85rem; } .papel-handle { opacity:0; }
-.react-flow__edge-path { stroke:var(--texto-secundario); stroke-width:2; } .react-flow__attribution { display:none; }
 .answer-form { margin-top:32px; } .answer-form label { display:block; margin-bottom:8px; font-weight:700; }
 .answer-controls { display:flex; flex-wrap:wrap; gap:10px; }
 input,.answer-controls button,.secondary { min-height:44px; border:1px solid var(--borda); border-radius:8px; }

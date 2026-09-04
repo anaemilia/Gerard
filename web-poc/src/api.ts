@@ -1,4 +1,4 @@
-import type { AcaoDisponivel, EstadoAtividade, EstadoWeb, ResultadoAcao, ResultadoClassificacao } from "./contratos";
+import type { AcaoDisponivel, EstadoWeb, ResultadoAcao, ResultadoClassificacao } from "./contratos";
 
 async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
   const resposta = await fetch(url, init);
@@ -8,7 +8,7 @@ async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  carregar: () => requisitar<EstadoAtividade>("/api/situacao"),
+  carregar: () => requisitar<EstadoWeb>("/api/situacao"),
   executar: (acao: AcaoDisponivel) => requisitar<EstadoWeb>(acao.href, {
     method: acao.metodo,
     headers: acao.corpo ? { "Content-Type": "application/json" } : undefined,
@@ -18,7 +18,7 @@ export const api = {
     method: acao.metodo, headers: { "Content-Type": "application/json" },
     body: JSON.stringify(acao.corpo ?? {})
   }),
-  reiniciar: () => requisitar<EstadoAtividade>("/api/reiniciar", { method: "POST" }),
+  reiniciar: () => requisitar<EstadoWeb>("/api/reiniciar", { method: "POST" }),
   posicionar: (acao: AcaoDisponivel, valor: number) => requisitar<ResultadoAcao>(acao.href, {
     method: acao.metodo, headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...(acao.corpo ?? {}), valor })
