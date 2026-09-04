@@ -37,6 +37,8 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/situacao", aplicacao::situacao);
         servidor.createContext("/api/acoes/posicionar", aplicacao::posicionar);
         servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
+        servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
+        servidor.createContext("/api/acoes/posicionar-conhecido", aplicacao::posicionarConhecido);
         servidor.createContext("/api/gestos", aplicacao::registrarGesto);
         servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
         servidor.createContext("/api/sorteios/medidas", aplicacao::sortearMedidas);
@@ -94,6 +96,39 @@ public final class ServidorPrototipoWeb {
                 return;
             }
             responder(troca, 200, sorteios.escolherOperacao(seletor, operacao));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void ajustarQuadradinho(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String papelId = String.valueOf(analisado.get("papel_id"));
+            int delta = ((Number) analisado.get("delta")).intValue();
+            responder(troca, 200, sorteios.ajustarQuadradinho(papelId, delta));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void posicionarConhecido(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String papelId = String.valueOf(analisado.get("papel_id"));
+            responder(troca, 200, sorteios.posicionarValorConhecido(papelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

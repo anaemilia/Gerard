@@ -17,7 +17,7 @@ export type EstadoRepresentacoes = Readonly<{
 export type EventoRepresentacional =
   | Readonly<{ tipo: "SNAPSHOT_SERVIDOR_RECEBIDO"; snapshot: EstadoWeb }>
   | Readonly<{ tipo: "POSICAO_VISUAL_ALTERADA"; elementoId: string; posicao: PosicaoVisual }>
-  | Readonly<{ tipo: "EDICAO_VALOR_INICIADA"; elementoId: string; actionId: string }>
+  | Readonly<{ tipo: "EDICAO_VALOR_INICIADA"; elementoId: string; actionId: string; valorInicial?: string }>
   | Readonly<{ tipo: "VALOR_EM_EDICAO_ALTERADO"; elementoId: string; valor: string }>
   | Readonly<{ tipo: "RASCUNHO_DESCARTADO" }>;
 
@@ -52,7 +52,9 @@ export function reduzirEstadoRepresentacoes(
       };
     case "EDICAO_VALOR_INICIADA":
       return { ...estado, elementoEmEdicao: evento.elementoId,
-        acaoPendente: evento.actionId };
+        acaoPendente: evento.actionId,
+        valoresEmEdicao: evento.valorInicial === undefined ? estado.valoresEmEdicao
+          : { ...estado.valoresEmEdicao, [evento.elementoId]: evento.valorInicial } };
     case "VALOR_EM_EDICAO_ALTERADO":
       return { ...estado, valoresEmEdicao: { ...estado.valoresEmEdicao,
         [evento.elementoId]: evento.valor } };

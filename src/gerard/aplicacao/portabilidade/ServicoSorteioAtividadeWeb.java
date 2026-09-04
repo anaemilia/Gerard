@@ -171,6 +171,39 @@ public final class ServicoSorteioAtividadeWeb {
         return resultado;
     }
 
+    /**
+     * Posiciona um papel conhecido (nunca a incógnita) — a ação que soltar
+     * qualquer elemento não-incógnita do enunciado sobre sua caixa dispara
+     * (protocolo de mouse é posicionar). Só existe para Composição de
+     * Medidas hoje (piloto).
+     */
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+        if (!(atividadeModelagem instanceof ServicoAtividadeWebComposicao)) {
+            throw new IllegalStateException(
+                    "a situação atual não possui posicionamento de papel conhecido implementado");
+        }
+        Map<String, Object> resultado = ((ServicoAtividadeWebComposicao) atividadeModelagem)
+                .posicionarValorConhecido(papelId);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
+    /**
+     * Ajusta a contagem de quadradinhos do material concreto (AG_EMCME) —
+     * só existe para Composição de Medidas hoje (piloto); outras categorias
+     * ainda não têm representação complementar portada.
+     */
+    public synchronized Map<String, Object> ajustarQuadradinho(String papelId, int delta) {
+        if (!(atividadeModelagem instanceof ServicoAtividadeWebComposicao)) {
+            throw new IllegalStateException(
+                    "a situação atual não possui material concreto implementado");
+        }
+        Map<String, Object> resultado = ((ServicoAtividadeWebComposicao) atividadeModelagem)
+                .ajustarQuadradinho(papelId, delta);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
         if (atividadeEscolhaOperacao == null) {
             throw new IllegalStateException(
@@ -281,6 +314,7 @@ public final class ServicoSorteioAtividadeWeb {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
             estado.put("cena", projetarCena(contextoAtual,
                     listaDeAcoes(estado.get("acoes_disponiveis"))));
+            estado.put("elementos_texto", projetarElementosTexto(contextoAtual));
         } else {
             estado.remove("categoria");
             estado.remove("subtipo");
@@ -291,11 +325,38 @@ public final class ServicoSorteioAtividadeWeb {
             estado.remove("papeis");
             estado.remove("diagrama");
             estado.remove("curadoria");
+            estado.remove("elementos_texto");
         }
         // A curadoria bruta contém a resposta da incógnita e nunca integra o
         // contrato público do participante, mesmo após a classificação.
         estado.remove("curadoria");
         return estado;
+    }
+
+    /**
+     * Elementos do enunciado marcados/arrastáveis após a categoria ser
+     * aceita — portação de inicializarElementosTexto/
+     * vincularPapeisSemanticosAosElementosTexto (Main.java), via
+     * SegmentadorTextoSemantico (portátil, sem Swing). Lista completa e
+     * ordenada de tokens (não só os vinculados a um papel) para o cliente
+     * poder reconstruir o enunciado inteiro juntando com espaço — o
+     * tokenizador usa \S+, então isso corresponde exatamente ao texto
+     * original.
+     */
+    private static List<Object> projetarElementosTexto(ContextoCarregamentoAtividade contexto) {
+        List<gerard.interpretacao.modelo.SegmentoTextoSemantico> segmentos =
+                gerard.interpretacao.modelo.SegmentadorTextoSemantico.segmentar(
+                        contexto.getEnunciadoExibido(), contexto.getInterpretacao());
+        List<Object> resultado = new ArrayList<Object>();
+        for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento : segmentos) {
+            Map<String, Object> item = mapa();
+            item.put("valor", segmento.getValor());
+            item.put("papel_id", segmento.possuiVinculoSemantico()
+                    ? segmento.getChavePapelSemantico() : null);
+            item.put("incognita", Boolean.valueOf(segmento.representaIncognitaOriginal()));
+            resultado.add(item);
+        }
+        return resultado;
     }
 
     private static Map<String, Object> projetarCena(
@@ -569,15 +630,23 @@ public final class ServicoSorteioAtividadeWeb {
         for (Object valor : acoes) {
             if (!(valor instanceof Map)) continue;
             Map<String, Object> acao = (Map<String, Object>) valor;
-            if (!"PROPOR_VALOR_PAPEL".equals(acao.get("id"))) continue;
+            String id = String.valueOf(acao.get("id"));
+            String tipoInteracao;
+            if ("PROPOR_VALOR_PAPEL".equals(id)) {
+                tipoInteracao = "EDITAR_VALOR";
+            } else if ("POSICIONAR_CONHECIDO".equals(id)) {
+                tipoInteracao = "POSICIONAR_CONHECIDO";
+            } else {
+                continue;
+            }
             Object corpoValor = acao.get("corpo");
             if (!(corpoValor instanceof Map)) continue;
             Map<String, Object> corpo = (Map<String, Object>) corpoValor;
             if (!chavePapel.equals(corpo.get("papel_id"))) continue;
             Map<String, Object> interacao = mapa();
-            interacao.put("tipo", "EDITAR_VALOR");
-            interacao.put("acao_id", "PROPOR_VALOR_PAPEL");
-            interacao.put("fase_envio", "CONFIRMACAO");
+            interacao.put("tipo", tipoInteracao);
+            interacao.put("acao_id", id);
+            interacao.put("fase_envio", "PROPOR_VALOR_PAPEL".equals(id) ? "CONFIRMACAO" : "IMEDIATA");
             interacao.put("papel_id", chavePapel);
             interacoes.add(interacao);
         }

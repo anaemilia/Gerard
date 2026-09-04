@@ -1,25 +1,24 @@
-:root { color-scheme: light; --fundo:#e7e4dc; --superficie:#fcfbf8; --texto:#332e28; --texto-secundario:#756f66; --borda:#d6d0c5; --raio:12px; }
+/* Paleta copiada literalmente de gerard.ui.UITemaGerard.java (fonte única) — não aproximar visualmente. */
+:root { color-scheme: light; --fundo:#e7e4dc; --superficie:#fcfbf8; --texto:#332e28; --texto-secundario:#746e62; --borda:#d8d4c8; --raio:12px; }
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100%; }
 body { margin:0; background:var(--fundo); color:var(--texto); font-family:Arial,Helvetica,sans-serif; }
 button, input { font:inherit; } button { cursor:pointer; }
 .app-shell { min-height:100vh; display:grid; grid-template-rows:auto minmax(0,1fr); }
-.top-area { background:#f7f5f0; border-bottom:1px solid var(--borda); }
-.utility-row { min-height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 10px; border-bottom:1px solid var(--borda); }
-.utility-tools { display:flex; gap:8px; }
-.utility-tools button { width:34px; height:34px; border:1px solid var(--borda); background:var(--superficie); color:var(--texto-secundario); }
+.top-area { background:#f7f6f1; border-bottom:1px solid var(--borda); }
+.utility-row { min-height:42px; display:flex; align-items:center; justify-content:flex-end; padding:0 10px; border-bottom:1px solid var(--borda); }
 .language { color:var(--texto-secundario); font-size:.78rem; }
 .category-navigation { min-height:126px; display:flex; align-items:center; justify-content:center; gap:clamp(10px,1.5vw,22px); padding:10px 20px 12px; overflow-x:auto; }
 .category-group { display:grid; justify-items:center; gap:4px; }
 .category-group>strong { color:var(--texto-secundario); font-size:.78rem; }
 .category-buttons { display:flex; gap:clamp(10px,2vw,24px); }
-.category-button { width:94px; height:84px; display:grid; place-items:center; border:1px solid var(--borda); background:transparent; color:#c8c1b5; }
+.category-button { width:94px; height:84px; display:grid; place-items:center; border:1px solid var(--borda); background:transparent; color:#bfbaac; }
 .category-button svg { width:70px; height:62px; fill:none; stroke:currentColor; stroke-width:1.5; }
 .category-button-active { background:var(--superficie); color:var(--texto-secundario); box-shadow:inset 0 -3px 0 var(--texto); }
 .category-button:disabled { cursor:default; opacity:.72; } .category-button-active:disabled { opacity:1; }
 .category-divider { width:1px; height:72px; background:var(--borda); }
 .draw-button-tooltip { display:inline-flex; flex:0 0 auto; }
-.draw-button { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--borda); border-radius:3px; background:var(--superficie); color:#c8c1b5; }
+.draw-button { width:38px; height:38px; display:grid; place-items:center; padding:4px; border:1px solid var(--borda); border-radius:3px; background:var(--superficie); color:#bfbaac; }
 .draw-button svg { width:30px; height:30px; fill:currentColor; stroke:currentColor; stroke-width:1.5; }
 .draw-button svg rect { fill:none; }
 .draw-button:disabled { cursor:not-allowed; opacity:.72; }
@@ -29,7 +28,7 @@ button, input { font:inherit; } button { cursor:pointer; }
 .statement-panel h1 { margin:7px 0 0; font-size:clamp(1.05rem,1.4vw,1.28rem); line-height:1.45; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
 .workspace { min-height:0; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr); gap:34px; }
-.diagram-panel { min-height:0; overflow:hidden; }
+.diagram-panel { min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .response-panel { min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
 .response-panel h2 { margin:4px 0 8px; font-size:1.3rem; }
 .answer-form { margin-top:32px; } .answer-form label { display:block; margin-bottom:8px; font-weight:700; }
@@ -38,11 +37,11 @@ input,.answer-controls button,.secondary { min-height:44px; border:1px solid var
 input { width:min(150px,100%); padding:8px 12px; background:#fff; color:var(--texto); }
 .answer-controls button { padding:9px 16px; background:var(--texto); color:#fff; font-weight:700; }
 button:disabled { cursor:not-allowed; opacity:.5; }
-.message { margin:16px 0 0; padding:12px 14px; border-radius:8px; font-size:.9rem; }
-.message-neutra { background:#f2efe8; } .message-erro { background:#fff0ed; color:#7d211b; } .message-sucesso { background:#edf4fb; color:#234f7f; }
+.message { margin:12px 16px 0; padding:12px 14px; border-radius:8px; font-size:.9rem; }
+.message-neutra { background:#ece9e0; } .message-erro { background:#fde8e8; color:#8c1b1b; } .message-sucesso { background:#e4eefd; color:#173f96; }
 .response-footer { margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:24px; }
 .status { padding:7px 11px; border:1px solid var(--borda); border-radius:999px; color:var(--texto-secundario); font-size:.78rem; font-weight:700; }
-.status-success { border-color:#4a82c9; color:#315f96; }
+.status-success { border-color:#4a82c9; color:#173f96; }
 .secondary { padding:8px 14px; background:transparent; color:var(--texto); }
 @media (max-width:820px) { .category-navigation{justify-content:flex-start}.workspace{grid-template-columns:1fr;gap:16px}.diagram-panel{min-height:440px}.response-panel{min-height:300px} }
 @media (max-width:520px) { .activity-area{padding-inline:8px;gap:12px}.statement-panel{gap:12px;padding:14px}.category-navigation{gap:10px}.category-button{width:76px;height:72px}.category-button svg{width:58px} }
@@ -55,7 +54,7 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .value-editor { display:flex; flex-direction:column; gap:14px; max-width:320px; }
 .value-editor label { font-weight:700; }
 .value-editor input { min-height:44px; padding:8px 10px; border:1px solid var(--borda); border-radius:8px; font:inherit; }
-.portable-scene { width:100%; height:100%; min-height:420px; background:var(--superficie); }
+.portable-scene { width:100%; height:100%; min-height:420px; max-width:900px; max-height:620px; background:var(--superficie); }
 .op-anel { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.2; }
 .op-botao-selecionado .op-anel { stroke:#4a82c9; stroke-width:2.2; }
 .op-botao-erro .op-anel { stroke:#c82828; }
@@ -71,3 +70,20 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
 .scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }
 .scene-magnifier path { fill:none; }
+/* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única). */
+.material-concreto { margin-bottom:20px; padding:14px; border:1px solid var(--borda); border-radius:var(--raio); background:#f7f6f1; }
+.material-concreto-aviso { margin:0 0 12px; font-size:.85rem; color:var(--texto-secundario); }
+.material-concreto-grupos { display:flex; flex-direction:row; align-items:flex-start; gap:22px; }
+.quadradinhos-grupo { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.quadradinhos-grupo strong { font-size:.85rem; }
+.quadradinhos-grupo-alvo strong { color:#173f96; }
+.quadradinhos-grade { display:flex; flex-flow:column-reverse wrap; align-content:flex-start; gap:3px; max-height:220px; min-width:18px; }
+.quadradinho { width:15px; height:15px; border-radius:3px; background:#d29aa4; border:1px solid #56747e; }
+.quadradinhos-controles { display:flex; align-items:center; gap:10px; }
+.quadradinhos-controles button { min-width:34px; min-height:34px; border:1px solid var(--borda); border-radius:8px; background:var(--superficie); font-size:1.1rem; font-weight:700; }
+.quadradinhos-contagem { min-width:1.5em; text-align:center; font-weight:700; }
+/* Elementos do enunciado com vínculo semântico (arrastáveis) — marcador tracejado
+   copiado de desenharMarcadoresFixosDoTexto em Main.java (COR_SUPERFICIE/COR_BORDA;
+   igual pra qualquer papel, o desktop não diferencia cor por papel). */
+.enunciado-elemento-semantico { display:inline-block; padding:0 3px; border:1px dashed var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; }
+.enunciado-elemento-semantico:active { cursor:grabbing; }

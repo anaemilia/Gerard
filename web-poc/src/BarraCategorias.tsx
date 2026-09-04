@@ -60,7 +60,6 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
 }) {
   return <header className="top-area">
     <div className="utility-row">
-      <div className="utility-tools" aria-label="Ferramentas"><button type="button" title="Representações" aria-label="Representações">▣</button><button type="button" title="Ajuda adaptativa" aria-label="Ajuda adaptativa">⚙</button></div>
       <span className="language">Português</span>
     </div>
     <nav className="category-navigation" aria-label="Categorias de situações aditivas">

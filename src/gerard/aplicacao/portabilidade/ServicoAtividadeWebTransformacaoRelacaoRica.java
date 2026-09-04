@@ -88,8 +88,13 @@ public final class ServicoAtividadeWebTransformacaoRelacaoRica
         resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
         resultado.put("diagnostico", diagnostico.isPresent()
                 ? diagnostico.get().getTipo().name() : null);
+        // getChaveMensagem() não é texto exibível (ver o comentário em
+        // ServicoAtividadeWebComposicao.proporValor) — chave_mensagem usa o
+        // texto real via MensagemFeedbackIncognitaWeb.
         resultado.put("chave_mensagem", diagnostico.isPresent()
-                ? diagnostico.get().getChaveMensagem() : null);
+                ? MensagemFeedbackIncognitaWeb.resolver(papelDesconhecido, registro) : null);
+        resultado.put("limite_atingido", Boolean.valueOf(
+                diagnostico.isPresent() && MensagemFeedbackIncognitaWeb.limiteAtingido(registro)));
         resultado.put("rejeicoes_consecutivas",
                 Integer.valueOf(registro.getRejeicoesConsecutivas()));
         resultado.put("estado", estadoAtual());

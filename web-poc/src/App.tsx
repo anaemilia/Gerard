@@ -3,6 +3,8 @@ import { api } from "./api";
 import type { AcaoDisponivel, EstadoWeb, FiguraCena,
   InteracaoPermitidaFigura } from "./contratos";
 import { BarraCategorias } from "./BarraCategorias";
+import { EnunciadoInterativo } from "./EnunciadoInterativo";
+import { MaterialConcretoQuadradinhos } from "./MaterialConcretoQuadradinhos";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
@@ -70,8 +72,14 @@ export default function App() {
   }
 
   function iniciarEdicaoValor(figura: FiguraCena, interacao: InteracaoPermitidaFigura) {
+    const modelagem = estado?.modelagem;
+    const papel = modelagem && "parte1" in modelagem
+      ? [modelagem.parte1, modelagem.parte2, modelagem.todo]
+        .find((item) => item.id === interacao.papel_id)
+      : undefined;
+    const valorInicial = papel?.conhecido && papel.valor !== null ? String(papel.valor) : undefined;
     enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
-      elementoId: figura.id, actionId: interacao.acao_id });
+      elementoId: figura.id, actionId: interacao.acao_id, valorInicial });
   }
 
   async function confirmarValorEditado() {
@@ -99,6 +107,52 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  async function ajustarQuadradinho(delta: 1 | -1) {
+    const controle = estado?.acoes_disponiveis.find((item) => item.id === "AJUSTAR_QUADRADINHO");
+    if (!controle) return;
+    setOcupado(true);
+    try {
+      const resultado = await api.ajustarQuadradinho(controle, delta);
+      receberSnapshot(resultado.estado);
+      if (resultado.limite_atingido) {
+        setMensagem({ texto: resultado.chave_mensagem ?? "Limite atingido.", tipo: "erro" });
+      }
+    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    finally { setOcupado(false); }
+  }
+
+  async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
+    // Erro só ao soltar, nunca durante o arrasto (protocolo de mouse, ver
+    // gerard-scaffolding-interacao): soltar em cima da caixa errada é
+    // feedback de erro, não silêncio.
+    if (papelId !== figura.chave_papel_semantico) {
+      setMensagem({ texto: "Esse elemento não pertence a essa caixa.", tipo: "erro" });
+      return;
+    }
+    const editar = figura.interacoes_permitidas.find((item) => item.tipo === "EDITAR_VALOR");
+    if (editar) {
+      iniciarEdicaoValor(figura, editar);
+      return;
+    }
+    const posicionar = figura.interacoes_permitidas.find((item) => item.tipo === "POSICIONAR_CONHECIDO");
+    if (!posicionar) {
+      setMensagem({ texto: "Esse valor já está posicionado.", tipo: "neutra" });
+      return;
+    }
+    setOcupado(true);
+    try {
+      const resultado = await api.posicionarConhecido({
+        id: "POSICIONAR_CONHECIDO", metodo: "POST",
+        href: "/api/acoes/posicionar-conhecido", corpo: { papel_id: posicionar.papel_id }
+      });
+      receberSnapshot(resultado.estado);
+      setMensagem(resultado.aceita
+        ? { texto: "Valor posicionado.", tipo: "neutra" }
+        : { texto: "Não foi possível posicionar esse valor.", tipo: "erro" });
+    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    finally { setOcupado(false); }
+  }
+
   async function escolherOperacao(operacao: "SOMA" | "SUBTRACAO") {
     const controle = estado?.acoes_disponiveis.find((item) => item.id === "ESCOLHER_OPERACAO_RELACAO");
     if (!controle) return;
@@ -120,6 +174,12 @@ export default function App() {
       || estado.modelagem.categoria === "COMPOSICAO_RELACOES")
     ? estado.modelagem
     : undefined;
+  const modelagemMaterialConcreto = estado && estado.modelagem
+    && "categoria" in estado.modelagem
+    && estado.modelagem.categoria === "COMPOSICAO_MEDIDAS"
+    && estado.modelagem.material_concreto_disponivel
+    ? estado.modelagem
+    : undefined;
 
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
@@ -130,20 +190,29 @@ export default function App() {
       categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
       categoriaSelecionada={estado ? estado.categoria_selecionada : null}
       aoEscolherCategoria={escolherCategoria} />
+    {mensagem.texto && <p className={`message message-${mensagem.tipo}`} role={mensagem.tipo === "erro" ? "alert" : "status"}>
+      {mensagem.texto}
+    </p>}
     {estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
         <span className="help-mark" aria-hidden="true">?</span>
-        <h1 id="enunciado">{estado.enunciado}</h1>
+        {estado.elementos_texto
+          ? <EnunciadoInterativo elementos={estado.elementos_texto} />
+          : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className="diagram-panel" aria-label="Área do diagrama">
           {estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
+            aoSoltarElemento={aoSoltarElementoNoDiagrama}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
+          {modelagemMaterialConcreto && <MaterialConcretoQuadradinhos
+            modelagem={modelagemMaterialConcreto} ocupado={ocupado}
+            aoAjustar={(delta) => void ajustarQuadradinho(delta)} />}
           {figuraEmEdicao && <div className="value-editor">
             <label htmlFor="valor-papel">{figuraEmEdicao.rotulo}</label>
             <input id="valor-papel" type="number" step="1" inputMode="numeric" autoFocus

@@ -3,16 +3,19 @@ export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as cons
 
 export type AcaoDisponivel = Readonly<{
   id: "SORTEAR_MEDIDAS" | "SORTEAR_RELACOES" | "REINICIAR_TENTATIVA" | "PROPOR_VALOR_PAPEL" |
-    "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE" | "ESCOLHER_OPERACAO_RELACAO";
+    "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE" | "ESCOLHER_OPERACAO_RELACAO" |
+    "AJUSTAR_QUADRADINHO" | "POSICIONAR_CONHECIDO";
   metodo: "POST"; href: string; corpo?: Readonly<Record<string, unknown>>;
 }>;
 
 export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null }>;
+export type ElementoTexto = Readonly<{ valor: string; papel_id: string | null; incognita: boolean }>;
 export type EstadoAtividade = Readonly<{
   schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
   categoria: "COMPOSICAO_MEDIDAS"; enunciado: string; relacao: string;
   papel_desconhecido_original: string; rotulo_papel_desconhecido: string; parte1: PapelProjetado;
   parte2: PapelProjetado; todo: PapelProjetado; concluida: boolean;
+  material_concreto_disponivel: boolean;
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EstadoClassificacao = Readonly<{
@@ -23,6 +26,7 @@ export type EstadoClassificacao = Readonly<{
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   questionamento?: string; categoria_revelada?: string;
   cena?: CenaDiagrama;
+  elementos_texto?: readonly ElementoTexto[];
   modelagem?: EstadoAtividade | EstadoModelagemTernaria
     | EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
 }>;
@@ -55,10 +59,13 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
-  tipo: "EDITAR_VALOR";
-  acao_id: "PROPOR_VALOR_PAPEL";
-  fase_envio: "CONFIRMACAO";
+  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO";
+  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO";
+  fase_envio: "CONFIRMACAO" | "IMEDIATA";
   papel_id: string;
+}>;
+export type ResultadoPosicionarConhecido = Readonly<{
+  schema: typeof SCHEMA_RESULTADO; aceita: boolean; estado: EstadoWeb;
 }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
@@ -78,8 +85,13 @@ export type ResultadoClassificacao = Readonly<{
   correta: boolean; diagnostico: string | null; desfecho: string;
   rejeicoes_consecutivas: number; estado: EstadoClassificacao;
 }>;
+export type ResultadoQuadradinho = Readonly<{
+  schema: typeof SCHEMA_RESULTADO; aceita: boolean; limite_atingido: boolean;
+  chave_mensagem: string | null; estado: EstadoWeb;
+}>;
 export type ResultadoAcao = Readonly<{
   schema: typeof SCHEMA_RESULTADO; action_id: string; aceita: boolean;
   diagnostico: string | null; chave_mensagem: string | null;
+  limite_atingido?: boolean;
   rejeicoes_consecutivas: number; estado: EstadoWeb;
 }>;

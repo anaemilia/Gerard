@@ -53,6 +53,22 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
+    public static List<Object> acaoPosicionarConhecido(String papelAlvo) {
+        List<Object> acoes = new ArrayList<Object>();
+        Map<String, Object> corpo = new LinkedHashMap<String, Object>();
+        corpo.put("papel_id", papelAlvo);
+        acoes.add(acao("POSICIONAR_CONHECIDO", "POST", "/api/acoes/posicionar-conhecido", corpo));
+        return acoes;
+    }
+
+    public static List<Object> acaoAjustarQuadradinho(String papelAlvo) {
+        List<Object> acoes = new ArrayList<Object>();
+        Map<String, Object> corpo = new LinkedHashMap<String, Object>();
+        corpo.put("papel_id", papelAlvo);
+        acoes.add(acao("AJUSTAR_QUADRADINHO", "POST", "/api/acoes/quadradinho", corpo));
+        return acoes;
+    }
+
     public static List<Object> escolhaOperacaoRelacao(
             boolean segundaEtapaHabilitada, boolean concluida) {
         List<Object> acoes = sorteios();

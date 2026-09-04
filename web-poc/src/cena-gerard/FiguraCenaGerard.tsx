@@ -10,9 +10,10 @@ function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
   </g>;
 }
 
-export function FiguraCenaGerard({ figura, aoEditarValor }: {
+export function FiguraCenaGerard({ figura, aoEditarValor, aoSoltarElemento }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+  aoSoltarElemento?: (figura: FiguraCena, papelId: string) => void;
 }) {
   const interacao = figura.interacoes_permitidas.find(
     (item) => item.tipo === "EDITAR_VALOR");
@@ -29,6 +30,16 @@ export function FiguraCenaGerard({ figura, aoEditarValor }: {
         if (evento.key === "Enter" || evento.key === " ") {
           evento.preventDefault(); iniciarEdicao();
         }
+      } : undefined}
+      onDragOver={aoSoltarElemento ? (evento) => evento.preventDefault() : undefined}
+      onDrop={aoSoltarElemento ? (evento) => {
+        evento.preventDefault();
+        const papelId = evento.dataTransfer.getData("text/plain");
+        // Não filtra aqui se bate com a figura: soltar em cima do lugar
+        // errado precisa de feedback de erro, não de silêncio — quem decide
+        // certo/errado é aoSoltarElemento (protocolo de mouse: erro só ao
+        // soltar, ver gerard-scaffolding-interacao).
+        if (papelId) aoSoltarElemento(figura, papelId);
       } : undefined}>
     {figura.tipo === "ELIPSE"
       ? <ellipse cx={figura.x + figura.largura / 2} cy={figura.y + figura.altura / 2}

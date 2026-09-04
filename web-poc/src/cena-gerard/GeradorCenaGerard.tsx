@@ -6,10 +6,11 @@ import { SeletorOperacaoDiagramaGerard } from "./SeletorOperacaoDiagramaGerard";
 import type { PosicaoVisual } from "../estadoRepresentacoes";
 
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
-export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, seletorOperacao }: {
+export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, aoSoltarElemento, seletorOperacao }: {
   cena: CenaDiagrama;
   posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+  aoSoltarElemento?: (figura: FiguraCena, papelId: string) => void;
   seletorOperacao?: {
     modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
     mensagemErro: string | null; ocupado: boolean;
@@ -29,7 +30,7 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
       const posicao = posicoesEmEdicao[figura.id];
       const figuraProjetada = posicao ? { ...figura, ...posicao } : figura;
       return <FiguraCenaGerard key={figura.id} figura={figuraProjetada}
-        aoEditarValor={aoEditarValor} />;
+        aoEditarValor={aoEditarValor} aoSoltarElemento={aoSoltarElemento} />;
     })}
     {seletorOperacao && cena.seletor_operacao
       && <SeletorOperacaoDiagramaGerard pontos={cena.seletor_operacao} {...seletorOperacao} />}
