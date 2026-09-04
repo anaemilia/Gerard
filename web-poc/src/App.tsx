@@ -227,7 +227,8 @@ export default function App() {
             : <span className="help-mark" aria-hidden="true">?</span>}
         {estado.elementos_texto
           ? <EnunciadoInterativo elementos={estado.elementos_texto}
-              aoSoltar={aoSoltarNoDiagrama} />
+              figuras={estado.cena?.figuras ?? []}
+              aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
