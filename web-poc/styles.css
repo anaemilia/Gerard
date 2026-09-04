@@ -78,6 +78,10 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .scene-figure rect,.scene-figure ellipse { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:2; }
 .scene-figure-editable { cursor:pointer; }
 .scene-figure-editable:hover rect,.scene-figure-editable:hover ellipse,.scene-figure-editable:focus rect,.scene-figure-editable:focus ellipse { stroke:var(--texto); stroke-width:3; }
+/* Realce de atração magnética (EstadoRealceAlvo.SNAP, EstiloRealceAlvo.java —
+   estilo de interação fixo do desktop desde 2026-07-28, Main.java:817): mesmas
+   cores exatas rgb(250,235,224)/rgb(169,92,47), espessura 2.8. */
+.scene-figure-destacada rect,.scene-figure-destacada ellipse { fill:#faebe0; stroke:#a95c2f; stroke-width:2.8; }
 .scene-figure text,.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
 .scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
@@ -101,3 +105,6 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .enunciado-elemento-semantico { display:inline-block; padding:0 3px; border:1px dashed var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; user-select:none; }
 .enunciado-elemento-semantico:active { cursor:grabbing; }
 .enunciado-elemento-arrastando { opacity:.4; border-color:var(--texto); cursor:grabbing; }
+.enunciado-ghost-arraste { position:fixed; top:0; left:0; z-index:50; pointer-events:none;
+  padding:2px 8px; border:1px solid var(--texto); border-radius:6px; background:var(--superficie);
+  font-weight:700; box-shadow:0 4px 10px rgba(54,51,45,.18); }

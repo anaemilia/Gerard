@@ -10,9 +10,10 @@ function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
   </g>;
 }
 
-export function FiguraCenaGerard({ figura, aoEditarValor }: {
+export function FiguraCenaGerard({ figura, aoEditarValor, destacada }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+  destacada?: boolean;
 }) {
   const interacao = figura.interacoes_permitidas.find(
     (item) => item.tipo === "EDITAR_VALOR");
@@ -22,7 +23,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor }: {
   };
   // data-figura-id também é o alvo do arraste customizado do enunciado
   // (App.aoSoltarNoDiagrama usa elementFromPoint + closest('[data-figura-id]')).
-  return <g className={`scene-figure${editavel ? " scene-figure-editable" : ""}`}
+  return <g className={`scene-figure${editavel ? " scene-figure-editable" : ""}${destacada ? " scene-figure-destacada" : ""}`}
       data-figura-id={figura.id} data-editavel={editavel || undefined}
       role={editavel ? "button" : undefined} tabIndex={editavel ? 0 : undefined}
       aria-label={editavel ? `Editar ${figura.rotulo}` : undefined}

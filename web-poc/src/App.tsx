@@ -9,20 +9,17 @@ import { MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
-type Mensagem = { texto: string; tipo: "neutra" | "erro" | "sucesso" };
-
 export default function App() {
   const [representacoes, enviarEventoRepresentacional] = useReducer(
     reduzirEstadoRepresentacoes, estadoRepresentacoesInicial);
   const estado = representacoes.snapshotServidor;
   const [ocupado, setOcupado] = useState(false);
-  const [mensagem, setMensagem] = useState<Mensagem>({ texto: "Carregando situação…", tipo: "neutra" });
   const [mensagemOperacao, setMensagemOperacao] = useState<string | null>(null);
   const [dicaVisivel, setDicaVisivel] = useState(false);
+  const [figuraDestacadaId, setFiguraDestacadaId] = useState<string | null>(null);
 
   useEffect(() => {
-    api.carregar().then((e) => { receberSnapshot(e); setMensagem({ texto: "Preencha a incógnita e confirme.", tipo: "neutra" }); })
-      .catch((erro: Error) => setMensagem({ texto: erro.message, tipo: "erro" }));
+    api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
   }, []);
 
   function receberSnapshot(snapshot: EstadoWeb) {
@@ -39,8 +36,7 @@ export default function App() {
     setOcupado(true);
     try {
       receberSnapshot(await api.executar(controle));
-      setMensagem({ texto: "Escolha a categoria correspondente à situação.", tipo: "neutra" });
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
@@ -53,12 +49,7 @@ export default function App() {
     try {
       const resultado = await api.classificar(controle);
       receberSnapshot(resultado.estado);
-      setMensagem(resultado.correta
-        ? { texto: "Categoria aceita pelo domínio.", tipo: "sucesso" }
-        : { texto: resultado.desfecho === "REEXPLICAR_CATEGORIA_APOS_LIMITE"
-            ? `A categoria correta é ${resultado.estado.categoria_revelada}.`
-            : "A escolha precisa ser confirmada.", tipo: "erro" });
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
@@ -95,17 +86,13 @@ export default function App() {
     const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
     const valor = Number(texto);
     if (!figura || !interacao || !controle || !Number.isInteger(valor)) {
-      setMensagem({ texto: "Digite um número inteiro.", tipo: "erro" });
       return;
     }
     setOcupado(true);
     try {
       const resultado = await api.posicionar(controle, valor);
       receberSnapshot(resultado.estado);
-      setMensagem(resultado.aceita
-        ? { texto: "Valor aceito pelo domínio.", tipo: "sucesso" }
-        : { texto: resultado.chave_mensagem ?? "Valor rejeitado pelo domínio.", tipo: "erro" });
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
@@ -116,16 +103,17 @@ export default function App() {
     try {
       const resultado = await api.ajustarQuadradinho(controle, delta);
       receberSnapshot(resultado.estado);
-      if (resultado.limite_atingido) {
-        setMensagem({ texto: resultado.chave_mensagem ?? "Limite atingido.", tipo: "erro" });
-      }
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
-  function aoSoltarNoDiagrama(papelId: string, x: number, y: number) {
-    const alvo = document.elementFromPoint(x, y)?.closest("[data-figura-id]");
-    const figuraId = alvo?.getAttribute("data-figura-id");
+  function aoSoltarNoDiagrama(papelId: string, x: number, y: number, alvoFiguraId?: string | null) {
+    // Se a atração magnética já identificou um alvo (a até 48px), a soltura
+    // conta pra ele mesmo que o ponto exato do cursor não esteja em cima
+    // (deveCentralizarAoSoltar, Main.java) — só cai no elementFromPoint puro
+    // quando nenhum alvo estava em atração.
+    const figuraId = alvoFiguraId
+      ?? document.elementFromPoint(x, y)?.closest("[data-figura-id]")?.getAttribute("data-figura-id");
     const figura = estado?.cena?.figuras.find((item) => item.id === figuraId);
     // Soltar fora de qualquer figura só encerra o gesto, sem efeito — mesmo
     // invariante do desktop (gerard-ajuda-adaptativa): não é erro nem ação.
@@ -133,11 +121,7 @@ export default function App() {
   }
 
   async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
-    // Erro só ao soltar, nunca durante o arrasto (protocolo de mouse, ver
-    // gerard-scaffolding-interacao): soltar em cima da caixa errada é
-    // feedback de erro, não silêncio.
     if (papelId !== figura.chave_papel_semantico) {
-      setMensagem({ texto: "Esse elemento não pertence a essa caixa.", tipo: "erro" });
       return;
     }
     const editar = figura.interacoes_permitidas.find((item) => item.tipo === "EDITAR_VALOR");
@@ -147,14 +131,6 @@ export default function App() {
     }
     const posicionar = figura.interacoes_permitidas.find((item) => item.tipo === "POSICIONAR_CONHECIDO");
     if (!posicionar) {
-      // Duas razões distintas pra não ter a ação: o valor já foi posicionado
-      // (normal, neutro) ou esta situação não tem nenhuma atividade
-      // implementada pra essa categoria (achado ao testar: acontece com
-      // Transformação de Relação sem dado rico curado — a caixa fica sem
-      // nenhuma interação desde o início, não é "já posicionado").
-      setMensagem(figura.conhecido
-        ? { texto: "Esse valor já está posicionado.", tipo: "neutra" }
-        : { texto: "Esta situação ainda não tem atividade implementada nesta categoria.", tipo: "erro" });
       return;
     }
     setOcupado(true);
@@ -164,10 +140,7 @@ export default function App() {
         href: "/api/acoes/posicionar-conhecido", corpo: { papel_id: posicionar.papel_id }
       });
       receberSnapshot(resultado.estado);
-      setMensagem(resultado.aceita
-        ? { texto: "Valor posicionado.", tipo: "neutra" }
-        : { texto: "Não foi possível posicionar esse valor.", tipo: "erro" });
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
@@ -179,7 +152,7 @@ export default function App() {
       const resultado = await api.escolherOperacao(controle, operacao);
       receberSnapshot(resultado.estado);
       setMensagemOperacao(resultado.aceita ? null : (resultado.chave_mensagem ?? "Operação incorreta."));
-    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
 
@@ -211,9 +184,6 @@ export default function App() {
       categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
       categoriaSelecionada={estado ? estado.categoria_selecionada : null}
       aoEscolherCategoria={escolherCategoria} />
-    {mensagem.texto && <p className={`message message-${mensagem.tipo}`} role={mensagem.tipo === "erro" ? "alert" : "status"}>
-      {mensagem.texto}
-    </p>}
     {estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
         {estado.dica_proximo_passo
@@ -229,7 +199,9 @@ export default function App() {
             ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
             : <span className="help-mark" aria-hidden="true">?</span>}
         {estado.elementos_texto
-          ? <EnunciadoInterativo elementos={estado.elementos_texto} aoSoltar={aoSoltarNoDiagrama} />
+          ? <EnunciadoInterativo elementos={estado.elementos_texto}
+              figuras={estado.cena?.figuras ?? []}
+              aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
@@ -238,6 +210,7 @@ export default function App() {
           {estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
+            figuraDestacadaId={figuraDestacadaId}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
         </section>
