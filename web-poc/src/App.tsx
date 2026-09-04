@@ -3,6 +3,7 @@ import { api } from "./api";
 import type { AcaoDisponivel, EstadoWeb, FiguraCena,
   InteracaoPermitidaFigura } from "./contratos";
 import { BarraCategorias } from "./BarraCategorias";
+import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { MaterialConcretoQuadradinhos } from "./MaterialConcretoQuadradinhos";
 import { MenuAjudaContextual } from "./MenuAjudaContextual";
@@ -75,7 +76,19 @@ export default function App() {
       elementoId: figura.id, actionId: interacao.acao_id, valorInicial });
   }
 
-  async function confirmarValorEditado() {
+  function aoConfirmarDigitacao() {
+    if (!representacoes.elementoEmEdicao) return;
+    const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
+    if (!Number.isInteger(Number(texto))) return;
+    enviarEventoRepresentacional({ tipo: "VALOR_PROPOSTO_PARA_CONFIRMACAO",
+      elementoId: representacoes.elementoEmEdicao });
+  }
+
+  function aoNegarValor() {
+    enviarEventoRepresentacional({ tipo: "CONFIRMACAO_NEGADA" });
+  }
+
+  async function aoConfirmarValor() {
     if (!estado || !representacoes.elementoEmEdicao) return;
     const figura = estado.cena?.figuras.find(
       (item) => item.id === representacoes.elementoEmEdicao);
@@ -92,6 +105,7 @@ export default function App() {
     try {
       const resultado = await api.posicionar(controle, valor);
       receberSnapshot(resultado.estado);
+      enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -124,9 +138,22 @@ export default function App() {
     if (papelId !== figura.chave_papel_semantico) {
       return;
     }
-    const editar = figura.interacoes_permitidas.find((item) => item.tipo === "EDITAR_VALOR");
-    if (editar) {
-      iniciarEdicaoValor(figura, editar);
+    // Soltar o "?" só engata a incógnita na caixa (protocolo mouse-texto,
+    // Main.java) — marcado no servidor (ver ConfirmacaoValorWeb/
+    // engatarIncognita), não só no cliente: a digitação em si abre com o
+    // duplo-clique subsequente sobre a caixa já engatada (ver
+    // FiguraCenaGerard), nunca automaticamente ao soltar.
+    const engatar = figura.interacoes_permitidas.find((item) => item.tipo === "ENGATAR_INCOGNITA");
+    if (engatar) {
+      setOcupado(true);
+      try {
+        const resultado = await api.engatarIncognita({
+          id: "ENGATAR_INCOGNITA", metodo: "POST",
+          href: "/api/acoes/engatar-incognita", corpo: { papel_id: engatar.papel_id }
+        });
+        receberSnapshot(resultado.estado);
+      } catch (erro) { console.error(erro); }
+      finally { setOcupado(false); }
       return;
     }
     const posicionar = figura.interacoes_permitidas.find((item) => item.tipo === "POSICIONAR_CONHECIDO");
@@ -200,8 +227,7 @@ export default function App() {
             : <span className="help-mark" aria-hidden="true">?</span>}
         {estado.elementos_texto
           ? <EnunciadoInterativo elementos={estado.elementos_texto}
-              figuras={estado.cena?.figuras ?? []}
-              aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
+              aoSoltar={aoSoltarNoDiagrama} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
@@ -213,24 +239,21 @@ export default function App() {
             figuraDestacadaId={figuraDestacadaId}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
+          {figuraEmEdicao && <EdicaoValorFigura figuraId={figuraEmEdicao.id}
+            papelNome={figuraEmEdicao.rotulo} pergunta={estado.confirmacao_valor_papel}
+            modo={representacoes.confirmando ? "confirmando" : "digitando"}
+            valor={representacoes.valoresEmEdicao[figuraEmEdicao.id] ?? ""} ocupado={ocupado}
+            aoAlterarValor={(valor) => enviarEventoRepresentacional({
+              tipo: "VALOR_EM_EDICAO_ALTERADO", elementoId: figuraEmEdicao.id, valor })}
+            aoConfirmarDigitacao={aoConfirmarDigitacao}
+            aoConfirmarValor={() => void aoConfirmarValor()}
+            aoNegarValor={aoNegarValor} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
           {modelagemMaterialConcreto && <MaterialConcretoQuadradinhos
             modelagem={modelagemMaterialConcreto} ocupado={ocupado}
             aoAjustar={(delta) => void ajustarQuadradinho(delta)} />}
-          {figuraEmEdicao && <div className="value-editor">
-            <label htmlFor="valor-papel">{figuraEmEdicao.rotulo}</label>
-            <input id="valor-papel" type="number" step="1" inputMode="numeric" autoFocus
-              value={representacoes.valoresEmEdicao[figuraEmEdicao.id] ?? ""}
-              onChange={(evento) => enviarEventoRepresentacional({
-                tipo: "VALOR_EM_EDICAO_ALTERADO", elementoId: figuraEmEdicao.id,
-                valor: evento.target.value })} disabled={ocupado} />
-            <div className="dialog-actions"><button type="button"
-              onClick={() => void confirmarValorEditado()} disabled={ocupado}>Confirmar</button>
-              <button type="button" onClick={() => enviarEventoRepresentacional(
-                { tipo: "RASCUNHO_DESCARTADO" })} disabled={ocupado}>Cancelar</button></div>
-          </div>}
         </aside>
       </div>
       {estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&

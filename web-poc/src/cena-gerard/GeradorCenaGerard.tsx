@@ -6,7 +6,8 @@ import { SeletorOperacaoDiagramaGerard } from "./SeletorOperacaoDiagramaGerard";
 import type { PosicaoVisual } from "../estadoRepresentacoes";
 
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
-export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, figuraDestacadaId, seletorOperacao }: {
+export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, figuraDestacadaId,
+    seletorOperacao }: {
   cena: CenaDiagrama;
   posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;

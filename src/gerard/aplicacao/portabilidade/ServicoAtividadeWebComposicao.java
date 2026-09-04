@@ -45,6 +45,13 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
     // gerard-consistencia-estado); só a confirmação explícita via
     // PROPOR_VALOR_PAPEL grava de verdade.
     private int contagemMaterialConcreto;
+    // Draft do servidor (nunca grava em papelDesconhecido, mesmo raciocínio
+    // de contagemMaterialConcreto): o "?" foi arrastado até a caixa mas
+    // ainda não tem valor digitado/confirmado. Precisa ficar aqui, não só no
+    // cliente — gerador de cena/projetarCena é quem decide o que a figura
+    // mostra, o cliente só materializa (achado explícito da usuária:
+    // "engatada" client-only quebrava esse princípio).
+    private boolean incognitaEngatada;
 
     public ServicoAtividadeWebComposicao() {
         this("tentativa.web.composicao-medidas");
@@ -111,9 +118,12 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
             if (!parte2.estaPreenchido()) {
                 acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(parte2.getChave()));
             }
-        } else if (materialConcretoDisponivel && !concluida) {
-            acoes.addAll(AcoesDisponiveisAtividadeWeb
-                    .acaoAjustarQuadradinho(papelDesconhecido.getChave()));
+        } else if (!concluida) {
+            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
+            if (materialConcretoDisponivel) {
+                acoes.addAll(AcoesDisponiveisAtividadeWeb
+                        .acaoAjustarQuadradinho(papelDesconhecido.getChave()));
+            }
         }
         estado.put("acoes_disponiveis", acoes);
         return estado;
@@ -140,6 +150,27 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
                     situacao.getId(), "diagrama.vergnaud.web");
             papel.posicionar(numeroCurado(campoCuradoDoPapel(papel), papel.getChave()),
                     OrigemAcao.ORIGEM_USUARIO, contexto);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
+    /**
+     * Engata o "?" na caixa da incógnita (protocolo mouse-texto, Main.java) —
+     * ação que soltar o token da incógnita do enunciado sobre sua caixa
+     * dispara. Só marca o rascunho; a digitação em si (duplo-clique na caixa
+     * já engatada) continua indo por PROPOR_VALOR_PAPEL.
+     */
+    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+        if (!papelDesconhecido.getChave().equals(papelId)) {
+            throw new IllegalArgumentException(
+                    "papel não é a incógnita desta situação: " + papelId);
+        }
+        if (!papelDesconhecido.estaPreenchido()) {
+            incognitaEngatada = true;
         }
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
@@ -269,6 +300,7 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
             item.put("nome", papel.getNomeConceitual());
             item.put("conhecido", Boolean.TRUE);
             item.put("valor", Integer.valueOf(contagemMaterialConcreto));
+            item.put("engatada", Boolean.FALSE);
             return item;
         }
         return projetarPapel(papel);
@@ -308,6 +340,7 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         // diagrama (ver posicionarValorConhecido / proporValor).
         relacao = RelacaoEstruturalComposicao.composicaoDeMedidas();
         contagemMaterialConcreto = 0;
+        incognitaEngatada = false;
         return estadoAtual();
     }
 
@@ -343,13 +376,15 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         }
     }
 
-    private static Map<String, Object> projetarPapel(PapelQuantitativo papel) {
+    private Map<String, Object> projetarPapel(PapelQuantitativo papel) {
         Map<String, Object> item = mapa();
         item.put("id", papel.getChave());
         item.put("nome", papel.getNomeConceitual());
         item.put("conhecido", Boolean.valueOf(papel.estaPreenchido()));
         item.put("valor", papel.estaPreenchido()
                 ? papel.valorAtual().valorOuNull() : null);
+        item.put("engatada", Boolean.valueOf(
+                papel == papelDesconhecido && incognitaEngatada && !papel.estaPreenchido()));
         return item;
     }
 

@@ -30,6 +30,10 @@ public final class ServicoAtividadeWebTransformacaoMedidas
     private PapelQuantitativo estadoFinal;
     private PapelQuantitativo papelDesconhecido;
     private RelacaoEstruturalTransformacao relacao;
+    // Draft do servidor (nunca grava em papelDesconhecido) — "?" arrastado
+    // até a caixa, ainda sem valor digitado/confirmado (ver
+    // ServicoAtividadeWebComposicao.incognitaEngatada).
+    private boolean incognitaEngatada;
 
     public ServicoAtividadeWebTransformacaoMedidas(String tentativaId,
             SituacaoProblemaAditiva situacao) {
@@ -73,6 +77,8 @@ public final class ServicoAtividadeWebTransformacaoMedidas
                     acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
                 }
             }
+        } else if (!concluida) {
+            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
         }
         estado.put("acoes_disponiveis", acoes);
         return estado;
@@ -100,6 +106,22 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         }
         if (!papel.estaPreenchido()) {
             posicionarConhecido(papel);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
+    /** Engata o "?" na caixa da incógnita (protocolo mouse-texto, Main.java). */
+    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+        if (!papelDesconhecido.getChave().equals(papelId)) {
+            throw new IllegalArgumentException(
+                    "papel não é a incógnita desta situação: " + papelId);
+        }
+        if (!papelDesconhecido.estaPreenchido()) {
+            incognitaEngatada = true;
         }
         Map<String, Object> resultado = mapa();
         resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
@@ -166,6 +188,7 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         // arrasta cada papel (conhecido ou incógnita) do enunciado até o
         // diagrama (ver posicionarValorConhecido / proporValor).
         relacao = RelacaoEstruturalTransformacao.transformacaoDeMedidas();
+        incognitaEngatada = false;
         return estadoAtual();
     }
 
@@ -191,13 +214,15 @@ public final class ServicoAtividadeWebTransformacaoMedidas
                 "papel incompatível com Transformação de Medidas: " + chave);
     }
 
-    private static Map<String, Object> projetarPapel(PapelQuantitativo papel) {
+    private Map<String, Object> projetarPapel(PapelQuantitativo papel) {
         Map<String, Object> item = mapa();
         item.put("id", papel.getChave());
         item.put("nome", papel.getNomeConceitual());
         item.put("conhecido", Boolean.valueOf(papel.estaPreenchido()));
         item.put("valor", papel.estaPreenchido()
                 ? papel.valorAtual().valorOuNull() : null);
+        item.put("engatada", Boolean.valueOf(
+                papel == papelDesconhecido && incognitaEngatada && !papel.estaPreenchido()));
         return item;
     }
 

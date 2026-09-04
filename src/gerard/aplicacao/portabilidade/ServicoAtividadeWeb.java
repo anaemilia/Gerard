@@ -13,5 +13,13 @@ public interface ServicoAtividadeWeb {
      * gerard-consistencia-estado e ServicoAtividadeWebComposicao).
      */
     Map<String, Object> posicionarValorConhecido(String papelId);
+    /**
+     * Engata o "?" da incógnita na sua caixa — ação que soltar o token da
+     * incógnita do enunciado sobre sua caixa dispara (protocolo mouse-texto,
+     * Main.java). Não atribui valor: só marca, no servidor (nunca só no
+     * cliente — ver projetarCena/figura.engatada), que a caixa deve mostrar
+     * "?" até a digitação real via proporValor.
+     */
+    Map<String, Object> engatarIncognita(String papelId);
     Map<String, Object> reiniciar();
 }

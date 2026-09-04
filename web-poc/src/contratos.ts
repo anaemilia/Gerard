@@ -4,11 +4,11 @@ export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as cons
 export type AcaoDisponivel = Readonly<{
   id: "SORTEAR_MEDIDAS" | "SORTEAR_RELACOES" | "REINICIAR_TENTATIVA" | "PROPOR_VALOR_PAPEL" |
     "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE" | "ESCOLHER_OPERACAO_RELACAO" |
-    "AJUSTAR_QUADRADINHO" | "POSICIONAR_CONHECIDO";
+    "AJUSTAR_QUADRADINHO" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
   metodo: "POST"; href: string; corpo?: Readonly<Record<string, unknown>>;
 }>;
 
-export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null }>;
+export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null; engatada: boolean }>;
 export type ElementoTexto = Readonly<{ valor: string; papel_id: string | null; incognita: boolean }>;
 export type AreaAjudaContextual = "TEXTO" | "VERGNAUD" | "COMPLEMENTAR";
 export type IntencaoAjuda = "DUVIDA" | "CONTINUAR" | "PROXIMO_PASSO";
@@ -33,6 +33,7 @@ export type EstadoClassificacao = Readonly<{
   questionamento?: string; categoria_revelada?: string;
   dica_proximo_passo?: string | null;
   ajuda_contextual?: readonly ItemAjudaContextual[];
+  confirmacao_valor_papel?: string | null;
   cena?: CenaDiagrama;
   elementos_texto?: readonly ElementoTexto[];
   modelagem?: EstadoAtividade | EstadoModelagemTernaria
@@ -67,8 +68,8 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
-  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO";
-  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO";
+  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
+  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
   fase_envio: "CONFIRMACAO" | "IMEDIATA";
   papel_id: string;
 }>;
@@ -77,7 +78,7 @@ export type ResultadoPosicionarConhecido = Readonly<{
 }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
-  valor: number | null; conhecido: boolean;
+  valor: number | null; conhecido: boolean; engatada: boolean;
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;

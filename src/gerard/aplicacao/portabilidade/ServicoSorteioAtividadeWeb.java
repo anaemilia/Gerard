@@ -218,6 +218,21 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     /**
+     * Engata o "?" da incógnita na sua caixa (protocolo mouse-texto,
+     * Main.java) — só existe onde há incógnita a digitar (ServicoAtividadeWeb);
+     * categorias de escolha de operação não têm esse conceito.
+     */
+    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+        if (atividadeModelagem == null) {
+            throw new IllegalStateException(
+                    "a situação atual não possui incógnita a engatar");
+        }
+        Map<String, Object> resultado = atividadeModelagem.engatarIncognita(papelId);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
+    /**
      * Ajusta a contagem de quadradinhos do material concreto (AG_EMCME) —
      * só existe para Composição de Medidas hoje (piloto); outras categorias
      * ainda não têm representação complementar portada.
@@ -350,9 +365,11 @@ public final class ServicoSorteioAtividadeWeb {
                 || tentativaClassificacao.estaEncerrada();
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
-            estado.put("cena", projetarCena(contextoAtual,
-                    listaDeAcoes(estado.get("acoes_disponiveis")), estado.get("modelagem")));
+            Object cenaProjetada = projetarCena(contextoAtual,
+                    listaDeAcoes(estado.get("acoes_disponiveis")), estado.get("modelagem"));
+            estado.put("cena", cenaProjetada);
             estado.put("elementos_texto", projetarElementosTexto(contextoAtual));
+            estado.put("confirmacao_valor_papel", ConfirmacaoValorWeb.perguntaParaCena(cenaProjetada));
         } else {
             estado.remove("categoria");
             estado.remove("subtipo");
@@ -364,6 +381,7 @@ public final class ServicoSorteioAtividadeWeb {
             estado.remove("diagrama");
             estado.remove("curadoria");
             estado.remove("elementos_texto");
+            estado.remove("confirmacao_valor_papel");
         }
         // Menu "E agora?" (botaoAjudaTexto/Vergnaud/Complementar, Main.java)
         // só existe depois que a categoria foi de fato confirmada — mesma
@@ -507,6 +525,7 @@ public final class ServicoSorteioAtividadeWeb {
             Object papelProjetado = valoresPorChave.get(figura.getChavePapelSemantico());
             item.put("valor", extrairCampo(papelProjetado, "valor"));
             item.put("conhecido", extrairCampo(papelProjetado, "conhecido"));
+            item.put("engatada", extrairCampo(papelProjetado, "engatada"));
             item.put("interacoes_permitidas", projetarInteracoesPermitidas(
                     acoes, figura.getChavePapelSemantico()));
             figuras.add(item);
@@ -801,6 +820,8 @@ public final class ServicoSorteioAtividadeWeb {
                 tipoInteracao = "EDITAR_VALOR";
             } else if ("POSICIONAR_CONHECIDO".equals(id)) {
                 tipoInteracao = "POSICIONAR_CONHECIDO";
+            } else if ("ENGATAR_INCOGNITA".equals(id)) {
+                tipoInteracao = "ENGATAR_INCOGNITA";
             } else {
                 continue;
             }

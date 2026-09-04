@@ -305,6 +305,11 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         item.put("conhecido", Boolean.valueOf(papel.estaPreenchido()));
         item.put("valor", papel.estaPreenchido()
                 ? papel.valorAtual().valorOuNull() : null);
+        // Sem incógnita nesta categoria (ver Javadoc da classe) — nunca
+        // engatada, mas o campo precisa existir pra extrairCampo em
+        // ServicoSorteioAtividadeWeb.projetarCena não depender de qual
+        // categoria está projetando.
+        item.put("engatada", Boolean.FALSE);
         return item;
     }
 

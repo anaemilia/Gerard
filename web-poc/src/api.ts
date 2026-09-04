@@ -39,6 +39,11 @@ export const api = {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
       body: JSON.stringify(acao.corpo ?? {})
     }),
+  engatarIncognita: (acao: AcaoDisponivel) =>
+    requisitar<ResultadoPosicionarConhecido>(acao.href, {
+      method: acao.metodo, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(acao.corpo ?? {})
+    }),
   ajudaContextual: (area: AreaAjudaContextual, intencao: IntencaoAjuda) =>
     requisitar<ResultadoAjudaContextual>("/api/acoes/ajuda-contextual", {
       method: "POST", headers: { "Content-Type": "application/json" },

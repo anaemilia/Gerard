@@ -30,6 +30,18 @@ export function coordenadaYDoRotulo(f: FiguraCena) {
   return f.y + f.altura / 2 + 4;
 }
 
+/**
+ * O valor (quando conhecido) sempre fica centralizado dentro da figura,
+ * mesma posição usada pelo rótulo só quando posicao_rotulo é CENTRO —
+ * independente de onde o rótulo da figura vai quando ela ainda está vazia
+ * (ACIMA/ABAIXO). Espelha ElementoVergnaud.desenhar (Main.java): textoEditavel
+ * é sempre centralizado na caixa (tx/ty a partir de largura/altura), nunca
+ * segue rotulosAcima — só o rótulo/subtítulo (papel semântico) segue.
+ */
+export function coordenadaYDoValor(f: FiguraCena) {
+  return f.y + f.altura / 2 + 4;
+}
+
 /** Abaixo do rótulo quando ele já ocupa a linha logo sob a figura (ABAIXO), senão logo sob a figura. */
 export function coordenadaYDoSubtitulo(f: FiguraCena) {
   return f.posicao_rotulo === "ABAIXO" ? f.y + f.altura + 40 : f.y + f.altura + 24;
