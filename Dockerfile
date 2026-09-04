@@ -12,7 +12,19 @@ RUN npm run build
 FROM eclipse-temurin:11-jdk AS backend
 WORKDIR /app
 COPY src ./src
-COPY lib ./lib
+
+# lib/*.jar não é versionado (ver scripts/baixar_dependencias.sh) — baixamos
+# aqui as mesmas duas dependências externas, com verificação de checksum,
+# em vez de depender de um lib/ já presente no checkout (que não existe num
+# clone limpo, como o que o Render usa para o build).
+RUN command -v curl >/dev/null 2>&1 || (apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*)
+RUN mkdir -p lib \
+    && curl -sL --fail --max-time 120 -o lib/weka-stable-3.8.6.jar \
+         https://repo1.maven.org/maven2/nz/ac/waikato/cms/weka/weka-stable/3.8.6/weka-stable-3.8.6.jar \
+    && echo "932ea2f342b58fe45736389e9c426d5b5955e610d1f5f6485117f532068915e9  lib/weka-stable-3.8.6.jar" | sha256sum -c - \
+    && curl -sL --fail --max-time 120 -o lib/bounce-0.18.jar \
+         https://repo1.maven.org/maven2/nz/ac/waikato/cms/weka/thirdparty/bounce/0.18/bounce-0.18.jar \
+    && echo "bffff1505335c02256b7ab2ccffbe4aa4d3ac9fe14c17557809b7c9d99d666ca  lib/bounce-0.18.jar" | sha256sum -c -
 RUN mkdir -p build/classes \
     && find src -name '*.java' > /tmp/fontes.txt \
     && javac -encoding UTF-8 -source 8 -target 8 -nowarn \
