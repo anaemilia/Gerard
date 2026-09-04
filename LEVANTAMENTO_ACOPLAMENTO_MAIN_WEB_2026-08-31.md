@@ -1138,3 +1138,64 @@ foram resolvidos por cortes já registrados ou concluídos como apresentação
 legítima, sem novo código necessário. Não restam itens abertos no
 levantamento original de P0/P1 — os próximos candidatos a corte
 precisarão vir de uma nova varredura, não desta fila.
+
+## Nova varredura: 19 métodos privados mortos removidos de `Main` (2026-09-03)
+
+Com a fila original esgotada, fiz uma varredura própria por métodos
+`private`/`protected` de `Main` sem nenhuma outra ocorrência textual no
+arquivo além da própria declaração — mesmo critério já usado nos cortes de
+"wrappers mortos" (`ScaffoldingQuestionamento`, 2026-09-02) e "implementação
+órfã do arraste elástico" (2026-09-03), agora aplicado ao arquivo inteiro em
+vez de a uma classe específica.
+
+- Extraí todos os nomes de método `private`/`protected` de `Main.java` (476
+  candidatos) e contei ocorrências de cada um no arquivo. 18 apareciam
+  exatamente uma vez — a própria declaração, zero chamadores.
+- Inspecionei o corpo de cada um antes de remover, para dois riscos
+  específicos: (a) o método chamar outro método que só ele chamava (órfão
+  transitivo), e (b) alguma checagem textual do verificador estrutural
+  depender do texto exato do método morto.
+- `desenharDescricaoDiagramaQuebrada` chamava `ajustarLinhaComReticencias`,
+  que não tinha nenhum outro chamador — removidos juntos (19 métodos ao
+  todo, não 18).
+- Todos os demais chamavam apenas métodos/objetos com outros chamadores
+  vivos (`obterChavePapelDoNumero`, `projetorValoresComparacaoComplementar`,
+  `sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar`,
+  `elementoContemNumeralInterpretado`), confirmado por grep antes de cada
+  remoção.
+- Nenhum dos 19 tinha referência em `tests/` ou `scripts/` (incluindo por
+  reflexão).
+
+**Achado (b) confirmado.** A checagem estrutural `'papel semântico do
+desconhecido independe do glifo'`
+(`scripts/verificar_regressao_gerard.py`) exigia o texto literal
+`'SimboloDesconhecido.eh(valor)'` — que só existia dentro do método morto
+`obterChavePapelPorPosicaoTexto` (parâmetro chamado `valor`). O invariante
+que a checagem pretende proteger (a resolução do papel da incógnita não
+depende de qual glifo representa "desconhecido") continua real e vivo em
+`obterChavePapelExataDoItem` (linha ~12712), só que com nomes de parâmetro
+diferentes (`item.valor`/`item.origemValor`). Corrigido para apontar a
+`'SimboloDesconhecido.eh(item.valor)'`, o texto real do chamador vivo.
+
+Lista completa removida: `categoriaProblemaSelecionada`,
+`criarItemCategoriaEmConstrucao`, `desenharDescricaoDiagramaQuebrada`,
+`ajustarLinhaComReticencias`, `desenharLinhaTracejada`,
+`desenharPainelInterpretacaoLinguistica`, `desenharRodapeInstrucao` (corpo
+já era só um comentário — "Instruções removidas da tela"),
+`ehNumeralInterpretado`, `ehNumeroDoTexto`, `ehPosicaoDeNumeralInterpretado`,
+`iniciarFantasmaElementoVergnaud`, `obterAreaDiagramaCentralVergnaud`,
+`obterChavePapelPorPosicaoTexto`, `obterSinalAtual`,
+`obterValoresSemanticosComparacao`, `pontoNoDiagramaVergnaud`,
+`registrarQuestionamentoMouseOver`,
+`sincronizarDiagramaVergnaudAPartirDoControleComparacao`,
+`sincronizarVergnaudAPartirDosQuadradinhosVenn`.
+
+Nenhuma lógica foi promovida a serviço — todo o conteúdo removido já não
+executava em nenhum caminho de código, então não havia conhecimento a
+realocar, só indireção morta a apagar (mesmo espírito dos cortes de
+2026-09-02/03 já registrados acima).
+
+Verificação: `verificar_linha_base_windows.py` aprovou 115/115 testes
+executáveis, 5 gráficos compilados/não executados por exigirem display, zero
+reprovações; `verificar_regressao_gerard.py` aprovado por completo após a
+correção da checagem citada.

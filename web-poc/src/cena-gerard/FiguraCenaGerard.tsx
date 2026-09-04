@@ -1,5 +1,5 @@
 import type { FiguraCena, InteracaoPermitidaFigura } from "../contratos";
-import { coordenadaYDoRotulo } from "./geometriaSvg";
+import { coordenadaYDoRotulo, coordenadaYDoSubtitulo } from "./geometriaSvg";
 
 function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
   if (!figura.exibir_lupa) return null;
@@ -37,7 +37,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor }: {
           rx={figura.tipo === "RETANGULO_ARREDONDADO" ? 10 : 0} />}
     <text x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>
     {figura.subtitulo && <text className="scene-figure-subtitle"
-      x={figura.x + figura.largura / 2} y={figura.y + figura.altura + 24}>{figura.subtitulo}</text>}
+      x={figura.x + figura.largura / 2} y={coordenadaYDoSubtitulo(figura)}>{figura.subtitulo}</text>}
     <LupaCenaGerard figura={figura} />
   </g>;
 }

@@ -39,6 +39,7 @@ public final class ServidorPrototipoWeb {
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
         servidor.createContext("/api/situacao", aplicacao::situacao);
         servidor.createContext("/api/acoes/posicionar", aplicacao::posicionar);
+        servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
         servidor.createContext("/api/gestos", aplicacao::registrarGesto);
         servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
         servidor.createContext("/api/sorteios/medidas", aplicacao::sortearMedidas);
@@ -79,12 +80,34 @@ public final class ServidorPrototipoWeb {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private void escolherOperacao(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String seletor = String.valueOf(analisado.get("seletor"));
+            String operacao = String.valueOf(analisado.get("operacao"));
+            if (!sorteios.possuiAtividadeEscolhaOperacaoAtiva()) {
+                responder(troca, 422, erro("a situação atual não possui escolha de operação implementada"));
+                return;
+            }
+            responder(troca, 200, sorteios.escolherOperacao(seletor, operacao));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
     private void reiniciar(HttpExchange troca) throws IOException {
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
         responder(troca, 200, sorteios.possuiAtividadeModelagemAtiva()
+                        || sorteios.possuiAtividadeEscolhaOperacaoAtiva()
                 ? sorteios.reiniciarAtividadeAtual() : atividade.reiniciar());
     }
 

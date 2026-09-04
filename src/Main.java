@@ -3519,14 +3519,6 @@ public class Main extends JFrame {
             return item;
         }
 
-        private JMenuItem criarItemCategoriaEmConstrucao(TipoSituacaoAditiva tipo) {
-            JMenuItem item = new JMenuItem(localizacao.rotuloBotaoTipo(tipo));
-            estilizarItemMenuPopup(item);
-            item.setEnabled(false);
-            item.setToolTipText(localizacao.texto("ui.menu.underConstruction"));
-            return item;
-        }
-
         /**
          * Corpo original do listener de adicionarOpcaoCategoria, extraído
          * para ser reaproveitado pelos ícones de atalho de categoria
@@ -4990,27 +4982,6 @@ public class Main extends JFrame {
             }
         }
 
-        private CategoriaProblema categoriaProblemaSelecionada() {
-            if (situacaoProblemaAtual != null && situacaoProblemaAtual.getTipo() != null) {
-                return construtorResultadoCurado.categoriaDeTipo(situacaoProblemaAtual.getTipo());
-            }
-            if (tipoSituacaoSelecionada == null) {
-                return CategoriaProblema.INDEFINIDA;
-            }
-            return construtorResultadoCurado.categoriaDeTipo(
-                    tipoSituacaoSelecionada);
-        }
-
-        private int[] extrairTodosNumerosDoTexto() {
-            java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
-            int[] resposta = new int[numeros.size()];
-
-            for (int i = 0; i < numeros.size(); i++) {
-                resposta[i] = converterTextoNumeroParaInteiro(numeros.get(i).getValorCanonico());
-            }
-
-            return resposta;
-        }
 
         private java.util.List<NumeroEncontrado> obterNumerosInterpretados() {
             if (textoProblemaEhMensagemSistema || resultadoInterpretacao == null) {
@@ -5109,15 +5080,6 @@ public class Main extends JFrame {
             g2.drawRoundRect(x, y, largura, altura, raio, raio);
             g2.setComposite(originalComposite);
             g2.setStroke(originalStroke);
-        }
-
-        private void desenharLinhaTracejada(Graphics2D g2, int x, int y, int largura, int altura, int raio) {
-            Stroke original = g2.getStroke();
-            float[] tracejado = {3.0f, 3.0f};
-            g2.setColor(gerard.ui.UITemaGerard.COR_TRACEJADO);
-            g2.setStroke(new BasicStroke(0.9f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, tracejado, 0.0f));
-            g2.drawRoundRect(x, y, largura, altura, raio, raio);
-            g2.setStroke(original);
         }
 
         protected void paintComponent(Graphics g) {
@@ -6741,31 +6703,6 @@ public class Main extends JFrame {
                     elemento.chavePapelSemantico);
         }
 
-        private boolean ehPosicaoDeNumeralInterpretado(int posicaoGlobal) {
-            if (textoProblemaEhMensagemSistema) {
-                return false;
-            }
-            java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
-            for (int i = 0; i < numeros.size(); i++) {
-                NumeroEncontrado numero = numeros.get(i);
-                if (posicaoGlobal >= numero.getPosicaoInicial() && posicaoGlobal < numero.getPosicaoFinal()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private boolean ehNumeralInterpretado(int inicioGlobal, int fimGlobal, String valor) {
-            java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
-            for (int i = 0; i < numeros.size(); i++) {
-                NumeroEncontrado numero = numeros.get(i);
-                if (numero.getPosicaoInicial() == inicioGlobal && numero.getPosicaoFinal() == fimGlobal) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private boolean elementoContemNumeralInterpretado(ElementoTextoMovel elemento) {
             return !textoProblemaEhMensagemSistema
                     && elemento != null
@@ -6845,20 +6782,6 @@ public class Main extends JFrame {
                     return papel.getChavePapel();
                 }
                 indiceConhecido++;
-            }
-            return "papel.valor";
-        }
-
-        private String obterChavePapelPorPosicaoTexto(int posicaoGlobal, String valor) {
-            if (SimboloDesconhecido.eh(valor)) {
-                return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
-            }
-            java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
-            for (int i = 0; i < numeros.size(); i++) {
-                NumeroEncontrado numero = numeros.get(i);
-                if (posicaoGlobal >= numero.getPosicaoInicial() && posicaoGlobal < numero.getPosicaoFinal()) {
-                    return obterChavePapelDoNumero(i);
-                }
             }
             return "papel.valor";
         }
@@ -6980,69 +6903,6 @@ public class Main extends JFrame {
         private LimitesMovimento obterLimitesMovimentoConectorVergnaud() {
             return AdaptadorMovimentoConectorVergnaud.traduzir(
                     obterAreaConteudoDiagramaVergnaud());
-        }
-
-        private void desenharPainelInterpretacaoLinguistica(Graphics2D g2) {
-            if (resultadoInterpretacao == null) {
-                return;
-            }
-
-            int x = 30;
-            int y = 225;
-            int largura = 640;
-            int altura = 122;
-
-            Composite compositeOriginal = g2.getComposite();
-            Stroke strokeOriginal = g2.getStroke();
-
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.96f));
-            g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-            g2.fillRoundRect(x, y, largura, altura, 12, 12);
-
-            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-            g2.setStroke(new BasicStroke(1.0f));
-            g2.drawRoundRect(x, y, largura, altura, 12, 12);
-
-            g2.setComposite(compositeOriginal);
-
-            g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO);
-            g2.setFont(new Font("Arial", Font.BOLD, 13));
-            g2.drawString(localizacao.texto("ui.panel.interpretation"), x + 12, y + 20);
-
-            g2.setFont(new Font("Arial", Font.PLAIN, 12));
-            g2.drawString(
-                    localizacao.texto("ui.panel.detectedLanguage") + ": " + resultadoInterpretacao.getIdiomaDetectado().getDescricao() +
-                    " | " + localizacao.texto("ui.panel.probableCategory") + ": " + resultadoInterpretacao.getCategoriaProvavel().getDescricao() +
-                    " (" + resultadoInterpretacao.getCategoriaProvavel().getSigla() + ")" +
-                    " | " + localizacao.texto("ui.panel.confidence") + ": " + localizacao.texto("ui.panel.humanCuration"),
-                    x + 12, y + 40
-            );
-
-            g2.drawString(localizacao.texto("ui.panel.numbers") + ": " + resultadoInterpretacao.getNumerosFormatados(), x + 12, y + 58);
-            g2.drawString(localizacao.texto("ui.panel.probableRelation") + ": " + resultadoInterpretacao.getRelacaoProvavel(), x + 250, y + 58);
-
-            String pistas = resultadoInterpretacao.getPistasFormatadas();
-            if (pistas.length() > 76) {
-                pistas = pistas.substring(0, 73) + "...";
-            }
-            g2.drawString(localizacao.texto("ui.panel.clues") + ": " + pistas, x + 12, y + 76);
-
-            String papeis = resultadoInterpretacao.getPapeisFormatados();
-            if (papeis.length() > 86) {
-                papeis = papeis.substring(0, 83) + "...";
-            }
-            g2.drawString(localizacao.texto("ui.panel.roles") + ": " + papeis, x + 12, y + 94);
-
-            if (!resultadoInterpretacao.getAvisos().isEmpty()) {
-                String aviso = resultadoInterpretacao.getAvisos().get(0);
-                if (aviso.length() > 78) {
-                    aviso = aviso.substring(0, 75) + "...";
-                }
-                g2.setColor(new Color(132, 92, 47));
-                g2.drawString(localizacao.texto("ui.panel.warning") + ": " + aviso, x + 12, y + 112);
-            }
-
-            g2.setStroke(strokeOriginal);
         }
 
         private void desenharPaineisEixoRelacoes(Graphics2D g2) {
@@ -7415,10 +7275,6 @@ public class Main extends JFrame {
                     proximo, dentro);
             g2.setStroke(original);
             g2.setColor(corOriginal);
-        }
-
-        private void desenharRodapeInstrucao(Graphics2D g2) {
-            // Instruções removidas da tela.
         }
 
         private void desenharAnotacaoMouseOver(Graphics2D g2) {
@@ -8234,20 +8090,6 @@ public class Main extends JFrame {
          * enunciado. Os valores são obtidos pelos papéis curados e devolvidos
          * na ordem: referido, valor relativo e referendo.
          */
-        private int[] obterValoresSemanticosComparacao() {
-            ElementoVergnaud elementoReferido = encontrarElementoVergnaudPorPapel(
-                    "papel.referido");
-            ElementoVergnaud elementoRelativo = encontrarElementoVergnaudPorPapel(
-                    "papel.diferenca");
-            ElementoVergnaud elementoReferendo = encontrarElementoVergnaudPorPapel(
-                    "papel.referendo");
-            return projetorValoresComparacaoComplementar.projetar(
-                    situacaoProblemaAtual, localizacao,
-                    obterValorNumericoDoElemento(elementoReferido),
-                    obterValorNumericoDoElemento(elementoRelativo),
-                    obterValorNumericoDoElemento(elementoReferendo));
-        }
-
         private static final int LARGURA_BASE_TELA = 1240;
         private static final int ALTURA_BASE_TELA = 760;
         // Altura da faixa de atalhos de categoria (voltar/avançar, 3 ícones de
@@ -8276,10 +8118,6 @@ public class Main extends JFrame {
         private Rectangle obterAreaDiagramaAditivo() {
             Rectangle[] areas = obterAreasDiagramasProporcionais();
             return areas[1];
-        }
-
-        private Rectangle obterAreaDiagramaCentralVergnaud() {
-            return obterAreaVisivelDiagramasVergnaud();
         }
 
         private Rectangle obterAreaConteudoDiagramaVergnaud() {
@@ -8426,11 +8264,6 @@ public class Main extends JFrame {
         private int obterXDivisorDiagramas() {
             Rectangle areaVergnaud = obterAreaVisivelDiagramasVergnaud();
             return areaVergnaud.x + areaVergnaud.width + (ESPACO_BASE_ENTRE_DIAGRAMAS / 2);
-        }
-
-        private boolean pontoNoDiagramaVergnaud(int x, int y) {
-            return categoriaSelecionadaParaAtividade
-                    && obterAreaVisivelDiagramasVergnaud().contains(x, y);
         }
 
         private Rectangle criarZonaSemanticaElemento(Rectangle limite,
@@ -9772,31 +9605,6 @@ public class Main extends JFrame {
             repaint();
         }
 
-        private void desenharDescricaoDiagramaQuebrada(Graphics2D g2, String texto,
-                                                        int x, int y, int larguraMaxima) {
-            FontMetrics fm = g2.getFontMetrics();
-            java.util.List<String> linhas = quebrarTextoAnotacao(texto, fm, larguraMaxima);
-            int maximoLinhas = 2;
-            int alturaLinha = Math.max(13, fm.getHeight());
-
-            for (int i = 0; i < linhas.size() && i < maximoLinhas; i++) {
-                String linha = linhas.get(i);
-                if (i == maximoLinhas - 1 && linhas.size() > maximoLinhas) {
-                    linha = ajustarLinhaComReticencias(linha, fm, larguraMaxima);
-                }
-                g2.drawString(linha, x, y + i * alturaLinha);
-            }
-        }
-
-        private String ajustarLinhaComReticencias(String texto, FontMetrics fm, int larguraMaxima) {
-            String sufixo = "...";
-            String base = texto == null ? "" : texto.trim();
-            while (base.length() > 0 && fm.stringWidth(base + sufixo) > larguraMaxima) {
-                base = base.substring(0, base.length() - 1).trim();
-            }
-            return base + sufixo;
-        }
-
         private boolean ehDiagramaVennComposicaoMedidas() {
             return CenaDiagramaVenn.naturezaPara(tipoSituacaoSelecionada)
                     == CenaDiagramaVenn.Natureza.COLECOES;
@@ -10245,34 +10053,6 @@ public class Main extends JFrame {
             }
         }
 
-        private void sincronizarDiagramaVergnaudAPartirDoControleComparacao(int valorControle) {
-            if (circulosVenn.size() < 2) {
-                return;
-            }
-
-            CirculoVenn referido = circulosVenn.get(0);
-            CirculoVenn referendo = circulosVenn.get(1);
-            int quantidadeReferido = contarQuadradinhosNoCirculo(referido);
-            int quantidadeReferendo = contarQuadradinhosNoCirculo(referendo);
-
-            ElementoVergnaud elementoReferido = encontrarElementoVergnaudPorPapel(
-                    "papel.referido");
-            ElementoVergnaud elementoRelativo = encontrarElementoVergnaudPorPapel(
-                    "papel.diferenca");
-            ElementoVergnaud elementoReferendo = encontrarElementoVergnaudPorPapel(
-                    "papel.referendo");
-            if (elementoReferido == null || elementoRelativo == null
-                    || elementoReferendo == null) {
-                return;
-            }
-            definirValorNoElementoMedida(elementoReferido,
-                    Integer.toString(Math.max(0, quantidadeReferido)));
-            definirValorNoElementoNumeroRelativo(elementoRelativo,
-                    valorControle);
-            definirValorNoElementoMedida(elementoReferendo,
-                    Integer.toString(Math.max(0, quantidadeReferendo)));
-        }
-
         private void normalizarQuantidadeQuadradinhosNaBarra(CirculoVenn barra, int quantidadeDesejada) {
             java.util.Iterator<QuadradinhoVenn> it = quadradinhosVenn.iterator();
             while (it.hasNext()) {
@@ -10352,24 +10132,6 @@ public class Main extends JFrame {
             g2.setStroke(original);
         }
 
-        private void sincronizarVergnaudAPartirDosQuadradinhosVenn() {
-            QuadradinhoVenn quadradinhoAtivo = handlerQuadradinhoVenn.obterQuadradinhoAtivo();
-            int indiceAlterado = -1;
-            if (quadradinhoAtivo != null) {
-                for (int i = 0; i < circulosVenn.size(); i++) {
-                    if (circulosVenn.get(i).contem(
-                            quadradinhoAtivo.centroX(),
-                            quadradinhoAtivo.centroY())) {
-                        indiceAlterado = i;
-                        break;
-                    }
-                }
-            }
-            sincronizarTodasAsRepresentacoesAPartirDoDiagramaComplementar(
-                    indiceAlterado,
-                    EstadoSemanticoCompartilhado.Origem.DIAGRAMA_COMPLEMENTAR);
-        }
-
         private int contarQuadradinhosNoCirculo(CirculoVenn circulo) {
             return gerard.ui.venn.ConsultasDiagramaVenn
                     .contarQuadradinhosNoCirculo(quadradinhosVenn, circulo);
@@ -10414,10 +10176,6 @@ public class Main extends JFrame {
 
         private boolean estaNaAreaDoTexto(int x, int y) {
             return geometriaAreaEnunciado.contem(x, y, getWidth());
-        }
-
-        private boolean ehNumeroDoTexto(ElementoTextoMovel elemento) {
-            return elementoContemNumeralInterpretado(elemento);
         }
 
         private boolean ehInterrogacaoDoTexto(ElementoTextoMovel elemento) {
@@ -10645,20 +10403,6 @@ public class Main extends JFrame {
                     quadradinho.x, quadradinho.y,
                     Math.max(1, quadradinho.tamanho),
                     Math.max(1, quadradinho.tamanho)), 4, false);
-        }
-
-        private void iniciarFantasmaElementoVergnaud(ElementoVergnaud elemento) {
-            if (elemento == null) {
-                marcadorOrigemArraste.limpar();
-                return;
-            }
-            boolean elipse = elemento.tipo == TipoFiguraDiagrama.ELIPSE;
-            int arco = elemento.tipo == TipoFiguraDiagrama.RETANGULO_ARREDONDADO
-                    ? 20 : 0;
-            iniciarFantasmaRetangular(new Rectangle(
-                    elemento.x, elemento.y,
-                    Math.max(1, elemento.largura),
-                    Math.max(1, elemento.altura)), arco, elipse);
         }
 
         private void iniciarFantasmaConector(final ConectorVergnaud conector) {
@@ -11738,16 +11482,6 @@ public class Main extends JFrame {
             return false;
         }
 
-        private void registrarQuestionamentoMouseOver(ItemTextoArrastavel item, ResultadoQuestionamento resultado) {
-            if (item == null || resultado == null) {
-                return;
-            }
-            textoAnotacaoMouseOver = resultado.getMensagem();
-            mostrarAnotacaoMouseOver = true;
-            mouseOverX = item.x + item.largura / 2;
-            mouseOverY = Math.max(50, item.y);
-        }
-
         private void registrarQuestionamentoPersistente(ItemTextoArrastavel item, ResultadoQuestionamento resultado) {
             if (item == null || resultado == null || resultado.getMensagem() == null || resultado.getMensagem().trim().length() == 0) {
                 return;
@@ -12037,13 +11771,6 @@ public class Main extends JFrame {
                 return null;
             }
             return new Rectangle(elemento.x, elemento.y, elemento.largura, elemento.altura);
-        }
-
-        private String obterSinalAtual(String valor) {
-            if (valor != null && valor.trim().startsWith("-")) {
-                return "-";
-            }
-            return "+";
         }
 
         private ElementoVergnaud encontrarNumeroRelativo(int x, int y) {

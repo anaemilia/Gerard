@@ -22,5 +22,10 @@ export const api = {
   posicionar: (acao: AcaoDisponivel, valor: number) => requisitar<ResultadoAcao>(acao.href, {
     method: acao.metodo, headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...(acao.corpo ?? {}), valor })
-  })
+  }),
+  escolherOperacao: (acao: AcaoDisponivel, operacao: "SOMA" | "SUBTRACAO") =>
+    requisitar<ResultadoAcao>(acao.href, {
+      method: acao.metodo, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...(acao.corpo ?? {}), operacao })
+    })
 };

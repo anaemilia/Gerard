@@ -15,6 +15,7 @@ export default function App() {
   const estado = representacoes.snapshotServidor;
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({ texto: "Carregando situação…", tipo: "neutra" });
+  const [mensagemOperacao, setMensagemOperacao] = useState<string | null>(null);
 
   useEffect(() => {
     api.carregar().then((e) => { receberSnapshot(e); setMensagem({ texto: "Preencha a incógnita e confirme.", tipo: "neutra" }); })
@@ -99,8 +100,26 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  async function escolherOperacao(operacao: "SOMA" | "SUBTRACAO") {
+    const controle = estado?.acoes_disponiveis.find((item) => item.id === "ESCOLHER_OPERACAO_RELACAO");
+    if (!controle) return;
+    setOcupado(true);
+    try {
+      const resultado = await api.escolherOperacao(controle, operacao);
+      receberSnapshot(resultado.estado);
+      setMensagemOperacao(resultado.aceita ? null : (resultado.chave_mensagem ?? "Operação incorreta."));
+    } catch (erro) { setMensagem({ texto: (erro as Error).message, tipo: "erro" }); }
+    finally { setOcupado(false); }
+  }
+
   const figuraEmEdicao = estado && "modo" in estado && representacoes.elementoEmEdicao
     ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
+    : undefined;
+  const modelagemEscolhaOperacao = estado && "modo" in estado && estado.modelagem
+    && "categoria" in estado.modelagem
+    && (estado.modelagem.categoria === "COMPOSICAO_TRANSFORMACOES"
+      || estado.modelagem.categoria === "COMPOSICAO_RELACOES")
+    ? estado.modelagem
     : undefined;
 
   return <main className="app-shell">
@@ -121,7 +140,10 @@ export default function App() {
         <section className="diagram-panel" aria-label="Área do diagrama">
           {"modo" in estado ? estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
-            aoEditarValor={iniciarEdicaoValor} /> : <Diagrama estado={estado} />}
+            aoEditarValor={iniciarEdicaoValor}
+            seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
+              mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />
+            : <Diagrama estado={estado} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           {figuraEmEdicao && <div className="value-editor">

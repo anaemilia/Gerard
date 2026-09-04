@@ -1,11 +1,22 @@
-type IconeProps = { tipo: "composicao" | "transformacao" | "comparacao" | "relacoes" | "transformacaoRelacao" };
+type IconeProps = { tipo: "composicao" | "transformacao" | "comparacao" | "relacoes" | "transformacaoRelacao" | "composicaoTransformacoes" };
 
 function IconeCategoria({ tipo }: IconeProps) {
   if (tipo === "composicao") return <svg viewBox="0 0 72 64" aria-hidden="true"><rect x="7" y="8" width="18" height="18"/><rect x="7" y="38" width="18" height="18"/><path d="M30 12c14 7 14 33 0 40"/><rect x="47" y="23" width="18" height="18"/></svg>;
   if (tipo === "transformacao") return <svg viewBox="0 0 72 64" aria-hidden="true"><rect x="5" y="24" width="17" height="17"/><path d="M25 32h30m-9-8 9 8-9 8"/><rect x="55" y="24" width="12" height="17"/><circle cx="36" cy="9" r="8"/></svg>;
   if (tipo === "comparacao") return <svg viewBox="0 0 72 64" aria-hidden="true"><rect x="28" y="4" width="16" height="16"/><path d="M36 20v35m0-30-10 10m10-10 10 10"/><rect x="28" y="44" width="16" height="16"/><circle cx="61" cy="34" r="8"/></svg>;
-  if (tipo === "relacoes") return <svg viewBox="0 0 72 64" aria-hidden="true"><circle cx="15" cy="32" r="8"/><circle cx="57" cy="32" r="8"/><path d="M23 32h26m-8-7 8 7-8 7"/></svg>;
-  return <svg viewBox="0 0 72 64" aria-hidden="true"><circle cx="15" cy="15" r="8"/><circle cx="15" cy="49" r="8"/><path d="M28 10c15 8 15 36 0 44"/><circle cx="51" cy="32" r="8"/></svg>;
+  // Transformação de relação: mesma estrutura do ícone "transformacao" (estado-seta-estado, círculo acima),
+  // com as duas formas de estado também em círculo — ver criarIconeCategoriaTransformacaoRelacao em Main.java.
+  if (tipo === "relacoes") return <svg viewBox="0 0 72 64" aria-hidden="true"><circle cx="13" cy="32" r="8"/><path d="M21 32h32m-9-8 9 8-9 8"/><circle cx="61" cy="32" r="8"/><circle cx="36" cy="9" r="8"/></svg>;
+  if (tipo === "transformacaoRelacao") return <svg viewBox="0 0 72 64" aria-hidden="true"><circle cx="15" cy="15" r="8"/><circle cx="15" cy="49" r="8"/><path d="M28 10c15 8 15 36 0 44"/><circle cx="51" cy="32" r="8"/></svg>;
+  // Composição de transformações: estado→transf.1→estado→transf.2→estado, com um arco por baixo ligando
+  // o primeiro e o último estado (a transformação composta) — ver criarIconeCategoriaComposicaoTransformacoes.
+  return <svg viewBox="0 0 72 64" aria-hidden="true">
+    <rect x="4" y="24" width="12" height="12"/><rect x="30" y="24" width="12" height="12"/><rect x="56" y="24" width="12" height="12"/>
+    <circle cx="23" cy="9" r="6"/><circle cx="49" cy="9" r="6"/><circle cx="36" cy="55" r="6"/>
+    <path d="M16 30h14m-6-4 6 4-6 4"/>
+    <path d="M42 30h14m-6-4 6 4-6 4"/>
+    <path d="M10 36c4 18 44 18 48 0m0 0-7-3m7 3-3 6"/>
+  </svg>;
 }
 
 function BotaoCategoria({ rotulo, tipo, habilitado, selecionado, aoEscolher }: {
@@ -62,7 +73,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
       <span className="category-divider" aria-hidden="true" />
       <BotaoSortear grupo="Relações" habilitado={podeSortearRelacoes} ocupado={ocupado} aoSortear={aoSortearRelacoes} />
       <div className="category-group"><strong>Relações</strong><div className="category-buttons">
-        <BotaoCategoria rotulo="Composição de transformações" tipo="composicao" habilitado={categoriasHabilitadas.includes("COMPOSICAO_TRANSFORMACOES") && !ocupado} selecionado={categoriaSelecionada === "COMPOSICAO_TRANSFORMACOES"} aoEscolher={() => aoEscolherCategoria("COMPOSICAO_TRANSFORMACOES")} />
+        <BotaoCategoria rotulo="Composição de transformações" tipo="composicaoTransformacoes" habilitado={categoriasHabilitadas.includes("COMPOSICAO_TRANSFORMACOES") && !ocupado} selecionado={categoriaSelecionada === "COMPOSICAO_TRANSFORMACOES"} aoEscolher={() => aoEscolherCategoria("COMPOSICAO_TRANSFORMACOES")} />
         <BotaoCategoria rotulo="Transformação de relação" tipo="relacoes" habilitado={categoriasHabilitadas.includes("TRANSFORMACAO_RELACAO") && !ocupado} selecionado={categoriaSelecionada === "TRANSFORMACAO_RELACAO"} aoEscolher={() => aoEscolherCategoria("TRANSFORMACAO_RELACAO")} />
         <BotaoCategoria rotulo="Composição de relações" tipo="transformacaoRelacao" habilitado={categoriasHabilitadas.includes("COMPOSICAO_RELACOES") && !ocupado} selecionado={categoriaSelecionada === "COMPOSICAO_RELACOES"} aoEscolher={() => aoEscolherCategoria("COMPOSICAO_RELACOES")} />
       </div></div>

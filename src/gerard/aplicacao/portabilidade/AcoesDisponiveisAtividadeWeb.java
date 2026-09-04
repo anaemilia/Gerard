@@ -53,6 +53,20 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
+    public static List<Object> escolhaOperacaoRelacao(
+            boolean segundaEtapaHabilitada, boolean concluida) {
+        List<Object> acoes = sorteios();
+        acoes.add(acao("REINICIAR_TENTATIVA", "POST", "/api/reiniciar"));
+        if (!concluida) {
+            Map<String, Object> corpo = new LinkedHashMap<String, Object>();
+            corpo.put("seletor", segundaEtapaHabilitada
+                    ? "ENTRE_ESTADO_E_TRANSFORMACAO" : "ENTRE_TRANSFORMACOES");
+            acoes.add(acao("ESCOLHER_OPERACAO_RELACAO", "POST",
+                    "/api/acoes/escolher-operacao", corpo));
+        }
+        return acoes;
+    }
+
     private static Map<String, Object> acao(String id, String metodo, String href) {
         return acao(id, metodo, href, null);
     }

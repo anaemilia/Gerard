@@ -3,7 +3,7 @@ export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as cons
 
 export type AcaoDisponivel = Readonly<{
   id: "SORTEAR_MEDIDAS" | "SORTEAR_RELACOES" | "REINICIAR_TENTATIVA" | "PROPOR_VALOR_PAPEL" |
-    "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE";
+    "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE" | "ESCOLHER_OPERACAO_RELACAO";
   metodo: "POST"; href: string; corpo?: Readonly<Record<string, unknown>>;
 }>;
 
@@ -22,13 +22,36 @@ export type EstadoClassificacao = Readonly<{
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   questionamento?: string; categoria_revelada?: string;
-  cena?: CenaDiagrama; modelagem?: EstadoAtividade | EstadoModelagemTernaria;
+  cena?: CenaDiagrama;
+  modelagem?: EstadoAtividade | EstadoModelagemTernaria
+    | EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
 }>;
 export type EstadoModelagemTernaria = Readonly<{
   schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
   categoria: "TRANSFORMACAO_MEDIDAS" | "COMPARACAO_MEDIDAS" |
     "TRANSFORMACAO_RELACAO"; relacao: string;
   papel_desconhecido_original: string; papeis: readonly PapelProjetado[];
+  concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
+}>;
+export type EscolhaOperacao = "SOMA" | "SUBTRACAO" | null;
+export type EstadoEscolhaOperacaoTransformacoes = Readonly<{
+  schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
+  categoria: "COMPOSICAO_TRANSFORMACOES"; enunciado: string;
+  estado_inicial: PapelProjetado; transformacao_1: PapelProjetado;
+  estado_intermediario: PapelProjetado; transformacao_2: PapelProjetado;
+  transformacao_final: PapelProjetado; estado_final: PapelProjetado;
+  escolha_entre_transformacoes: EscolhaOperacao;
+  escolha_entre_estado_transformacao: EscolhaOperacao;
+  correta_entre_transformacoes: boolean | null;
+  correta_entre_estado_transformacao: boolean | null;
+  segunda_etapa_habilitada: boolean; concluida: boolean;
+  acoes_disponiveis: readonly AcaoDisponivel[];
+}>;
+export type EstadoEscolhaOperacaoRelacoes = Readonly<{
+  schema: typeof SCHEMA_ESTADO; situacao_id: string; tentativa_id: string;
+  categoria: "COMPOSICAO_RELACOES"; enunciado: string;
+  relacao_1: PapelProjetado; relacao_2: PapelProjetado; relacao_final: PapelProjetado;
+  escolha_operacao: EscolhaOperacao; correta: boolean | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
@@ -41,8 +64,11 @@ export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
+export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;
 export type CenaDiagrama = Readonly<{ titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
-  viewport: Readonly<{ x: number; y: number; largura: number; altura: number }> }>;
+  viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;
+  seletor_operacao?: Readonly<{ entre_transformacoes?: CentroSeletorOperacao;
+    entre_estado_transformacao?: CentroSeletorOperacao; relacao?: CentroSeletorOperacao }> }>;
 export type EstadoWeb = EstadoAtividade | EstadoClassificacao;
 export type ResultadoClassificacao = Readonly<{
   schema: "gerard.atividade-web.resultado-classificacao.v1"; action_id: string;

@@ -1057,7 +1057,7 @@ checks_semanticos = [
     ('realce visual depende do papel semântico', 'corFundoDoPapel(m.chavePapel)' in main_src and 'corTextoDoPapel(chavePapel)' in main_src),
     ('mobilidade dos elementos textuais permanece', 'desenharElementoTextoMovel' in main_src and 'converterElementoTextoEmItemDiagrama' in main_src),
     ('símbolo canônico de desconhecido preservado como interrogação ocidental', 'SimboloDesconhecido.eh' in main_src and 'regexClasse()' in main_src),
-    ('papel semântico do desconhecido independe do glifo', 'obterChavePapelExataPorValor' in main_src and 'SimboloDesconhecido.eh(valor)' in main_src),
+    ('papel semântico do desconhecido independe do glifo', 'obterChavePapelExataPorValor' in main_src and 'SimboloDesconhecido.eh(item.valor)' in main_src),
 ]
 print('== Papéis semânticos no enunciado ==')
 for nome, ok in checks_semanticos:

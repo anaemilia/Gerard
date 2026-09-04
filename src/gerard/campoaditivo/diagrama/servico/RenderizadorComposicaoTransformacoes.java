@@ -6,6 +6,7 @@ import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
+import gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura;
 import java.util.List;
 
 public class RenderizadorComposicaoTransformacoes extends RenderizadorDiagramaAditivoBase {
@@ -26,9 +27,9 @@ public class RenderizadorComposicaoTransformacoes extends RenderizadorDiagramaAd
         FiguraDiagrama t2 = transformacao("papel.transformacao2", area.x + 495, area.y + 75, definicao.getRotulo2(), valor(valores, 1));
         FiguraDiagrama tr = transformacao("papel.transformacaoFinal", area.x + 357, area.y + 348, definicao.getRotulo3(), valor(valores, 2));
 
-        FiguraDiagrama inicial = medida("papel.estadoInicial", area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0);
-        FiguraDiagrama intermediario = medida("papel.estadoIntermediario", area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0);
-        FiguraDiagrama fin = medida("papel.estadoFinal", area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0);
+        FiguraDiagrama inicial = medida("papel.estadoInicial", area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0, PosicaoRotuloFigura.ABAIXO);
+        FiguraDiagrama intermediario = medida("papel.estadoIntermediario", area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0, PosicaoRotuloFigura.ABAIXO);
+        FiguraDiagrama fin = medida("papel.estadoFinal", area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0, PosicaoRotuloFigura.ABAIXO);
 
         figs.add(t1);
         figs.add(t2);
@@ -39,7 +40,10 @@ public class RenderizadorComposicaoTransformacoes extends RenderizadorDiagramaAd
 
         cons.add(seta(right(inicial) + 27, cy(inicial), left(intermediario) - 27, cy(intermediario), ""));
         cons.add(seta(right(intermediario) + 27, cy(intermediario), left(fin) - 27, cy(fin), ""));
-        cons.add(setaCurva(cx(inicial), bottom(inicial) + 15, cx(fin), bottom(fin) + 15, ""));
+        // +58 (não +15) para o arco nascer abaixo das duas linhas de rótulo
+        // ("Estado inicial"/"Estado final" + subtítulo) que passaram a ser
+        // desenhadas ABAIXO da figura — ver PosicaoRotuloFigura.ABAIXO acima.
+        cons.add(setaCurva(cx(inicial), bottom(inicial) + 58, cx(fin), bottom(fin) + 58, ""));
 
         return new CenaDiagramaAditivo(definicao.getTitulo(), descricao, figs, cons);
     }

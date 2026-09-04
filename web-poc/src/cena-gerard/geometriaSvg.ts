@@ -3,8 +3,12 @@ import type { ConectorCena, FiguraCena } from "../contratos";
 /** Geometria técnica SVG; não contém categorias nem relações matemáticas. */
 export function caminhoDoConector(c: ConectorCena) {
   if (c.tipo === "SETA_CURVA") {
+    // Ponto de controle abaixo dos dois extremos (deslocamento fixo, não
+    // proporcional à largura) — mesma curva de desenharSetaCurva em
+    // RenderizadorSwingDiagramaAditivo.java, que faz o arco descer por
+    // baixo das figuras que conecta, não curvar por cima delas.
     const cx = (c.x1 + c.x2) / 2;
-    const cy = Math.min(c.y1, c.y2) - Math.abs(c.x2 - c.x1) * .22;
+    const cy = Math.max(c.y1, c.y2) + 96;
     return `M ${c.x1} ${c.y1} Q ${cx} ${cy} ${c.x2} ${c.y2}`;
   }
   if (c.tipo === "CHAVE_VERTICAL") {
@@ -24,4 +28,9 @@ export function coordenadaYDoRotulo(f: FiguraCena) {
   if (f.posicao_rotulo === "ACIMA") return f.y - 14;
   if (f.posicao_rotulo === "ABAIXO") return f.y + f.altura + 22;
   return f.y + f.altura / 2 + 4;
+}
+
+/** Abaixo do rótulo quando ele já ocupa a linha logo sob a figura (ABAIXO), senão logo sob a figura. */
+export function coordenadaYDoSubtitulo(f: FiguraCena) {
+  return f.posicao_rotulo === "ABAIXO" ? f.y + f.altura + 40 : f.y + f.altura + 24;
 }

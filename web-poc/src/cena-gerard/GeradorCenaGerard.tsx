@@ -1,13 +1,20 @@
-import type { CenaDiagrama, FiguraCena, InteracaoPermitidaFigura } from "../contratos";
+import type { CenaDiagrama, EstadoEscolhaOperacaoRelacoes, EstadoEscolhaOperacaoTransformacoes,
+  FiguraCena, InteracaoPermitidaFigura } from "../contratos";
 import { ConectorCenaGerard } from "./ConectorCenaGerard";
 import { FiguraCenaGerard } from "./FiguraCenaGerard";
+import { SeletorOperacaoDiagramaGerard } from "./SeletorOperacaoDiagramaGerard";
 import type { PosicaoVisual } from "../estadoRepresentacoes";
 
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
-export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor }: {
+export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, seletorOperacao }: {
   cena: CenaDiagrama;
   posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
+  seletorOperacao?: {
+    modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
+    mensagemErro: string | null; ocupado: boolean;
+    aoEscolher: (operacao: "SOMA" | "SUBTRACAO") => void;
+  };
 }) {
   const v = cena.viewport;
   return <svg className="portable-scene" viewBox={`${v.x} ${v.y} ${v.largura} ${v.altura}`}
@@ -24,5 +31,7 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor }
       return <FiguraCenaGerard key={figura.id} figura={figuraProjetada}
         aoEditarValor={aoEditarValor} />;
     })}
+    {seletorOperacao && cena.seletor_operacao
+      && <SeletorOperacaoDiagramaGerard pontos={cena.seletor_operacao} {...seletorOperacao} />}
   </svg>;
 }

@@ -15,6 +15,7 @@ import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.servico.GeradorCenaDiagramaAditivo;
+import gerard.campoaditivo.diagrama.servico.PosicaoSeletorOperacaoDiagrama;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.idioma.IdiomaInterface;
@@ -44,6 +45,7 @@ public final class ServicoSorteioAtividadeWeb {
     private TipoSituacaoAditiva categoriaSelecionada;
     private String questionamento;
     private ServicoAtividadeWeb atividadeModelagem;
+    private ServicoAtividadeWebEscolhaOperacao atividadeEscolhaOperacao;
 
     public ServicoSorteioAtividadeWeb() {
         this(new PoliticaSorteioSituacoesAditivas(),
@@ -87,6 +89,7 @@ public final class ServicoSorteioAtividadeWeb {
         categoriaSelecionada = null;
         questionamento = null;
         atividadeModelagem = null;
+        atividadeEscolhaOperacao = null;
         return projetarEstado();
     }
 
@@ -117,6 +120,16 @@ public final class ServicoSorteioAtividadeWeb {
                                         + contextoAtual.getSituacao().getId(),
                                 contextoAtual.getResultadoSituacaoRica()
                                         .getSituacaoOuFalhar());
+            } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+                atividadeEscolhaOperacao =
+                        new ServicoAtividadeWebComposicaoTransformacoes(
+                                "tentativa.web." + contextoAtual.getSituacao().getId(),
+                                contextoAtual.getSituacao());
+            } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+                atividadeEscolhaOperacao =
+                        new ServicoAtividadeWebComposicaoRelacoes(
+                                "tentativa.web." + contextoAtual.getSituacao().getId(),
+                                contextoAtual.getSituacao());
             }
         }
         questionamento = tentativaClassificacao.aguardaConfirmacao()
@@ -130,6 +143,10 @@ public final class ServicoSorteioAtividadeWeb {
         return atividadeModelagem != null;
     }
 
+    public synchronized boolean possuiAtividadeEscolhaOperacaoAtiva() {
+        return atividadeEscolhaOperacao != null;
+    }
+
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
         if (atividadeModelagem == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
@@ -139,11 +156,26 @@ public final class ServicoSorteioAtividadeWeb {
         return resultado;
     }
 
+    public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
+        if (atividadeEscolhaOperacao == null) {
+            throw new IllegalStateException(
+                    "a situação atual não possui escolha de operação implementada");
+        }
+        Map<String, Object> resultado = atividadeEscolhaOperacao.escolherOperacao(seletor, operacao);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> reiniciarAtividadeAtual() {
-        if (atividadeModelagem == null) {
+        if (atividadeModelagem == null && atividadeEscolhaOperacao == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
         }
-        atividadeModelagem.reiniciar();
+        if (atividadeModelagem != null) {
+            atividadeModelagem.reiniciar();
+        }
+        if (atividadeEscolhaOperacao != null) {
+            atividadeEscolhaOperacao.reiniciar();
+        }
         return projetarEstado();
     }
 
@@ -208,6 +240,11 @@ public final class ServicoSorteioAtividadeWeb {
             estado.put("modo", "CATEGORIA_CLASSIFICADA");
             if (atividadeModelagem != null) {
                 Map<String, Object> modelagem = atividadeModelagem.estadoAtual();
+                estado.put("modelagem", modelagem);
+                estado.put("concluida", modelagem.get("concluida"));
+                estado.put("acoes_disponiveis", modelagem.get("acoes_disponiveis"));
+            } else if (atividadeEscolhaOperacao != null) {
+                Map<String, Object> modelagem = atividadeEscolhaOperacao.estadoAtual();
                 estado.put("modelagem", modelagem);
                 estado.put("concluida", modelagem.get("concluida"));
                 estado.put("acoes_disponiveis", modelagem.get("acoes_disponiveis"));
@@ -294,7 +331,12 @@ public final class ServicoSorteioAtividadeWeb {
         }
         resultado.put("figuras", figuras);
         resultado.put("conectores", conectores);
-        resultado.put("viewport", projetarViewport(cena));
+        Map<String, Object> seletorOperacao = projetarSeletorOperacao(
+                contexto.getSituacao().getTipo(), cena);
+        if (seletorOperacao != null) {
+            resultado.put("seletor_operacao", seletorOperacao);
+        }
+        resultado.put("viewport", projetarViewport(cena, seletorOperacao));
         // Decisão agregada da cena (não por figura): existe pelo menos um
         // papel com lupa, logo os painéis de eixo revelados por ela podem
         // ser oferecidos. Mesma regra usada pelo adaptador Swing (ver
@@ -309,7 +351,61 @@ public final class ServicoSorteioAtividadeWeb {
         return resultado;
     }
 
-    private static Map<String, Object> projetarViewport(CenaDiagramaAditivo cena) {
+    /**
+     * Centro(s) onde o seletor Soma/Subtração se posiciona sobre o diagrama
+     * — sempre os dois pontos de Composição de Transformações (mesmo antes
+     * da segunda etapa liberar, para o viewport já reservar o espaço e o
+     * diagrama não pular de tamanho quando ela aparecer) ou o ponto único de
+     * Composição de Relações. Deriva de figuras/conectores já presentes na
+     * cena (PosicaoSeletorOperacaoDiagrama), nunca de coordenada própria —
+     * mesma fonte usada pelo cálculo do viewport logo abaixo.
+     */
+    private static Map<String, Object> projetarSeletorOperacao(
+            TipoSituacaoAditiva tipo, CenaDiagramaAditivo cena) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            FiguraDiagrama t1 = buscarFigura(cena, "papel.transformacao1");
+            FiguraDiagrama t2 = buscarFigura(cena, "papel.transformacao2");
+            FiguraDiagrama tr = buscarFigura(cena, "papel.transformacaoFinal");
+            if (t1 == null || t2 == null || tr == null) {
+                return null;
+            }
+            Map<String, Object> resultado = mapa();
+            resultado.put("entre_transformacoes", projetarCentro(
+                    PosicaoSeletorOperacaoDiagrama.entreTransformacoes(t1, t2)));
+            resultado.put("entre_estado_transformacao", projetarCentro(
+                    PosicaoSeletorOperacaoDiagrama.entreEstadoETransformacao(tr)));
+            return resultado;
+        }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            if (cena.getConectores().isEmpty()) {
+                return null;
+            }
+            Map<String, Object> resultado = mapa();
+            resultado.put("relacao", projetarCentro(
+                    PosicaoSeletorOperacaoDiagrama.relacao(cena.getConectores().get(0))));
+            return resultado;
+        }
+        return null;
+    }
+
+    private static FiguraDiagrama buscarFigura(CenaDiagramaAditivo cena, String chave) {
+        for (FiguraDiagrama figura : cena.getFiguras()) {
+            if (chave.equals(figura.getChavePapelSemantico())) {
+                return figura;
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, Object> projetarCentro(PosicaoSeletorOperacaoDiagrama.Centro centro) {
+        Map<String, Object> item = mapa();
+        item.put("cx", Integer.valueOf(centro.cx));
+        item.put("cy", Integer.valueOf(centro.cy));
+        return item;
+    }
+
+    private static Map<String, Object> projetarViewport(CenaDiagramaAditivo cena,
+            Map<String, Object> seletorOperacao) {
         double minimoX = Double.POSITIVE_INFINITY;
         double minimoY = Double.POSITIVE_INFINITY;
         double maximoX = Double.NEGATIVE_INFINITY;
@@ -330,6 +426,25 @@ public final class ServicoSorteioAtividadeWeb {
                 minimoY = Math.min(minimoY, conector.getYAlvo());
                 maximoX = Math.max(maximoX, conector.getXAlvo());
                 maximoY = Math.max(maximoY, conector.getYAlvo());
+            }
+        }
+        // O seletor Soma/Subtração é desenhado pelo cliente por cima da cena
+        // (ver PosicaoSeletorOperacaoDiagrama), fora das figuras/conectores
+        // acima — sem isto, a área calculada não sobra espaço para ele e o
+        // cliente teria que recalcular/expandir o viewport por conta própria.
+        if (seletorOperacao != null) {
+            int meiaLargura = PosicaoSeletorOperacaoDiagrama.meiaLargura();
+            int raio = PosicaoSeletorOperacaoDiagrama.raioBotao();
+            int alturaReservadaAbaixo = raio + 28 + 100; // rótulos (2 linhas) + caixa de explicação
+            for (Object valor : seletorOperacao.values()) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> centro = (Map<String, Object>) valor;
+                int cx = ((Integer) centro.get("cx")).intValue();
+                int cy = ((Integer) centro.get("cy")).intValue();
+                minimoX = Math.min(minimoX, cx - meiaLargura);
+                maximoX = Math.max(maximoX, cx + meiaLargura);
+                minimoY = Math.min(minimoY, cy - raio);
+                maximoY = Math.max(maximoY, cy + alturaReservadaAbaixo);
             }
         }
         if (!Double.isFinite(minimoX)) {
