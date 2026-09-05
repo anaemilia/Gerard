@@ -22,6 +22,9 @@ export type EstadoAtividade = Readonly<{
   papel_desconhecido_original: string; rotulo_papel_desconhecido: string; parte1: PapelProjetado;
   parte2: PapelProjetado; todo: PapelProjetado; concluida: boolean;
   material_concreto_disponivel: boolean;
+  material_concreto_texto?: string;
+  material_concreto_texto_adicionar?: string;
+  material_concreto_texto_remover?: string;
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EstadoClassificacao = Readonly<{

@@ -101,6 +101,14 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         // resposta de ação).
         boolean materialConcretoDisponivel = papelDesconhecido.estaBloqueadoPorLimiteTentativas();
         estado.put("material_concreto_disponivel", Boolean.valueOf(materialConcretoDisponivel));
+        // Texto do material concreto resolvido no mesmo lugar que os tips
+        // (AjudaContextualWeb) — nunca hardcoded no componente web, porque
+        // será internacionalizado junto com o resto da interface.
+        if (materialConcretoDisponivel) {
+            estado.put("material_concreto_texto", AjudaContextualWeb.textoInstrucaoMaterialConcreto());
+            estado.put("material_concreto_texto_adicionar", AjudaContextualWeb.textoAdicionarQuadradinho());
+            estado.put("material_concreto_texto_remover", AjudaContextualWeb.textoRemoverQuadradinho());
+        }
         // Protocolo de mouse é posicionar: os papéis conhecidos (parte1/parte2)
         // não vêm pré-preenchidos — o aluno arrasta cada um do enunciado até o
         // diagrama pra posicioná-lo (ver posicionarValorConhecido). Só depois

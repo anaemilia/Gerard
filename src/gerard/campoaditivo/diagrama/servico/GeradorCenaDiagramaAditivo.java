@@ -2,6 +2,7 @@ package gerard.campoaditivo.diagrama.servico;
 
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
+import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
@@ -35,6 +36,34 @@ public class GeradorCenaDiagramaAditivo {
                 normalizadorRotulos.garantir(tipo, definicao,
                         ServicoLocalizacao.getInstancia());
         return renderizador.criarCena(area, definicaoNormalizada, valores);
+    }
+
+    /**
+     * Direção em que o diagrama deve ser visualmente deslocado (via margem
+     * assimétrica no viewport, ver ServicoSorteioAtividadeWeb.projetarViewport)
+     * quando o material concreto desta categoria está disponível — nunca uma
+     * posição fixa igual para todas. Cada valor aqui vem de uma instrução
+     * explícita da usuária, comparando a referência do desktop (onde o
+     * "indicador de sucesso" colide com o material concreto em pontos
+     * diferentes por categoria) com o protótipo web:
+     * - COMPOSICAO_MEDIDAS: ESQUERDA (2026-09-04, captura do desktop —
+     *   indicador de sucesso sobrepõe o material concreto à direita).
+     * - TRANSFORMACAO_MEDIDAS: DIREITA (2026-09-04, captura do desktop —
+     *   mesma ideia, mas a colisão real fica do lado oposto nesta categoria).
+     * As demais categorias ainda não têm material concreto portado para o
+     * web (ver comentário em ServicoSorteioAtividadeWeb.projetarAjudaContextual)
+     * e não têm referência confirmada de direção — permanecem SEM_DESLOCAMENTO
+     * até serem verificadas contra o desktop, em vez de inventar um valor.
+     */
+    public DirecaoDeslocamentoDiagrama direcaoDeslocamentoParaMaterialConcreto(
+            TipoSituacaoAditiva tipo) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            return DirecaoDeslocamentoDiagrama.PARA_ESQUERDA;
+        }
+        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+            return DirecaoDeslocamentoDiagrama.PARA_DIREITA;
+        }
+        return DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO;
     }
 
     /** Deriva uma célula de interação das posições relativas da cena. */

@@ -13,6 +13,7 @@ import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
+import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.servico.GeradorCenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.servico.PosicaoSeletorOperacaoDiagrama;
@@ -552,7 +553,17 @@ public final class ServicoSorteioAtividadeWeb {
         if (seletorOperacao != null) {
             resultado.put("seletor_operacao", seletorOperacao);
         }
-        resultado.put("viewport", projetarViewport(cena, seletorOperacao));
+        // Deslocamento assimétrico do diagrama quando o material concreto
+        // desta categoria está disponível ao lado dele — direção decidida
+        // pelo gerador de cena (ver GeradorCenaDiagramaAditivo.
+        // direcaoDeslocamentoParaMaterialConcreto), nunca uma posição fixa.
+        boolean materialConcretoDisponivel = modelagem instanceof Map
+                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"));
+        DirecaoDeslocamentoDiagrama direcaoDeslocamento = materialConcretoDisponivel
+                ? new GeradorCenaDiagramaAditivo().direcaoDeslocamentoParaMaterialConcreto(
+                        contexto.getSituacao().getTipo())
+                : DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO;
+        resultado.put("viewport", projetarViewport(cena, seletorOperacao, direcaoDeslocamento));
         // Decisão agregada da cena (não por figura): existe pelo menos um
         // papel com lupa, logo os painéis de eixo revelados por ela podem
         // ser oferecidos. Mesma regra usada pelo adaptador Swing (ver
@@ -665,7 +676,8 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     private static Map<String, Object> projetarViewport(CenaDiagramaAditivo cena,
-            Map<String, Object> seletorOperacao) {
+            Map<String, Object> seletorOperacao,
+            DirecaoDeslocamentoDiagrama direcaoDeslocamento) {
         double minimoX = Double.POSITIVE_INFINITY;
         double minimoY = Double.POSITIVE_INFINITY;
         double maximoX = Double.NEGATIVE_INFINITY;
@@ -714,10 +726,21 @@ public final class ServicoSorteioAtividadeWeb {
         double alturaConteudo = Math.max(1, maximoY - minimoY);
         double margemX = larguraConteudo / 6.0;
         double margemY = alturaConteudo / 6.0;
+        double margemEsquerda = margemX;
+        double margemDireita = margemX;
+        // Margem assimétrica: o SVG centraliza o conteúdo dentro do próprio
+        // viewport (preserveAspectRatio="xMidYMid meet"), então só desloca
+        // visualmente o diagrama dentro do painel alargando a margem de um
+        // lado só — não adianta mover as figuras, o viewport recentraliza.
+        if (direcaoDeslocamento == DirecaoDeslocamentoDiagrama.PARA_ESQUERDA) {
+            margemDireita += margemX;
+        } else if (direcaoDeslocamento == DirecaoDeslocamentoDiagrama.PARA_DIREITA) {
+            margemEsquerda += margemX;
+        }
         Map<String, Object> viewport = mapa();
-        viewport.put("x", Double.valueOf(minimoX - margemX));
+        viewport.put("x", Double.valueOf(minimoX - margemEsquerda));
         viewport.put("y", Double.valueOf(minimoY - margemY));
-        viewport.put("largura", Double.valueOf(larguraConteudo + 2 * margemX));
+        viewport.put("largura", Double.valueOf(larguraConteudo + margemEsquerda + margemDireita));
         viewport.put("altura", Double.valueOf(alturaConteudo + 2 * margemY));
         return viewport;
     }

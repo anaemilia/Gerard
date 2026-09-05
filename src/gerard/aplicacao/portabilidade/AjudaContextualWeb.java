@@ -78,4 +78,27 @@ final class AjudaContextualWeb {
             ScaffoldingAjudaContextual.Intencao intencao) {
         return ServicoLocalizacao.getInstancia().texto(scaffolding.obterChaveOpcao(intencao));
     }
+
+    /**
+     * Texto de instrução do material concreto (AG_EMCME) — mesma chave já
+     * usada como descrição da área COMPLEMENTAR do menu "E agora?"
+     * (ui.collections.description, ver nomeArea/ui.collections.title acima),
+     * já que hoje o único caso portado é o Venn de duas coleções formando uma
+     * coleção total (Composição de Medidas). Antes vivia hardcoded em
+     * MaterialConcretoQuadradinhos.tsx — movido para cá para não ter duas
+     * fontes de texto de interface fora de mensagens_pt.properties.
+     */
+    static String textoInstrucaoMaterialConcreto() {
+        return ServicoLocalizacao.getInstancia().texto("ui.collections.description");
+    }
+
+    /** Tooltip real do botão "+" de um agrupamento de quadradinhos (Main.java). */
+    static String textoAdicionarQuadradinho() {
+        return ServicoLocalizacao.getInstancia().texto("ui.tooltip.venn.addSquare");
+    }
+
+    /** Tooltip real do botão "−" de um agrupamento de quadradinhos (Main.java). */
+    static String textoRemoverQuadradinho() {
+        return ServicoLocalizacao.getInstancia().texto("ui.tooltip.venn.removeSquare");
+    }
 }
