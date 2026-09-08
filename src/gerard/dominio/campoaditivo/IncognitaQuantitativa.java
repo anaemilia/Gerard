@@ -193,6 +193,11 @@ public final class IncognitaQuantitativa
         validarContexto(contexto);
         RegraAdaptativaPublicada aplicavel = null;
         for (RegraAdaptativaPublicada regra : contexto.getRegras()) {
+            // Toda rejeição da incógnita mantém o questionamento. O ordinal e
+            // o subtipo factual não promovem pergunta para explicação.
+            if (!"AG_EMLQ".equals(regra.getCodigoAjudaRecomendada())) {
+                continue;
+            }
             if (regraSeAplica(regra, fatos, contexto.getProjecaoModeloUsuario())) {
                 if (aplicavel != null) {
                     throw new IllegalStateException(

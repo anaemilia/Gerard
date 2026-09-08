@@ -63,6 +63,54 @@ public final class SimuladorEstadoComplementarVenn {
                 EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
     }
 
+    /**
+     * Simula a edição direta de um papel cujo domínio admite inteiros. O nó
+     * alterado recebe o valor assinado proposto; nos demais nós concretos, a
+     * magnitude continua vindo das unidades e o sinal é preservado pela
+     * política do papel.
+     */
+    public EstadoSemanticoCompartilhado.Snapshot simularValorAssinado(
+            List<CirculoVenn> circulosVenn,
+            MapeamentoPapeisRepresentacaoComplementar mapeamento,
+            TipoSituacaoAditiva tipo,
+            boolean processoTransformacao,
+            EstadoSemanticoCompartilhado.Snapshot anterior,
+            int indiceAlteradoVisual,
+            int valorAssinadoProposto,
+            ToIntFunction<CirculoVenn> contadorQuadradinhos,
+            Function<String, Integer> conversorTexto) {
+        if (circulosVenn == null || mapeamento == null
+                || indiceAlteradoVisual < 0
+                || indiceAlteradoVisual >= circulosVenn.size()) {
+            return null;
+        }
+
+        ValoresCapturadosRepresentacaoComplementar captura = capturador.capturar(
+                circulosVenn, mapeamento, tipo, processoTransformacao, anterior,
+                indiceAlteradoVisual, false,
+                (indice, no) -> {
+                    if (indice.intValue() == indiceAlteradoVisual) {
+                        return Integer.valueOf(valorAssinadoProposto);
+                    }
+                    return Integer.valueOf(contadorQuadradinhos.applyAsInt(no));
+                },
+                conversorTexto);
+
+        Integer[] valores = captura.getValores();
+        int indiceAlteradoSemantico = captura.getIndiceAlteradoSemantico();
+        if (indiceAlteradoSemantico >= 0
+                && indiceAlteradoSemantico < valores.length) {
+            valores[indiceAlteradoSemantico] =
+                    Integer.valueOf(valorAssinadoProposto);
+        }
+        EstadoSemanticoCompartilhado simulacao =
+                new EstadoSemanticoCompartilhado();
+        return simulacao.atualizar(
+                tipo, valores, captura.getConhecidos(),
+                indiceAlteradoSemantico,
+                EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
+    }
+
     public boolean respeitaLimites(
             EstadoSemanticoCompartilhado.Snapshot snapshot,
             List<CirculoVenn> circulosVenn,

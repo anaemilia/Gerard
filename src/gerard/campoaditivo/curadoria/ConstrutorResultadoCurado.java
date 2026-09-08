@@ -119,7 +119,8 @@ public class ConstrutorResultadoCurado {
             if (canonico.length() == 0) continue;
             int[] pos = localizar(texto, p.getElemento(), canonico);
             String original = pos[0] >= 0 ? texto.substring(pos[0], pos[1]) : p.getElemento();
-            r.add(new NumeroEncontrado(original, pos[0], pos[1], canonico));
+            r.add(new NumeroEncontrado(original, pos[0], pos[1], canonico,
+                    p.getChavePapel()));
         }
         return r;
     }

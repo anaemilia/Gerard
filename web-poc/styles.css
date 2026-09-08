@@ -88,17 +88,19 @@ button:disabled { cursor:not-allowed; opacity:.5; }
    cores exatas rgb(250,235,224)/rgb(169,92,47), espessura 2.8. */
 .scene-figure-destacada rect,.scene-figure-destacada ellipse { fill:#faebe0; stroke:#a95c2f; stroke-width:2.8; }
 .scene-figure text,.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
+.scene-figure .scene-figure-subtitle,.scene-figure .scene-figure-role { fill:var(--texto-secundario); font-weight:700; }
 .scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
 .scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }
 .scene-magnifier path { fill:none; }
-/* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única). */
+/* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única).
+   Desenhado pelo gerador de cena (GeradorCenaGerard/FiguraCenaGerard), igual ao
+   diagrama abstrato — .portable-scene aqui só precisa de menos altura mínima. */
 .material-concreto { margin-bottom:20px; padding:14px; border:1px solid var(--borda); border-radius:var(--raio); background:#f7f6f1; }
+.material-concreto .portable-scene { min-height:280px; max-width:100%; background:transparent; }
 .material-concreto-aviso { margin:0 0 12px; font-size:.85rem; color:var(--texto-secundario); }
-.material-concreto-grupos { display:flex; flex-direction:row; align-items:flex-start; gap:22px; }
-.quadradinhos-grupo { display:flex; flex-direction:column; align-items:center; gap:6px; }
-.quadradinhos-grupo strong { font-size:.85rem; }
-.quadradinhos-grupo-alvo strong { color:#173f96; }
+.scene-quadradinhos-moldura { fill:var(--superficie); stroke:var(--borda); stroke-width:1.5; stroke-dasharray:4 3; }
+.quadradinhos-grupo { display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
 .quadradinhos-grade { display:flex; flex-flow:column-reverse wrap; align-content:flex-start; gap:3px; max-height:220px; min-width:18px; }
 .quadradinho { width:15px; height:15px; border-radius:3px; background:#d29aa4; border:1px solid #56747e; }
 .quadradinhos-controles { display:flex; align-items:center; gap:10px; }
@@ -113,3 +115,20 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .enunciado-ghost-arraste { position:fixed; top:0; left:0; z-index:50; pointer-events:none;
   padding:2px 8px; border:1px solid var(--texto); border-radius:6px; background:var(--superficie);
   font-weight:700; box-shadow:0 4px 10px rgba(54,51,45,.18); }
+.botao-editar-narrativa { margin-left:auto; white-space:nowrap; }
+.editor-narrativa { flex:1; min-width:0; }
+.editor-narrativa-topo { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.linha-palavras { min-height:74px; padding:10px; border:1px solid var(--borda); border-radius:8px; line-height:2.4; }
+.peca-palavra { display:inline-flex; align-items:center; gap:3px; margin:2px 3px; padding:0 6px; border:1px solid var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; }
+.peca-palavra button { border:0; background:transparent; cursor:pointer; padding:0 2px; }
+.peca-candidato_organizador_informacao { border-style:dashed; font-weight:600; }
+.peca-stopword { border-color:transparent; padding-inline:1px; cursor:default; }
+.sacos-palavras { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+.sacos-palavras section { border:1px solid var(--borda); border-radius:8px; padding:10px; }
+.sacos-palavras h2 { margin:0 0 8px; font-size:.9rem; }
+.entrada-palavra { display:flex; gap:6px; }
+.entrada-palavra input { min-width:0; flex:1; }
+.conteudo-saco { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; max-height:110px; overflow:auto; }
+.conteudo-saco button { padding:4px 8px; }
+.nota-rascunho { margin:8px 0 0; font-size:.78rem; color:var(--texto-secundario); }
+@media (max-width:700px) { .sacos-palavras { grid-template-columns:1fr; } }

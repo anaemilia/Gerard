@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gérard: autorização sem invenção"
+  short_description: "Restringe mudanças ao escopo autorizado e às evidências existentes"
+  default_prompt: "Aplique as autorizações explícitas da usuária sem ampliar o escopo nem inventar conhecimento ausente."

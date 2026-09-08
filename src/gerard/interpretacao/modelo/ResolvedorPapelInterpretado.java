@@ -17,10 +17,10 @@ import java.util.List;
  * "resolução de papéis por posição, índice ou valor textual"): esta lógica
  * não dependia de Swing, geometria ou qualquer estado de instância de
  * {@code TelaGerard} além do próprio {@link ResultadoInterpretacao} —
- * apenas não tinha, até então, um proprietário fora da tela. `Main`
- * preserva wrappers de mesmo nome que apenas repassam
- * {@code resultadoInterpretacao} para estes métodos estáticos; nenhum
- * ponto de chamada existente foi alterado.
+ * apenas não tinha, até então, um proprietário fora da tela. A composição
+ * dessas operações para elementos da representação textual pertence a
+ * {@code ResolvedorPapelElementoTexto}; a tela apenas fornece o elemento e,
+ * nos casos legados, o índice observado na projeção.
  *
  * Não decide qual índice ou valor consultar — isso continua sendo decidido
  * por quem chama (ex.: a posição de um elemento na lista de elementos de
@@ -43,18 +43,28 @@ public final class ResolvedorPapelInterpretado {
         if (!"papel.valor".equals(chavePapel)) {
             return chavePapel;
         }
-        if (resultadoInterpretacao != null && resultadoInterpretacao.getPapeis() != null) {
-            List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-            for (int i = 0; i < papeis.size(); i++) {
-                PapelElementoInterpretado papel = papeis.get(i);
-                if (papel != null && !papel.isConhecido()
-                        && papel.getChavePapel() != null
-                        && papel.getChavePapel().trim().length() > 0) {
-                    return converterParaPapelCanonico(papel.getChavePapel());
-                }
-            }
+        String papelIncognita = obterChavePapelIncognita(resultadoInterpretacao);
+        if (!"papel.valor".equals(papelIncognita)) {
+            return converterParaPapelCanonico(papelIncognita);
         }
         return chavePapel;
+    }
+
+    public static String obterChavePapelIncognita(
+            ResultadoInterpretacao resultadoInterpretacao) {
+        if (resultadoInterpretacao == null
+                || resultadoInterpretacao.getPapeis() == null) {
+            return "papel.valor";
+        }
+        for (PapelElementoInterpretado papel :
+                resultadoInterpretacao.getPapeis()) {
+            if (papel != null && !papel.isConhecido()
+                    && papel.getChavePapel() != null
+                    && !papel.getChavePapel().trim().isEmpty()) {
+                return papel.getChavePapel().trim();
+            }
+        }
+        return "papel.valor";
     }
 
     public static String obterChavePapelExataPorValor(
@@ -96,6 +106,34 @@ public final class ResolvedorPapelInterpretado {
             return papeis.get(indice).getChavePapel();
         }
 
+        return "papel.valor";
+    }
+
+    /**
+     * Usa o vínculo nominal transportado pelo número e preserva, somente para
+     * interpretações legadas, a associação pela ordem dos papéis conhecidos.
+     */
+    public static String obterChavePapelDoNumero(
+            ResultadoInterpretacao resultadoInterpretacao,
+            NumeroEncontrado numero, int indiceNumero) {
+        if (numero != null && numero.getChavePapelSemantico() != null
+                && !numero.getChavePapelSemantico().trim().isEmpty()) {
+            return numero.getChavePapelSemantico().trim();
+        }
+        if (resultadoInterpretacao == null || indiceNumero < 0) {
+            return "papel.valor";
+        }
+        int indiceConhecido = 0;
+        for (PapelElementoInterpretado papel :
+                resultadoInterpretacao.getPapeis()) {
+            if (papel == null || !papel.isConhecido()) {
+                continue;
+            }
+            if (indiceConhecido == indiceNumero) {
+                return papel.getChavePapel();
+            }
+            indiceConhecido++;
+        }
         return "papel.valor";
     }
 

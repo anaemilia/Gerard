@@ -40,6 +40,18 @@ abstract class RenderizadorDiagramaAditivoBase implements RenderizadorDiagramaAd
                 rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
     }
 
+    /**
+     * Grupo de quadradinhos do material concreto (AG_EMCME): a quantidade
+     * vem em valorReferencia, igual às demais figuras — o cliente decide
+     * como desenhar a grade a partir dela (ver FiguraCenaGerard.tsx), o
+     * mesmo princípio de "cliente só materializa" das demais figuras.
+     */
+    protected FiguraDiagrama grupoQuadradinhos(String papel, int x, int y, int largura, int altura,
+            String rotulo, int quantidade) {
+        return new FiguraDiagrama(TipoFiguraDiagrama.GRUPO_QUADRADINHOS, x, y, largura, altura,
+                rotulo, quantidade, true, PosicaoRotuloFigura.ACIMA, false, papel);
+    }
+
     protected ConectorDiagrama seta(int x1, int y1, int x2, int y2, String legenda) {
         return new ConectorDiagrama(TipoConectorDiagrama.SETA, x1, y1, x2, y2, legenda);
     }

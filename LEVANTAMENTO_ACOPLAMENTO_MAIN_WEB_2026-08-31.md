@@ -1199,3 +1199,449 @@ Verificação: `verificar_linha_base_windows.py` aprovou 115/115 testes
 executáveis, 5 gráficos compilados/não executados por exigirem display, zero
 reprovações; `verificar_regressao_gerard.py` aprovado por completo após a
 correção da checagem citada.
+
+## Corte: seleção dos papéis exigidos para conclusão fora da `Main` (2026-09-07)
+
+A `Main` ainda decidia localmente quais papéis semânticos participavam da
+conclusão da modelagem. Essa decisão não é apresentação Swing: depende da
+situação curada e precisa ser compartilhável por qualquer adaptador, inclusive
+pela API web.
+
+- O novo `SeletorPapeisConclusaoModelagem`, independente de Swing, filtra
+  chaves nulas, vazias e o papel genérico `papel.valor` e, quando existe uma
+  situação curada, consulta `SemanticaCuradaSituacao.papelExigidoNaModelagem`.
+- Na atividade livre, sem situação curada, preserva-se o comportamento
+  anterior: todos os papéis semânticos reais observados podem compor a
+  conclusão.
+- Com curadoria, somente os papéis definidos ou incógnitos naquela situação
+  são exigidos. A interface não infere obrigatoriedade pela presença visual de
+  uma figura.
+- A `Main` passou a somente coletar as identidades semânticas das figuras e os
+  posicionamentos observados, entregando a seleção ao serviço antes da
+  avaliação da conclusão.
+- `TesteSeletorPapeisConclusaoModelagem` cobre tanto a atividade livre quanto
+  uma composição curada parcial, protegendo a diferença entre presença na cena
+  e exigência semântica.
+
+Verificação completa após o corte: 556 fontes compiladas, 112 testes
+executáveis aprovados, 5 testes gráficos compilados/não executados por
+exigirem display e zero reprovações.
+
+## Corte: precedência e escala da comparação fora da `Main` (2026-09-07)
+
+A apresentação Swing ainda escolhia localmente a precedência do valor relativo
+entre o diagrama de Vergnaud, a representação complementar e o controle de
+barras. Também combinava essas fontes com a curadoria para definir a amplitude
+da escala. As duas decisões são portáteis e passaram para
+`ProjetorValoresComparacaoComplementar`.
+
+- `selecionarValorRelativo` formaliza a ordem: modelado, complementar e, por
+  último, controle, preservando o sinal do valor relativo.
+- `calcularMaximoEscala` combina os módulos das fontes observáveis e consulta
+  somente o valor curado visível; uma incógnita curada não vaza pela escala.
+- A `Main` ficou responsável apenas por ler os componentes concretos e entregar
+  seus valores ao projetor; geometria, desenho e interação permaneceram no
+  adaptador Swing.
+- `TesteProjetorValoresComparacaoComplementar` protege a precedência, o sinal e
+  o cálculo da amplitude.
+
+Verificação isolada do corte: fontes e testes compilaram e
+`TesteProjetorValoresComparacaoComplementar` foi aprovado. A regressão global
+do estado recebido não ficou verde: durante o ciclo a árvore passou de 556/117
+para 562/121 fontes/testes, o arquivo canônico de situações mudou e seis testes
+de serviços web passaram a falhar. Essas alterações concorrentes não foram
+revertidas nem corrigidas por este corte.
+
+## Corte: identidade da incógnita no recálculo da comparação (2026-09-07)
+
+Os dois protocolos Swing que alteram diretamente o valor relativo ainda
+convertiam `papel.referido` em um booleano antes de chamar
+`RecalculoComparacaoMedidas`. Isso fazia a interface conhecer parte da regra
+relacional, embora o coordenador de domínio já fosse o proprietário do
+recálculo.
+
+- `RecalculoComparacaoMedidas.decidir` agora recebe a chave do papel incógnito
+  e decide internamente se o Referido deve ter prioridade no recálculo.
+- A `Main` apenas encaminha `obterPapelIncognitaAtual()` nos dois caminhos:
+  controle vertical das barras e edição textual do valor relativo.
+- O novo `TesteRecalculoComparacaoMedidas` cobre incógnita no Referido,
+  prioridade normal do Referendo e estado insuficiente, no qual nenhum valor é
+  inventado.
+
+Verificação: 562 fontes e 122 testes Java compilaram; 111 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados por exigirem display. Permaneceram exatamente as mesmas 6 falhas
+preexistentes nos serviços web observadas antes deste corte; nenhuma falha
+adicional foi introduzida.
+
+## Corte: identidades nominais nas projeções de texto e comparação (2026-09-07)
+
+A varredura encontrou duas associações por posição ainda mantidas pela
+`Main`: os índices `1/2` eram convertidos em Referido/Referendo ao desenhar os
+participantes da comparação, e o enésimo número do enunciado era convertido no
+enésimo papel conhecido da interpretação.
+
+- `obterPersonagemComparacao` passou a receber diretamente a chave nominal do
+  papel. As posições das barras continuam sendo sintaxe de desenho, mas já não
+  produzem identidade semântica.
+- `NumeroEncontrado` ganhou a chave opcional `chavePapelSemantico`, sem quebrar
+  seus construtores anteriores.
+- `ConstrutorResultadoCurado` grava no número o papel que a curadoria já havia
+  declarado. O vínculo deixa de ser reconstruído pela tela.
+- `ResolvedorPapelInterpretado.obterChavePapelDoNumero` prioriza esse vínculo
+  nominal e conserva a associação posicional exclusivamente como fallback para
+  resultados legados ou não curados.
+- A `Main` removeu `obterChavePapelDoNumero` e apenas encaminha o número ao
+  resolvedor portátil.
+- `TesteMaterializadorEnunciadoCurado` agora verifica também que os dois
+  números materializados transportam `papel.parte1` e `papel.parte2`.
+
+Verificação: 562 fontes e 122 testes Java compilaram; 111 testes executáveis
+foram aprovados, inclusive o teste ampliado, e 5 testes gráficos foram apenas
+compilados. Permaneceram as mesmas 6 falhas preexistentes nos serviços web,
+sem regressão adicional.
+
+## Corte: resolução da identidade da incógnita fora da `Main` (2026-09-07)
+
+`obterPapelIncognitaAtual` ainda percorria diretamente os papéis de
+`ResultadoInterpretacao`, escolhendo o primeiro desconhecido com chave válida.
+Essa leitura semântica abastece vários protocolos, mas não depende de Swing.
+
+- `ResolvedorPapelInterpretado.obterChavePapelIncognita` passou a possuir a
+  resolução e o fallback `papel.valor`.
+- O fallback curado da interrogação reutiliza a mesma operação, removendo uma
+  segunda varredura equivalente.
+- `Main.obterPapelIncognitaAtual` foi preservado como ponto de composição para
+  seus muitos chamadores, mas agora apenas delega ao resolvedor portátil.
+- `TesteMaterializadorEnunciadoCurado` verifica que a interpretação da situação
+  identifica nominalmente `papel.todo` como incógnita.
+
+Verificação: 562 fontes e 122 testes Java compilaram; 111 testes executáveis
+foram aprovados e 5 testes gráficos foram apenas compilados. O conjunto das 6
+falhas preexistentes nos serviços web permaneceu idêntico, sem regressão nova.
+
+## Corte: consulta de estado modificado na API semântica (2026-09-07)
+
+A `Main` ainda compunha diretamente duas operações de curadoria — localizar um
+`PapelCurado` e perguntar se o valor representado divergia do original. A
+comparação já pertencia ao papel; faltava apenas uma consulta portátil na
+fronteira semântica.
+
+- `SemanticaCuradaSituacao.estadoModificadoPor` passou a concentrar a busca do
+  papel e a comparação factual.
+- `Main.calcularEstadoModificado` agora apenas encaminha situação, papel e
+  valor atual, sem manipular `PapelCurado`.
+- `TesteConversorComposicaoMedidasRica` protege valor preservado, valor
+  modificado e ausência de papel, que continua produzindo `null` em vez de uma
+  conclusão inventada.
+
+Verificação: 562 fontes e 122 testes Java compilaram; 111 testes executáveis
+foram aprovados e 5 testes gráficos foram apenas compilados. Permaneceram as
+mesmas 6 falhas preexistentes nos serviços web, sem regressão adicional.
+
+## Corte: política de sincronização especial do estado final (2026-09-07)
+
+A habilitação da sincronização especial do estado final ainda combinava, na
+`Main`, a marca abstrata de incógnita principal com a identidade
+`papel.estadoFinal`. A regra foi preservada sem reinterpretá-la e movida para
+um componente portátil.
+
+- `PoliticaSincronizacaoEstadoFinal` decide se a marca de incógnita principal
+  ou a chave de estado final habilitam o mecanismo.
+- A `Main` conserva hit-test, referências aos elementos concretos e execução da
+  sincronização, mas apenas encaminha os dois fatos observados à política.
+- `TestePoliticaSincronizacaoEstadoFinal` cobre os dois caminhos aceitos e a
+  rejeição de outro papel ou chave ausente.
+
+Verificação: 563 fontes e 123 testes Java compilaram; 112 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados. Permaneceram as mesmas 6 falhas preexistentes nos serviços web,
+sem regressão adicional.
+
+## Corte: consulta portátil do limite curado do material concreto (2026-09-07)
+
+A `Main` ainda montava paralelamente os vetores de chaves e valores curados dos
+três agrupamentos antes de perguntar qual cardinalidade o material concreto
+deveria admitir. Isso fazia a tela associar papéis semânticos aos dados da
+curadoria, embora o índice visual seja a única informação que lhe pertence.
+
+- `ResolvedorLimiteQuantidadeCuradaVenn` recebe as chaves semânticas já
+  traduzidas pela representação, consulta os respectivos valores na
+  `SemanticaCuradaSituacao` e delega a relação quantitativa à política de
+  limite existente.
+- A `Main` conserva somente a tradução entre agrupamento visual e chave do
+  papel; não lê mais o valor curado nem monta o vetor semântico de valores.
+- `TesteResolvedorLimiteQuantidadeCuradaVenn` protege valor conhecido,
+  incógnita derivada pela relação, ausência de vínculo e ausência de situação.
+- O protocolo validado de adicionar uma unidade por clique, bloquear no
+  limite e materializar tremor/som/mensagem não foi alterado.
+
+Verificação: 564 fontes e 124 testes Java compilaram; 113 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados. Permaneceram exatamente as mesmas 6 falhas preexistentes nos
+serviços web, sem regressão adicional.
+
+## Corte: simulação portátil de alteração de valor assinado (2026-09-07)
+
+A simulação de uma alteração direta no valor inteiro de uma transformação
+ainda era reconstruída integralmente na `Main`: captura dos três agrupamentos,
+preservação do sinal dos valores não alterados, identificação de conhecidos e
+resolução da relação aditiva. Era uma segunda implementação paralela à
+simulação de quantidades já extraída.
+
+- `SimuladorEstadoComplementarVenn.simularValorAssinado` passou a possuir esse
+  fluxo e a reutilizar o capturador portátil da representação complementar.
+- A diferença essencial foi mantida: o papel alterado recebe diretamente o
+  inteiro proposto, inclusive ao atravessar zero; os demais papéis inteiros
+  preservam o sinal anterior sobre a magnitude desenhada.
+- A `Main` conserva apenas o wrapper que fornece agrupamentos, mapeamento,
+  estado anterior e funções de leitura da interface.
+- `TesteSimuladorValorAssinadoComplementarVenn` protege a mudança de `+1` para
+  `-1` e o recálculo correspondente do estado final de `5` para `4`.
+
+Verificação: 564 fontes e 125 testes Java compilaram; 114 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados. Permaneceram exatamente as mesmas 6 falhas preexistentes nos
+serviços web, sem regressão adicional.
+
+## Ajuste visual: personagem antes do rótulo do papel (2026-09-07)
+
+Por decisão explícita da usuária, toda figura que possui personagem e papel
+semântico deve apresentar as duas linhas nesta ordem visual: primeiro o nome
+do personagem e, logo abaixo, o rótulo do papel. A regra vale para todas as
+posições do diagrama, não apenas para a primeira medida.
+
+- O React continua recebendo separadamente `subtitulo` (personagem) e
+  `rotulo` (papel) da API; apenas materializa a ordem solicitada.
+- O bloco de duas linhas respeita `ACIMA`/`ABAIXO`; uma figura com posição
+  `CENTRO` e personagem preserva o centro para valor ou incógnita e coloca o
+  bloco abaixo da figura.
+- As coordenadas de ambas as linhas são derivadas da geometria da figura.
+- `ElementoVergnaud` espelha a mesma ordem no desktop, preservando tipografia,
+  paleta e todo o comportamento de interação.
+- A composição foi conferida visualmente no protótipo com `Pokémon / Parte 1`,
+  `Lucas / Todo` e `Digimon / Parte 2`.
+
+Verificação: frontend TypeScript/Vite e as 564 fontes Java compilaram; 114
+testes executáveis foram aprovados e 5 testes gráficos foram apenas
+compilados. Permaneceram exatamente as mesmas 6 falhas preexistentes nos
+serviços web, sem regressão adicional.
+
+## Corte: identidade da incógnita protegida fora da `Main` (2026-09-07)
+
+A `Main` ainda percorria a janela de elementos do Vergnaud usada pelo estado
+compartilhado, convertia índices reais em papéis e decidia em qual posição
+semântica estava a incógnita que não poderia ser preenchida automaticamente.
+Essa decisão abastece sincronização e avaliação da incógnita, mas não depende
+de Swing.
+
+- `ResolvedorIndiceIncognitaProtegida` passou a localizar a posição semântica
+  a partir da janela de índices, da quantidade de elementos e das identidades
+  nominais fornecidas pela representação.
+- A comparação continua delegada à `PoliticaPreenchimentoIncognita`, inclusive
+  para preservar seus fallbacks e normalizações existentes.
+- A `Main` agora apenas fornece a janela visual atual e a função que obtém o
+  papel de cada elemento.
+- `TesteResolvedorIndiceIncognitaProtegida` cobre diagrama simples, janela
+  deslocada, índice inválido, papel ausente e estado sem janela.
+
+Verificação: 565 fontes e 126 testes Java compilaram; 115 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados. Permaneceram exatamente as mesmas 6 falhas preexistentes nos
+serviços web, sem regressão adicional.
+
+## Corte: captura portátil dos valores do Vergnaud (2026-09-08)
+
+A `Main` ainda percorria diretamente a janela ativa do diagrama para montar
+os vetores de valores, marcas de conhecimento e índice semântico alterado que
+alimentam o estado compartilhado entre representações. Embora a leitura dos
+componentes continue pertencendo ao adaptador Swing, a composição desse
+retrato é portável.
+
+- `CapturadorValoresVergnaud` passou a compor o retrato semântico a partir da
+  janela visual e das funções de leitura fornecidas pela representação.
+- `ValoresCapturadosVergnaud` expõe o resultado imutável consumido pela
+  sincronização.
+- A `Main` conserva somente a leitura concreta do texto editável e dos itens
+  sobrepostos e encaminha o retrato ao `EstadoSemanticoCompartilhado`.
+- `TesteCapturadorValoresVergnaud` protege janela deslocada, valores ausentes,
+  índices inválidos e a tradução do elemento alterado para sua posição
+  semântica.
+
+Verificação: 567 fontes e 127 testes Java compilaram; 116 testes executáveis
+foram aprovados, incluindo o novo teste, e 5 testes gráficos foram apenas
+compilados. Permaneceram exatamente as mesmas 6 falhas preexistentes nos
+serviços web, sem regressão adicional.
+
+## Ajuste de scaffolding: tip anterior à escolha da categoria (2026-09-08)
+
+Antes da escolha da categoria, o ícone `?` junto ao enunciado apresenta a
+orientação já adotada pelo desktop: “Escolha no menu a legenda correspondente
+à categoria à qual pertence a situação-problema”. A fonte permanece no
+catálogo de localização do servidor (`ui.hint.nextStep.tooltip`). A API a
+projeta em `dica_proximo_passo` somente enquanto nenhuma categoria foi
+selecionada; o React apenas controla a abertura visual do tip e exibe o texto
+recebido. Depois da escolha, a área passa ao menu contextual “E agora?”.
+
+## Corte: validação de domínios no estado compartilhado (2026-09-08)
+
+A `Main` ainda copiava os três `ValorNumerico` do snapshot e entregava esse
+vetor ao resolvedor estrutural para simular a alteração de um número relativo.
+Essa preparação dependia apenas do estado semântico, não de Swing.
+
+- `EstadoSemanticoCompartilhado.tentativaPreservaDominios` passou a possuir a
+  simulação sobre seus próprios valores e a delegar a matemática ao
+  `ResolvedorRelacoesEstruturaisAditivas` já existente.
+- A `Main` conserva somente a tradução do elemento visual para o índice do
+  papel e encaminha o valor proposto.
+- O bloqueio, a restauração visual e as mensagens continuam nos adaptadores de
+  interação; nenhuma decisão matemática foi movida para React.
+- `TesteSinalRelativoSemQuantidadeNegativa` confirmou tanto a rejeição que
+  produziria medida negativa quanto a aceitação de transformação negativa
+  cujo estado final permanece válido.
+
+Verificação: 567 fontes e 127 testes Java compilaram; 116 testes executáveis
+foram aprovados e 5 testes gráficos foram apenas compilados. Permaneceram
+exatamente as mesmas 6 falhas preexistentes nos serviços web, sem regressão
+adicional.
+
+## Corte: projeção portátil dos valores do estado compartilhado (2026-09-08)
+
+A `Main` ainda comparava o tipo da atividade com o tipo do snapshot e montava
+manualmente um vetor de três inteiros para o diagrama complementar. Esse
+retrato é uma visão do estado semântico, não uma decisão do Swing.
+
+- `EstadoSemanticoCompartilhado.valoresOuZeroPara` passou a fornecer os três
+  papéis na ordem canônica.
+- Papéis desconhecidos continuam projetados como zero; um pedido feito para
+  outra categoria devolve três zeros e não deixa valores vazarem entre
+  atividades.
+- Os três consumidores da `Main` pedem diretamente essa projeção e o método
+  local `obterValoresSincronizadosParaDiagramaVenn` foi removido.
+- `TesteProjecaoValoresEstadoCompartilhado` protege ordem, sinal, papéis
+  desconhecidos e isolamento entre categorias.
+
+Verificação: 567 fontes e 128 testes Java compilaram; 117 testes executáveis
+foram aprovados e 5 testes gráficos foram apenas compilados. Permaneceram
+exatamente as mesmas 6 falhas preexistentes nos serviços web, sem regressão
+adicional.
+
+## Corte: descritor portátil de disponibilidade da lupa (2026-09-08)
+
+A `Main` ainda percorria os elementos materializados pelo Swing e reconstruía
+um vetor booleano paralelo apenas para perguntar se a cena continha alguma
+figura com lupa. A decisão já existia no modelo portátil da cena.
+
+- `ElementoComLupa` passou a representar somente o descritor `exibirLupa`, sem
+  conhecer botões, painéis ou tecnologia de interface.
+- `FiguraDiagrama` e `ElementoVergnaud` preservam o mesmo descritor antes e
+  depois da materialização da cena.
+- `DecisaoExibicaoPaineisEixo` recebe diretamente qualquer lista desses
+  elementos; a variante baseada em vetor booleano foi removida.
+- A `Main` apenas condiciona a decisão ao estado da atividade e ativa ou
+  desativa os componentes Swing correspondentes.
+- `TesteDecisaoExibicaoPaineisEixo` protege cenas sem lupa, cenas portáteis
+  com lupa e elementos já materializados.
+
+Verificação: 568 fontes e 129 testes Java compilaram; 118 testes executáveis
+foram aprovados e 5 testes gráficos foram apenas compilados. Permaneceram
+exatamente as mesmas 6 falhas preexistentes nos serviços web, sem regressão
+adicional.
+
+## Corte: segmentação portátil e capacidade de edição da narrativa (2026-09-08)
+
+A segmentação do enunciado deixou de ser reconstruída separadamente pela
+`Main` e pela API. `SegmentadorTextoSemantico` fornece a mesma projeção
+portátil para os dois adaptadores, preservando os vínculos explícitos com os
+papéis quantitativos e com a incógnita.
+
+- Palavras não classificadas como stopwords podem ser rearranjadas, retiradas
+  e reinseridas no editor web. Stopwords permanecem visíveis no enunciado, mas
+  não são peças independentes de manipulação.
+- O vocabulário publicado contém somente `agora`, `antes` e `depois`, termos
+  apresentados pela fonte fornecida pela pesquisadora como exemplos de
+  organizadores da informação. O contrato os nomeia conservadoramente como
+  `candidatos_organizadores_informacao`; não atribui automaticamente ao usuário
+  a compreensão desse papel.
+- O React mantém o rascunho editado apenas no estado transitório da interface.
+  Não persiste o texto e não reinterpreta papéis, relações ou valores.
+- O protocolo já existente de copiar números e a incógnita do texto para o
+  diagrama permanece separado da edição narrativa e não foi alterado.
+- Não foi criada uma política que determine quando essa capacidade deve ser
+  usada. Classificação, conclusão da modelagem e destaque azul não foram
+  transformados em gatilhos novos; essa decisão permanece pendente de uma
+  autorização específica da pesquisadora.
+- Não foi criado um terceiro gerador de cena para texto. A projeção portátil é
+  consumida pelas fronteiras de apresentação já existentes para desktop e web.
+
+Verificação isolada: 571 fontes e 130 testes Java compilaram; 119 testes
+executáveis foram aprovados, incluindo `TesteEditorNarrativoPalavras`, e 5
+testes gráficos foram apenas compilados. Permaneceram exatamente as mesmas 6
+falhas preexistentes nos serviços web. O frontend React/TypeScript também foi
+compilado com sucesso (41 módulos).
+
+## Regra transversal: autorização e disciplina de fontes (2026-09-08)
+
+A skill `gerard-autorizacao-sem-invencao` passou a proteger alterações no
+Gérard contra ampliação silenciosa de escopo e contra o preenchimento de
+lacunas com classificações, vocabulários, exemplos ou políticas não
+autorizadas. Ela distingue capacidade, política de uso e apresentação e foi
+incluída no grafo executável de consulta, validado com 19 nós e 56 relações.
+
+## Correção de fronteira: descritores do editor narrativo (2026-09-08)
+
+A auditoria do frontend encontrou uma inferência indevida: o React convertia
+a origem do arraste (`organizador` ou `comum`) no tipo narrativo da palavra e
+usava o tipo semântico para escolher o saco de retorno.
+
+- A API passou a publicar cada item do vocabulário como descritor completo,
+  com identidade, valor, tipo, capacidade de manipulação, vínculo semântico,
+  marca de incógnita e destino de retorno.
+- O campo `saco_destino` materializa no servidor a decisão de retorno ao saco.
+- O campo `modelo_palavra_comum` fornece à interface um descritor-base para a
+  inclusão de palavras comuns sem que o React invente uma classificação.
+- O React conserva apenas o rascunho transitório, clona os descritores
+  recebidos e os materializa na interface.
+- Persistência, regra semântica, momento de ativação e comportamento desktop
+  não foram alterados neste corte.
+- Permanecem pendentes, sem alteração neste corte, outros vazamentos já
+  auditados no cliente: validação semântica de origem e destino no soltar,
+  ramificações de categoria codificadas na interface e parâmetros de atração
+  magnética copiados para o frontend.
+
+Verificação isolada: 571 fontes e 131 testes Java compilaram; 120 testes
+executáveis foram aprovados, incluindo `TesteFronteiraEditorNarrativaWeb`, e
+5 testes gráficos foram apenas compilados. Permaneceram exatamente as mesmas
+6 falhas preexistentes nos serviços web. O frontend React/TypeScript também
+foi compilado com sucesso (41 módulos).
+
+## Corte: resolução portátil dos papéis dos elementos textuais (2026-09-08)
+
+A `Main` ainda escolhia a prioridade entre o vínculo nominal transportado
+pelo texto, a incógnita declarada na curadoria, a correspondência pelo valor
+original e os fallbacks legados por valor ou índice. Essa escolha é uma
+resolução entre a interpretação e a representação textual; não depende de
+Swing, mouse, geometria ou desenho.
+
+- `ResolvedorPapelElementoTexto` passou a compor as operações já existentes
+  de `ResolvedorPapelInterpretado` e
+  `CatalogoPapeisSemanticosAditivos` sobre o contrato portátil
+  `ElementoSemanticoTexto`.
+- A prioridade anterior foi preservada: vínculo explícito, identidade da
+  incógnita curada, valor semântico original e fallback posicional somente
+  para projeções legadas.
+- A `Main` fornece o elemento, o valor atual e, quando necessário, o índice
+  observado na projeção; os métodos locais apenas encaminham a resolução.
+- Os tooltips recebem a chave canônica já resolvida e conservam somente a
+  localização e a apresentação do texto.
+- Nenhuma regra foi acrescentada à curadoria, à classificação, à
+  conclusão, ao scaffolding ou ao React.
+
+Verificação: as 572 fontes e os 132 testes Java compilaram em diretório
+isolado. O novo `TesteResolvedorPapelElementoTexto` protege os fallbacks e a
+independência de Swing/AWT; também foram aprovados os testes relacionados à
+materialização do enunciado, ao editor narrativo, à fronteira web, à política
+de valores e à conclusão da modelagem. A execução integral da bateria não foi
+considerada concluída neste corte porque a versão desktop estava aberta pelo
+IntelliJ durante a tentativa e testes que normalmente encerram rapidamente
+passaram a expirar; nenhum processo do IntelliJ foi interrompido.

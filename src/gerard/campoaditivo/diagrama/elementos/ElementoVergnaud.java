@@ -3,10 +3,12 @@ package gerard.campoaditivo.diagrama.elementos;
 import java.awt.*;
 import java.awt.geom.QuadCurve2D;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
+import gerard.campoaditivo.diagrama.modelo.ElementoComLupa;
+import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.Scaffolding.proximidade.EstadoRealceAlvo;
 import gerard.Scaffolding.proximidade.EstiloRealceAlvo;
 
-public class ElementoVergnaud {
+public class ElementoVergnaud implements ElementoComLupa {
     public int x;
     public int y;
     public int largura;
@@ -89,6 +91,16 @@ public class ElementoVergnaud {
     }
 
     public void desenhar(Graphics2D g2) {
+        desenhar(g2, EstadoFeedbackDiagrama.NEUTRO);
+    }
+
+    @Override
+    public boolean isExibirLupa() {
+        return exibirLupa;
+    }
+
+    public void desenhar(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
+        boolean erro = feedbackDaCena == EstadoFeedbackDiagrama.ERRO;
         Stroke old = g2.getStroke();
         // O azul de sucesso fica restrito ao texto do número (abaixo) — a
         // caixa em si (preenchimento/borda/espessura) não muda na conclusão.
@@ -96,6 +108,10 @@ public class ElementoVergnaud {
         Color corPreenchimento = estiloRealce.getCorPreenchimento();
         Color corBorda = estiloRealce.getCorBorda();
         float espessura = estiloRealce.getEspessuraBorda();
+        if (erro) {
+            corBorda = gerard.ui.UITemaGerard.COR_ERRO;
+            espessura = 2.0f;
+        }
 
         g2.setColor(corPreenchimento);
         if (tipo == TipoFiguraDiagrama.ELIPSE) {
@@ -120,52 +136,57 @@ public class ElementoVergnaud {
             FontMetrics fm = g2.getFontMetrics();
             int tx = x + (largura - fm.stringWidth(textoEditavel)) / 2;
             int ty = y + (altura - fm.getHeight()) / 2 + fm.getAscent();
-            g2.setColor(conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO_TEXTO : gerard.ui.UITemaGerard.COR_TEXTO);
+            g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                    : (conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO_TEXTO
+                            : gerard.ui.UITemaGerard.COR_TEXTO));
             g2.drawString(textoEditavel, tx, ty);
         }
 
         if (rotulosAcima) {
             int yBaseAcima = y - 8;
-            if (subtitulo != null && subtitulo.trim().length() > 0) {
-                String textoSubtitulo = subtitulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmSubtitulo = g2.getFontMetrics();
-                int sx = x + (largura - fmSubtitulo.stringWidth(textoSubtitulo)) / 2;
-                int sy = yBaseAcima - 2;
-                g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoSubtitulo, sx, sy);
-                yBaseAcima = sy - fmSubtitulo.getDescent() - 8;
-            }
             if (rotulo != null && rotulo.trim().length() > 0) {
                 String textoRotulo = rotulo.trim();
                 g2.setFont(new Font("Arial", Font.BOLD, 18));
                 FontMetrics fmRotulo = g2.getFontMetrics();
                 int rx = x + (largura - fmRotulo.stringWidth(textoRotulo)) / 2;
                 int ry = yBaseAcima - 2;
-                g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
                 g2.drawString(textoRotulo, rx, ry);
+                yBaseAcima = ry - fmRotulo.getDescent() - 8;
+            }
+            if (subtitulo != null && subtitulo.trim().length() > 0) {
+                String textoSubtitulo = subtitulo.trim();
+                g2.setFont(new Font("Arial", Font.BOLD, 18));
+                FontMetrics fmSubtitulo = g2.getFontMetrics();
+                int sx = x + (largura - fmSubtitulo.stringWidth(textoSubtitulo)) / 2;
+                int sy = yBaseAcima - 2;
+                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+                g2.drawString(textoSubtitulo, sx, sy);
             }
         } else {
             int yRotuloBase = y + altura + 6;
-            if (rotulo != null && rotulo.trim().length() > 0) {
-                String textoRotulo = rotulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmRotulo = g2.getFontMetrics();
-                int rx = x + (largura - fmRotulo.stringWidth(textoRotulo)) / 2;
-                int ry = yRotuloBase + fmRotulo.getAscent();
-                g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoRotulo, rx, ry);
-                yRotuloBase = ry + 4;
-            }
-
             if (subtitulo != null && subtitulo.trim().length() > 0) {
                 String textoSubtitulo = subtitulo.trim();
                 g2.setFont(new Font("Arial", Font.BOLD, 18));
                 FontMetrics fmSubtitulo = g2.getFontMetrics();
                 int sx = x + (largura - fmSubtitulo.stringWidth(textoSubtitulo)) / 2;
                 int sy = yRotuloBase + fmSubtitulo.getAscent();
-                g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
                 g2.drawString(textoSubtitulo, sx, sy);
+                yRotuloBase = sy + 4;
+            }
+            if (rotulo != null && rotulo.trim().length() > 0) {
+                String textoRotulo = rotulo.trim();
+                g2.setFont(new Font("Arial", Font.BOLD, 18));
+                FontMetrics fmRotulo = g2.getFontMetrics();
+                int rx = x + (largura - fmRotulo.stringWidth(textoRotulo)) / 2;
+                int ry = yRotuloBase + fmRotulo.getAscent();
+                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+                g2.drawString(textoRotulo, rx, ry);
             }
         }
 

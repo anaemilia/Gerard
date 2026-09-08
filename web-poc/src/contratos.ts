@@ -9,7 +9,13 @@ export type AcaoDisponivel = Readonly<{
 }>;
 
 export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null; engatada: boolean }>;
-export type ElementoTexto = Readonly<{ valor: string; papel_id: string | null; incognita: boolean }>;
+export type ElementoTexto = Readonly<{ id: string; valor: string; papel_id: string | null; incognita: boolean;
+  tipo: "COMUM" | "CANDIDATO_ORGANIZADOR_INFORMACAO" | "QUANTIDADE" | "INCOGNITA"; manipulavel: boolean;
+  saco_destino: "COMUM" | "ORGANIZADORES" | null }>;
+export type VocabularioTexto = Readonly<{
+  candidatos_organizadores_informacao: readonly ElementoTexto[];
+  modelo_palavra_comum: ElementoTexto;
+}>;
 export type AreaAjudaContextual = "TEXTO" | "VERGNAUD" | "COMPLEMENTAR";
 export type IntencaoAjuda = "DUVIDA" | "CONTINUAR" | "PROXIMO_PASSO";
 export type OpcaoAjudaContextual = Readonly<{ intencao: IntencaoAjuda; rotulo: string }>;
@@ -38,7 +44,13 @@ export type EstadoClassificacao = Readonly<{
   ajuda_contextual?: readonly ItemAjudaContextual[];
   confirmacao_valor_papel?: string | null;
   cena?: CenaDiagrama;
+  // Mesmo formato de CenaDiagrama, gerado pelo mesmo gerador de cena
+  // (GeradorCenaDiagramaAditivo.gerarMaterialConcreto) — ausente quando o
+  // material concreto não está disponível agora ou a categoria ainda não
+  // tem essa cena implementada no servidor.
+  cena_material_concreto?: CenaDiagrama;
   elementos_texto?: readonly ElementoTexto[];
+  vocabulario_texto?: VocabularioTexto;
   modelagem?: EstadoAtividade | EstadoModelagemTernaria
     | EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
 }>;
@@ -71,15 +83,15 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
-  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
-  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
+  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO";
+  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO";
   fase_envio: "CONFIRMACAO" | "IMEDIATA";
   papel_id: string;
 }>;
 export type ResultadoPosicionarConhecido = Readonly<{
   schema: typeof SCHEMA_RESULTADO; aceita: boolean; estado: EstadoWeb;
 }>;
-export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO"; x: number; y: number; largura: number; altura: number; rotulo: string;
+export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO" | "GRUPO_QUADRADINHOS"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
   valor: number | null; conhecido: boolean; engatada: boolean;
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;

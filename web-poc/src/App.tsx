@@ -5,7 +5,6 @@ import type { AcaoDisponivel, EstadoWeb, FiguraCena,
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
-import { MaterialConcretoQuadradinhos } from "./MaterialConcretoQuadradinhos";
 import { MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
@@ -192,12 +191,16 @@ export default function App() {
       || estado.modelagem.categoria === "COMPOSICAO_RELACOES")
     ? estado.modelagem
     : undefined;
+  // Generalizado por categoria: qualquer modelagem que exponha
+  // material_concreto_disponivel (hoje só Composição de Medidas) acende o
+  // painel — nenhuma checagem de categoria hardcoded aqui, ver
+  // GeradorCenaDiagramaAditivo.gerarMaterialConcreto no servidor.
   const modelagemMaterialConcreto = estado && estado.modelagem
-    && "categoria" in estado.modelagem
-    && estado.modelagem.categoria === "COMPOSICAO_MEDIDAS"
+    && "material_concreto_disponivel" in estado.modelagem
     && estado.modelagem.material_concreto_disponivel
     ? estado.modelagem
     : undefined;
+  const cenaMaterialConcreto = modelagemMaterialConcreto ? estado?.cena_material_concreto : undefined;
   function itemAjuda(area: "TEXTO" | "VERGNAUD" | "COMPLEMENTAR") {
     return estado?.ajuda_contextual?.find((item) => item.area === area);
   }
@@ -228,6 +231,8 @@ export default function App() {
         {estado.elementos_texto
           ? <EnunciadoInterativo elementos={estado.elementos_texto}
               figuras={estado.cena?.figuras ?? []}
+              organizadores={estado.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
+              modeloPalavraComum={estado.vocabulario_texto?.modelo_palavra_comum ?? null}
               aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
@@ -252,9 +257,14 @@ export default function App() {
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
-          {modelagemMaterialConcreto && <MaterialConcretoQuadradinhos
-            modelagem={modelagemMaterialConcreto} ocupado={ocupado}
-            aoAjustar={(delta) => void ajustarQuadradinho(delta)} />}
+          {cenaMaterialConcreto && <section className="material-concreto" aria-label="Material concreto">
+            {modelagemMaterialConcreto?.material_concreto_texto &&
+              <p className="material-concreto-aviso">{modelagemMaterialConcreto.material_concreto_texto}</p>}
+            <GeradorCenaGerard cena={cenaMaterialConcreto} ocupado={ocupado}
+              aoAjustarQuadradinho={(_papelId, delta) => void ajustarQuadradinho(delta)}
+              textoAdicionarQuadradinho={modelagemMaterialConcreto?.material_concreto_texto_adicionar}
+              textoRemoverQuadradinho={modelagemMaterialConcreto?.material_concreto_texto_remover} />
+          </section>}
         </aside>
       </div>
       {estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&

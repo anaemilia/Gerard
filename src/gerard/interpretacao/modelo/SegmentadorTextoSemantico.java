@@ -41,8 +41,49 @@ public final class SegmentadorTextoSemantico {
                 elementos.add(new SegmentoTextoSemantico(palavra, inicioPalavra));
             }
         }
+        elementos = agruparOrganizadores(elementos);
         vincular(elementos, interpretacao);
         return Collections.unmodifiableList(elementos);
+    }
+
+    private static List<SegmentoTextoSemantico> agruparOrganizadores(
+            List<SegmentoTextoSemantico> elementos) {
+        List<SegmentoTextoSemantico> agrupados = new ArrayList<SegmentoTextoSemantico>();
+        for (int inicio = 0; inicio < elementos.size();) {
+            boolean agrupou = false;
+            for (String expressao : VocabularioOrganizadoresInformacao.expressoes()) {
+                String[] partes = expressao.split(" ");
+                if (inicio + partes.length > elementos.size()) continue;
+                boolean corresponde = true;
+                for (int deslocamento = 0; deslocamento < partes.length; deslocamento++) {
+                    String atual = VocabularioOrganizadoresInformacao.normalizar(
+                            elementos.get(inicio + deslocamento).getValor());
+                    if (!VocabularioOrganizadoresInformacao.normalizar(partes[deslocamento]).equals(atual)) {
+                        corresponde = false;
+                        break;
+                    }
+                }
+                if (corresponde) {
+                    StringBuilder valor = new StringBuilder();
+                    for (int deslocamento = 0; deslocamento < partes.length; deslocamento++) {
+                        if (valor.length() > 0) valor.append(' ');
+                        valor.append(elementos.get(inicio + deslocamento).getValor());
+                    }
+                    SegmentoTextoSemantico composto = new SegmentoTextoSemantico(
+                            valor.toString(), elementos.get(inicio).getPosicaoInicial());
+                    composto.marcarComoCandidatoOrganizadorInformacao();
+                    agrupados.add(composto);
+                    inicio += partes.length;
+                    agrupou = true;
+                    break;
+                }
+            }
+            if (!agrupou) {
+                agrupados.add(elementos.get(inicio));
+                inicio++;
+            }
+        }
+        return agrupados;
     }
 
     private static void vincular(
@@ -61,7 +102,8 @@ public final class SegmentadorTextoSemantico {
                     int inicioLocal = numero.getPosicaoInicial() - inicioElemento;
                     int fimLocal = numero.getPosicaoFinal() - inicioElemento;
                     elemento.vincularSemantica(
-                            chavePapelDoNumeroConhecido(interpretacao, n),
+                            ResolvedorPapelInterpretado.obterChavePapelDoNumero(
+                                    interpretacao, numero, n),
                             inicioLocal, fimLocal, numero.getValorCanonico());
                     break;
                 }
@@ -77,21 +119,4 @@ public final class SegmentadorTextoSemantico {
         }
     }
 
-    /** O n-ésimo número encontrado no texto corresponde ao n-ésimo papel conhecido, na mesma ordem. */
-    private static String chavePapelDoNumeroConhecido(ResultadoInterpretacao interpretacao, int indiceNumero) {
-        if (indiceNumero < 0) {
-            return "papel.valor";
-        }
-        int indiceConhecido = 0;
-        for (PapelElementoInterpretado papel : interpretacao.getPapeis()) {
-            if (papel == null || !papel.isConhecido()) {
-                continue;
-            }
-            if (indiceConhecido == indiceNumero) {
-                return papel.getChavePapel();
-            }
-            indiceConhecido++;
-        }
-        return "papel.valor";
-    }
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { ElementoTexto, FiguraCena } from "./contratos";
+import { EditorNarrativa } from "./EditorNarrativa";
 
 // Mesmos valores de Main.java: DISTANCIA_REALCE_ALVO (linha ~979) e o fator
 // 0.35 de aplicarAtracaoMagnetica — estilo de interação fixo em
@@ -34,13 +35,17 @@ const FATOR_ATRACAO = 0.35;
  * distância, a soltura conta para essa caixa mesmo que o ponto exato do
  * cursor não esteja sobre ela (deveCentralizarAoSoltar do desktop).
  */
-export function EnunciadoInterativo({ elementos, figuras, aoSoltar, aoAtualizarAlvo }: {
+export function EnunciadoInterativo({ elementos, figuras, organizadores = [], modeloPalavraComum = null,
+  aoSoltar, aoAtualizarAlvo }: {
   elementos: readonly ElementoTexto[];
   figuras: readonly FiguraCena[];
+  organizadores?: readonly ElementoTexto[];
+  modeloPalavraComum?: ElementoTexto | null;
   aoSoltar: (papelId: string, x: number, y: number, alvoFiguraId?: string | null) => void;
   aoAtualizarAlvo?: (figuraId: string | null) => void;
 }) {
   const [arrastando, setArrastando] = useState<string | null>(null);
+  const [editandoNarrativa, setEditandoNarrativa] = useState(false);
   const ghostRef = useRef<HTMLDivElement>(null);
   const posicaoGhostRef = useRef({ x: 0, y: 0 });
   const alvoAtualRef = useRef<string | null>(null);
@@ -124,7 +129,15 @@ export function EnunciadoInterativo({ elementos, figuras, aoSoltar, aoAtualizarA
     ? elementos.find((elemento) => elemento.papel_id === arrastando)?.valor
     : undefined;
 
+  if (editandoNarrativa) {
+    return <EditorNarrativa elementos={elementos} organizadores={organizadores}
+      modeloPalavraComum={modeloPalavraComum}
+      aoFechar={() => setEditandoNarrativa(false)} />;
+  }
+
   return <>
+    <button type="button" className="botao-editar-narrativa"
+      onClick={() => setEditandoNarrativa(true)}>Editar texto</button>
     <h1 id="enunciado">
       {elementos.map((elemento, indice) => {
         const espaco = indice > 0 ? " " : "";

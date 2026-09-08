@@ -1,6 +1,7 @@
 package gerard.campoaditivo.diagrama.elementos;
 
 import gerard.campoaditivo.sincronizacao.texto.ElementoSemanticoTexto;
+import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.interacao.ContextoRegistroGesto;
 import gerard.interacao.DestinoGeometricoGesto;
 import gerard.interacao.RegistroGestoInteracao;
@@ -119,13 +120,21 @@ public class ItemTextoArrastavel implements ElementoSemanticoTexto {
     }
 
     public void desenhar(Graphics2D g2) {
+        desenhar(g2, EstadoFeedbackDiagrama.NEUTRO);
+    }
+
+    public void desenhar(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
+        boolean erro = feedbackDaCena == EstadoFeedbackDiagrama.ERRO
+                && estaNoDiagrama();
         g2.setColor(conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO_FUNDO : gerard.ui.UITemaGerard.COR_SUPERFICIE);
         g2.fillRoundRect(x, y, largura, altura, 8, 8);
 
         Stroke original = g2.getStroke();
         float[] tracejado = {2.0f, 2.0f};
 
-        g2.setColor(conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO : gerard.ui.UITemaGerard.COR_BORDA);
+        g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                : (conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO
+                        : gerard.ui.UITemaGerard.COR_BORDA));
         g2.setStroke(new BasicStroke(
                 0.9f,
                 BasicStroke.CAP_BUTT,
@@ -143,7 +152,9 @@ public class ItemTextoArrastavel implements ElementoSemanticoTexto {
         int textoX = x + (largura - fm.stringWidth(valor)) / 2;
         int textoY = y + ((altura - fm.getHeight()) / 2) + fm.getAscent();
 
-        g2.setColor(conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO_TEXTO : gerard.ui.UITemaGerard.COR_TEXTO);
+        g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                : (conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO_TEXTO
+                        : gerard.ui.UITemaGerard.COR_TEXTO));
         g2.drawString(valor, textoX, textoY);
     }
 }

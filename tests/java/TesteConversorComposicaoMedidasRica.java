@@ -66,6 +66,18 @@ public class TesteConversorComposicaoMedidasRica {
                 Boolean.TRUE.equals(todoCurado.estadoModificadoPor("6")), true);
         checar("papel curado nao inventa comparacao sem valor numerico",
                 todoCurado.estadoModificadoPor("?") == null, true);
+        checar("consulta portatil reconhece valor preservado",
+                Boolean.FALSE.equals(SemanticaCuradaSituacao.estadoModificadoPor(
+                        registro("2", "3", "5"), null,
+                        "papel.todo", "5")), true);
+        checar("consulta portatil reconhece valor modificado",
+                Boolean.TRUE.equals(SemanticaCuradaSituacao.estadoModificadoPor(
+                        registro("2", "3", "5"), null,
+                        "papel.todo", "6")), true);
+        checar("consulta portatil nao inventa ausencia de papel",
+                SemanticaCuradaSituacao.estadoModificadoPor(
+                        registro("2", "3", "5"), null,
+                        "papel.inexistente", "5") == null, true);
         ResolvedorValorEsperadoIncognita resolvedorValor =
                 new ResolvedorValorEsperadoIncognita();
         checar("valor esperado usa curadoria como fallback",

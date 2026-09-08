@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.geom.QuadCurve2D;
 
 public class ElementoTextoMovel implements ElementoSemanticoTexto {
+    private boolean manipulavelNaNarrativa = true;
     public int x;
     public int y;
     public int yOriginal;
@@ -60,6 +61,14 @@ public class ElementoTextoMovel implements ElementoSemanticoTexto {
         return chavePapelSemantico != null
                 && inicioSemanticoLocal >= 0
                 && fimSemanticoLocal > inicioSemanticoLocal;
+    }
+
+    public boolean isManipulavelNaNarrativa() {
+        return manipulavelNaNarrativa;
+    }
+
+    public void setManipulavelNaNarrativa(boolean manipulavel) {
+        this.manipulavelNaNarrativa = manipulavel;
     }
 
     @Override

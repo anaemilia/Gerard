@@ -5,6 +5,7 @@ import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
+import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.NormalizadorRotulosSemanticosDiagrama;
@@ -26,6 +27,12 @@ public class GeradorCenaDiagramaAditivo {
                 definicao, valores);
     }
 
+    /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */
+    public CenaDiagramaAditivo comFeedback(CenaDiagramaAditivo cena,
+            EstadoFeedbackDiagrama estado) {
+        return cena == null ? null : cena.comEstadoFeedback(estado);
+    }
+
     public CenaDiagramaAditivo gerar(TipoSituacaoAditiva tipo, AreaDiagrama area,
             DefinicaoDiagramaAditivo definicao, int[] valores) {
         RenderizadorDiagramaAditivo renderizador = fabrica.obter(tipo);
@@ -36,6 +43,29 @@ public class GeradorCenaDiagramaAditivo {
                 normalizadorRotulos.garantir(tipo, definicao,
                         ServicoLocalizacao.getInstancia());
         return renderizador.criarCena(area, definicaoNormalizada, valores);
+    }
+
+    /**
+     * Cena do material concreto (grupos de quadradinhos) desta categoria —
+     * gerada pelo mesmo renderizador da cena abstrata (fabrica.obter(tipo)),
+     * nunca por um componente de interface à parte (ver CLAUDE.md, "não
+     * inventar" aplicado aqui como "não duplicar a fonte da verdade
+     * visual"). {@code null} quando a categoria ainda não tem essa cena
+     * implementada (RenderizadorDiagramaAditivo.criarCenaMaterialConcreto
+     * default) — o chamador deve tratar null como "sem material concreto
+     * disponível para esta categoria", nunca cair para um layout genérico
+     * inventado.
+     */
+    public CenaDiagramaAditivo gerarMaterialConcreto(TipoSituacaoAditiva tipo, AreaDiagrama area,
+            DefinicaoDiagramaAditivo definicao, int[] valores, String chavePapelAlvo) {
+        RenderizadorDiagramaAditivo renderizador = fabrica.obter(tipo);
+        if (renderizador == null) {
+            return null;
+        }
+        DefinicaoDiagramaAditivo definicaoNormalizada =
+                normalizadorRotulos.garantir(tipo, definicao,
+                        ServicoLocalizacao.getInstancia());
+        return renderizador.criarCenaMaterialConcreto(area, definicaoNormalizada, valores, chavePapelAlvo);
     }
 
     /**

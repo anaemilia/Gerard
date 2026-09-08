@@ -3,6 +3,7 @@ package gerard.campoaditivo.diagrama.elementos;
 import java.awt.*;
 import java.awt.geom.QuadCurve2D;
 import gerard.campoaditivo.diagrama.modelo.TipoConectorDiagrama;
+import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 
 public class ConectorVergnaud {
     /** Sentinela: nenhum ponto de destino além do próprio conector (haste não desenhada). */
@@ -53,7 +54,10 @@ public class ConectorVergnaud {
         return conclusaoDestacada;
     }
 
-    private Color corDesenho() {
+    private Color corDesenho(EstadoFeedbackDiagrama feedbackDaCena) {
+        if (feedbackDaCena == EstadoFeedbackDiagrama.ERRO) {
+            return gerard.ui.UITemaGerard.COR_ERRO;
+        }
         return conclusaoDestacada ? gerard.ui.UITemaGerard.COR_SUCESSO : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
     }
 
@@ -122,20 +126,24 @@ public class ConectorVergnaud {
     }
 
     public void desenhar(Graphics2D g2) {
+        desenhar(g2, EstadoFeedbackDiagrama.NEUTRO);
+    }
+
+    public void desenhar(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         if (tipo == TipoConectorDiagrama.CHAVE_VERTICAL) {
-            desenharChaveVertical(g2);
+            desenharChaveVertical(g2, feedbackDaCena);
             return;
         }
         if (tipo == TipoConectorDiagrama.CHAVE_HORIZONTAL) {
-            desenharChaveHorizontal(g2);
+            desenharChaveHorizontal(g2, feedbackDaCena);
             return;
         }
         if (tipo == TipoConectorDiagrama.SETA_CURVA) {
-            desenharSetaCurva(g2);
+            desenharSetaCurva(g2, feedbackDaCena);
             return;
         }
         Stroke original = g2.getStroke();
-        g2.setColor(corDesenho());
+        g2.setColor(corDesenho(feedbackDaCena));
         g2.setStroke(new BasicStroke(1.5f));
         g2.drawLine(x1, y1, x2, y2);
         if (tipo == TipoConectorDiagrama.SETA) {
@@ -145,9 +153,9 @@ public class ConectorVergnaud {
         g2.setStroke(original);
     }
 
-    private void desenharSetaCurva(Graphics2D g2) {
+    private void desenharSetaCurva(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
-        g2.setColor(corDesenho());
+        g2.setColor(corDesenho(feedbackDaCena));
         g2.setStroke(new BasicStroke(1.5f));
         int controleX = (x1 + x2) / 2;
         int controleY = Math.max(y1, y2) + 96;
@@ -183,9 +191,9 @@ public class ConectorVergnaud {
         }
     }
 
-    private void desenharChaveVertical(Graphics2D g2) {
+    private void desenharChaveVertical(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
-        g2.setColor(corDesenho());
+        g2.setColor(corDesenho(feedbackDaCena));
         g2.setStroke(new BasicStroke(1.5f));
         int x = x1;
         int a = Math.min(y1, y2);
@@ -205,9 +213,9 @@ public class ConectorVergnaud {
         g2.setStroke(original);
     }
 
-    private void desenharChaveHorizontal(Graphics2D g2) {
+    private void desenharChaveHorizontal(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
-        g2.setColor(corDesenho());
+        g2.setColor(corDesenho(feedbackDaCena));
         g2.setStroke(new BasicStroke(1.5f));
         int a = Math.min(x1, x2);
         int b = Math.max(x1, x2);

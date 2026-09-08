@@ -93,24 +93,9 @@ public final class SeloConclusaoModelagem extends JPanel {
             Rectangle areaPermitida, int larguraPai, int alturaPai) {
         int largura = DIAMETRO + 8;
         int altura = DIAMETRO + 8;
-        Rectangle permitida = areaPermitida == null
-                ? new Rectangle(12, 55, Math.max(1, larguraPai - 24),
-                        Math.max(1, alturaPai - 67))
-                : new Rectangle(areaPermitida);
-
-        int xDesejado = (areaDiagrama == null
-                ? permitida.x + permitida.width
-                : areaDiagrama.x + areaDiagrama.width) + 14;
-        int maximoX = Math.min(larguraPai - largura - 12, permitida.x + permitida.width + largura + 40);
-        int x = Math.max(permitida.x + 10, Math.min(xDesejado, maximoX));
-
-        int centroYDiagrama = areaDiagrama == null
-                ? permitida.y + permitida.height / 2
-                : areaDiagrama.y + areaDiagrama.height / 2;
-        int maximoY = Math.min(alturaPai - altura - 12, permitida.y + permitida.height - altura - 10);
-        int y = Math.max(permitida.y + 10, Math.min(maximoY, centroYDiagrama - altura / 2));
-
-        setBounds(x, y, largura, altura);
+        Rectangle bounds = PosicionadorSeloDiagrama.calcular(
+                areaDiagrama, areaPermitida, larguraPai, alturaPai, largura, altura);
+        setBounds(bounds);
         opacidade = 0.0f;
         setVisible(true);
         timerEntrada.restart();

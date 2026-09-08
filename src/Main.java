@@ -25,7 +25,8 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
-import gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas;
+import gerard.campoaditivo.sincronizacao.PoliticaSincronizacaoEstadoFinal;
+import gerard.campoaditivo.sincronizacao.ResolvedorIndiceIncognitaProtegida;
 import gerard.campoaditivo.sincronizacao.representacoes.ProjetorValoresComparacaoComplementar;
 import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
 import gerard.campoaditivo.conclusao.AtualizacaoConclusaoModelagem;
@@ -39,6 +40,7 @@ import gerard.campoaditivo.sincronizacao.texto.ElementoSemanticoTexto;
 import gerard.campoaditivo.sincronizacao.texto.MapeadorPapelSemanticoTexto;
 import gerard.campoaditivo.sincronizacao.texto.SincronizadorElementosSemanticosTexto;
 import gerard.campoaditivo.sincronizacao.texto.SincronizadorElementosSemanticosTextoAditivo;
+import gerard.campoaditivo.sincronizacao.texto.ResolvedorPapelElementoTexto;
 import gerard.campoaditivo.servico.ControladorContextoSituacao;
 import gerard.campoaditivo.curadoria.TelaCuradoriaSituacoes;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
@@ -46,6 +48,7 @@ import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.montagem.TelaMontagemSituacao;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
+import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
@@ -77,6 +80,8 @@ import gerard.idioma.IdiomaSituacao;
 import gerard.idioma.CadastroIdiomasSituacao;
 import gerard.interpretacao.modelo.ResultadoInterpretacao;
 import gerard.interpretacao.modelo.ResolvedorPapelInterpretado;
+import gerard.interpretacao.modelo.SegmentadorTextoSemantico;
+import gerard.interpretacao.modelo.SegmentoTextoSemantico;
 import gerard.interpretacao.modelo.CategoriaProblema;
 import gerard.interpretacao.modelo.SubtipoVergnaud;
 import gerard.interpretacao.simbolo.SimboloDesconhecido;
@@ -120,6 +125,7 @@ import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.Scaffolding.venn.ControleAdicionarQuadradinhoVenn;
 import gerard.Scaffolding.venn.ControleRemoverQuadradinhoVenn;
 import gerard.Scaffolding.venn.ScaffoldingLimiteQuantidadeVenn;
+import gerard.campoaditivo.venn.ResolvedorLimiteQuantidadeCuradaVenn;
 import gerard.Scaffolding.venn.CondicaoHabilitacaoAdicaoUnidades;
 import gerard.Scaffolding.venn.CondicaoDiagramaVergnaudNaoVazio;
 import gerard.Scaffolding.venn.EstadoModelagemVergnaud;
@@ -133,6 +139,8 @@ import gerard.campoaditivo.sincronizacao.representacoes.PoliticaInteracaoReprese
 import gerard.campoaditivo.sincronizacao.representacoes.CoordenadorSincronizacaoRepresentacoes;
 import gerard.campoaditivo.sincronizacao.representacoes.DestinoSincronizacaoRepresentacoes;
 import gerard.campoaditivo.sincronizacao.representacoes.CapturadorValoresRepresentacaoComplementar;
+import gerard.campoaditivo.sincronizacao.representacoes.CapturadorValoresVergnaud;
+import gerard.campoaditivo.sincronizacao.representacoes.ValoresCapturadosVergnaud;
 import gerard.campoaditivo.sincronizacao.representacoes.ValoresCapturadosRepresentacaoComplementar;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackMultissensorialErro;
 import gerard.Scaffolding.feedbackerro.ScaffoldingFeedbackProxyPosicionamento;
@@ -705,6 +713,8 @@ public class Main extends JFrame {
         ScaffoldingFeedbackMultissensorialErro scaffoldingFeedbackMultissensorialErro = new ScaffoldingFeedbackMultissensorialErro();
         ControladorAnotacaoTemporaria controladorAnotacaoTemporaria = new ControladorAnotacaoTemporaria();
         CatalogoPapeisSemanticosAditivos catalogoPapeisSemanticos = new CatalogoPapeisSemanticosAditivos();
+        final ResolvedorPapelElementoTexto resolvedorPapelElementoTexto =
+                new ResolvedorPapelElementoTexto(catalogoPapeisSemanticos);
         PoliticaValoresAditivos politicaValoresAditivos = new PoliticaValoresAditivos(catalogoPapeisSemanticos);
         ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
         PoliticaRestauracaoValorRelativo politicaRestauracaoValorRelativo =
@@ -778,10 +788,19 @@ public class Main extends JFrame {
                 new CatalogoObjetosLogAcaoInstrumental();
         final PoliticaPreenchimentoIncognita politicaPreenchimentoIncognita =
                 new PoliticaPreenchimentoIncognita();
+        final ResolvedorIndiceIncognitaProtegida resolvedorIndiceIncognitaProtegida =
+                new ResolvedorIndiceIncognitaProtegida(
+                        politicaPreenchimentoIncognita);
         final AplicadorDestaqueConclusaoDiagrama aplicadorDestaqueConclusaoDiagrama =
                 new AplicadorDestaqueConclusaoDiagrama();
         final SeloConclusaoModelagem seloConclusaoModelagem =
                 new SeloConclusaoModelagem();
+        // Conceito antagônico ao selo azul de conclusão (visto marcado): um
+        // círculo vermelho vazio ("desmarcado"), já na 1ª rejeição da
+        // incógnita — não espera as 3 rejeições do material concreto (pedido
+        // explícito da usuária, 2026-09-06).
+        final gerard.ui.conclusao.SeloErroModelagem seloErroModelagem =
+                new gerard.ui.conclusao.SeloErroModelagem();
         final TipConclusaoModelagem tipConclusaoModelagem =
                 new TipConclusaoModelagem();
         final SequenciadorFeedbackConclusao sequenciadorFeedbackConclusao =
@@ -851,6 +870,9 @@ public class Main extends JFrame {
                 new ControleRemoverQuadradinhoVenn();
         final ScaffoldingLimiteQuantidadeVenn scaffoldingLimiteQuantidadeVenn =
                 new ScaffoldingLimiteQuantidadeVenn();
+        final ResolvedorLimiteQuantidadeCuradaVenn resolvedorLimiteQuantidadeCuradaVenn =
+                new ResolvedorLimiteQuantidadeCuradaVenn(
+                        scaffoldingLimiteQuantidadeVenn);
         final CondicaoHabilitacaoAdicaoUnidades condicaoEdicaoAposInicioVergnaud =
                 new CondicaoDiagramaVergnaudNaoVazio(
                         new EstadoModelagemVergnaud() {
@@ -926,9 +948,9 @@ public class Main extends JFrame {
         ArrayList<QuadradinhoVenn> quadradinhosCorrespondentesComparacao = new ArrayList<QuadradinhoVenn>();
         ArrayList<ElementoVergnaud> elementosVergnaud = new ArrayList<ElementoVergnaud>();
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
-         final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
-        final ResolvedorRelacoesEstruturaisAditivas resolvedorRelacoesEstruturais =
-                new ResolvedorRelacoesEstruturaisAditivas();
+        final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
+        final PoliticaSincronizacaoEstadoFinal politicaSincronizacaoEstadoFinal =
+                new PoliticaSincronizacaoEstadoFinal();
          final ResolvedorValorEsperadoIncognita resolvedorValorEsperadoIncognita =
                  new ResolvedorValorEsperadoIncognita();
          final ServicoAvaliacaoAcaoIncognita servicoAvaliacaoAcaoIncognita =
@@ -941,6 +963,8 @@ public class Main extends JFrame {
                 new SincronizadorElementosSemanticosTextoAditivo();
         final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
                 new CoordenadorSincronizacaoRepresentacoes();
+        final CapturadorValoresVergnaud capturadorValoresVergnaud =
+                new CapturadorValoresVergnaud();
         final SeletorIndicesEstadoCompartilhado seletorIndicesEstadoCompartilhado =
                 new SeletorIndicesEstadoCompartilhado();
         final PlanejadorAplicacaoEstadoVergnaud planejadorAplicacaoEstadoVergnaud =
@@ -1150,6 +1174,9 @@ public class Main extends JFrame {
                     controladorConclusaoModelagem.registrarTipApresentado();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
+                            // Defesa da transição ERRO -> NEUTRO -> SUCESSO:
+                            // nenhum vermelho pode sobreviver sob o destaque azul.
+                            limparFeedbackVisualErroDiagrama();
                             aplicadorDestaqueConclusaoDiagrama.aplicar(
                                     true, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                                     quadradinhosVenn);
@@ -1212,8 +1239,10 @@ public class Main extends JFrame {
             });
             atualizarTextosTipConclusaoModelagem();
             add(seloConclusaoModelagem);
+            add(seloErroModelagem);
             add(tipConclusaoModelagem);
             setComponentZOrder(seloConclusaoModelagem, 0);
+            setComponentZOrder(seloErroModelagem, 0);
             setComponentZOrder(tipConclusaoModelagem, 0);
         }
 
@@ -4870,7 +4899,8 @@ public class Main extends JFrame {
                 return;
             }
 
-            int[] valoresAtuais = obterValoresSincronizadosParaDiagramaVenn();
+            int[] valoresAtuais = estadoSemanticoCompartilhado
+                    .valoresOuZeroPara(tipoSituacaoSelecionada);
 
             localizacao.definirIdioma(idiomaSelecionado);
 
@@ -4953,7 +4983,8 @@ public class Main extends JFrame {
             if (cenaDiagramaVennAtual == null || ultimaAreaDiagramaVenn == null) {
                 return;
             }
-            int[] valores = obterValoresSincronizadosParaDiagramaVenn();
+            int[] valores = estadoSemanticoCompartilhado
+                    .valoresOuZeroPara(tipoSituacaoSelecionada);
             EstadoSemanticoCompartilhado.Snapshot snapshotTabuleiro =
                     estadoSemanticoCompartilhado.snapshot();
             PlanoUnidadesProcessoTransformacao planoUnidadesProcesso =
@@ -5407,19 +5438,8 @@ public class Main extends JFrame {
         }
 
         private String obterPapelIncognitaAtual() {
-            if (resultadoInterpretacao == null
-                    || resultadoInterpretacao.getPapeis() == null) {
-                return "papel.valor";
-            }
-            for (PapelElementoInterpretado papel :
-                    resultadoInterpretacao.getPapeis()) {
-                if (papel != null && !papel.isConhecido()
-                        && papel.getChavePapel() != null
-                        && papel.getChavePapel().trim().length() > 0) {
-                    return papel.getChavePapel().trim();
-                }
-            }
-            return "papel.valor";
+            return ResolvedorPapelInterpretado.obterChavePapelIncognita(
+                    resultadoInterpretacao);
         }
 
         private boolean elementoEhPapelDaIncognita(ElementoVergnaud elemento) {
@@ -5492,19 +5512,11 @@ public class Main extends JFrame {
         }
 
         private int obterIndiceIncognitaProtegidaNoEstadoCompartilhado() {
-            String papelIncognita = obterPapelIncognitaAtual();
-            for (int i = 0; i < indicesElementosEstadoCompartilhado.length; i++) {
-                int indiceReal = indicesElementosEstadoCompartilhado[i];
-                if (indiceReal < 0 || indiceReal >= elementosVergnaud.size()) {
-                    continue;
-                }
-                if (politicaPreenchimentoIncognita.ehPapelDaIncognita(
-                        obterPapelElementoParaConclusao(indiceReal),
-                        papelIncognita)) {
-                    return i;
-                }
-            }
-            return -1;
+            return resolvedorIndiceIncognitaProtegida.resolver(
+                    indicesElementosEstadoCompartilhado,
+                    elementosVergnaud == null ? 0 : elementosVergnaud.size(),
+                    this::obterPapelElementoParaConclusao,
+                    obterPapelIncognitaAtual());
         }
 
         private void informarPosicionamentoIncognitaAntesDaEdicao(
@@ -5741,13 +5753,8 @@ public class Main extends JFrame {
          *         critério de valorDigitadoCorrespondeAoEsperado).
          */
         private Boolean calcularEstadoModificado(String papel, String valorAtual) {
-            if (situacaoProblemaAtual == null || papel == null) {
-                return null;
-            }
-            SemanticaCuradaSituacao.PapelCurado curado =
-                    SemanticaCuradaSituacao.buscar(
-                            situacaoProblemaAtual, localizacao, papel);
-            return curado == null ? null : curado.estadoModificadoPor(valorAtual);
+            return SemanticaCuradaSituacao.estadoModificadoPor(
+                    situacaoProblemaAtual, localizacao, papel, valorAtual);
         }
 
         /**
@@ -5961,30 +5968,41 @@ public class Main extends JFrame {
         }
 
         /**
-         * Aviso quando o limite de tentativas rejeitadas é atingido
-         * (REFERENCE.md §4.8). O mecanismo (contagem, bloqueio, action_id)
-         * foi implementado em 2026-08-07 sem conteúdo pedagógico decidido —
-         * ver TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md. Em
-         * 2026-08-07 (mesmo dia, pedido em seguida) a mensagem
-         * (ui.notice.attemptLimitReached, mensagens_*.properties) ganhou uma
-         * dica curta — revisar a relação entre as quantidades já conhecidas,
-         * sem revelar o valor — seguindo a categoria "mensagem informativa"
-         * de gerard-scaffolding-interacao (texto curto, sem mecanismo
-         * estrutural dedicado). Este é um primeiro rascunho de conteúdo, não
-         * uma validação pedagógica definitiva; a lógica de seleção do
-         * repertório de Scaffolding em dois eixos continua não decidida.
+         * Ponto único acionado quando o limite de tentativas rejeitadas é
+         * atingido (REFERENCE.md §4.8). Não mostra nenhum diálogo/aviso
+         * visual — decisão explícita da usuária em 2026-09-05: o diálogo
+         * "limite de tentativas" (ui.notice.attemptLimitReached) e sua
+         * versão anterior não-bloqueante foram considerados desnecessários
+         * e retirados da interação. O que precisa acontecer neste instante
+         * é só a transição de layout, sem nenhuma interrupção visual:
+         * 1) o diagrama de Vergnaud já montado é reposicionado (não
+         *    reconstruído — o estado/valores já preenchidos continuam os
+         *    mesmos, só a posição muda), via
+         *    reposicionarDiagramaVergnaudParaAreaAtual — hoje isto é só uma
+         *    formalidade: obterAreasDiagramasProporcionais já reserva os
+         *    dois painéis lado a lado desde a seleção da categoria (nunca
+         *    colapsa para um único painel de largura cheia), então a área
+         *    do diagrama não muda de tamanho nem de posição quando o
+         *    material concreto aparece — só o conteúdo do painel
+         *    complementar, antes vazio, passa a existir;
+         * 2) um único repaint() materializa as duas coisas juntas, na
+         *    mesma passada: o painel de material concreto (liberado agora
+         *    que deveExibirDiagramaComplementar() passou a responder
+         *    verdadeiro) e o diagrama já na nova posição — nunca um quadro
+         *    intermediário com o diagrama ainda na posição antiga
+         *    sobrepondo o material concreto recém-aparecido.
+         * O registro do evento (AG_EMCME) continua no log — é um fato
+         * interno, não uma interrupção visual.
          */
-        private void mostrarAvisoLimiteTentativasAtingido(
+        private void processarLimiteTentativasAtingido(
                 gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultado) {
-            String nomePapel = localizacao.texto(obterPapelIncognitaAtual());
-            String mensagem = localizacao.formatar("ui.notice.attemptLimitReached", nomePapel);
-            JOptionPane.showMessageDialog(this, mensagem,
-                    localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
             registrarFeedbackExibido("AG_EMCME (mensagem)",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "aviso do limite de tentativas, com dica de revisar a relação entre quantidades",
+                    "limite de tentativas atingido — diálogo retirado da interação, só reposiciona",
                     resultado == null ? null : resultado.getActionId(),
                     resultado == null ? null : resultado.getRejectionSequenceId());
+            reposicionarDiagramaVergnaudParaAreaAtual();
+            repaint();
         }
 
         /**
@@ -6122,6 +6140,9 @@ public class Main extends JFrame {
             gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
                     registro.getResultadoTentativa().isPresent()
                             ? registro.getResultadoTentativa().get() : null;
+            if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
+                aplicarFeedbackVisualErroDiagrama();
+            }
             ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
             if (registro.foiErrada() && resultadoTentativa != null
                     && registro.getDiagnostico().isPresent()) {
@@ -6134,6 +6155,7 @@ public class Main extends JFrame {
                                 registro.getRejectionSequenceId()));
             }
             if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
+                limparFeedbackVisualErroDiagrama();
                 return true;
             }
             if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
@@ -6141,11 +6163,9 @@ public class Main extends JFrame {
             }
             if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
                 // 3ª rejeição consecutiva do mesmo item: encerra a ação e
-                // bloqueia novas tentativas (ver registrarTentativaIncognita)
-                // — mostra o aviso mínimo em vez do diálogo normal de
-                // confirmação/dica, já que novas tentativas ficam bloqueadas
-                // até "restaurar" mesmo que o participante confirme.
-                mostrarAvisoLimiteTentativasAtingido(resultadoTentativa);
+                // bloqueia novas tentativas (ver registrarTentativaIncognita),
+                // sem diálogo — ver processarLimiteTentativasAtingido.
+                processarLimiteTentativasAtingido(resultadoTentativa);
                 return false;
             }
             String nomePapel = localizacao.texto(papelAlvo);
@@ -6156,9 +6176,6 @@ public class Main extends JFrame {
             registrarFeedbackExibido("AG_EMLQ",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
                     "pergunta de confirmação de valor divergente");
-            if (opcao == JOptionPane.YES_OPTION) {
-                mostrarDicaOperacaoIncognita();
-            }
             return false;
         }
 
@@ -6219,6 +6236,9 @@ public class Main extends JFrame {
                     loggerInteracaoGerard.getUsuarioAtual(), registro, null,
                     registro.getActionId());
 
+            if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
+                aplicarFeedbackVisualErroDiagrama();
+            }
             ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
             if (registro.foiErrada() && resultadoTentativa != null
                     && registro.getDiagnostico().isPresent()) {
@@ -6232,13 +6252,15 @@ public class Main extends JFrame {
             }
 
             if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
+                limparFeedbackVisualErroDiagrama();
                 return true;
             }
             if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
                 return false;
             }
             if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
-                mostrarAvisoLimiteTentativasAtingido(resultadoTentativa);
+                // Ver processarLimiteTentativasAtingido (sem diálogo).
+                processarLimiteTentativasAtingido(resultadoTentativa);
                 return false;
             }
 
@@ -6251,9 +6273,6 @@ public class Main extends JFrame {
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
                     "pergunta de confirmação de valor divergente",
                     registro.getActionId(), registro.getRejectionSequenceId());
-            if (opcao == JOptionPane.YES_OPTION) {
-                mostrarDicaOperacaoIncognita();
-            }
             return false;
         }
 
@@ -6411,6 +6430,9 @@ public class Main extends JFrame {
                 sequenciadorFeedbackConclusao.cancelar();
             } else if (acabouDeConcluirPlenamente
                     && controladorConclusaoModelagem.deveApresentarTip()) {
+                // A conclusão primeiro restaura a cena neutra. O azul só é
+                // aplicado depois pelo sequenciador de feedback de sucesso.
+                limparFeedbackVisualErroDiagrama();
                 sequenciadorFeedbackConclusao.iniciar();
                 registrarLogComputador(
                         "Sinalizar conclusão da modelagem",
@@ -6420,6 +6442,33 @@ public class Main extends JFrame {
                         "A confirmação visual antecede a pergunta sobre a próxima tarefa.",
                         "CONCLUSAO_MODELAGEM", "estado=concluida; sequencia=progressiva");
             }
+            repaint();
+        }
+
+        /**
+         * Mostra o selo vermelho vazio ("desmarcado") ao lado do diagrama de
+         * Vergnaud — conceito antagônico ao selo azul de conclusão (visto
+         * marcado), acionado já na 1ª rejeição da incógnita, sem esperar o
+         * atraso/sequenciador que o selo de conclusão usa (pedido explícito
+         * da usuária, 2026-09-06: "já no primeiro erro"). Mesma geometria de
+         * posicionamento do selo de conclusão (PosicionadorSeloDiagrama).
+         */
+        private void aplicarFeedbackVisualErroDiagrama() {
+            cenaDiagramaAtual = geradorCenaDiagrama.comFeedback(
+                    cenaDiagramaAtual, EstadoFeedbackDiagrama.ERRO);
+            Rectangle areaPermitida = obterAreaVisivelDiagramasVergnaud();
+            Rectangle areaDiagrama = obterAreaVisualDiagramaVergnaudAtual();
+            setComponentZOrder(seloErroModelagem, 0);
+            seloErroModelagem.mostrarAoLadoDireitoDoDiagrama(
+                    areaDiagrama, areaPermitida, getWidth(), getHeight());
+            repaint();
+            paintImmediately(0, 0, getWidth(), getHeight());
+        }
+
+        private void limparFeedbackVisualErroDiagrama() {
+            cenaDiagramaAtual = geradorCenaDiagrama.comFeedback(
+                    cenaDiagramaAtual, EstadoFeedbackDiagrama.NEUTRO);
+            seloErroModelagem.ocultar();
             repaint();
         }
 
@@ -6500,69 +6549,23 @@ public class Main extends JFrame {
 
         private void inicializarElementosTexto() {
             elementosTexto.clear();
-
-            String texto = textoProblema == null ? "" : textoProblema;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\S+").matcher(texto);
-
-            while (matcher.find()) {
-                String palavra = matcher.group();
-                int inicioPalavra = matcher.start();
-
-                if (palavra.endsWith("?") && palavra.length() > 1) {
-                    String antesDaInterrogacao = palavra.substring(0, palavra.length() - 1);
-
-                    if (antesDaInterrogacao.length() > 0) {
-                        elementosTexto.add(new ElementoTextoMovel(antesDaInterrogacao, inicioPalavra));
-                    }
-
-                    elementosTexto.add(new ElementoTextoMovel("?", inicioPalavra + palavra.length() - 1));
-                } else {
-                    elementosTexto.add(new ElementoTextoMovel(palavra, inicioPalavra));
+            ResultadoInterpretacao interpretacao = textoProblemaEhMensagemSistema
+                    ? null : resultadoInterpretacao;
+            for (SegmentoTextoSemantico segmento : SegmentadorTextoSemantico.segmentar(
+                    textoProblema, interpretacao)) {
+                ElementoTextoMovel elemento = new ElementoTextoMovel(
+                        segmento.getValor(), segmento.getPosicaoInicial());
+                elemento.setManipulavelNaNarrativa(segmento.isManipulavelNaNarrativa());
+                if (segmento.possuiVinculoSemantico()) {
+                    elemento.vincularSemantica(segmento.getChavePapelSemantico(),
+                            segmento.getInicioSemanticoLocal(),
+                            segmento.getFimSemanticoLocal(),
+                            segmento.getValorSemanticoOriginal());
                 }
+                elementosTexto.add(elemento);
             }
-
-            vincularPapeisSemanticosAosElementosTexto();
             layoutTextoInicializado = false;
             larguraUltimoLayoutTexto = -1;
-        }
-
-        private void vincularPapeisSemanticosAosElementosTexto() {
-            if (textoProblemaEhMensagemSistema || resultadoInterpretacao == null) {
-                return;
-            }
-
-            java.util.List<NumeroEncontrado> numeros = obterNumerosInterpretados();
-            for (int i = 0; i < elementosTexto.size(); i++) {
-                ElementoTextoMovel elemento = elementosTexto.get(i);
-                int inicioElemento = elemento.posicaoInicialTexto;
-                int fimElemento = inicioElemento + elemento.valorOriginal.length();
-
-                for (int n = 0; n < numeros.size(); n++) {
-                    NumeroEncontrado numero = numeros.get(n);
-                    if (numero.getPosicaoInicial() >= inicioElemento
-                            && numero.getPosicaoFinal() <= fimElemento) {
-                        int inicioLocal = numero.getPosicaoInicial() - inicioElemento;
-                        int fimLocal = numero.getPosicaoFinal() - inicioElemento;
-                        elemento.vincularSemantica(
-                                obterChavePapelDoNumero(n),
-                                inicioLocal,
-                                fimLocal,
-                                numero.getValorCanonico());
-                        break;
-                    }
-                }
-
-                if (!elemento.possuiVinculoSemantico()) {
-                    int indiceInterrogacao = elemento.valorOriginal.indexOf('?');
-                    if (indiceInterrogacao >= 0) {
-                        elemento.vincularSemantica(
-                                ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?"),
-                                indiceInterrogacao,
-                                indiceInterrogacao + 1,
-                                "?");
-                    }
-                }
-            }
         }
 
         private void garantirLayoutElementosTexto(FontMetrics fm, int margemX, int yInicial, int larguraMaxima) {
@@ -6767,25 +6770,6 @@ public class Main extends JFrame {
             );
         }
 
-        private String obterChavePapelDoNumero(int indiceNumero) {
-            if (resultadoInterpretacao == null || indiceNumero < 0) {
-                return "papel.valor";
-            }
-            int indiceConhecido = 0;
-            java.util.List<PapelElementoInterpretado> papeis = resultadoInterpretacao.getPapeis();
-            for (int i = 0; i < papeis.size(); i++) {
-                PapelElementoInterpretado papel = papeis.get(i);
-                if (papel == null || !papel.isConhecido()) {
-                    continue;
-                }
-                if (indiceConhecido == indiceNumero) {
-                    return papel.getChavePapel();
-                }
-                indiceConhecido++;
-            }
-            return "papel.valor";
-        }
-
         private Color corFundoDoPapel(String chave) {
             return COR_MARCADOR_NUMERO;
         }
@@ -6878,19 +6862,34 @@ public class Main extends JFrame {
                 botaoAjudaComplementar.setVisible(false);
             }
             desenharCard(g2, limiteVergnaud.x, limiteVergnaud.y, limiteVergnaud.width, limiteVergnaud.height, 18);
+            // O card do painel complementar precisa existir desde a escolha
+            // da categoria, vazio até o material concreto aparecer — mesmo
+            // painel reservado por obterAreasDiagramasProporcionais (nunca
+            // colapsado), não um card que só passa a ser desenhado quando
+            // deveExibirDiagramaComplementar() vira verdadeiro (achado em
+            // teste manual da usuária, 2026-09-06: "o painel do lado direito
+            // está sendo apagado. Mantenha-o!"). O conteúdo (quadradinhos
+            // etc.) continua condicionado a deveExibirDiagramaComplementar()
+            // em outro lugar — só a moldura do painel é incondicional.
+            Rectangle limiteComplementar = obterAreaDiagramaAditivo();
+            desenharCard(g2, limiteComplementar.x, limiteComplementar.y,
+                    limiteComplementar.width, limiteComplementar.height, 18);
 
             if (cenaDiagramaAtual == null || elementosVergnaud.isEmpty()) {
                 inicializarDiagramaVergnaud();
             }
 
             ConectorVergnaud conectorAtivo = obterConectorVergnaudAtivo();
+            EstadoFeedbackDiagrama feedbackCena = cenaDiagramaAtual == null
+                    ? EstadoFeedbackDiagrama.NEUTRO
+                    : cenaDiagramaAtual.getEstadoFeedback();
             for (ConectorVergnaud conector : conectoresVergnaud) {
                 if (conector != conectorAtivo) {
-                    conector.desenhar(g2);
+                    conector.desenhar(g2, feedbackCena);
                 }
             }
             for (ElementoVergnaud elemento : elementosVergnaud) {
-                elemento.desenhar(g2);
+                elemento.desenhar(g2, feedbackCena);
             }
         }
 
@@ -6978,12 +6977,7 @@ public class Main extends JFrame {
             if (!categoriaSelecionadaParaAtividade || elementosVergnaud == null) {
                 return false;
             }
-            boolean[] flagsExibirLupa = new boolean[elementosVergnaud.size()];
-            for (int i = 0; i < elementosVergnaud.size(); i++) {
-                ElementoVergnaud elemento = elementosVergnaud.get(i);
-                flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;
-            }
-            return DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa);
+            return DecisaoExibicaoPaineisEixo.existeAlgumComLupa(elementosVergnaud);
         }
 
         /**
@@ -7089,10 +7083,13 @@ public class Main extends JFrame {
         }
 
         private void desenharElementos(Graphics2D g2) {
+            EstadoFeedbackDiagrama feedbackCena = cenaDiagramaAtual == null
+                    ? EstadoFeedbackDiagrama.NEUTRO
+                    : cenaDiagramaAtual.getEstadoFeedback();
             for (int i = 0; i < itensArrastaveis.size(); i++) {
                 ItemTextoArrastavel item = itensArrastaveis.get(i);
                 if (item != handlerItemTextoArrastavel.obterItemAtivo()) {
-                    item.desenhar(g2);
+                    item.desenhar(g2, feedbackCena);
                 }
             }
 
@@ -7678,7 +7675,8 @@ public class Main extends JFrame {
                 capturarEstadoCompartilhadoDoVergnaud(-1,
                         EstadoSemanticoCompartilhado.Origem.VERGNAUD);
             }
-            int[] valores = obterValoresSincronizadosParaDiagramaVenn();
+            int[] valores = estadoSemanticoCompartilhado
+                    .valoresOuZeroPara(tipoSituacaoSelecionada);
             EstadoSemanticoCompartilhado.Snapshot snapshotTabuleiro =
                     estadoSemanticoCompartilhado.snapshot();
             if (ehGraficoBarrasComparacao()
@@ -7784,36 +7782,16 @@ public class Main extends JFrame {
                     .criarAssinaturaDiagramaVenn(tipoVenn, area, valores);
         }
 
-        private int[] obterValoresSincronizadosParaDiagramaVenn() {
-            EstadoSemanticoCompartilhado.Snapshot snapshot = estadoSemanticoCompartilhado.snapshot();
-            if (snapshot.getTipo() == tipoSituacaoSelecionada) {
-                return new int[] {
-                    snapshot.valorOuZero(0),
-                    snapshot.valorOuZero(1),
-                    snapshot.valorOuZero(2)
-                };
-            }
-            return new int[] {0, 0, 0};
-        }
-
         private EstadoSemanticoCompartilhado.Snapshot capturarEstadoCompartilhadoDoVergnaud(
                 int indiceAlteradoReal, EstadoSemanticoCompartilhado.Origem origem) {
             atualizarIndicesEstadoCompartilhado(indiceAlteradoReal);
-            Integer[] valores = new Integer[] { null, null, null };
-            boolean[] conhecidos = new boolean[] { false, false, false };
-            for (int i = 0; i < 3; i++) {
-                int indiceReal = indicesElementosEstadoCompartilhado[i];
-                if (elementosVergnaud != null && indiceReal >= 0
-                        && indiceReal < elementosVergnaud.size()) {
-                    Integer valor = obterValorNumericoDoElemento(elementosVergnaud.get(indiceReal));
-                    valores[i] = valor;
-                    conhecidos[i] = valor != null;
-                }
-            }
-            int indicePapelAlterado = converterIndiceRealParaPapel(indiceAlteradoReal);
+            ValoresCapturadosVergnaud captura = capturadorValoresVergnaud.capturar(
+                    elementosVergnaud, indicesElementosEstadoCompartilhado,
+                    indiceAlteradoReal, this::obterValorNumericoDoElemento);
             EstadoSemanticoCompartilhado.Snapshot snapshot = estadoSemanticoCompartilhado.atualizar(
-                    tipoSituacaoSelecionada, valores, conhecidos,
-                    indicePapelAlterado, origem,
+                    tipoSituacaoSelecionada, captura.getValores(),
+                    captura.getConhecidos(),
+                    captura.getIndiceAlteradoSemantico(), origem,
                     obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
                     incognitaPreenchidaPeloProtocoloMouseTexto());
             registrarLogConsistenciaAutomaticaSeHouve(snapshot, origem);
@@ -8130,24 +8108,28 @@ public class Main extends JFrame {
             return areas[0];
         }
 
+        /**
+         * Sempre devolve os dois painéis lado a lado, com a mesma largura
+         * relativa, existindo o material concreto ou não — nunca um único
+         * painel Vergnaud de largura cheia que colapsa/reaparece quando
+         * deveExibirDiagramaComplementar() muda. Antes disso, cada 3ª
+         * rejeição consecutiva reconfigurava a área inteira (de um painel
+         * cheio para dois painéis proporcionais), o que deslocava o diagrama
+         * de Vergnaud de lugar exatamente no momento em que o material
+         * concreto aparecia (achado em teste manual da usuária, 2026-09-06:
+         * "mantenha a mesma configuração dos dois panels, mesmo que o
+         * segundo esteja vazio... após o terceiro erro, apenas renderize o
+         * material concreto no panel que já existe"). Com a área do painel
+         * Vergnaud agora fixa desde a seleção da categoria, o deslocamento
+         * para a borda oposta ao material concreto
+         * (calcularDeslocamentoCentroX, direcaoDeslocamentoParaMaterialConcreto)
+         * deixou de ser necessário — a centralização padrão já mantém o
+         * diagrama dentro da sua própria metade, sem colidir com o painel
+         * complementar, existindo conteúdo nele ou não.
+         */
         private Rectangle[] obterAreasDiagramasProporcionais() {
             int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
             int alturaTela = getHeight() > 0 ? getHeight() : ALTURA_BASE_TELA;
-
-            if (categoriaSelecionadaParaAtividade && !deveExibirDiagramaComplementar()) {
-                int alturaComum = Math.max(300, alturaTela - Y_BASE_VERGNAUD - 16);
-                Rectangle areaVergnaud = new Rectangle(
-                        MARGEM_LATERAL_DIAGRAMAS,
-                        Y_BASE_VERGNAUD,
-                        Math.max(640, larguraTela - (MARGEM_LATERAL_DIAGRAMAS * 2)),
-                        alturaComum);
-                Rectangle areaOculta = new Rectangle(
-                        areaVergnaud.x + areaVergnaud.width,
-                        Y_BASE_VENN,
-                        0,
-                        alturaComum);
-                return new Rectangle[] {areaVergnaud, areaOculta};
-            }
 
             int espacoEntreDiagramas = ESPACO_BASE_ENTRE_DIAGRAMAS;
             int larguraDisponivel = Math.max(640, larguraTela - (MARGEM_LATERAL_DIAGRAMAS * 2));
@@ -8297,11 +8279,38 @@ public class Main extends JFrame {
                     projetada.largura, projetada.altura);
         }
 
+        /**
+         * Deslocamento horizontal para centralizar o conteúdo do diagrama
+         * dentro da área já reservada por obterAreasDiagramasProporcionais —
+         * nunca extrapola essa área (usa só o espaço livre já existente),
+         * então não corre risco de cortar o diagrama por clipping.
+         *
+         * Antes, quando o material concreto estava visível, isto alinhava o
+         * diagrama à margem oposta a ele (direcaoDeslocamentoParaMaterialConcreto)
+         * em vez de centralizar — mas essa área só existia com essa largura
+         * porque obterAreasDiagramasProporcionais colapsava para um único
+         * painel de largura cheia sempre que o material concreto não estava
+         * disponível. Agora que os dois painéis são sempre reservados lado a
+         * lado (ver comentário lá), a própria área do diagrama já nunca
+         * colide com o painel complementar, existindo conteúdo nele ou não
+         * — centralizar sempre é suficiente, e mudar a direção do
+         * deslocamento na 3ª rejeição deixou de fazer sentido (deslocaria o
+         * diagrama dentro de uma área que não mudou de tamanho).
+         */
+        private int calcularDeslocamentoCentroX(Rectangle area, Rectangle caixaCena) {
+            int espacoLivre = area.width - caixaCena.width;
+            return area.x + espacoLivre / 2 - caixaCena.x;
+        }
+
         private void inicializarDiagramaVergnaud() {
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
             elementosVergnaud.clear();
             limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
+            // Situação nova (mesma categoria ou não) começa sem erro
+            // registrado — o selo vermelho de uma tentativa da situação
+            // anterior nunca deve sobreviver à troca.
+            seloErroModelagem.ocultar();
             desabilitarSincronizacaoEstadoFinal();
             // Os painéis (se houver) apontam para os ElementoVergnaud
             // antigos, prestes a serem descartados — desativa aqui
@@ -8323,7 +8332,7 @@ public class Main extends JFrame {
             int deslocamentoCentroY = 0;
 
             if (caixaCena != null) {
-                deslocamentoCentroX = area.x + (area.width - caixaCena.width) / 2 - caixaCena.x;
+                deslocamentoCentroX = calcularDeslocamentoCentroX(area, caixaCena);
                 deslocamentoCentroY = area.y + (area.height - caixaCena.height) / 2 - caixaCena.y;
             }
             deslocamentoCentroXAplicadoDiagramaVergnaud = deslocamentoCentroX;
@@ -8423,7 +8432,7 @@ public class Main extends JFrame {
             }
 
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
-            int novoDeslocamentoCentroX = area.x + (area.width - caixaCena.width) / 2 - caixaCena.x;
+            int novoDeslocamentoCentroX = calcularDeslocamentoCentroX(area, caixaCena);
             int novoDeslocamentoCentroY = area.y + (area.height - caixaCena.height) / 2 - caixaCena.y;
 
             int dx = novoDeslocamentoCentroX - deslocamentoCentroXAplicadoDiagramaVergnaud;
@@ -8526,10 +8535,15 @@ public class Main extends JFrame {
 
         private Rectangle calcularCaixaCena(CenaDiagramaAditivo cena) {
             Rectangle caixa = null;
+            FontMetrics fmRotulo = obterFontMetricsRotuloDiagrama();
 
             for (FiguraDiagrama figura : cena.getFiguras()) {
                 Rectangle r = new Rectangle(figura.getX(), figura.getY(), figura.getLargura(), figura.getAltura());
                 caixa = unirRetangulos(caixa, r);
+                Rectangle rotulo = calcularRetanguloRotuloFigura(figura, fmRotulo);
+                if (rotulo != null) {
+                    caixa = unirRetangulos(caixa, rotulo);
+                }
             }
 
             for (ConectorDiagrama conector : cena.getConectores()) {
@@ -8542,6 +8556,46 @@ public class Main extends JFrame {
             }
 
             return caixa;
+        }
+
+        /**
+         * Retângulo ocupado pelo rótulo/participante desta figura, medido com
+         * a mesma fonte de ElementoVergnaud.desenhar (Arial Bold 18) — sem
+         * isso, um rótulo mais largo que a caixa (ex.: nome de personagem
+         * comprido) escapa do cálculo de calcularCaixaCena, e quando o
+         * diagrama é deslocado até a borda oposta ao material concreto
+         * (calcularDeslocamentoCentroX, PARA_ESQUERDA/PARA_DIREITA usam
+         * margem zero desse lado) o texto é cortado pela borda do painel —
+         * bug real observado em teste manual com "Digimon" cortado à
+         * esquerda. {@code null} quando nem rótulo nem participante
+         * ultrapassam a largura da própria caixa (caso comum).
+         */
+        private Rectangle calcularRetanguloRotuloFigura(FiguraDiagrama figura, FontMetrics fmRotulo) {
+            String participante = situacaoProblemaAtual == null ? ""
+                    : valorSeguroPersonagem(SemanticaCuradaSituacao.buscarParticipante(
+                            situacaoProblemaAtual, localizacao, figura.getChavePapelSemantico()));
+            int larguraRotulo = larguraTextoOuZero(fmRotulo, figura.getRotulo());
+            int larguraParticipante = larguraTextoOuZero(fmRotulo, participante);
+            int larguraNecessaria = Math.max(larguraRotulo, larguraParticipante);
+            if (larguraNecessaria <= figura.getLargura()) {
+                return null;
+            }
+            int centroX = figura.getX() + figura.getLargura() / 2;
+            int linhas = (larguraRotulo > 0 ? 1 : 0) + (larguraParticipante > 0 ? 1 : 0);
+            int alturaTexto = Math.max(1, fmRotulo.getHeight() * Math.max(1, linhas));
+            boolean acima = figura.getPosicaoRotulo()
+                    == gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura.ACIMA;
+            int y = acima ? figura.getY() - 8 - alturaTexto : figura.getY() + figura.getAltura();
+            return new Rectangle(centroX - larguraNecessaria / 2, y, larguraNecessaria, alturaTexto);
+        }
+
+        private static int larguraTextoOuZero(FontMetrics fm, String texto) {
+            return texto == null || texto.trim().isEmpty() ? 0 : fm.stringWidth(texto.trim());
+        }
+
+        private FontMetrics obterFontMetricsRotuloDiagrama() {
+            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+                    .createGraphics().getFontMetrics(new Font("Arial", Font.BOLD, 18));
         }
 
         private Rectangle unirRetangulos(Rectangle atual, Rectangle novo) {
@@ -9201,70 +9255,17 @@ public class Main extends JFrame {
         private EstadoSemanticoCompartilhado.Snapshot
                 simularEstadoCompartilhadoAposAlteracaoValorAssinado(
                         int indiceAlteradoVisual, int valorAssinadoProposto) {
-            if (indiceAlteradoVisual < 0 || indiceAlteradoVisual >= circulosVenn.size()) {
-                return null;
-            }
-
-            Integer[] valores = new Integer[] { null, null, null };
-            boolean[] conhecidos = new boolean[] { false, false, false };
-            EstadoSemanticoCompartilhado.Snapshot anterior =
-                    estadoSemanticoCompartilhado.snapshot();
-            MapeamentoPapeisRepresentacaoComplementar mapeamento =
-                    obterMapeamentoPapeisComplementaresAtual();
-
-            for (int indiceVisual = 0;
-                    indiceVisual < 3 && indiceVisual < circulosVenn.size();
-                    indiceVisual++) {
-                int indiceSemantico = mapeamento.paraIndiceSemantico(indiceVisual);
-                if (indiceSemantico < 0) {
-                    continue;
-                }
-                CirculoVenn no = circulosVenn.get(indiceVisual);
-                if (no.exibirQuadradinhos) {
-                    int quantidade = contarQuadradinhosNoCirculo(no);
-                    if (indiceVisual == indiceAlteradoVisual) {
-                        quantidade = ehAgrupamentoTransformacaoComSinal(no)
-                                ? valorAssinadoProposto
-                                : politicaSinalTransformacaoComplementar
-                                        .magnitudeParaUnidades(valorAssinadoProposto);
-                    } else if ((ehProcessoTransformacaoMedidas()
-                                    || ehComposicaoTransformacoesProcesso())
-                            && politicaSinalTransformacaoComplementar
-                                    .permiteValorAssinado(tipoSituacaoSelecionada, indiceSemantico)) {
-                        Integer valorAnterior = anterior != null
-                                && anterior.isConhecido(indiceSemantico)
-                                ? Integer.valueOf(anterior.valorOuZero(indiceSemantico))
-                                : null;
-                        quantidade = politicaSinalTransformacaoComplementar
-                                .aplicarSinal(quantidade,
-                                        no.valorReferencia, valorAnterior);
-                    }
-                    valores[indiceSemantico] = Integer.valueOf(quantidade);
-                    conhecidos[indiceSemantico] = politicaSinalTransformacaoComplementar
-                            .magnitudeParaUnidades(quantidade) > 0
-                            || indiceVisual == indiceAlteradoVisual
-                            || (anterior != null
-                                && anterior.isConhecido(indiceSemantico));
-                } else {
-                    Integer editado = converterTextoParaInteiro(no.textoEditavel);
-                    if (editado != null) {
-                        valores[indiceSemantico] = editado;
-                        conhecidos[indiceSemantico] = true;
-                    } else if (no.valorReferencia != 0
-                            || (anterior != null
-                                && anterior.isConhecido(indiceSemantico))) {
-                        valores[indiceSemantico] = Integer.valueOf(no.valorReferencia);
-                        conhecidos[indiceSemantico] = true;
-                    }
-                }
-            }
-
-            EstadoSemanticoCompartilhado simulacao =
-                    new EstadoSemanticoCompartilhado();
-            return simulacao.atualizar(
-                    tipoSituacaoSelecionada, valores, conhecidos,
-                    mapeamento.paraIndiceSemantico(indiceAlteradoVisual),
-                    EstadoSemanticoCompartilhado.Origem.PROTOCOLO);
+            return simuladorEstadoComplementarVenn.simularValorAssinado(
+                    circulosVenn,
+                    obterMapeamentoPapeisComplementaresAtual(),
+                    tipoSituacaoSelecionada,
+                    ehProcessoTransformacaoMedidas()
+                            || ehComposicaoTransformacoesProcesso(),
+                    estadoSemanticoCompartilhado.snapshot(),
+                    indiceAlteradoVisual,
+                    valorAssinadoProposto,
+                    this::contarQuadradinhosNoCirculo,
+                    this::converterTextoParaInteiro);
         }
 
         private boolean podeIncrementarValorAssinadoTransformacao(
@@ -9489,7 +9490,6 @@ public class Main extends JFrame {
             }
 
             String[] chaves = new String[3];
-            Integer[] valores = new Integer[3];
             for (int indiceVisual = 0; indiceVisual < 3; indiceVisual++) {
                 int indiceSemantico = obterIndiceSemanticoDoAgrupamento(
                         indiceVisual);
@@ -9500,13 +9500,12 @@ public class Main extends JFrame {
                 chaves[indiceSemantico] = catalogoPapeisSemanticos
                         .obterChavePapelDoElemento(
                                 tipoSituacaoSelecionada, indiceReal);
-                valores[indiceSemantico] = obterValorCuradoPorChave(
-                        chaves[indiceSemantico]);
             }
             int indiceSemanticoAlvo = obterIndiceSemanticoDoAgrupamento(
                     indiceAgrupamento);
-            return scaffoldingLimiteQuantidadeVenn.resolverLimite(
-                    chaves, valores, indiceSemanticoAlvo);
+            return resolvedorLimiteQuantidadeCuradaVenn.resolver(
+                    situacaoProblemaAtual, localizacao, chaves,
+                    indiceSemanticoAlvo);
         }
 
         private MapeamentoPapeisRepresentacaoComplementar
@@ -9531,15 +9530,6 @@ public class Main extends JFrame {
                 return indicesElementosEstadoCompartilhado[indiceSemantico];
             }
             return indiceSemantico;
-        }
-
-        private Integer obterValorCuradoPorChave(String chave) {
-            if (situacaoProblemaAtual == null) {
-                return null;
-            }
-
-            return SemanticaCuradaSituacao.buscarValorInteiroVisivel(
-                    situacaoProblemaAtual, localizacao, chave);
         }
 
         private void removerQuadradinhoDoAgrupamentoInterno(CirculoVenn agrupamento) {
@@ -9767,8 +9757,12 @@ public class Main extends JFrame {
                     referendo.x + (referendo.largura - fmRotulo.stringWidth(referendo.rotulo)) / 2,
                     yRotulo);
 
-            desenharPersonagemComparacao(g2, obterPersonagemComparacao(1), referido, yRotulo + 18);
-            desenharPersonagemComparacao(g2, obterPersonagemComparacao(2), referendo, yRotulo + 18);
+            desenharPersonagemComparacao(g2,
+                    obterPersonagemComparacao("papel.referido"),
+                    referido, yRotulo + 18);
+            desenharPersonagemComparacao(g2,
+                    obterPersonagemComparacao("papel.referendo"),
+                    referendo, yRotulo + 18);
 
             desenharSegmentoValorRelativoComparacao(g2, referido, referendo, obterValorMaximoEscalaComparacao(), obterValorAtualControleComparacao());
         }
@@ -9785,13 +9779,12 @@ public class Main extends JFrame {
             g2.drawString(texto, x, yBase);
         }
 
-        private String obterPersonagemComparacao(int indice) {
+        private String obterPersonagemComparacao(String chavePapel) {
             if (situacaoProblemaAtual == null) {
                 return "";
             }
-            String chave = indice == 1 ? "papel.referido" : (indice == 2 ? "papel.referendo" : "papel.diferenca");
             return SemanticaCuradaSituacao.buscarParticipante(
-                    situacaoProblemaAtual, localizacao, chave);
+                    situacaoProblemaAtual, localizacao, chavePapel);
         }
 
         private int obterValorAtualControleComparacao() {
@@ -9809,48 +9802,28 @@ public class Main extends JFrame {
         }
 
         private int obterValorMaximoEscalaComparacao() {
-            int maximo = 0;
-            if (situacaoProblemaAtual != null) {
-                // Idem: se este papel for a incógnita, seu valor curado não
-                // pode influenciar a escala visível (vazaria a resposta nos
-                // números do eixo antes do aluno resolver).
-                Integer valorCurado = SemanticaCuradaSituacao.buscarValorInteiroVisivel(
-                        situacaoProblemaAtual, localizacao, "papel.diferenca");
-                if (valorCurado != null) {
-                    maximo = Math.max(maximo, relacaoEstruturalComparacao()
-                            .calcularModuloDoValorRelativo(valorCurado.intValue()));
-                }
-            }
             ElementoVergnaud elementoValorRelativo = encontrarElementoVergnaudPorPapel(
                     "papel.diferenca");
-            if (elementoValorRelativo != null) {
-                Integer valorModelado = obterValorNumericoDoElemento(elementoValorRelativo);
-                if (valorModelado != null) {
-                    maximo = Math.max(maximo, relacaoEstruturalComparacao()
-                            .calcularModuloDoValorRelativo(valorModelado.intValue()));
-                }
-            }
-            if (circulosVenn.size() >= 3) {
-                maximo = Math.max(maximo, relacaoEstruturalComparacao()
-                        .calcularModuloDoValorRelativo(
-                                circulosVenn.get(2).valorReferencia));
-            }
-            return maximo;
+            Integer valorModelado = elementoValorRelativo == null ? null
+                    : obterValorNumericoDoElemento(elementoValorRelativo);
+            Integer valorComplementar = circulosVenn.size() >= 3
+                    ? Integer.valueOf(circulosVenn.get(2).valorReferencia) : null;
+            return projetorValoresComparacaoComplementar.calcularMaximoEscala(
+                    situacaoProblemaAtual, localizacao,
+                    valorModelado, valorComplementar);
         }
 
         private int obterValorRelativoAssinadoComparacao() {
             ElementoVergnaud elementoValorRelativo = encontrarElementoVergnaudPorPapel(
                     "papel.diferenca");
-            if (elementoValorRelativo != null) {
-                Integer valorModelado = obterValorNumericoDoElemento(elementoValorRelativo);
-                if (valorModelado != null) {
-                    return valorModelado.intValue();
-                }
-            }
-            if (circulosVenn.size() >= 3) {
-                return circulosVenn.get(2).valorReferencia;
-            }
-            return obterValorAtualControleComparacao();
+            Integer valorModelado = elementoValorRelativo == null ? null
+                    : obterValorNumericoDoElemento(elementoValorRelativo);
+            Integer valorComplementar = circulosVenn.size() >= 3
+                    ? Integer.valueOf(circulosVenn.get(2).valorReferencia) : null;
+            int valorControle = valorModelado == null && valorComplementar == null
+                    ? obterValorAtualControleComparacao() : 0;
+            return projetorValoresComparacaoComplementar.selecionarValorRelativo(
+                    valorModelado, valorComplementar, valorControle);
         }
 
         private int aplicarSinalAtualAoModuloComparacao(int modulo) {
@@ -10026,7 +9999,7 @@ public class Main extends JFrame {
             int quantidadeReferendo = contarQuadradinhosNoCirculo(referendo);
             RecalculoComparacaoMedidas.Resultado resultado =
                     RecalculoComparacaoMedidas.decidir(
-                            "papel.referido".equals(obterPapelIncognitaAtual()),
+                            obterPapelIncognitaAtual(),
                             Integer.valueOf(quantidadeReferido),
                             Integer.valueOf(quantidadeReferendo), valorControle);
             if (resultado.getPapel() == RecalculoComparacaoMedidas.PapelAlvo.REFERIDO) {
@@ -10166,7 +10139,7 @@ public class Main extends JFrame {
             for (int i = elementosTexto.size() - 1; i >= 0; i--) {
                 ElementoTextoMovel elemento = elementosTexto.get(i);
 
-                if (elemento.contem(x, y)) {
+                if (elemento.isManipulavelNaNarrativa() && elemento.contem(x, y)) {
                     return elemento;
                 }
             }
@@ -10196,7 +10169,7 @@ public class Main extends JFrame {
         }
 
         private void converterElementoTextoEmItemDiagrama(ElementoTextoMovel elemento, int mouseX, int mouseY) {
-            String valor = extrairValorArrastavel(elemento);
+            String valor = elemento.getValorSemanticoAtual();
 
             if (valor.length() == 0 || existeItemPosicionadoNoDiagrama(
                     elemento.getValorSemanticoOriginal(),
@@ -10225,26 +10198,6 @@ public class Main extends JFrame {
             handlerItemTextoArrastavel.iniciar(novo, mouseX, mouseY);
             itemFocado = novo;
             atualizarRealceAlvoProximidade(novo);
-        }
-
-        private String extrairValorArrastavel(ElementoTextoMovel elemento) {
-            if (elemento == null || elemento.valor == null) {
-                return "";
-            }
-
-            if (elemento.possuiVinculoSemantico()) {
-                return elemento.getValorSemanticoAtual();
-            }
-
-            java.util.regex.Pattern padrao = java.util.regex.Pattern.compile(
-                    "[0-9]+|" + SimboloDesconhecido.regexClasse());
-            java.util.regex.Matcher matcher = padrao.matcher(elemento.valor);
-
-            if (matcher.find()) {
-                return matcher.group();
-            }
-
-            return "";
         }
 
         private MarcadorTexto encontrarMarcadorFixoTexto(int x, int y) {
@@ -11622,8 +11575,9 @@ public class Main extends JFrame {
 
         private boolean ehElementoEstadoFinalIncognito(ElementoVergnaud elemento) {
             return elemento != null
-                    && (elemento.incognitaPrincipal
-                    || "papel.estadoFinal".equals(elemento.chavePapelSemantico));
+                    && politicaSincronizacaoEstadoFinal.aceita(
+                            elemento.incognitaPrincipal,
+                            elemento.chavePapelSemantico);
         }
 
         private void recalcularEstadoFinalSeNumeroRelativoJaDefinido() {
@@ -11796,18 +11750,8 @@ public class Main extends JFrame {
                 ElementoVergnaud relacao, int valorRelativo) {
             int indiceVisual = obterIndiceVisualPorIdentidadeSemantica(relacao);
             int indicePapel = converterIndiceRealParaPapel(indiceVisual);
-            if (indicePapel < 0 || indicePapel > 2) {
-                return true;
-            }
-            EstadoSemanticoCompartilhado.Snapshot snapshot =
-                    estadoSemanticoCompartilhado.snapshot();
-            ValorNumerico[] valores = new ValorNumerico[] {
-                snapshot.getValorNumerico(0), snapshot.getValorNumerico(1),
-                snapshot.getValorNumerico(2)
-            };
-            return resolvedorRelacoesEstruturais.tentativaPreservaDominios(
-                    tipoSituacaoSelecionada, valores, indicePapel,
-                    Integer.valueOf(valorRelativo));
+            return estadoSemanticoCompartilhado.tentativaPreservaDominios(
+                    indicePapel, Integer.valueOf(valorRelativo));
         }
 
         private void informarBloqueioQuantidadeNegativa() {
@@ -12196,7 +12140,7 @@ public class Main extends JFrame {
             Integer valorReferendo = obterValorNumericoDoElemento(referendo);
             RecalculoComparacaoMedidas.Resultado resultadoRecalculo =
                     RecalculoComparacaoMedidas.decidir(
-                            "papel.referido".equals(obterPapelIncognitaAtual()),
+                            obterPapelIncognitaAtual(),
                             valorReferido, valorReferendo, valorRelativo);
             if (resultadoRecalculo.getPapel() == RecalculoComparacaoMedidas.PapelAlvo.REFERIDO) {
                 definirValorNoElementoMedida(referido,
@@ -12323,10 +12267,20 @@ public class Main extends JFrame {
                         ajustarTamanhoDoItem(item);
                         if (preenchimentoDeInterrogacao
                                 && !confirmarValorIncognitaAceito(item, identidadeAcao, true)) {
-                            // Usuário respondeu "Não" à pergunta de confirmação:
-                            // volta a pedir o valor em vez de propagar um valor
-                            // que o próprio usuário disse não ter certeza.
                             repaint();
+                            // 3ª rejeição consecutiva: o papel fica bloqueado
+                            // até "restaurar" (ver processarLimiteTentativasAtingido)
+                            // — reabrir este mesmo diálogo de inserir valor
+                            // para uma 4ª tentativa seria desnecessário
+                            // (pedido explícito da usuária, 2026-09-05).
+                            // Fora desse caso, volta a pedir o valor em vez
+                            // de propagar um valor que o próprio usuário
+                            // disse não ter certeza (resposta "Não" à
+                            // pergunta de confirmação).
+                            if (tentativasIncognitaAtual != null
+                                    && tentativasIncognitaAtual.estaBloqueadoPorLimiteTentativas()) {
+                                return;
+                            }
                             continue;
                         }
                         atualizarRepresentacoesReativasAposAlteracaoDoItem(item);
@@ -12705,38 +12659,9 @@ public class Main extends JFrame {
         }
 
         private String obterChavePapelExataDoItem(ItemTextoArrastavel item) {
-            if (item == null) {
-                return "papel.valor";
-            }
-
-            boolean incognita = SimboloDesconhecido.eh(item.origemValor)
-                    || SimboloDesconhecido.eh(item.valor);
-            if (incognita) {
-                String chaveIncognita = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(
-                        resultadoInterpretacao, item.chavePapel == null ? "papel.valor" : item.chavePapel);
-                if (chavePapelEspecifica(chaveIncognita)) {
-                    return chaveIncognita;
-                }
-                String chavePorInterrogacao = ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
-                if (chavePapelEspecifica(chavePorInterrogacao)) {
-                    return chavePorInterrogacao;
-                }
-            }
-
-            if (chavePapelEspecifica(item.chavePapel)) {
-                return item.chavePapel;
-            }
-
-            String chavePorValor = ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, item.origemValor);
-            if (chavePapelEspecifica(chavePorValor)) {
-                return chavePorValor;
-            }
-
-            return item.chavePapel != null ? item.chavePapel : "papel.valor";
-        }
-
-        private boolean chavePapelEspecifica(String chavePapel) {
-            return catalogoPapeisSemanticos.chavePapelEspecifica(chavePapel);
+            return resolvedorPapelElementoTexto.obterChavePapelExataDoItem(
+                    resultadoInterpretacao, item,
+                    item == null ? null : item.valor);
         }
 
         private int obterIndiceElementoVergnaudPorPapel(String chavePapel) {
@@ -12801,21 +12726,15 @@ public class Main extends JFrame {
 
         private String criarMensagemPapelElementoTexto(ElementoTextoMovel elemento) {
             String chavePapel = obterChavePapelCanonicoDoElemento(elemento);
-            chavePapel = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(resultadoInterpretacao, chavePapel);
             String papel = localizacao.texto(chavePapel);
             return localizacao.formatar("ui.hover.role", papel);
         }
 
         private String criarMensagemPapelItemArrastavel(ItemTextoArrastavel item) {
-            String chavePapel = item.chavePapel;
-
-            if (chavePapel == null || chavePapel.length() == 0) {
-                chavePapel = ResolvedorPapelInterpretado.obterChavePapelCanonicoPorValor(resultadoInterpretacao, item.origemValor);
-            } else {
-                chavePapel = ResolvedorPapelInterpretado.converterParaPapelCanonico(chavePapel);
-            }
-
-            chavePapel = ResolvedorPapelInterpretado.aplicarFallbackCuradoItemDesconhecido(resultadoInterpretacao, chavePapel);
+            String chavePapel =
+                    resolvedorPapelElementoTexto
+                            .obterChavePapelCanonicoDoItem(
+                                    resultadoInterpretacao, item);
             String papel = localizacao.texto(chavePapel);
             return localizacao.formatar("ui.hover.role", papel);
         }
@@ -12836,28 +12755,19 @@ public class Main extends JFrame {
          * existentes.
          */
         private String obterChavePapelExataDoElemento(ElementoTextoMovel elemento) {
-            if (elemento != null && elemento.possuiVinculoSemantico()
-                    && elemento.chavePapelSemantico != null) {
-                return elemento.chavePapelSemantico;
-            }
-            if (ehInterrogacaoDoTexto(elemento)) {
-                return ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?");
-            }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            return ResolvedorPapelInterpretado.obterChavePapelExataPorIndice(resultadoInterpretacao, indice);
+            return resolvedorPapelElementoTexto
+                    .obterChavePapelExataDoElemento(
+                            resultadoInterpretacao, elemento,
+                            ehInterrogacaoDoTexto(elemento), indice);
         }
 
         private String obterChavePapelCanonicoDoElemento(ElementoTextoMovel elemento) {
-            if (elemento != null && elemento.possuiVinculoSemantico()
-                    && elemento.chavePapelSemantico != null) {
-                return ResolvedorPapelInterpretado.converterParaPapelCanonico(elemento.chavePapelSemantico);
-            }
-            if (ehInterrogacaoDoTexto(elemento)) {
-                return ResolvedorPapelInterpretado.converterParaPapelCanonico(
-                        ResolvedorPapelInterpretado.obterChavePapelExataPorValor(resultadoInterpretacao, "?"));
-            }
             int indice = obterIndiceSimboloArrastavel(elemento);
-            return ResolvedorPapelInterpretado.obterChavePapelCanonicoPorIndice(resultadoInterpretacao, indice);
+            return resolvedorPapelElementoTexto
+                    .obterChavePapelCanonicoDoElemento(
+                            resultadoInterpretacao, elemento,
+                            ehInterrogacaoDoTexto(elemento), indice);
         }
 
         private int obterIndiceSimboloArrastavel(ElementoTextoMovel alvo) {

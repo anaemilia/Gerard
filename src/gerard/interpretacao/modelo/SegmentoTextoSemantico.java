@@ -15,6 +15,7 @@ public final class SegmentoTextoSemantico {
     private int inicioSemanticoLocal = -1;
     private int fimSemanticoLocal = -1;
     private String valorSemanticoOriginal = "";
+    private TipoSegmentoNarrativo tipoNarrativo = TipoSegmentoNarrativo.COMUM;
 
     SegmentoTextoSemantico(String valor, int posicaoInicial) {
         this.valor = valor;
@@ -31,6 +32,15 @@ public final class SegmentoTextoSemantico {
         this.fimSemanticoLocal = fimLocal;
         this.valorSemanticoOriginal = valorOriginalDoPapel == null
                 ? valor.substring(inicioLocal, fimLocal) : valorOriginalDoPapel;
+        this.tipoNarrativo = "?".equals(this.valorSemanticoOriginal.trim())
+                ? TipoSegmentoNarrativo.INCOGNITA
+                : TipoSegmentoNarrativo.QUANTIDADE;
+    }
+
+    void marcarComoCandidatoOrganizadorInformacao() {
+        if (tipoNarrativo == TipoSegmentoNarrativo.COMUM) {
+            tipoNarrativo = TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO;
+        }
     }
 
     public String getValor() {
@@ -56,6 +66,20 @@ public final class SegmentoTextoSemantico {
 
     public int getFimSemanticoLocal() {
         return fimSemanticoLocal;
+    }
+
+    public String getValorSemanticoOriginal() {
+        return valorSemanticoOriginal;
+    }
+
+    public TipoSegmentoNarrativo getTipoNarrativo() {
+        return tipoNarrativo;
+    }
+
+    public boolean isManipulavelNaNarrativa() {
+        return possuiVinculoSemantico()
+                || tipoNarrativo == TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO
+                || !StopwordsNarrativa.contem(valor);
     }
 
     public boolean representaIncognitaOriginal() {

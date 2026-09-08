@@ -26,7 +26,7 @@ export function caminhoDoConector(c: ConectorCena) {
 
 export function coordenadaYDoRotulo(f: FiguraCena) {
   if (f.posicao_rotulo === "ACIMA") return f.y - 14;
-  if (f.posicao_rotulo === "ABAIXO") return f.y + f.altura + 22;
+  if (f.posicao_rotulo === "ABAIXO" || f.subtitulo) return f.y + f.altura + 40;
   return f.y + f.altura / 2 + 4;
 }
 
@@ -42,7 +42,13 @@ export function coordenadaYDoValor(f: FiguraCena) {
   return f.y + f.altura / 2 + 4;
 }
 
-/** Abaixo do rótulo quando ele já ocupa a linha logo sob a figura (ABAIXO), senão logo sob a figura. */
+/**
+ * O personagem precede o rótulo do papel em qualquer posição. As duas
+ * coordenadas são derivadas da figura e mantêm entre si o mesmo passo de
+ * linha; CENTRO com personagem desloca o par para fora da figura, preservando
+ * o centro para valor/incógnita.
+ */
 export function coordenadaYDoSubtitulo(f: FiguraCena) {
-  return f.posicao_rotulo === "ABAIXO" ? f.y + f.altura + 40 : f.y + f.altura + 24;
+  if (f.posicao_rotulo === "ACIMA") return f.y - 32;
+  return f.y + f.altura + 22;
 }

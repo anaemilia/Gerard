@@ -7,7 +7,7 @@ import type { PosicaoVisual } from "../estadoRepresentacoes";
 
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
 export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, figuraDestacadaId,
-    seletorOperacao }: {
+    seletorOperacao, ocupado, aoAjustarQuadradinho, textoAdicionarQuadradinho, textoRemoverQuadradinho }: {
   cena: CenaDiagrama;
   posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
@@ -17,6 +17,10 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
     mensagemErro: string | null; ocupado: boolean;
     aoEscolher: (operacao: "SOMA" | "SUBTRACAO") => void;
   };
+  ocupado?: boolean;
+  aoAjustarQuadradinho?: (papelId: string, delta: 1 | -1) => void;
+  textoAdicionarQuadradinho?: string;
+  textoRemoverQuadradinho?: string;
 }) {
   const v = cena.viewport;
   return <svg className="portable-scene" viewBox={`${v.x} ${v.y} ${v.largura} ${v.altura}`}
@@ -31,7 +35,10 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
       const posicao = posicoesEmEdicao[figura.id];
       const figuraProjetada = posicao ? { ...figura, ...posicao } : figura;
       return <FiguraCenaGerard key={figura.id} figura={figuraProjetada}
-        aoEditarValor={aoEditarValor} destacada={figura.id === figuraDestacadaId} />;
+        aoEditarValor={aoEditarValor} destacada={figura.id === figuraDestacadaId}
+        ocupado={ocupado} aoAjustarQuadradinho={aoAjustarQuadradinho}
+        textoAdicionarQuadradinho={textoAdicionarQuadradinho}
+        textoRemoverQuadradinho={textoRemoverQuadradinho} />;
     })}
     {seletorOperacao && cena.seletor_operacao
       && <SeletorOperacaoDiagramaGerard pontos={cena.seletor_operacao} {...seletorOperacao} />}

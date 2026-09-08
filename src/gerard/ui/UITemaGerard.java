@@ -95,7 +95,7 @@ public final class UITemaGerard {
      * incorreta). Uso restrito a sinais ao usuário — segue o padrão
      * cultural de vermelho para erro.
      */
-    public static final Color COR_ERRO = new Color(200, 40, 40);
+    public static final Color COR_ERRO = new Color(0xE0, 0x52, 0x52);
 
     /** Fundo suave para rótulos e áreas de feedback de erro. */
     public static final Color COR_ERRO_FUNDO = new Color(253, 232, 232);

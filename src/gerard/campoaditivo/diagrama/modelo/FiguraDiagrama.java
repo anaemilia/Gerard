@@ -1,6 +1,6 @@
 package gerard.campoaditivo.diagrama.modelo;
 
-public class FiguraDiagrama {
+public class FiguraDiagrama implements ElementoComLupa {
     private final TipoFiguraDiagrama tipo;
     private final int x;
     private final int y;

@@ -176,6 +176,13 @@ public final class SemanticaCuradaSituacao {
         return papel == null ? "" : papel.getParticipante();
     }
 
+    /** Consulta portátil da divergência entre uma representação e a curadoria. */
+    public static Boolean estadoModificadoPor(SituacaoProblemaAditiva situacao,
+            ServicoLocalizacao localizacao, String chave, String valorAtual) {
+        PapelCurado papel = buscar(situacao, localizacao, chave);
+        return papel == null ? null : papel.estadoModificadoPor(valorAtual);
+    }
+
     /**
      * Cria os proprietários de avaliação de sinal para os papéis inteiros que
      * possuem valor normativo na situação curada.

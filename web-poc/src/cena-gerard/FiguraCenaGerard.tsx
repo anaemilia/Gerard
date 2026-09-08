@@ -10,11 +10,61 @@ function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
   </g>;
 }
 
-export function FiguraCenaGerard({ figura, aoEditarValor, destacada }: {
+/**
+ * Grupo de quadradinhos do material concreto (AG_EMCME): mesmo modelo de
+ * figura das demais (id/x/y/largura/altura/rotulo/valor), desenhado como
+ * grade de quadradinhos em vez de caixa com número — via foreignObject para
+ * reaproveitar as mesmas classes CSS de MaterialConcretoQuadradinhos
+ * (styles.css), em vez de reimplementar a grade em SVG puro. O gerador de
+ * cena decide a contagem (figura.valor); este componente só materializa.
+ */
+function GrupoQuadradinhosCenaGerard({ figura, ehAlvo, ocupado, aoAjustar, textoAdicionar, textoRemover }: {
+  figura: FiguraCena; ehAlvo: boolean; ocupado: boolean;
+  aoAjustar?: (delta: 1 | -1) => void;
+  textoAdicionar?: string; textoRemover?: string;
+}) {
+  const quantidade = figura.valor ?? 0;
+  return <g className="scene-figure scene-figure-quadradinhos" data-figura-id={figura.id}>
+    <rect x={figura.x} y={figura.y} width={figura.largura} height={figura.altura}
+      rx={10} className="scene-quadradinhos-moldura" />
+    <text x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>
+    <foreignObject x={figura.x + 6} y={figura.y + 6}
+        width={Math.max(0, figura.largura - 12)} height={Math.max(0, figura.altura - 12)}>
+      <div className="quadradinhos-grupo">
+        <div className="quadradinhos-grade" aria-hidden="true">
+          {Array.from({ length: quantidade }, (_, indice) => <span key={indice} className="quadradinho" />)}
+        </div>
+        {ehAlvo && aoAjustar && <div className="quadradinhos-controles">
+          <button type="button" onClick={() => aoAjustar(-1)} disabled={ocupado || quantidade <= 0}
+            aria-label={textoRemover}>−</button>
+          <span className="quadradinhos-contagem">{quantidade}</span>
+          <button type="button" onClick={() => aoAjustar(1)} disabled={ocupado}
+            aria-label={textoAdicionar}>+</button>
+        </div>}
+      </div>
+    </foreignObject>
+  </g>;
+}
+
+export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, aoAjustarQuadradinho,
+    textoAdicionarQuadradinho, textoRemoverQuadradinho }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
   destacada?: boolean;
+  ocupado?: boolean;
+  aoAjustarQuadradinho?: (papelId: string, delta: 1 | -1) => void;
+  textoAdicionarQuadradinho?: string;
+  textoRemoverQuadradinho?: string;
 }) {
+  if (figura.tipo === "GRUPO_QUADRADINHOS") {
+    const interacaoAjustar = figura.interacoes_permitidas.find(
+      (item) => item.tipo === "AJUSTAR_QUADRADINHO");
+    return <GrupoQuadradinhosCenaGerard figura={figura} ehAlvo={Boolean(interacaoAjustar)}
+      ocupado={Boolean(ocupado)}
+      aoAjustar={interacaoAjustar && aoAjustarQuadradinho
+        ? (delta) => aoAjustarQuadradinho(interacaoAjustar.papel_id, delta) : undefined}
+      textoAdicionar={textoAdicionarQuadradinho} textoRemover={textoRemoverQuadradinho} />;
+  }
   // figura.engatada vem do servidor (ver engatarIncognita/projetarCena) —
   // "?" já arrastado do enunciado até aqui (protocolo mouse-texto) — só
   // então o duplo-clique abre a digitação.
@@ -48,12 +98,15 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada }: {
         invariante de ElementoVergnaud.desenhar (Main.java): textoEditavel se
         centraliza na caixa independente de rotulosAcima, que só governa o
         rótulo/papel. */}
-    <text x={figura.x + figura.largura / 2}
+    {figura.subtitulo && <text className="scene-figure-subtitle"
+      x={figura.x + figura.largura / 2} y={coordenadaYDoSubtitulo(figura)}>{figura.subtitulo}</text>}
+    <text className={figura.subtitulo ? "scene-figure-role" : undefined}
+      x={figura.x + figura.largura / 2}
       y={conhecida || engatada ? coordenadaYDoValor(figura) : coordenadaYDoRotulo(figura)}>
       {conhecida ? figura.valor : engatada ? "?" : figura.rotulo}
     </text>
-    {figura.subtitulo && <text className="scene-figure-subtitle"
-      x={figura.x + figura.largura / 2} y={coordenadaYDoSubtitulo(figura)}>{figura.subtitulo}</text>}
+    {(conhecida || engatada) && <text className="scene-figure-role"
+      x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>}
     <LupaCenaGerard figura={figura} />
   </g>;
 }

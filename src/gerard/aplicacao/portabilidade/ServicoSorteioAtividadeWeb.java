@@ -366,10 +366,37 @@ public final class ServicoSorteioAtividadeWeb {
                 || tentativaClassificacao.estaEncerrada();
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
-            Object cenaProjetada = projetarCena(contextoAtual,
-                    listaDeAcoes(estado.get("acoes_disponiveis")), estado.get("modelagem"));
+            List<Object> acoesParaCena = listaDeAcoes(estado.get("acoes_disponiveis"));
+            Object cenaProjetada = projetarCena(contextoAtual, acoesParaCena, estado.get("modelagem"));
             estado.put("cena", cenaProjetada);
+            // Cena do material concreto (grupos de quadradinhos), gerada
+            // pelo mesmo gerador de cena da cena abstrata — ver
+            // GeradorCenaDiagramaAditivo.gerarMaterialConcreto. Omitida do
+            // contrato (não posta como null) quando não disponível agora ou
+            // quando a categoria ainda não tem essa cena implementada.
+            Object cenaMaterialConcretoProjetada = projetarCenaMaterialConcreto(
+                    contextoAtual, acoesParaCena, estado.get("modelagem"));
+            if (cenaMaterialConcretoProjetada != null) {
+                estado.put("cena_material_concreto", cenaMaterialConcretoProjetada);
+            } else {
+                estado.remove("cena_material_concreto");
+            }
             estado.put("elementos_texto", projetarElementosTexto(contextoAtual));
+            Map<String, Object> vocabularioTexto = mapa();
+            List<Object> candidatosOrganizadores = new ArrayList<Object>();
+            int indiceCandidato = 0;
+            for (String expressao : gerard.interpretacao.modelo.VocabularioOrganizadoresInformacao.expressoes()) {
+                candidatosOrganizadores.add(projetarDescritorPalavra(
+                        "vocabulario.organizador." + indiceCandidato++, expressao,
+                        gerard.interpretacao.modelo.TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO,
+                        true, "ORGANIZADORES"));
+            }
+            vocabularioTexto.put("candidatos_organizadores_informacao", candidatosOrganizadores);
+            vocabularioTexto.put("modelo_palavra_comum", projetarDescritorPalavra(
+                    "vocabulario.palavra-comum", "",
+                    gerard.interpretacao.modelo.TipoSegmentoNarrativo.COMUM,
+                    true, "COMUM"));
+            estado.put("vocabulario_texto", vocabularioTexto);
             estado.put("confirmacao_valor_papel", ConfirmacaoValorWeb.perguntaParaCena(cenaProjetada));
         } else {
             estado.remove("categoria");
@@ -382,7 +409,9 @@ public final class ServicoSorteioAtividadeWeb {
             estado.remove("diagrama");
             estado.remove("curadoria");
             estado.remove("elementos_texto");
+            estado.remove("vocabulario_texto");
             estado.remove("confirmacao_valor_papel");
+            estado.remove("cena_material_concreto");
         }
         // Menu "E agora?" (botaoAjudaTexto/Vergnaud/Complementar, Main.java)
         // só existe depois que a categoria foi de fato confirmada — mesma
@@ -480,14 +509,45 @@ public final class ServicoSorteioAtividadeWeb {
                         contexto.getEnunciadoExibido(), contexto.getInterpretacao());
         List<Object> resultado = new ArrayList<Object>();
         for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento : segmentos) {
-            Map<String, Object> item = mapa();
-            item.put("valor", segmento.getValor());
+            Map<String, Object> item = projetarDescritorPalavra(
+                    "texto." + resultado.size(), segmento.getValor(),
+                    segmento.getTipoNarrativo(), segmento.isManipulavelNaNarrativa(),
+                    destinoSaco(segmento));
             item.put("papel_id", segmento.possuiVinculoSemantico()
                     ? segmento.getChavePapelSemantico() : null);
             item.put("incognita", Boolean.valueOf(segmento.representaIncognitaOriginal()));
             resultado.add(item);
         }
         return resultado;
+    }
+
+    private static Map<String, Object> projetarDescritorPalavra(
+            String id, String valor,
+            gerard.interpretacao.modelo.TipoSegmentoNarrativo tipo,
+            boolean manipulavel, String sacoDestino) {
+        Map<String, Object> item = mapa();
+        item.put("id", id);
+        item.put("valor", valor);
+        item.put("tipo", tipo.name());
+        item.put("manipulavel", Boolean.valueOf(manipulavel));
+        item.put("papel_id", null);
+        item.put("incognita", Boolean.FALSE);
+        item.put("saco_destino", sacoDestino);
+        return item;
+    }
+
+    private static String destinoSaco(
+            gerard.interpretacao.modelo.SegmentoTextoSemantico segmento) {
+        if (segmento.getTipoNarrativo()
+                == gerard.interpretacao.modelo.TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO) {
+            return "ORGANIZADORES";
+        }
+        if (segmento.getTipoNarrativo()
+                == gerard.interpretacao.modelo.TipoSegmentoNarrativo.COMUM
+                && segmento.isManipulavelNaNarrativa()) {
+            return "COMUM";
+        }
+        return null;
     }
 
     private static Map<String, Object> projetarCena(
@@ -499,9 +559,79 @@ public final class ServicoSorteioAtividadeWeb {
         Map<String, Object> resultado = mapa();
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
+        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));
+        resultado.put("conectores", serializarConectores(cena.getConectores()));
+        Map<String, Object> seletorOperacao = projetarSeletorOperacao(
+                contexto.getSituacao().getTipo(), cena);
+        if (seletorOperacao != null) {
+            resultado.put("seletor_operacao", seletorOperacao);
+        }
+        // Deslocamento assimétrico do diagrama quando o material concreto
+        // desta categoria está disponível ao lado dele — direção decidida
+        // pelo gerador de cena (ver GeradorCenaDiagramaAditivo.
+        // direcaoDeslocamentoParaMaterialConcreto), nunca uma posição fixa.
+        boolean materialConcretoDisponivel = modelagem instanceof Map
+                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"));
+        DirecaoDeslocamentoDiagrama direcaoDeslocamento = materialConcretoDisponivel
+                ? new GeradorCenaDiagramaAditivo().direcaoDeslocamentoParaMaterialConcreto(
+                        contexto.getSituacao().getTipo())
+                : DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO;
+        resultado.put("viewport", projetarViewport(cena, seletorOperacao, direcaoDeslocamento));
+        // Decisão agregada da cena (não por figura): existe pelo menos um
+        // papel com lupa, logo os painéis de eixo revelados por ela podem
+        // ser oferecidos. Mesma regra usada pelo adaptador Swing (ver
+        // DecisaoExibicaoPaineisEixo) — um único lugar decide isso, para
+        // não obrigar um futuro consumidor web a recalculá-la sozinho.
+        // Não decide qual mecanismo de eixo mostrar nem substitui
+        // "lupa_habilitada" por figura, que segue como placeholder em
+        // aberto (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md).
+        resultado.put("paineis_eixo_disponiveis",
+                Boolean.valueOf(DecisaoExibicaoPaineisEixo.existeAlgumComLupa(
+                        cena.getFiguras())));
+        return resultado;
+    }
+
+    /**
+     * Cena do material concreto (grupos de quadradinhos), ao lado da cena
+     * abstrata — mesmo modelo de figuras/conectores, serializado pelo mesmo
+     * par de métodos (serializarFiguras/serializarConectores), nunca um
+     * componente de interface com sua própria lógica de contagem/posição
+     * (ver GeradorCenaDiagramaAditivo.gerarMaterialConcreto). {@code null}
+     * quando o material concreto não está disponível agora ou a categoria
+     * ainda não tem essa cena implementada — o chamador (projetarSituacao)
+     * simplesmente omite "cena_material_concreto" do contrato nesse caso.
+     */
+    private static Map<String, Object> projetarCenaMaterialConcreto(
+            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
+        boolean disponivel = modelagem instanceof Map
+                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"));
+        if (!disponivel) {
+            return null;
+        }
+        Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
+        Object chaveAlvo = ((Map<?, ?>) modelagem).get("papel_desconhecido_original");
+        CenaDiagramaAditivo cena = new GeradorCenaDiagramaAditivo().gerarMaterialConcreto(
+                contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 420, 340),
+                contexto.getDefinicao(), new int[] {0, 0, 0},
+                chaveAlvo == null ? null : chaveAlvo.toString());
+        if (cena == null) {
+            return null;
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("titulo", cena.getTitulo());
+        resultado.put("descricao", cena.getDescricao());
+        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));
+        resultado.put("conectores", serializarConectores(cena.getConectores()));
+        resultado.put("viewport", projetarViewport(cena, null, DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO));
+        return resultado;
+    }
+
+    private static List<Object> serializarFiguras(List<FiguraDiagrama> figurasFonte,
+            ContextoCarregamentoAtividade contexto, Map<String, Object> valoresPorChave,
+            List<Object> acoes) {
         List<Object> figuras = new ArrayList<Object>();
         int indice = 0;
-        for (FiguraDiagrama figura : cena.getFiguras()) {
+        for (FiguraDiagrama figura : figurasFonte) {
             Map<String, Object> item = mapa();
             item.put("id", "figura." + indice++);
             item.put("tipo", figura.getTipo().name());
@@ -531,8 +661,12 @@ public final class ServicoSorteioAtividadeWeb {
                     acoes, figura.getChavePapelSemantico()));
             figuras.add(item);
         }
+        return figuras;
+    }
+
+    private static List<Object> serializarConectores(List<ConectorDiagrama> conectoresFonte) {
         List<Object> conectores = new ArrayList<Object>();
-        for (ConectorDiagrama conector : cena.getConectores()) {
+        for (ConectorDiagrama conector : conectoresFonte) {
             Map<String, Object> item = mapa();
             item.put("tipo", conector.getTipo().name());
             item.put("x1", Integer.valueOf(conector.getX1()));
@@ -546,36 +680,7 @@ public final class ServicoSorteioAtividadeWeb {
             }
             conectores.add(item);
         }
-        resultado.put("figuras", figuras);
-        resultado.put("conectores", conectores);
-        Map<String, Object> seletorOperacao = projetarSeletorOperacao(
-                contexto.getSituacao().getTipo(), cena);
-        if (seletorOperacao != null) {
-            resultado.put("seletor_operacao", seletorOperacao);
-        }
-        // Deslocamento assimétrico do diagrama quando o material concreto
-        // desta categoria está disponível ao lado dele — direção decidida
-        // pelo gerador de cena (ver GeradorCenaDiagramaAditivo.
-        // direcaoDeslocamentoParaMaterialConcreto), nunca uma posição fixa.
-        boolean materialConcretoDisponivel = modelagem instanceof Map
-                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"));
-        DirecaoDeslocamentoDiagrama direcaoDeslocamento = materialConcretoDisponivel
-                ? new GeradorCenaDiagramaAditivo().direcaoDeslocamentoParaMaterialConcreto(
-                        contexto.getSituacao().getTipo())
-                : DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO;
-        resultado.put("viewport", projetarViewport(cena, seletorOperacao, direcaoDeslocamento));
-        // Decisão agregada da cena (não por figura): existe pelo menos um
-        // papel com lupa, logo os painéis de eixo revelados por ela podem
-        // ser oferecidos. Mesma regra usada pelo adaptador Swing (ver
-        // DecisaoExibicaoPaineisEixo) — um único lugar decide isso, para
-        // não obrigar um futuro consumidor web a recalculá-la sozinho.
-        // Não decide qual mecanismo de eixo mostrar nem substitui
-        // "lupa_habilitada" por figura, que segue como placeholder em
-        // aberto (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md).
-        resultado.put("paineis_eixo_disponiveis",
-                Boolean.valueOf(DecisaoExibicaoPaineisEixo.existeAlgumComLupa(
-                        cena.getFiguras())));
-        return resultado;
+        return conectores;
     }
 
     /**
@@ -845,6 +950,8 @@ public final class ServicoSorteioAtividadeWeb {
                 tipoInteracao = "POSICIONAR_CONHECIDO";
             } else if ("ENGATAR_INCOGNITA".equals(id)) {
                 tipoInteracao = "ENGATAR_INCOGNITA";
+            } else if ("AJUSTAR_QUADRADINHO".equals(id)) {
+                tipoInteracao = "AJUSTAR_QUADRADINHO";
             } else {
                 continue;
             }

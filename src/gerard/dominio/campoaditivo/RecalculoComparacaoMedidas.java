@@ -49,16 +49,18 @@ public final class RecalculoComparacaoMedidas {
     }
 
     /**
-     * @param desconhecidoEhReferido se a curadoria da situação-problema
-     *        designa "referido" como o termo desconhecido
+     * @param papelDesconhecido chave do papel designado como incógnita pela
+     *        situação-problema
      * @param valorReferido valor atualmente modelado no papel Referido, ou
      *        {@code null} se ainda não preenchido
      * @param valorReferendo valor atualmente modelado no papel Referendo, ou
      *        {@code null} se ainda não preenchido
      * @param valorRelativo novo valor do Valor Relativo, já aplicado
      */
-    public static Resultado decidir(boolean desconhecidoEhReferido,
+    public static Resultado decidir(String papelDesconhecido,
             Integer valorReferido, Integer valorReferendo, int valorRelativo) {
+        boolean desconhecidoEhReferido =
+                "papel.referido".equals(papelDesconhecido);
         if (desconhecidoEhReferido && valorReferendo != null) {
             return new Resultado(PapelAlvo.REFERIDO,
                     valorReferendo.intValue() - valorRelativo);

@@ -30,30 +30,17 @@ public final class DecisaoExibicaoPaineisEixo {
     private DecisaoExibicaoPaineisEixo() {
     }
 
-    /** Variante para quem já tem a lista de figuras portáteis da cena (ex.: API web). */
-    public static boolean existeAlgumComLupa(List<FiguraDiagrama> figuras) {
-        if (figuras == null) {
-            return false;
-        }
-        for (FiguraDiagrama figura : figuras) {
-            if (figura != null && figura.isExibirLupa()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
-     * Variante para quem já reduziu cada elemento ao próprio booleano de
-     * lupa (ex.: o adaptador Swing, que consulta {@code ElementoVergnaud}
-     * em vez de {@link FiguraDiagrama} diretamente).
+     * Aceita tanto figuras da cena portátil quanto elementos já materializados
+     * por um adaptador, sem exigir que o adaptador reconstrua flags paralelas.
      */
-    public static boolean existeAlgumComLupa(boolean[] flagsExibirLupa) {
-        if (flagsExibirLupa == null) {
+    public static boolean existeAlgumComLupa(
+            List<? extends ElementoComLupa> elementos) {
+        if (elementos == null) {
             return false;
         }
-        for (boolean flag : flagsExibirLupa) {
-            if (flag) {
+        for (ElementoComLupa elemento : elementos) {
+            if (elemento != null && elemento.isExibirLupa()) {
                 return true;
             }
         }

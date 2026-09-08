@@ -99,6 +99,46 @@ public final class EstadoSemanticoCompartilhado {
         limpar(null);
     }
 
+    /**
+     * Simula a alteração de um papel sobre o estado corrente sem publicá-la.
+     * A própria fronteira que possui os valores e seus domínios prepara a
+     * tentativa; adaptadores de interface não precisam copiar o snapshot para
+     * reconstruir essa decisão.
+     */
+    public synchronized boolean tentativaPreservaDominios(
+            int indicePapel, Integer valorProposto) {
+        if (indicePapel < 0 || indicePapel > 2) {
+            return true;
+        }
+        ValorNumerico[] atuais = new ValorNumerico[] {
+            valores[0], valores[1], valores[2]
+        };
+        return resolvedorRelacoes.tentativaPreservaDominios(
+                tipo, atuais, indicePapel, valorProposto);
+    }
+
+    /**
+     * Projeta os três papéis canônicos para consumidores visuais que operam
+     * com quantidades concretas. Um estado de outra categoria, ou um papel
+     * ainda desconhecido, é representado por zero sem expor o armazenamento
+     * interno ao adaptador.
+     */
+    public synchronized int[] valoresOuZeroPara(TipoSituacaoAditiva tipoEsperado) {
+        if (tipo != tipoEsperado) {
+            return new int[] {0, 0, 0};
+        }
+        return new int[] {
+            valorOuZero(valores[0]),
+            valorOuZero(valores[1]),
+            valorOuZero(valores[2])
+        };
+    }
+
+    private static int valorOuZero(ValorNumerico valor) {
+        Integer inteiro = valor == null ? null : valor.valorOuNull();
+        return inteiro == null ? 0 : inteiro.intValue();
+    }
+
     public synchronized void limpar(TipoSituacaoAditiva novoTipo) {
         tipo = novoTipo;
         for (int i = 0; i < valores.length; i++) {
