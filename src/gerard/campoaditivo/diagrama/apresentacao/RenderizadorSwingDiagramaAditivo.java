@@ -12,6 +12,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.QuadCurve2D;
 
 public class RenderizadorSwingDiagramaAditivo {
@@ -74,7 +75,7 @@ public class RenderizadorSwingDiagramaAditivo {
         }
 
         g2.setColor(cor);
-        g2.setStroke(new BasicStroke(1.4f));
+        g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         if (figura.getTipo() == TipoFiguraDiagrama.ELIPSE) {
             g2.drawOval(figura.getX(), figura.getY(), figura.getLargura(), figura.getAltura());
         } else if (figura.getTipo() == TipoFiguraDiagrama.RETANGULO_ARREDONDADO) {
@@ -101,7 +102,7 @@ public class RenderizadorSwingDiagramaAditivo {
 
         Stroke original = g2.getStroke();
         g2.setColor(cor);
-        g2.setStroke(new BasicStroke(1.4f));
+        g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.drawLine(c.getX1(), c.getY1(), c.getX2(), c.getY2());
         if (c.getTipo() == TipoConectorDiagrama.SETA) {
             desenharPontaSeta(g2, c.getX1(), c.getY1(), c.getX2(), c.getY2());
@@ -113,7 +114,7 @@ public class RenderizadorSwingDiagramaAditivo {
     private void desenharSetaCurva(Graphics2D g2, ConectorDiagrama c, Color cor) {
         Stroke original = g2.getStroke();
         g2.setColor(cor);
-        g2.setStroke(new BasicStroke(1.4f));
+        g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
         int controleX = (c.getX1() + c.getX2()) / 2;
         int controleY = Math.max(c.getY1(), c.getY2()) + 96;
@@ -139,19 +140,31 @@ public class RenderizadorSwingDiagramaAditivo {
         g2.drawLine(x2, y2, xB, yB);
     }
 
+    /**
+     * Mesma forma de chave do protótipo web (caminhoDoConector, geometriaSvg.ts)
+     * — curva contínua em vez de três segmentos retos com dobra em ângulo
+     * reto, mesmo raio (18) para manter a mesma largura útil percebida.
+     */
     private void desenharChaveVertical(Graphics2D g2, ConectorDiagrama c, Color cor) {
         Stroke original = g2.getStroke();
         g2.setColor(cor);
-        g2.setStroke(new BasicStroke(1.4f));
+        g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        int r = 18;
         int x = c.getX1();
         int y1 = Math.min(c.getY1(), c.getY2());
         int y2 = Math.max(c.getY1(), c.getY2());
-        int xChave = x + 18;
-        g2.drawLine(x, y1, xChave, y1);
-        g2.drawLine(xChave, y1, xChave, y2);
-        g2.drawLine(xChave, y2, x, y2);
+        int mid = (y1 + y2) / 2;
+        GeneralPath caminho = new GeneralPath();
+        caminho.moveTo(x, y1);
+        caminho.quadTo(x + r, y1, x + r, y1 + r);
+        caminho.lineTo(x + r, mid - r);
+        caminho.quadTo(x + r, mid, x + 2 * r, mid);
+        caminho.quadTo(x + r, mid, x + r, mid + r);
+        caminho.lineTo(x + r, y2 - r);
+        caminho.quadTo(x + r, y2, x, y2);
+        g2.draw(caminho);
         if (c.temAlvo()) {
-            g2.drawLine(xChave, (y1 + y2) / 2, c.getXAlvo(), c.getYAlvo());
+            g2.drawLine(x + 2 * r, mid, c.getXAlvo(), c.getYAlvo());
         }
         desenharLegendaConector(g2, c);
         g2.setStroke(original);
@@ -160,16 +173,23 @@ public class RenderizadorSwingDiagramaAditivo {
     private void desenharChaveHorizontal(Graphics2D g2, ConectorDiagrama c, Color cor) {
         Stroke original = g2.getStroke();
         g2.setColor(cor);
-        g2.setStroke(new BasicStroke(1.4f));
+        g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        int r = 18;
         int x1 = Math.min(c.getX1(), c.getX2());
         int x2 = Math.max(c.getX1(), c.getX2());
         int y = c.getY1();
-        int yChave = y + 18;
-        g2.drawLine(x1, y, x1, yChave);
-        g2.drawLine(x1, yChave, x2, yChave);
-        g2.drawLine(x2, yChave, x2, y);
+        int mid = (x1 + x2) / 2;
+        GeneralPath caminho = new GeneralPath();
+        caminho.moveTo(x1, y);
+        caminho.quadTo(x1, y + r, x1 + r, y + r);
+        caminho.lineTo(mid - r, y + r);
+        caminho.quadTo(mid, y + r, mid, y + 2 * r);
+        caminho.quadTo(mid, y + r, mid + r, y + r);
+        caminho.lineTo(x2 - r, y + r);
+        caminho.quadTo(x2, y + r, x2, y);
+        g2.draw(caminho);
         if (c.temAlvo()) {
-            g2.drawLine((x1 + x2) / 2, yChave, c.getXAlvo(), c.getYAlvo());
+            g2.drawLine(mid, y + 2 * r, c.getXAlvo(), c.getYAlvo());
         }
         desenharLegendaConector(g2, c);
         g2.setStroke(original);

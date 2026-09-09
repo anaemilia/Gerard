@@ -82,7 +82,7 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .op-botao-erro .op-miolo { fill:#c82828; }
 .op-seletor text { fill:var(--texto-secundario); font-size:13px; font-weight:700; text-anchor:middle; }
 .op-explicacao div { box-sizing:border-box; width:100%; padding:8px 10px; border:1.1px solid #c82828; border-radius:10px; background:#fde8e8; color:#8c1b1b; font-size:12px; line-height:1.4; text-align:center; }
-.scene-figure rect,.scene-figure ellipse { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:2; }
+.scene-figure rect,.scene-figure ellipse { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:2; stroke-linejoin:round; }
 .scene-figure-editable { cursor:pointer; }
 .scene-figure-editable:hover rect,.scene-figure-editable:hover ellipse,.scene-figure-editable:focus rect,.scene-figure-editable:focus ellipse { stroke:var(--texto); stroke-width:3; }
 /* Realce de atração magnética (EstadoRealceAlvo.SNAP, EstiloRealceAlvo.java —
@@ -91,7 +91,7 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .scene-figure-destacada rect,.scene-figure-destacada ellipse { fill:#faebe0; stroke:#a95c2f; stroke-width:2.8; }
 .scene-figure text,.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
 .scene-figure .scene-figure-subtitle,.scene-figure .scene-figure-role { fill:var(--texto-secundario); font-weight:700; }
-.scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; }
+.scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
 .scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }
 .scene-magnifier path { fill:none; }

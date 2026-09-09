@@ -1,6 +1,7 @@
 package gerard.campoaditivo.diagrama.elementos;
 
 import java.awt.*;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.QuadCurve2D;
 import gerard.campoaditivo.diagrama.modelo.TipoConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
@@ -144,7 +145,7 @@ public class ConectorVergnaud {
         }
         Stroke original = g2.getStroke();
         g2.setColor(corDesenho(feedbackDaCena));
-        g2.setStroke(new BasicStroke(1.5f));
+        g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.drawLine(x1, y1, x2, y2);
         if (tipo == TipoConectorDiagrama.SETA) {
             desenharPontaSeta(g2, x1, y1, x2, y2);
@@ -156,7 +157,7 @@ public class ConectorVergnaud {
     private void desenharSetaCurva(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
         g2.setColor(corDesenho(feedbackDaCena));
-        g2.setStroke(new BasicStroke(1.5f));
+        g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         int controleX = (x1 + x2) / 2;
         int controleY = Math.max(y1, y2) + 96;
         QuadCurve2D curva = new QuadCurve2D.Double(x1, y1, controleX, controleY, x2, y2);
@@ -191,20 +192,31 @@ public class ConectorVergnaud {
         }
     }
 
+    /**
+     * Mesma forma de chave do protótipo web (caminhoDoConector, geometriaSvg.ts)
+     * — curva contínua em vez de três segmentos retos com dobra em ângulo
+     * reto, mesmo raio (18) para manter a mesma largura útil percebida.
+     */
     private void desenharChaveVertical(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
         g2.setColor(corDesenho(feedbackDaCena));
-        g2.setStroke(new BasicStroke(1.5f));
+        g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        int r = 18;
         int x = x1;
         int a = Math.min(y1, y2);
         int b = Math.max(y1, y2);
         int mid = (a + b) / 2;
-        int xChave = x + 18;
-        g2.drawLine(x, a, xChave, a);
-        g2.drawLine(xChave, a, xChave, b);
-        g2.drawLine(xChave, b, x, b);
+        GeneralPath caminho = new GeneralPath();
+        caminho.moveTo(x, a);
+        caminho.quadTo(x + r, a, x + r, a + r);
+        caminho.lineTo(x + r, mid - r);
+        caminho.quadTo(x + r, mid, x + 2 * r, mid);
+        caminho.quadTo(x + r, mid, x + r, mid + r);
+        caminho.lineTo(x + r, b - r);
+        caminho.quadTo(x + r, b, x, b);
+        g2.draw(caminho);
         if (temAlvo()) {
-            g2.drawLine(xChave, mid, xAlvo, yAlvo);
+            g2.drawLine(x + 2 * r, mid, xAlvo, yAlvo);
         }
         if (legenda != null && legenda.trim().length() > 0) {
             g2.setFont(new Font("Arial", Font.PLAIN, 11));
@@ -216,17 +228,23 @@ public class ConectorVergnaud {
     private void desenharChaveHorizontal(Graphics2D g2, EstadoFeedbackDiagrama feedbackDaCena) {
         Stroke original = g2.getStroke();
         g2.setColor(corDesenho(feedbackDaCena));
-        g2.setStroke(new BasicStroke(1.5f));
+        g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        int r = 18;
         int a = Math.min(x1, x2);
         int b = Math.max(x1, x2);
         int y = y1;
         int mid = (a + b) / 2;
-        int yChave = y + 18;
-        g2.drawLine(a, y, a, yChave);
-        g2.drawLine(a, yChave, b, yChave);
-        g2.drawLine(b, yChave, b, y);
+        GeneralPath caminho = new GeneralPath();
+        caminho.moveTo(a, y);
+        caminho.quadTo(a, y + r, a + r, y + r);
+        caminho.lineTo(mid - r, y + r);
+        caminho.quadTo(mid, y + r, mid, y + 2 * r);
+        caminho.quadTo(mid, y + r, mid + r, y + r);
+        caminho.lineTo(b - r, y + r);
+        caminho.quadTo(b, y + r, b, y);
+        g2.draw(caminho);
         if (temAlvo()) {
-            g2.drawLine(mid, yChave, xAlvo, yAlvo);
+            g2.drawLine(mid, y + 2 * r, xAlvo, yAlvo);
         }
         desenharLegenda(g2);
         g2.setStroke(original);

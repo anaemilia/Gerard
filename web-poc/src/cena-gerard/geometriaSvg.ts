@@ -12,14 +12,18 @@ export function caminhoDoConector(c: ConectorCena) {
     return `M ${c.x1} ${c.y1} Q ${cx} ${cy} ${c.x2} ${c.y2}`;
   }
   if (c.tipo === "CHAVE_VERTICAL") {
+    // Raio de curvatura maior (18, antes 12) — mesma forma de chave, só com
+    // curvas mais suaves nas dobras, sem mudar a largura útil percebida.
+    const r = 18;
     const meio = (c.y1 + c.y2) / 2;
-    const chave = `M ${c.x1} ${c.y1} q 12 0 12 12 V ${meio - 12} q 0 12 12 12 q -12 0 -12 12 V ${c.y2 - 12} q 0 12 -12 12`;
-    return c.x_alvo === undefined ? chave : `${chave} M ${c.x1 + 24} ${meio} L ${c.x_alvo} ${c.y_alvo}`;
+    const chave = `M ${c.x1} ${c.y1} q ${r} 0 ${r} ${r} V ${meio - r} q 0 ${r} ${r} ${r} q -${r} 0 -${r} ${r} V ${c.y2 - r} q 0 ${r} -${r} ${r}`;
+    return c.x_alvo === undefined ? chave : `${chave} M ${c.x1 + 2 * r} ${meio} L ${c.x_alvo} ${c.y_alvo}`;
   }
   if (c.tipo === "CHAVE_HORIZONTAL") {
+    const r = 18;
     const meio = (c.x1 + c.x2) / 2;
-    const chave = `M ${c.x1} ${c.y1} q 0 12 12 12 H ${meio - 12} q 12 0 12 12 q 0 -12 12 -12 H ${c.x2 - 12} q 12 0 12 -12`;
-    return c.x_alvo === undefined ? chave : `${chave} M ${meio} ${c.y1 + 24} L ${c.x_alvo} ${c.y_alvo}`;
+    const chave = `M ${c.x1} ${c.y1} q 0 ${r} ${r} ${r} H ${meio - r} q ${r} 0 ${r} ${r} q 0 -${r} ${r} -${r} H ${c.x2 - r} q ${r} 0 ${r} -${r}`;
+    return c.x_alvo === undefined ? chave : `${chave} M ${meio} ${c.y1 + 2 * r} L ${c.x_alvo} ${c.y_alvo}`;
   }
   return `M ${c.x1} ${c.y1} L ${c.x2} ${c.y2}`;
 }

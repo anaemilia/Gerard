@@ -123,7 +123,7 @@ public class ElementoVergnaud implements ElementoComLupa {
         }
 
         g2.setColor(corBorda);
-        g2.setStroke(new BasicStroke(espessura));
+        g2.setStroke(new BasicStroke(espessura, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         if (tipo == TipoFiguraDiagrama.ELIPSE) {
             g2.drawOval(x, y, largura, altura);
         } else if (tipo == TipoFiguraDiagrama.RETANGULO_ARREDONDADO) {
