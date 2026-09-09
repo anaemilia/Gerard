@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ElementoTexto, FiguraCena } from "./contratos";
 import { EditorNarrativa } from "./EditorNarrativa";
 
@@ -36,7 +36,8 @@ const FATOR_ATRACAO = 0.35;
  * cursor não esteja sobre ela (deveCentralizarAoSoltar do desktop).
  */
 export function EnunciadoInterativo({ elementos, figuras, organizadores = [], modeloPalavraComum = null,
-  aoSoltar, aoAtualizarAlvo }: {
+  modelagemConcluida, aoSoltar, aoAtualizarAlvo }: {
+  modelagemConcluida: boolean;
   elementos: readonly ElementoTexto[];
   figuras: readonly FiguraCena[];
   organizadores?: readonly ElementoTexto[];
@@ -49,6 +50,10 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
   const ghostRef = useRef<HTMLDivElement>(null);
   const posicaoGhostRef = useRef({ x: 0, y: 0 });
   const alvoAtualRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!modelagemConcluida) setEditandoNarrativa(false);
+  }, [modelagemConcluida]);
 
   function definirAlvo(figuraId: string | null) {
     if (alvoAtualRef.current !== figuraId) {
@@ -129,15 +134,20 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
     ? elementos.find((elemento) => elemento.papel_id === arrastando)?.valor
     : undefined;
 
-  if (editandoNarrativa) {
+  if (modelagemConcluida && editandoNarrativa) {
     return <EditorNarrativa elementos={elementos} organizadores={organizadores}
       modeloPalavraComum={modeloPalavraComum}
       aoFechar={() => setEditandoNarrativa(false)} />;
   }
 
   return <>
-    <button type="button" className="botao-editar-narrativa"
-      onClick={() => setEditandoNarrativa(true)}>Editar texto</button>
+    {modelagemConcluida && <button type="button" className="botao-editar-narrativa"
+      aria-label="Editar texto" title="Editar texto"
+      onClick={() => setEditandoNarrativa(true)}>
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2 4V2h12v2 M8 2v12 M5 14h6" />
+      </svg>
+    </button>}
     <h1 id="enunciado">
       {elementos.map((elemento, indice) => {
         const espaco = indice > 0 ? " " : "";

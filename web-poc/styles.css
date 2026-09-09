@@ -24,7 +24,9 @@ button, input { font:inherit; } button { cursor:pointer; }
 .draw-button:disabled { cursor:not-allowed; opacity:.72; }
 .activity-area { min-height:0; display:grid; grid-template-rows:minmax(136px,18vh) minmax(420px,1fr); gap:22px; padding:12px 16px 16px; }
 .statement-panel,.diagram-panel,.response-panel { border:1px solid var(--borda); border-radius:var(--raio); background:var(--superficie); }
-.statement-panel { display:flex; align-items:flex-start; gap:22px; padding:18px 20px; }
+.statement-panel { display:grid; grid-template-columns:max-content minmax(0,1fr); align-content:start; align-items:start; gap:8px 22px; padding:18px 20px; }
+.statement-panel > .help-mark-wrap,.statement-panel > .help-mark { grid-column:1; grid-row:1; justify-self:center; }
+.statement-panel > h1,.statement-panel > .editor-narrativa { grid-column:2; grid-row:1 / span 2; }
 .statement-panel h1 { margin:7px 0 0; font-size:clamp(1.05rem,1.4vw,1.28rem); line-height:1.45; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
 .help-mark-wrap { position:relative; flex:none; }
@@ -93,6 +95,11 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
 .scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }
 .scene-magnifier path { fill:none; }
+/* COR_SUCESSO do Gérard, aplicada somente à conclusão informada pelo domínio. */
+.diagram-panel-concluido .scene-figure rect,.diagram-panel-concluido .scene-figure ellipse,
+.diagram-panel-concluido .scene-connector path { stroke:#4a82c9; }
+.diagram-panel-concluido .scene-figure text,.diagram-panel-concluido .scene-connector text,
+.diagram-panel-concluido .portable-scene > defs marker path { fill:#4a82c9; }
 /* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única).
    Desenhado pelo gerador de cena (GeradorCenaGerard/FiguraCenaGerard), igual ao
    diagrama abstrato — .portable-scene aqui só precisa de menos altura mínima. */
@@ -115,7 +122,11 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .enunciado-ghost-arraste { position:fixed; top:0; left:0; z-index:50; pointer-events:none;
   padding:2px 8px; border:1px solid var(--texto); border-radius:6px; background:var(--superficie);
   font-weight:700; box-shadow:0 4px 10px rgba(54,51,45,.18); }
-.botao-editar-narrativa { margin-left:auto; white-space:nowrap; }
+/* Botão contextual de 26px do Swing; símbolo T fornecido pela usuária. */
+.botao-editar-narrativa { grid-column:1; grid-row:2; justify-self:center; width:26px; height:26px; padding:0; display:grid; place-items:center; border:1px solid var(--borda); border-radius:0; background:var(--superficie); color:var(--texto-secundario); }
+.botao-editar-narrativa svg { width:16px; height:16px; fill:none; stroke:#b88430; stroke-width:1; stroke-linecap:round; stroke-linejoin:round; }
+.botao-editar-narrativa:hover { background:#f7f6f1; }
+.botao-editar-narrativa:focus-visible { outline:2px solid var(--texto); outline-offset:2px; }
 .editor-narrativa { flex:1; min-width:0; }
 .editor-narrativa-topo { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
 .linha-palavras { min-height:74px; padding:10px; border:1px solid var(--borda); border-radius:8px; line-height:2.4; }
