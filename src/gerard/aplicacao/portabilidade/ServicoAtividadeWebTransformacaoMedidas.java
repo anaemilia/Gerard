@@ -4,6 +4,7 @@ import gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
 import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoMedidas;
@@ -13,6 +14,7 @@ import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacao;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
+import gerard.i18n.ServicoLocalizacao;
 import gerard.semantica.numero.NumeroInteiro;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +24,7 @@ import java.util.Optional;
 
 /** Tentativa web portátil de Transformação de Medidas. */
 public final class ServicoAtividadeWebTransformacaoMedidas
-        implements ServicoAtividadeWeb {
+        implements ServicoAtividadeWeb, ServicoAtividadeWebComSinal {
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private PapelQuantitativo estadoInicial;
@@ -34,6 +36,11 @@ public final class ServicoAtividadeWebTransformacaoMedidas
     // até a caixa, ainda sem valor digitado/confirmado (ver
     // ServicoAtividadeWebComposicao.incognitaEngatada).
     private boolean incognitaEngatada;
+    // Ver ServicoAtividadeWebComparacaoMedidas — mesmo protocolo de
+    // sinal-aguardando-escolha para o papel "transformacao" (que precisa de
+    // representação de sinal nesta categoria).
+    private PapelQuantitativo papelAguardandoSinal;
+    private Integer valorCuradoAguardandoSinal;
 
     public ServicoAtividadeWebTransformacaoMedidas(String tentativaId,
             SituacaoProblemaAditiva situacao) {
@@ -65,13 +72,17 @@ public final class ServicoAtividadeWebTransformacaoMedidas
                         estadoInicial, transformacao, estadoFinal)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
+        estado.put("papel_aguardando_sinal",
+                papelAguardandoSinal == null ? null : papelAguardandoSinal.getChave());
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
         // os papéis conhecidos não vêm pré-preenchidos, só a incógnita fica
         // disponível depois dos outros dois estarem posicionados.
         boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
         List<Object> acoes = AcoesDisponiveisAtividadeWeb.modelagemPapel(
                 concluida || !papeisConhecidosProntos, papelDesconhecido.getChave());
-        if (!papeisConhecidosProntos) {
+        if (papelAguardandoSinal != null) {
+            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherSinal(papelAguardandoSinal.getChave()));
+        } else if (!papeisConhecidosProntos) {
             for (PapelQuantitativo papel : new PapelQuantitativo[] {estadoInicial, transformacao, estadoFinal}) {
                 if (papel != papelDesconhecido && !papel.estaPreenchido()) {
                     acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
@@ -104,12 +115,43 @@ public final class ServicoAtividadeWebTransformacaoMedidas
             throw new IllegalArgumentException(
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
         }
-        if (!papel.estaPreenchido()) {
+        if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
             posicionarConhecido(papel);
         }
         Map<String, Object> resultado = mapa();
         resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
+    /** Ver ServicoAtividadeWebComparacaoMedidas.escolherSinalNumeroRelativo. */
+    public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
+        if (papelAguardandoSinal == null || !papelAguardandoSinal.getChave().equals(papelId)) {
+            throw new IllegalStateException(
+                    "nenhum papel aguardando escolha de sinal com esta chave: " + papelId);
+        }
+        if (!"+".equals(sinal) && !"-".equals(sinal)) {
+            throw new IllegalArgumentException("sinal precisa ser \"+\" ou \"-\": " + sinal);
+        }
+        PapelQuantitativo papel = papelAguardandoSinal;
+        int base = Math.abs(valorCuradoAguardandoSinal.intValue());
+        int valorEscolhido = "-".equals(sinal) ? -base : base;
+        ContextoAcao contexto = new ContextoAcao(
+                "sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "diagrama.vergnaud.web");
+        Optional<DiagnosticoErroPapel> diagnostico = papel.posicionar(
+                new NumeroInteiro(valorEscolhido), OrigemAcao.ORIGEM_USUARIO, contexto);
+        boolean sinalDivergeDoCurado = Integer.signum(valorEscolhido)
+                != Integer.signum(valorCuradoAguardandoSinal.intValue());
+        papelAguardandoSinal = null;
+        valorCuradoAguardandoSinal = null;
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
+        resultado.put("mensagem_sinal_divergente", sinalDivergeDoCurado
+                ? ServicoLocalizacao.getInstancia().formatar("ui.tooltip.relativeSign.confirm", sinal)
+                : null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }
@@ -189,6 +231,8 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         // diagrama (ver posicionarValorConhecido / proporValor).
         relacao = RelacaoEstruturalTransformacao.transformacaoDeMedidas();
         incognitaEngatada = false;
+        papelAguardandoSinal = null;
+        valorCuradoAguardandoSinal = null;
         return estadoAtual();
     }
 
@@ -198,6 +242,14 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         if (valor == null) {
             throw new IllegalStateException(
                     "valor curado ausente para " + papel.getChave());
+        }
+        if (CatalogoNecessidadeRepresentacaoDeSinal.necessitaRepresentacaoDeSinal(papel.getChave())) {
+            // Mesmo protocolo do desktop: a magnitude é revelada, mas o
+            // sinal só é aplicado quando o estudante escolhe explicitamente
+            // (ver escolherSinalNumeroRelativo) — nunca de imediato aqui.
+            papelAguardandoSinal = papel;
+            valorCuradoAguardandoSinal = valor;
+            return;
         }
         ContextoAcao contexto = new ContextoAcao(
                 "sessao.web.local", "usuario.web.local", tentativaId,

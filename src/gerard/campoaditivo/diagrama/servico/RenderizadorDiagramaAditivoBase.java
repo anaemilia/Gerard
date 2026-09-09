@@ -5,6 +5,7 @@ import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.TipoConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;
 import gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura;
+import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,28 +17,43 @@ abstract class RenderizadorDiagramaAditivoBase implements RenderizadorDiagramaAd
     protected FiguraDiagrama medida(String papel, int x, int y, String rotulo, int valor) {
         return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO,
                 x, y, 63, 63, rotulo, valor, true,
-                PosicaoRotuloFigura.CENTRO, false, papel);
+                PosicaoRotuloFigura.CENTRO, necessitaSinal(papel), papel);
     }
 
     protected FiguraDiagrama medida(String papel, int x, int y, String rotulo, int valor,
             PosicaoRotuloFigura posicaoRotulo) {
         return new FiguraDiagrama(TipoFiguraDiagrama.RETANGULO_ARREDONDADO,
-                x, y, 63, 63, rotulo, valor, true, posicaoRotulo, false, papel);
+                x, y, 63, 63, rotulo, valor, true, posicaoRotulo, necessitaSinal(papel), papel);
     }
 
     protected FiguraDiagrama relacao(String papel, int x, int y, String rotulo, int valor) {
         return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78,
-                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, necessitaSinal(papel), papel);
     }
 
     protected FiguraDiagrama transformacao(String papel, int x, int y, String rotulo, int valor) {
         return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 78, 78,
-                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, necessitaSinal(papel), papel);
     }
 
     protected FiguraDiagrama relacaoGrande(String papel, int x, int y, String rotulo, int valor) {
         return new FiguraDiagrama(TipoFiguraDiagrama.ELIPSE, x, y, 87, 87,
-                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, true, papel);
+                rotulo, valor, true, PosicaoRotuloFigura.ABAIXO, necessitaSinal(papel), papel);
+    }
+
+    /**
+     * Única fonte de verdade para "esta figura precisa de representação de
+     * sinal" (a lupa): o fato semântico do próprio objeto de domínio
+     * (PapelQuantitativo.necessitaRepresentacaoDeSinal(), catalogado por
+     * CatalogoNecessidadeRepresentacaoDeSinal) — nunca mais um literal
+     * true/false escolhido aqui por forma (elipse vs retângulo). Usado por
+     * todo método acima, inclusive medida(), para que não sobre nenhum
+     * caminho hardcoded competindo com o domínio. Não se aplica a
+     * grupoQuadradinhos (material concreto — não é papel semântico com
+     * necessidade de sinal).
+     */
+    private static boolean necessitaSinal(String papel) {
+        return CatalogoNecessidadeRepresentacaoDeSinal.necessitaRepresentacaoDeSinal(papel);
     }
 
     /**

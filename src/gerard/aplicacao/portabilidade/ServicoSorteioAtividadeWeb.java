@@ -249,6 +249,30 @@ public final class ServicoSorteioAtividadeWeb {
         return resultado;
     }
 
+    /**
+     * Escolhe positivo/negativo para o papel revelado que ficou "aguardando
+     * escolha de sinal" (ver ServicoAtividadeWebComSinal) — capacidade
+     * opcional presente só nas categorias com pelo menos um papel que
+     * necessita representação de sinal (CatalogoNecessidadeRepresentacaoDeSinal),
+     * mesmo padrão instanceof já usado por ajustarQuadradinho para material
+     * concreto.
+     */
+    public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
+        Map<String, Object> resultado;
+        if (atividadeModelagem instanceof ServicoAtividadeWebComSinal) {
+            resultado = ((ServicoAtividadeWebComSinal) atividadeModelagem)
+                    .escolherSinalNumeroRelativo(papelId, sinal);
+        } else if (atividadeEscolhaOperacao instanceof ServicoAtividadeWebComSinal) {
+            resultado = ((ServicoAtividadeWebComSinal) atividadeEscolhaOperacao)
+                    .escolherSinalNumeroRelativo(papelId, sinal);
+        } else {
+            throw new IllegalStateException(
+                    "a situação atual não possui escolha de sinal de número relativo implementada");
+        }
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
         if (atividadeEscolhaOperacao == null) {
             throw new IllegalStateException(

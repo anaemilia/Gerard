@@ -4,7 +4,8 @@ export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as cons
 export type AcaoDisponivel = Readonly<{
   id: "SORTEAR_MEDIDAS" | "SORTEAR_RELACOES" | "REINICIAR_TENTATIVA" | "PROPOR_VALOR_PAPEL" |
     "ESCOLHER_CATEGORIA" | "CONFIRMAR_CATEGORIA_DIVERGENTE" | "ESCOLHER_OPERACAO_RELACAO" |
-    "AJUSTAR_QUADRADINHO" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA";
+    "AJUSTAR_QUADRADINHO" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" |
+    "ESCOLHER_SINAL_NUMERO_RELATIVO";
   metodo: "POST"; href: string; corpo?: Readonly<Record<string, unknown>>;
 }>;
 
@@ -59,6 +60,10 @@ export type EstadoModelagemTernaria = Readonly<{
   categoria: "TRANSFORMACAO_MEDIDAS" | "COMPARACAO_MEDIDAS" |
     "TRANSFORMACAO_RELACAO"; relacao: string;
   papel_desconhecido_original: string; papeis: readonly PapelProjetado[];
+  // Papel conhecido revelado (arrastado) que precisa de representação de
+  // sinal (CatalogoNecessidadeRepresentacaoDeSinal) e ainda aguarda a
+  // escolha explícita positivo/negativo — ver ServicoAtividadeWebComSinal.
+  papel_aguardando_sinal: string | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EscolhaOperacao = "SOMA" | "SUBTRACAO" | null;
@@ -112,6 +117,10 @@ export type ResultadoClassificacao = Readonly<{
 }>;
 export type ResultadoAjudaContextual = Readonly<{
   schema: "gerard.atividade-web.resultado-ajuda-contextual.v1"; mensagem: string;
+}>;
+export type ResultadoEscolherSinal = Readonly<{
+  schema: typeof SCHEMA_RESULTADO; aceita: boolean;
+  mensagem_sinal_divergente: string | null; estado: EstadoWeb;
 }>;
 export type ResultadoQuadradinho = Readonly<{
   schema: typeof SCHEMA_RESULTADO; aceita: boolean; limite_atingido: boolean;

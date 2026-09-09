@@ -1,5 +1,6 @@
 import type { AcaoDisponivel, AreaAjudaContextual, EstadoWeb, IntencaoAjuda, ResultadoAcao,
-  ResultadoAjudaContextual, ResultadoClassificacao, ResultadoPosicionarConhecido, ResultadoQuadradinho } from "./contratos";
+  ResultadoAjudaContextual, ResultadoClassificacao, ResultadoEscolherSinal,
+  ResultadoPosicionarConhecido, ResultadoQuadradinho } from "./contratos";
 
 async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
   const resposta = await fetch(url, init);
@@ -41,6 +42,11 @@ export const api = {
     }),
   engatarIncognita: (acao: AcaoDisponivel) =>
     requisitar<ResultadoPosicionarConhecido>(acao.href, {
+      method: acao.metodo, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(acao.corpo ?? {})
+    }),
+  escolherSinal: (acao: AcaoDisponivel) =>
+    requisitar<ResultadoEscolherSinal>(acao.href, {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
       body: JSON.stringify(acao.corpo ?? {})
     }),

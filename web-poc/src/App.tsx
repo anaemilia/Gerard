@@ -4,6 +4,7 @@ import type { AcaoDisponivel, EstadoWeb, FiguraCena,
   InteracaoPermitidaFigura } from "./contratos";
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
+import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
@@ -17,10 +18,17 @@ export default function App() {
   const [mensagemOperacao, setMensagemOperacao] = useState<string | null>(null);
   const [dicaVisivel, setDicaVisivel] = useState(false);
   const [figuraDestacadaId, setFiguraDestacadaId] = useState<string | null>(null);
+  const [avisoSinal, setAvisoSinal] = useState<{ figuraId: string; mensagem: string } | null>(null);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
   }, []);
+
+  useEffect(() => {
+    if (!avisoSinal) return;
+    const temporizador = setTimeout(() => setAvisoSinal(null), 4000);
+    return () => clearTimeout(temporizador);
+  }, [avisoSinal]);
 
   function receberSnapshot(snapshot: EstadoWeb) {
     enviarEventoRepresentacional({ tipo: "SNAPSHOT_SERVIDOR_RECEBIDO", snapshot });
@@ -182,8 +190,34 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  async function escolherSinal(papelId: string, figuraId: string, sinal: "+" | "-") {
+    const controle = estado?.acoes_disponiveis.find((item) =>
+      item.id === "ESCOLHER_SINAL_NUMERO_RELATIVO"
+      && item.corpo?.papel_id === papelId && item.corpo?.sinal === sinal);
+    if (!controle) return;
+    setOcupado(true);
+    try {
+      const resultado = await api.escolherSinal(controle);
+      receberSnapshot(resultado.estado);
+      setAvisoSinal(resultado.mensagem_sinal_divergente
+        ? { figuraId, mensagem: resultado.mensagem_sinal_divergente } : null);
+    } catch (erro) { console.error(erro); }
+    finally { setOcupado(false); }
+  }
+
   const figuraEmEdicao = estado && representacoes.elementoEmEdicao
     ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
+    : undefined;
+  // Presente só nas categorias com modelagem ternária (Comparação/
+  // Transformação de Medidas, Transformação de Relação) — ver
+  // EstadoModelagemTernaria.papel_aguardando_sinal.
+  const modelagemComSinal = estado && estado.modelagem
+    && "papel_aguardando_sinal" in estado.modelagem
+    ? estado.modelagem
+    : undefined;
+  const figuraAguardandoSinal = modelagemComSinal?.papel_aguardando_sinal
+    ? estado?.cena?.figuras.find(
+        (item) => item.chave_papel_semantico === modelagemComSinal.papel_aguardando_sinal)
     : undefined;
   const modelagemEscolhaOperacao = estado && estado.modelagem
     && "categoria" in estado.modelagem
@@ -254,6 +288,12 @@ export default function App() {
             aoConfirmarDigitacao={aoConfirmarDigitacao}
             aoConfirmarValor={() => void aoConfirmarValor()}
             aoNegarValor={aoNegarValor} />}
+          {figuraAguardandoSinal && <EscolhaSinalFigura figuraId={figuraAguardandoSinal.id}
+            papelNome={figuraAguardandoSinal.rotulo} ocupado={ocupado}
+            mensagemDivergente={avisoSinal?.figuraId === figuraAguardandoSinal.id
+              ? avisoSinal.mensagem : null}
+            aoEscolherSinal={(sinal) => void escolherSinal(
+              figuraAguardandoSinal.chave_papel_semantico, figuraAguardandoSinal.id, sinal)} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />

@@ -77,6 +77,27 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
+    /**
+     * Duas opções pré-preenchidas (mesmo padrão de confirmacaoCategoria) —
+     * escolher explicitamente positivo ou negativo para o papel revelado
+     * que precisa de representação de sinal (ver
+     * ServicoAtividadeWebComSinal.escolherSinalNumeroRelativo).
+     */
+    public static List<Object> acaoEscolherSinal(String papelAlvo) {
+        List<Object> acoes = new ArrayList<Object>();
+        Map<String, Object> positivo = new LinkedHashMap<String, Object>();
+        positivo.put("papel_id", papelAlvo);
+        positivo.put("sinal", "+");
+        acoes.add(acao("ESCOLHER_SINAL_NUMERO_RELATIVO", "POST",
+                "/api/acoes/escolher-sinal", positivo));
+        Map<String, Object> negativo = new LinkedHashMap<String, Object>();
+        negativo.put("papel_id", papelAlvo);
+        negativo.put("sinal", "-");
+        acoes.add(acao("ESCOLHER_SINAL_NUMERO_RELATIVO", "POST",
+                "/api/acoes/escolher-sinal", negativo));
+        return acoes;
+    }
+
     public static List<Object> escolhaOperacaoRelacao(
             boolean segundaEtapaHabilitada, boolean concluida) {
         List<Object> acoes = sorteios();
