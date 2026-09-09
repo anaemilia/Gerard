@@ -146,11 +146,21 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
      * abre o editor de valor em vez de só posicionar. Idempotente: soltar de
      * novo um papel já posicionado não faz nada.
      */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
         PapelQuantitativo papel = papelPorChave(papelId);
         if (papel == papelDesconhecido) {
             throw new IllegalArgumentException(
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
+        }
+        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo());
+        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
+            Map<String, Object> rejeitado = mapa();
+            rejeitado.put("schema", SCHEMA_RESULTADO);
+            rejeitado.put("aceita", Boolean.FALSE);
+            rejeitado.put("chave_mensagem", questionamento.getMensagem());
+            rejeitado.put("estado", estadoAtual());
+            return rejeitado;
         }
         if (!papel.estaPreenchido()) {
             ContextoAcao contexto = new ContextoAcao(
@@ -162,6 +172,7 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }
@@ -172,10 +183,20 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
      * dispara. Só marca o rascunho; a digitação em si (duplo-clique na caixa
      * já engatada) continua indo por PROPOR_VALOR_PAPEL.
      */
-    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+    public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
         if (!papelDesconhecido.getChave().equals(papelId)) {
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
+        }
+        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo());
+        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
+            Map<String, Object> rejeitado = mapa();
+            rejeitado.put("schema", SCHEMA_RESULTADO);
+            rejeitado.put("aceita", Boolean.FALSE);
+            rejeitado.put("chave_mensagem", questionamento.getMensagem());
+            rejeitado.put("estado", estadoAtual());
+            return rejeitado;
         }
         if (!papelDesconhecido.estaPreenchido()) {
             incognitaEngatada = true;
@@ -183,6 +204,7 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }

@@ -15,8 +15,11 @@ public interface ServicoAtividadeWebEscolhaOperacao {
     /**
      * Posiciona um papel conhecido com o valor curado — ação que soltar um
      * elemento do enunciado sobre sua caixa dispara (protocolo de mouse é
-     * posicionar; ver ServicoAtividadeWebComposicao).
+     * posicionar; ver ServicoAtividadeWebComposicao). {@code origemPapelId} é
+     * o vínculo semântico do elemento de texto arrastado (pode ser
+     * {@code null}); a implementação valida a compatibilidade com o
+     * papel-alvo via AvaliadorOrigemDestinoWeb antes de aplicar a posição.
      */
-    Map<String, Object> posicionarValorConhecido(String papelId);
+    Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId);
     Map<String, Object> reiniciar();
 }

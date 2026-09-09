@@ -131,7 +131,9 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sorteios.posicionarValorConhecido(papelId));
+            Object origemBruta = analisado.get("origem_papel_id");
+            String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
+            responder(troca, 200, sorteios.posicionarValorConhecido(papelId, origemPapelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -147,7 +149,9 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sorteios.engatarIncognita(papelId));
+            Object origemBruta = analisado.get("origem_papel_id");
+            String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
+            responder(troca, 200, sorteios.engatarIncognita(papelId, origemPapelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

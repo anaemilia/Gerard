@@ -94,7 +94,7 @@ export type InteracaoPermitidaFigura = Readonly<{
   papel_id: string;
 }>;
 export type ResultadoPosicionarConhecido = Readonly<{
-  schema: typeof SCHEMA_RESULTADO; aceita: boolean; estado: EstadoWeb;
+  schema: typeof SCHEMA_RESULTADO; aceita: boolean; chave_mensagem: string | null; estado: EstadoWeb;
 }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO" | "GRUPO_QUADRADINHOS"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;

@@ -35,15 +35,15 @@ export const api = {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...(acao.corpo ?? {}), delta })
     }),
-  posicionarConhecido: (acao: AcaoDisponivel) =>
+  posicionarConhecido: (acao: AcaoDisponivel, origemPapelId: string | null) =>
     requisitar<ResultadoPosicionarConhecido>(acao.href, {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(acao.corpo ?? {})
+      body: JSON.stringify({ ...(acao.corpo ?? {}), origem_papel_id: origemPapelId })
     }),
-  engatarIncognita: (acao: AcaoDisponivel) =>
+  engatarIncognita: (acao: AcaoDisponivel, origemPapelId: string | null) =>
     requisitar<ResultadoPosicionarConhecido>(acao.href, {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(acao.corpo ?? {})
+      body: JSON.stringify({ ...(acao.corpo ?? {}), origem_papel_id: origemPapelId })
     }),
   escolherSinal: (acao: AcaoDisponivel) =>
     requisitar<ResultadoEscolherSinal>(acao.href, {

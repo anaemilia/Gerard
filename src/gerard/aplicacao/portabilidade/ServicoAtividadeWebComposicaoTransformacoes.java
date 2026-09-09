@@ -270,11 +270,21 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
      * valor — ação que soltar um elemento do enunciado sobre sua caixa
      * dispara (protocolo de mouse é posicionar).
      */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
         PapelQuantitativo papel = papelPorChave(papelId);
         if (!temValorCurado(papel)) {
             throw new IllegalArgumentException(
                     "papel sem valor curado para posicionar: " + papelId);
+        }
+        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo());
+        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
+            Map<String, Object> rejeitado = mapa();
+            rejeitado.put("schema", SCHEMA_RESULTADO);
+            rejeitado.put("aceita", Boolean.FALSE);
+            rejeitado.put("chave_mensagem", questionamento.getMensagem());
+            rejeitado.put("estado", estadoAtual());
+            return rejeitado;
         }
         if (!papel.estaPreenchido()) {
             String limpo = valorCuradoDoPapel(papel).trim();
@@ -294,6 +304,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }

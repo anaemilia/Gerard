@@ -5,6 +5,7 @@ import type { AcaoDisponivel, EstadoWeb, FiguraCena,
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
+import { AvisoPosicionamentoFigura } from "./AvisoPosicionamentoFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
@@ -19,6 +20,8 @@ export default function App() {
   const [dicaVisivel, setDicaVisivel] = useState(false);
   const [figuraDestacadaId, setFiguraDestacadaId] = useState<string | null>(null);
   const [avisoSinal, setAvisoSinal] = useState<{ figuraId: string; mensagem: string } | null>(null);
+  const [avisoPosicionamento, setAvisoPosicionamento] =
+    useState<{ figuraId: string; mensagem: string } | null>(null);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
@@ -29,6 +32,12 @@ export default function App() {
     const temporizador = setTimeout(() => setAvisoSinal(null), 4000);
     return () => clearTimeout(temporizador);
   }, [avisoSinal]);
+
+  useEffect(() => {
+    if (!avisoPosicionamento) return;
+    const temporizador = setTimeout(() => setAvisoPosicionamento(null), 4000);
+    return () => clearTimeout(temporizador);
+  }, [avisoPosicionamento]);
 
   function receberSnapshot(snapshot: EstadoWeb) {
     enviarEventoRepresentacional({ tipo: "SNAPSHOT_SERVIDOR_RECEBIDO", snapshot });
@@ -142,9 +151,14 @@ export default function App() {
   }
 
   async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
-    if (papelId !== figura.chave_papel_semantico) {
-      return;
-    }
+    // A compatibilidade semântica entre o que foi arrastado (papelId) e o
+    // papel da figura-alvo não é mais decidida aqui — o servidor valida
+    // (AvaliadorOrigemDestinoWeb, mesma regra de
+    // ScaffoldingQuestionamento.avaliarPosicionamento do desktop, que não é
+    // igualdade estrita: papéis genéricos de família podem ocupar papéis
+    // específicos). Isso evita que o cliente seja a única fonte de verdade
+    // e que uma soltura incorreta simplesmente não chegue a lugar nenhum.
+
     // Soltar o "?" só engata a incógnita na caixa (protocolo mouse-texto,
     // Main.java) — marcado no servidor (ver ConfirmacaoValorWeb/
     // engatarIncognita), não só no cliente: a digitação em si abre com o
@@ -157,8 +171,10 @@ export default function App() {
         const resultado = await api.engatarIncognita({
           id: "ENGATAR_INCOGNITA", metodo: "POST",
           href: "/api/acoes/engatar-incognita", corpo: { papel_id: engatar.papel_id }
-        });
+        }, papelId);
         receberSnapshot(resultado.estado);
+        setAvisoPosicionamento(resultado.aceita ? null
+          : { figuraId: figura.id, mensagem: resultado.chave_mensagem ?? "" });
       } catch (erro) { console.error(erro); }
       finally { setOcupado(false); }
       return;
@@ -172,8 +188,10 @@ export default function App() {
       const resultado = await api.posicionarConhecido({
         id: "POSICIONAR_CONHECIDO", metodo: "POST",
         href: "/api/acoes/posicionar-conhecido", corpo: { papel_id: posicionar.papel_id }
-      });
+      }, papelId);
       receberSnapshot(resultado.estado);
+      setAvisoPosicionamento(resultado.aceita ? null
+        : { figuraId: figura.id, mensagem: resultado.chave_mensagem ?? "" });
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -296,6 +314,8 @@ export default function App() {
               ? avisoSinal.mensagem : null}
             aoEscolherSinal={(sinal) => void escolherSinal(
               figuraAguardandoSinal.chave_papel_semantico, figuraAguardandoSinal.id, sinal)} />}
+          {avisoPosicionamento && <AvisoPosicionamentoFigura
+            figuraId={avisoPosicionamento.figuraId} mensagem={avisoPosicionamento.mensagem} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />

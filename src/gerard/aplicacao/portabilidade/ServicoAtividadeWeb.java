@@ -11,15 +11,20 @@ public interface ServicoAtividadeWeb {
      * ação que soltar um elemento não-incógnita do enunciado sobre sua caixa
      * dispara (protocolo de mouse é posicionar; ver regra 6 de
      * gerard-consistencia-estado e ServicoAtividadeWebComposicao).
+     * {@code origemPapelId} é o vínculo semântico do elemento de texto
+     * arrastado (pode ser {@code null} quando o elemento não tem vínculo
+     * publicado); a implementação valida a compatibilidade com o papel-alvo
+     * via AvaliadorOrigemDestinoWeb antes de aplicar a posição.
      */
-    Map<String, Object> posicionarValorConhecido(String papelId);
+    Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId);
     /**
      * Engata o "?" da incógnita na sua caixa — ação que soltar o token da
      * incógnita do enunciado sobre sua caixa dispara (protocolo mouse-texto,
      * Main.java). Não atribui valor: só marca, no servidor (nunca só no
      * cliente — ver projetarCena/figura.engatada), que a caixa deve mostrar
-     * "?" até a digitação real via proporValor.
+     * "?" até a digitação real via proporValor. {@code origemPapelId} segue
+     * o mesmo contrato de posicionarValorConhecido.
      */
-    Map<String, Object> engatarIncognita(String papelId);
+    Map<String, Object> engatarIncognita(String papelId, String origemPapelId);
     Map<String, Object> reiniciar();
 }

@@ -113,11 +113,21 @@ public final class ServicoAtividadeWebComparacaoMedidas
      * ação que soltar um elemento não-incógnita do enunciado sobre sua caixa
      * dispara (protocolo de mouse é posicionar, ver ServicoAtividadeWebComposicao).
      */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
         PapelQuantitativo papel = papelPorChave(papelId);
         if (papel == papelDesconhecido) {
             throw new IllegalArgumentException(
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
+        }
+        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo());
+        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
+            Map<String, Object> rejeitado = mapa();
+            rejeitado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+            rejeitado.put("aceita", Boolean.FALSE);
+            rejeitado.put("chave_mensagem", questionamento.getMensagem());
+            rejeitado.put("estado", estadoAtual());
+            return rejeitado;
         }
         if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
             posicionarConhecido(papel);
@@ -125,6 +135,7 @@ public final class ServicoAtividadeWebComparacaoMedidas
         Map<String, Object> resultado = mapa();
         resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }
@@ -170,10 +181,20 @@ public final class ServicoAtividadeWebComparacaoMedidas
     }
 
     /** Engata o "?" na caixa da incógnita (protocolo mouse-texto, Main.java). */
-    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+    public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
         if (!papelDesconhecido.getChave().equals(papelId)) {
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
+        }
+        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo());
+        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
+            Map<String, Object> rejeitado = mapa();
+            rejeitado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+            rejeitado.put("aceita", Boolean.FALSE);
+            rejeitado.put("chave_mensagem", questionamento.getMensagem());
+            rejeitado.put("estado", estadoAtual());
+            return rejeitado;
         }
         if (!papelDesconhecido.estaPreenchido()) {
             incognitaEngatada = true;
@@ -181,6 +202,7 @@ public final class ServicoAtividadeWebComparacaoMedidas
         Map<String, Object> resultado = mapa();
         resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
+        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }

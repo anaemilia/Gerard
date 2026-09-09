@@ -204,12 +204,12 @@ public final class ServicoSorteioAtividadeWeb {
      * (Composição de Transformações/Relações) não têm papel desconhecido
      * nesse sentido.
      */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId) {
+    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
-            resultado = atividadeModelagem.posicionarValorConhecido(papelId);
+            resultado = atividadeModelagem.posicionarValorConhecido(papelId, origemPapelId);
         } else if (atividadeEscolhaOperacao != null) {
-            resultado = atividadeEscolhaOperacao.posicionarValorConhecido(papelId);
+            resultado = atividadeEscolhaOperacao.posicionarValorConhecido(papelId, origemPapelId);
         } else {
             throw new IllegalStateException(
                     "a situação atual não possui posicionamento de papel conhecido implementado");
@@ -223,12 +223,12 @@ public final class ServicoSorteioAtividadeWeb {
      * Main.java) — só existe onde há incógnita a digitar (ServicoAtividadeWeb);
      * categorias de escolha de operação não têm esse conceito.
      */
-    public synchronized Map<String, Object> engatarIncognita(String papelId) {
+    public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
         if (atividadeModelagem == null) {
             throw new IllegalStateException(
                     "a situação atual não possui incógnita a engatar");
         }
-        Map<String, Object> resultado = atividadeModelagem.engatarIncognita(papelId);
+        Map<String, Object> resultado = atividadeModelagem.engatarIncognita(papelId, origemPapelId);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
