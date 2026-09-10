@@ -15,6 +15,7 @@ import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
 import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
+import gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura;
 import gerard.campoaditivo.diagrama.servico.GeradorCenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.servico.PosicaoSeletorOperacaoDiagrama;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
@@ -610,7 +611,7 @@ public final class ServicoSorteioAtividadeWeb {
                 ? new GeradorCenaDiagramaAditivo().direcaoDeslocamentoParaMaterialConcreto(
                         contexto.getSituacao().getTipo())
                 : DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO;
-        resultado.put("viewport", projetarViewport(cena, seletorOperacao, direcaoDeslocamento));
+        resultado.put("viewport", projetarViewport(cena, contexto, seletorOperacao, direcaoDeslocamento));
         // Decisão agregada da cena (não por figura): existe pelo menos um
         // papel com lupa, logo os painéis de eixo revelados por ela podem
         // ser oferecidos. Mesma regra usada pelo adaptador Swing (ver
@@ -656,7 +657,7 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("descricao", cena.getDescricao());
         resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));
         resultado.put("conectores", serializarConectores(cena.getConectores()));
-        resultado.put("viewport", projetarViewport(cena, null, DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO));
+        resultado.put("viewport", projetarViewport(cena, contexto, null, DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO));
         return resultado;
     }
 
@@ -798,6 +799,21 @@ public final class ServicoSorteioAtividadeWeb {
         return null;
     }
 
+    /**
+     * Mesma consulta usada por serializarFiguras para preencher "subtitulo"
+     * — aqui só interessa se existe (não o texto), para saber se o cliente
+     * vai desenhar rótulo abaixo da figura mesmo com posicao_rotulo=CENTRO
+     * (ver geometriaSvg.ts, coordenadaYDoRotulo: `posicao_rotulo === "ABAIXO"
+     * || subtitulo`).
+     */
+    private static boolean temParticipante(
+            ContextoCarregamentoAtividade contexto, String chavePapelSemantico) {
+        SemanticaCuradaSituacao.PapelCurado papel = SemanticaCuradaSituacao.buscar(
+                contexto.getSituacao(), null, chavePapelSemantico);
+        return papel != null && papel.getParticipante() != null
+                && !papel.getParticipante().trim().isEmpty();
+    }
+
     private static FiguraDiagrama buscarFigura(CenaDiagramaAditivo cena, String chave) {
         for (FiguraDiagrama figura : cena.getFiguras()) {
             if (chave.equals(figura.getChavePapelSemantico())) {
@@ -814,8 +830,21 @@ public final class ServicoSorteioAtividadeWeb {
         return item;
     }
 
+    // Espaço reservado abaixo/acima da figura para o rótulo (papel) e o
+    // subtítulo (participante) que o cliente desenha fora da caixa quando
+    // posicao_rotulo não é CENTRO — mesmas coordenadas de
+    // coordenadaYDoRotulo/coordenadaYDoSubtitulo em geometriaSvg.ts
+    // (ABAIXO: y+altura+40 de baseline; ACIMA: y-32 de baseline), com folga
+    // para a altura do texto (13px, ver .scene-figure text em styles.css).
+    // Sem isto, o viewport (calculado só a partir da geometria das figuras/
+    // conectores) fica curto demais nos casos de cena compacta — a margem
+    // proporcional (alturaConteudo/6) não cobre o rótulo, que é cortado pelo
+    // SVG (ver GeradorCenaGerard.tsx, width/height explícitos = sem
+    // letterbox "de graça" que escondia esse corte antes).
+    private static final double ESPACO_ROTULO_FORA_DA_FIGURA = 46;
+
     private static Map<String, Object> projetarViewport(CenaDiagramaAditivo cena,
-            Map<String, Object> seletorOperacao,
+            ContextoCarregamentoAtividade contexto, Map<String, Object> seletorOperacao,
             DirecaoDeslocamentoDiagrama direcaoDeslocamento) {
         double minimoX = Double.POSITIVE_INFINITY;
         double minimoY = Double.POSITIVE_INFINITY;
@@ -826,6 +855,13 @@ public final class ServicoSorteioAtividadeWeb {
             minimoY = Math.min(minimoY, figura.getY());
             maximoX = Math.max(maximoX, figura.getX() + figura.getLargura());
             maximoY = Math.max(maximoY, figura.getY() + figura.getAltura());
+            if (figura.getPosicaoRotulo() == PosicaoRotuloFigura.ACIMA) {
+                minimoY = Math.min(minimoY, figura.getY() - ESPACO_ROTULO_FORA_DA_FIGURA);
+            } else if (figura.getPosicaoRotulo() == PosicaoRotuloFigura.ABAIXO
+                    || temParticipante(contexto, figura.getChavePapelSemantico())) {
+                maximoY = Math.max(maximoY,
+                        figura.getY() + figura.getAltura() + ESPACO_ROTULO_FORA_DA_FIGURA);
+            }
         }
         for (ConectorDiagrama conector : cena.getConectores()) {
             minimoX = Math.min(minimoX, Math.min(conector.getX1(), conector.getX2()));
