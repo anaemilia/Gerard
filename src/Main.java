@@ -220,6 +220,12 @@ import gerard.ui.conclusao.CalculadorAreaVisualDiagramaVergnaud;
 import gerard.ui.conclusao.SeloConclusaoModelagem;
 import gerard.ui.conclusao.SequenciadorFeedbackConclusao;
 import gerard.ui.conclusao.TipConclusaoModelagem;
+import gerard.ui.enunciado.editor.IconesEditorNarrativa;
+import gerard.ui.enunciado.editor.ControladorEditorNarrativa;
+import gerard.ui.enunciado.editor.GeometriaEditorNarrativa;
+import gerard.ui.enunciado.editor.HandlerInteracaoPecaPalavraRascunho;
+import gerard.ui.enunciado.editor.PecaPalavraRascunho;
+import gerard.ui.enunciado.editor.RenderizadorEditorNarrativa;
 
 public class Main extends JFrame {
 
@@ -655,6 +661,13 @@ public class Main extends JFrame {
         JButton botaoCorrigirCuradoria;
         JButton botaoIdiomaSituacao;
         JButton botaoRestaurarDiagrama;
+        JButton botaoEditarNarrativa;
+        JButton botaoConcluirEditorNarrativa;
+        ControladorEditorNarrativa controladorEditorNarrativa;
+        GeometriaEditorNarrativa geometriaEditorNarrativa;
+        HandlerInteracaoPecaPalavraRascunho handlerInteracaoPecaPalavra;
+        JTextField campoNovaPalavraComum;
+        JButton botaoAdicionarPalavraComum;
         JButton botaoArtefatoExplicativo;
         JButton botaoAjudaTexto;
         JButton botaoAjudaVergnaud;
@@ -1105,6 +1118,7 @@ public class Main extends JFrame {
             criarBotaoIdiomaSituacao();
             criarBotaoArtefatoExplicativo();
             criarBotaoRestaurarDiagrama();
+            criarBotaoEditarNarrativa();
             criarBotoesAjudaContextual();
             criarMenuPrincipal();
             criarBotoesCabecalhoEmbutidos();
@@ -5121,10 +5135,18 @@ public class Main extends JFrame {
             desenharCabecalho(g2);
             desenharFaixaAtalhoCategoria(g2);
             desenharTextoProblema(g2);
-            desenharAreaDiagrama(g2);
-            desenharElementos(g2);
-            if (deveExibirDiagramaComplementar()) {
-                desenharDiagramaVenn(g2);
+            if (controladorEditorNarrativa == null) {
+                // O diagrama fica oculto durante a edição do enunciado — a
+                // interação do mouse já é exclusiva do editor nesse estado
+                // (ver os guardas em mousePressed/mouseDragged/mouseReleased),
+                // e desenhá-lo por baixo do editor causaria sobreposição
+                // visual, já que o editor ocupa uma área maior que o card
+                // fixo do enunciado.
+                desenharAreaDiagrama(g2);
+                desenharElementos(g2);
+                if (deveExibirDiagramaComplementar()) {
+                    desenharDiagramaVenn(g2);
+                }
             }
             marcadorOrigemArraste.desenhar(g2);
             // O eixo dos inteiros e um painel flutuante de apoio e deve
@@ -5250,6 +5272,15 @@ public class Main extends JFrame {
             garantirLayoutElementosTexto(fm, margemX, yInicial, larguraMaxima);
             reposicionarBotaoCorrigirCuradoria(fm, margemX, larguraMaxima);
             reposicionarBotaoRestaurar(fm, margemX, larguraMaxima);
+            reposicionarBotaoEditarNarrativa(fm, margemX, larguraMaxima);
+
+            if (controladorEditorNarrativa != null) {
+                // Edição do enunciado: substitui a leitura corrida do texto por
+                // suas peças arrastáveis (ver desenharEditorNarrativa) — decisão
+                // da usuária de manter isso dentro da própria cena.
+                desenharEditorNarrativa(g2, fm);
+                return;
+            }
 
             for (int i = 0; i < elementosTexto.size(); i++) {
                 ElementoTextoMovel elemento = elementosTexto.get(i);
@@ -5333,6 +5364,304 @@ public class Main extends JFrame {
             if (exibir) {
                 botaoRestaurar.setBounds(27, 70 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             }
+        }
+
+        // Editor de enunciado (rascunho efêmero) — porta para o desktop o
+        // EditorNarrativa.tsx do protótipo web. Só aparece quando a
+        // modelagem já foi concluída (mesmo gate do web: modelagemConcluida),
+        // no mesmo estilo/posição em coluna dos botões de ação contextual
+        // vizinhos (botaoRestaurar/botaoCorrigirCuradoria).
+        private void criarBotaoEditarNarrativa() {
+            botaoEditarNarrativa = new JButton(IconesEditorNarrativa.criarIconeEditar());
+            botaoEditarNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
+            configurarBotaoAcaoContextual(
+                    botaoEditarNarrativa,
+                    localizacao.texto("ui.tooltip.editorNarrativa.editar")
+            );
+            botaoEditarNarrativa.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    abrirEditorNarrativa();
+                    requestFocusInWindow();
+                }
+            });
+            add(botaoEditarNarrativa);
+
+            botaoConcluirEditorNarrativa = new JButton(IconesEditorNarrativa.criarIconeConcluir());
+            botaoConcluirEditorNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
+            configurarBotaoAcaoContextual(
+                    botaoConcluirEditorNarrativa,
+                    localizacao.texto("ui.tooltip.editorNarrativa.concluir")
+            );
+            botaoConcluirEditorNarrativa.setVisible(false);
+            botaoConcluirEditorNarrativa.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    fecharEditorNarrativa();
+                    requestFocusInWindow();
+                }
+            });
+            add(botaoConcluirEditorNarrativa);
+        }
+
+        /**
+         * Reposiciona os dois botões de alternância (editar/concluir) e, quando o
+         * editor está aberto, recalcula a geometria das peças arrastáveis do
+         * editor (ver GeometriaEditorNarrativa) e posiciona os dois pequenos
+         * componentes Swing reais do editor (campo de nova palavra comum e seu
+         * botão "Adicionar") — o único ponto do editor que não é pintado à mão,
+         * porque um campo de texto de verdade é muito mais confiável do que
+         * reimplementar edição de texto em Graphics2D sem compilador disponível
+         * para testar.
+         */
+        private void reposicionarBotaoEditarNarrativa(FontMetrics fm, int margemX, int larguraMaxima) {
+            if (botaoEditarNarrativa == null) {
+                return;
+            }
+            boolean modelagemConcluida = controladorConclusaoModelagem != null
+                    && controladorConclusaoModelagem.isConcluida();
+            boolean editando = controladorEditorNarrativa != null;
+            // Quem decide se a edição é permitida é o gerador de cena (mesmo
+            // sinal que o protótipo web deveria ler), não um cálculo local
+            // repetido aqui — ver GeradorCenaDiagramaAditivo.permiteEditarNarrativa.
+            boolean exibirEditar = geradorCenaDiagrama.permiteEditarNarrativa(modelagemConcluida) && !editando;
+            botaoEditarNarrativa.setVisible(exibirEditar);
+            botaoEditarNarrativa.setEnabled(exibirEditar);
+            if (exibirEditar) {
+                botaoEditarNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
+            }
+
+            if (botaoConcluirEditorNarrativa != null) {
+                botaoConcluirEditorNarrativa.setVisible(editando);
+                botaoConcluirEditorNarrativa.setEnabled(editando);
+                if (editando) {
+                    botaoConcluirEditorNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
+                }
+            }
+
+            // Os controles do diagrama abstrato (ajuda Vergnaud/complementar,
+            // restaurar, dica de posicionamento) são componentes Swing reais,
+            // não conteúdo pintado da cena — desenharAreaDiagrama (que
+            // normalmente os reposiciona/oculta) é pulado inteiro durante a
+            // edição (ver paintComponent), então sem isto eles ficam
+            // congelados visíveis na posição do diagrama que o editor
+            // substituiu e, por serem componentes reais, aparecem por cima
+            // do conteúdo pintado do editor. Ver
+            // GeradorCenaDiagramaAditivo.deveOcultarControlesDiagrama.
+            if (geradorCenaDiagrama.deveOcultarControlesDiagrama(editando)) {
+                if (botaoAjudaVergnaud != null) botaoAjudaVergnaud.setVisible(false);
+                if (botaoAjudaComplementar != null) botaoAjudaComplementar.setVisible(false);
+                if (botaoRestaurarDiagrama != null) botaoRestaurarDiagrama.setVisible(false);
+                if (botaoVerDicaPosicionamento != null) botaoVerDicaPosicionamento.setVisible(false);
+            }
+
+            if (editando) {
+                int yTopoEditor = 96 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
+                geometriaEditorNarrativa.recalcular(fm, margemX, yTopoEditor, larguraMaxima,
+                        controladorEditorNarrativa.getFrase(), controladorEditorNarrativa.getComuns(),
+                        controladorEditorNarrativa.getOrganizadores());
+
+                Rectangle areaComuns = geometriaEditorNarrativa.obterAreaComuns();
+                if (campoNovaPalavraComum != null) {
+                    campoNovaPalavraComum.setBounds(areaComuns.x + 160, areaComuns.y - 22, 130, 20);
+                }
+                if (botaoAdicionarPalavraComum != null) {
+                    botaoAdicionarPalavraComum.setBounds(areaComuns.x + 296, areaComuns.y - 22, 90, 20);
+                }
+            }
+        }
+
+        /**
+         * Abre o rascunho efêmero de edição do enunciado — decisão da usuária:
+         * vive dentro da própria cena do diagrama (gerador de cena +
+         * GeometriaEditorNarrativa/RenderizadorEditorNarrativa, no mesmo estilo
+         * de ElementoTextoMovel), não como um painel Swing separado por cima da
+         * tela. Nada aqui é persistido ou reinterpretado.
+         */
+        private void abrirEditorNarrativa() {
+            if (controladorEditorNarrativa != null) {
+                return;
+            }
+            gerard.interpretacao.modelo.ResultadoInterpretacao interpretacaoParaTexto =
+                    textoProblemaEhMensagemSistema ? null : resultadoInterpretacao;
+            boolean modelagemConcluida = controladorConclusaoModelagem != null
+                    && controladorConclusaoModelagem.isConcluida();
+            // Uma só cena (efêmera, não guardada em campo) descreve o que o
+            // editor precisa — palavras e vocabulário — em vez de dois
+            // acessos separados ao gerador (ver
+            // GeradorCenaDiagramaAditivo.gerarCenaNarrativa).
+            CenaDiagramaAditivo cenaNarrativa =
+                    geradorCenaDiagrama.gerarCenaNarrativa(textoProblema, interpretacaoParaTexto, modelagemConcluida);
+            java.util.List<gerard.interpretacao.modelo.SegmentoTextoSemantico> elementosParaEditor =
+                    cenaNarrativa.getElementosTexto();
+            gerard.campoaditivo.diagrama.modelo.VocabularioTextoNarrativo vocabularioParaEditor =
+                    cenaNarrativa.getVocabularioTexto();
+
+            controladorEditorNarrativa = new ControladorEditorNarrativa(elementosParaEditor, vocabularioParaEditor);
+            geometriaEditorNarrativa = new GeometriaEditorNarrativa();
+            handlerInteracaoPecaPalavra = new HandlerInteracaoPecaPalavraRascunho();
+
+            campoNovaPalavraComum = new JTextField();
+            campoNovaPalavraComum.setToolTipText(localizacao.texto("ui.editorNarrativa.novaPalavraPlaceholder"));
+            campoNovaPalavraComum.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    adicionarPalavraComumDoCampoEditorNarrativa();
+                }
+            });
+            add(campoNovaPalavraComum);
+            setComponentZOrder(campoNovaPalavraComum, 0);
+
+            botaoAdicionarPalavraComum = new JButton(localizacao.texto("ui.editorNarrativa.botaoAdicionar"));
+            botaoAdicionarPalavraComum.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    adicionarPalavraComumDoCampoEditorNarrativa();
+                }
+            });
+            add(botaoAdicionarPalavraComum);
+            setComponentZOrder(botaoAdicionarPalavraComum, 0);
+
+            revalidate();
+            repaint();
+        }
+
+        private void adicionarPalavraComumDoCampoEditorNarrativa() {
+            if (controladorEditorNarrativa == null || campoNovaPalavraComum == null) {
+                return;
+            }
+            controladorEditorNarrativa.adicionarPalavraComum(campoNovaPalavraComum.getText());
+            campoNovaPalavraComum.setText("");
+            repaint();
+        }
+
+        /** Fecha o editor e descarta todo o rascunho — "rascunho em memória", nunca persistido. */
+        private void fecharEditorNarrativa() {
+            if (controladorEditorNarrativa == null) {
+                return;
+            }
+            controladorEditorNarrativa = null;
+            geometriaEditorNarrativa = null;
+            if (handlerInteracaoPecaPalavra != null) {
+                handlerInteracaoPecaPalavra.cancelar();
+            }
+            handlerInteracaoPecaPalavra = null;
+            if (campoNovaPalavraComum != null) {
+                remove(campoNovaPalavraComum);
+                campoNovaPalavraComum = null;
+            }
+            if (botaoAdicionarPalavraComum != null) {
+                remove(botaoAdicionarPalavraComum);
+                botaoAdicionarPalavraComum = null;
+            }
+            revalidate();
+            repaint();
+        }
+
+        /** Desenha o editor de enunciado dentro da própria cena — ver RenderizadorEditorNarrativa. */
+        private void desenharEditorNarrativa(Graphics2D g2, FontMetrics fm) {
+            if (controladorEditorNarrativa == null || geometriaEditorNarrativa == null
+                    || handlerInteracaoPecaPalavra == null) {
+                return;
+            }
+            RenderizadorEditorNarrativa.desenhar(g2, fm, geometriaEditorNarrativa,
+                    controladorEditorNarrativa.getFrase(), controladorEditorNarrativa.getComuns(),
+                    controladorEditorNarrativa.getOrganizadores(), handlerInteracaoPecaPalavra,
+                    localizacao.texto("ui.editorNarrativa.titulo"),
+                    localizacao.texto("ui.editorNarrativa.secaoComuns"),
+                    localizacao.texto("ui.editorNarrativa.secaoOrganizadores"),
+                    localizacao.texto("ui.editorNarrativa.nota"));
+        }
+
+        private PecaPalavraRascunho encontrarPecaEditorNarrativa(int x, int y) {
+            if (controladorEditorNarrativa == null) {
+                return null;
+            }
+            PecaPalavraRascunho encontrada = encontrarPecaNaListaEditorNarrativa(
+                    controladorEditorNarrativa.getFrase(), x, y);
+            if (encontrada != null) {
+                return encontrada;
+            }
+            encontrada = encontrarPecaNaListaEditorNarrativa(controladorEditorNarrativa.getComuns(), x, y);
+            if (encontrada != null) {
+                return encontrada;
+            }
+            return encontrarPecaNaListaEditorNarrativa(controladorEditorNarrativa.getOrganizadores(), x, y);
+        }
+
+        private PecaPalavraRascunho encontrarPecaNaListaEditorNarrativa(
+                java.util.List<PecaPalavraRascunho> pecas, int x, int y) {
+            for (int i = pecas.size() - 1; i >= 0; i--) {
+                PecaPalavraRascunho peca = pecas.get(i);
+                if (peca.contem(x, y)) {
+                    return peca;
+                }
+            }
+            return null;
+        }
+
+        private String obterSacoDaPecaEditorNarrativa(PecaPalavraRascunho peca) {
+            if (controladorEditorNarrativa.getFrase().contains(peca)) {
+                return "FRASE";
+            }
+            if (controladorEditorNarrativa.getComuns().contains(peca)) {
+                return "COMUM";
+            }
+            return "ORGANIZADORES";
+        }
+
+        /** mousePressed durante a edição do enunciado — seleciona a peça sob o cursor, se houver. */
+        private void processarPressionamentoEditorNarrativa(int x, int y) {
+            if (controladorEditorNarrativa == null || handlerInteracaoPecaPalavra == null) {
+                return;
+            }
+            PecaPalavraRascunho pecaClicada = encontrarPecaEditorNarrativa(x, y);
+            if (pecaClicada == null || !pecaClicada.isManipulavel()) {
+                return;
+            }
+            handlerInteracaoPecaPalavra.iniciar(pecaClicada, obterSacoDaPecaEditorNarrativa(pecaClicada), x, y);
+            repaint();
+        }
+
+        /**
+         * mouseReleased durante a edição do enunciado. Um clique parado (sem
+         * arraste de verdade) equivale ao "×" do protótipo web (remove da frase)
+         * ou ao clique de uma peça de saco (insere no fim da frase); um arraste
+         * de verdade resolve o saco de destino pela posição de soltura e, dentro
+         * da frase, o índice de inserção pela heurística de linha/coluna.
+         */
+        private void processarSolturaEditorNarrativa(int x, int y) {
+            if (controladorEditorNarrativa == null || handlerInteracaoPecaPalavra == null
+                    || geometriaEditorNarrativa == null || !handlerInteracaoPecaPalavra.estaAtivo()) {
+                return;
+            }
+            PecaPalavraRascunho peca = handlerInteracaoPecaPalavra.obterPecaAtiva();
+            String origem = handlerInteracaoPecaPalavra.obterSacoOrigem();
+            boolean apenasClique = handlerInteracaoPecaPalavra.foiApenasClique();
+            handlerInteracaoPecaPalavra.cancelar();
+
+            if (apenasClique) {
+                if ("FRASE".equals(origem)) {
+                    controladorEditorNarrativa.retirarDaFrase(peca);
+                } else {
+                    controladorEditorNarrativa.inserirDoSacoNaFrase(peca, controladorEditorNarrativa.getFrase().size());
+                }
+                repaint();
+                return;
+            }
+
+            String sacoDestino = geometriaEditorNarrativa.obterSacoNoPonto(x, y);
+            FontMetrics fmEditor = getFontMetrics(new Font("Arial", Font.BOLD, 20));
+            int alturaLinha = geometriaEditorNarrativa.obterAlturaLinha(fmEditor);
+
+            if ("FRASE".equals(sacoDestino)) {
+                int indice = GeometriaEditorNarrativa.calcularIndiceInsercao(
+                        controladorEditorNarrativa.getFrase(), x, y, alturaLinha);
+                if ("FRASE".equals(origem)) {
+                    controladorEditorNarrativa.moverDentroDaFrase(peca, indice);
+                } else {
+                    controladorEditorNarrativa.inserirDoSacoNaFrase(peca, indice);
+                }
+            } else if ("FRASE".equals(origem)) {
+                controladorEditorNarrativa.retirarDaFrase(peca);
+            }
+            repaint();
         }
 
         private void restaurarElementosForaDoDiagrama() {
@@ -10394,6 +10723,11 @@ public class Main extends JFrame {
             int x = e.getX();
             int y = e.getY();
 
+            if (controladorEditorNarrativa != null) {
+                processarPressionamentoEditorNarrativa(x, y);
+                return;
+            }
+
             cancelarEfeitosArraste();
             handlerItemTextoArrastavel.cancelar();
             handlerElementoTextoMovel.cancelar();
@@ -10794,6 +11128,14 @@ public class Main extends JFrame {
             int x = e.getX();
             int y = e.getY();
 
+            if (controladorEditorNarrativa != null) {
+                if (handlerInteracaoPecaPalavra != null) {
+                    handlerInteracaoPecaPalavra.moverPara(x, y);
+                }
+                repaint();
+                return;
+            }
+
             if (handlerItemTextoArrastavel.estaAtivo()
                     || handlerConectorVergnaud.estaAtivo()) {
                 suspenderConclusaoDuranteManipulacao();
@@ -10873,6 +11215,11 @@ public class Main extends JFrame {
         }
 
         public void mouseReleased(MouseEvent e) {
+            if (controladorEditorNarrativa != null) {
+                processarSolturaEditorNarrativa(e.getX(), e.getY());
+                return;
+            }
+
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
             }
@@ -10977,6 +11324,10 @@ public class Main extends JFrame {
         }
 
         public void mouseClicked(MouseEvent e) {
+            if (controladorEditorNarrativa != null) {
+                return;
+            }
+
             if (encontrarRepresentacaoPeloControleAdicionarQuadradinho(
                     e.getX(), e.getY()) != null
                     || encontrarRepresentacaoPeloControleRemoverQuadradinho(

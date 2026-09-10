@@ -66,7 +66,13 @@ export function EditorNarrativa({ elementos, organizadores, modeloPalavraComum, 
 
   return <div className="editor-narrativa">
     <div className="editor-narrativa-topo"><strong>Edite o enunciado</strong>
-      <button type="button" onClick={aoFechar}>Concluir edição</button></div>
+      <button type="button" className="botao-concluir-narrativa" aria-label="Concluir edição"
+        title="Concluir edição" onClick={aoFechar}>
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <circle cx="8" cy="8" r="6" />
+          <path d="M5 8.3 7.2 10.5 11.3 5" />
+        </svg>
+      </button></div>
     <div className="linha-palavras" onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => { e.preventDefault(); const c = carga(e); if (c) inserir(c, pecas.length); }}>
       {pecas.map((peca, indice) => <span key={peca.id + "." + indice}

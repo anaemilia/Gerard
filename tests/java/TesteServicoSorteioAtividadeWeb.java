@@ -27,8 +27,7 @@ public class TesteServicoSorteioAtividadeWeb {
                 "categoria e cena são publicadas somente depois do acerto");
         Map<String, Object> cena = (Map<String, Object>) estadoAceito.get("cena");
         List<Object> figuras = (List<Object>) cena.get("figuras");
-        String papelEditavel = papelAlvoDaAcao(
-                (List<Object>) estadoAceito.get("acoes_disponiveis"));
+        List<Object> acoesFigura = (List<Object>) estadoAceito.get("acoes_disponiveis");
         exigir(figuras != null && !figuras.isEmpty(), "cena contém figuras");
         for (Object objeto : figuras) {
             Map<String, Object> figura = (Map<String, Object>) objeto;
@@ -40,26 +39,28 @@ public class TesteServicoSorteioAtividadeWeb {
             List<Object> interacoes = (List<Object>) figura.get("interacoes_permitidas");
             exigir(interacoes != null,
                     "cada figura declara capacidades, ainda que vazias");
-            exigir(interacoes.isEmpty() == !papel.equals(papelEditavel),
-                    "somente o papel anunciado pela ação pode ser editado");
+            exigir(Boolean.FALSE.equals(figura.get("conhecido")) && figura.get("valor") == null,
+                    "classificação não posiciona valores automaticamente");
+            boolean possuiAcaoParaPapel = acoesFigura.stream().map(a -> (Map<String, Object>) a)
+                    .anyMatch(a -> a.get("corpo") instanceof Map
+                            && papel.equals(((Map<String, Object>) a.get("corpo")).get("papel_id")));
+            exigir(interacoes.isEmpty() == !possuiAcaoParaPapel,
+                    "a figura oferece interação somente quando há ação para seu papel");
+            for (Object item : interacoes) {
+                Map<String, Object> interacao = (Map<String, Object>) item;
+                exigir(!"EDITAR_VALOR".equals(interacao.get("tipo")),
+                        "a digitação não é oferecida antes do engate");
+                exigir(acoesFigura.stream().map(a -> (Map<String, Object>) a).anyMatch(a ->
+                        interacao.get("acao_id").equals(a.get("id"))
+                        && a.get("corpo") instanceof Map
+                        && papel.equals(((Map<String, Object>) a.get("corpo")).get("papel_id"))),
+                        "cada interação referencia ação disponível para o mesmo papel");
+            }
         }
         exigir(!estadoAceito.containsKey("curadoria"),
                 "API não expõe a resposta armazenada na curadoria");
         verificar(servico.sortearRelacoes(), "RELACOES");
         System.out.println("APROVADO: sorteios web retornam atividade curada completa.");
-    }
-
-    @SuppressWarnings("unchecked")
-    private static String papelAlvoDaAcao(List<Object> acoes) {
-        if (acoes == null) return null;
-        for (Object item : acoes) {
-            Map<String, Object> acao = (Map<String, Object>) item;
-            if ("PROPOR_VALOR_PAPEL".equals(acao.get("id"))) {
-                return String.valueOf(((Map<String, Object>) acao.get("corpo"))
-                        .get("papel_id"));
-            }
-        }
-        return null;
     }
 
     @SuppressWarnings("unchecked")

@@ -12,6 +12,30 @@ public class TesteServicoAtividadeWebComposicao {
                 inicial.get("situacao_id")), "usa a situação curada selecionada");
         checar(Boolean.TRUE.equals(inicial.get("situacao_validada")),
                 "a situação está validada na curadoria");
+        checar(!possuiAcao(inicial, "PROPOR_VALOR_PAPEL"),
+                "não oferece digitação antes do posicionamento e engate");
+        checar(possuiAcao(inicial, "POSICIONAR_CONHECIDO"), "oferece posicionamento");
+        checar(!possuiAcao(inicial, "ENGATAR_INCOGNITA"), "engate aguarda as partes");
+        // Validação semântica de origem/destino no soltar (servidor, não só
+        // cliente): arrastar o token de parte2 até a caixa de parte1 tem que
+        // ser rejeitado, sem preencher a caixa (mesma avaliação de
+        // ScaffoldingQuestionamento.avaliarPosicionamento no desktop).
+        Map<String, Object> rejeitadoPorOrigem = servico.posicionarValorConhecido("papel.parte1", "papel.parte2");
+        checar(Boolean.FALSE.equals(rejeitadoPorOrigem.get("aceita")),
+                "origem incompatível com o destino é rejeitada");
+        checar(rejeitadoPorOrigem.get("chave_mensagem") != null,
+                "rejeição por origem incompatível traz mensagem explicativa");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parte1AindaVazia =
+                (Map<String, Object>) estado(rejeitadoPorOrigem).get("parte1");
+        checar(!Boolean.TRUE.equals(parte1AindaVazia.get("conhecido")),
+                "soltura rejeitada não posiciona o papel-alvo");
+
+        servico.posicionarValorConhecido("papel.parte1", "papel.parte1");
+        servico.posicionarValorConhecido("papel.parte2", "papel.parte2");
+        checar(possuiAcao(servico.estadoAtual(), "ENGATAR_INCOGNITA"), "partes posicionadas liberam engate");
+        inicial = estado(servico.engatarIncognita("papel.todo", "papel.todo"));
+        checar(!concluida(inicial), "engatar não confirma o valor");
         checar(possuiAcao(inicial, "PROPOR_VALOR_PAPEL"),
                 "estado incompleto publica a ação de propor valor");
 

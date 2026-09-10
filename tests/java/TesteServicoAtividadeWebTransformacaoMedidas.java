@@ -23,6 +23,25 @@ public final class TesteServicoAtividadeWebTransformacaoMedidas {
                         "tentativa.web.teste.transformacao", situacao);
         Map<String, Object> estado = servico.estadoAtual();
         String alvo = String.valueOf(estado.get("papel_desconhecido_original"));
+        exigir(Boolean.FALSE.equals(estado.get("concluida")), "começa incompleta");
+        exigir(((List<Object>) estado.get("acoes_disponiveis")).stream()
+                .map(item -> (Map<String, Object>) item)
+                .noneMatch(acao -> "PROPOR_VALOR_PAPEL".equals(acao.get("id"))),
+                "não oferece digitação antes do engate e posicionamento");
+        for (Object item : (List<Object>) estado.get("papeis")) {
+            Map<String, Object> papel = (Map<String, Object>) item;
+            exigir(Boolean.FALSE.equals(papel.get("conhecido")) && papel.get("valor") == null,
+                    "papéis começam sem valores posicionados");
+            String id = String.valueOf(papel.get("id"));
+            if (id.equals(alvo)) continue;
+            servico.posicionarValorConhecido(id, id);
+            if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
+                int valorCurado = SemanticaCuradaSituacao.buscar(situacao, null, id).getValorInteiro();
+                servico.escolherSinalNumeroRelativo(id, valorCurado < 0 ? "-" : "+");
+            }
+        }
+        estado = (Map<String, Object>) servico.engatarIncognita(alvo, alvo).get("estado");
+        exigir(Boolean.FALSE.equals(estado.get("concluida")), "engatar não confirma o valor");
         List<Object> acoes = (List<Object>) estado.get("acoes_disponiveis");
         exigir(acoes.stream().map(item -> (Map<String, Object>) item)
                 .anyMatch(acao -> "PROPOR_VALOR_PAPEL".equals(acao.get("id"))

@@ -8,7 +8,7 @@ import java.util.Map;
  * Fase 2 da retomada da versão web: cobre
  * {@link ServicoAtividadeWebComposicaoTransformacoes}, o serviço de
  * aplicação que expõe Composição de Transformações na web com o paradigma
- * fiel ao desktop — os 6 papéis revelados desde o início, aluno escolhe a
+ * fiel ao desktop — os papéis posicionados antes da escolha, aluno escolhe a
  * operação certa em duas etapas sequenciais. Usa a mesma situação curada real
  * já usada por {@code TesteAvaliacaoEscolhaOperacaoRelacao} (Fase 1) e por
  * {@code TesteVisualComposicaoTransformacoesP2_1}.
@@ -35,10 +35,14 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
                 "transformacao_final"}) {
             @SuppressWarnings("unchecked")
             Map<String, Object> papel = (Map<String, Object>) estadoInicial.get(chave);
-            exigir(Boolean.TRUE.equals(papel.get("conhecido")),
-                    "papel " + chave + " deveria estar conhecido (curado na base).");
-            exigir(papel.get("valor") != null,
-                    "papel " + chave + " deveria ter valor não nulo.");
+            exigir(Boolean.FALSE.equals(papel.get("conhecido")) && papel.get("valor") == null,
+                    "papel " + chave + " aguarda posicionamento");
+            String id = String.valueOf(papel.get("id"));
+            servico.posicionarValorConhecido(id, id);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> posicionado = (Map<String, Object>) servico.estadoAtual().get(chave);
+            exigir(Boolean.TRUE.equals(posicionado.get("conhecido")) && posicionado.get("valor") != null,
+                    "posicionamento revela o valor curado");
         }
         for (String chave : new String[] {"estado_inicial", "estado_intermediario",
                 "estado_final"}) {
@@ -69,7 +73,9 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
                 servico.escolherOperacao("ENTRE_TRANSFORMACOES", "SUBTRACAO");
         exigir(Boolean.FALSE.equals(resultadoErrado.get("aceita")),
                 "SUBTRACAO deveria ser rejeitada (correta é SOMA, conforme Fase 1).");
-        exigir("operacao.explicacao.composicaoTransformacoes.soma"
+        exigir(gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
+                        .preencherPersonagensCurados(gerard.i18n.ServicoLocalizacao.getInstancia()
+                                .texto("operacao.explicacao.composicaoTransformacoes.soma"), situacao)
                         .equals(resultadoErrado.get("chave_mensagem")),
                 "chave de explicação errada para a primeira etapa incorreta.");
         @SuppressWarnings("unchecked")

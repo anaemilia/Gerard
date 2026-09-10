@@ -128,6 +128,11 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .botao-editar-narrativa svg { width:16px; height:16px; fill:none; stroke:#b88430; stroke-width:1; stroke-linecap:round; stroke-linejoin:round; }
 .botao-editar-narrativa:hover { background:#f7f6f1; }
 .botao-editar-narrativa:focus-visible { outline:2px solid var(--texto); outline-offset:2px; }
+/* Mesmo formato do botão de editar (26px do Swing); ícone circle-check-big fornecido pela usuária. */
+.botao-concluir-narrativa { width:26px; height:26px; padding:0; display:grid; place-items:center; border:1px solid var(--borda); border-radius:0; background:var(--superficie); color:var(--texto-secundario); }
+.botao-concluir-narrativa svg { width:16px; height:16px; fill:none; stroke:#b88430; stroke-width:1; stroke-linecap:round; stroke-linejoin:round; }
+.botao-concluir-narrativa:hover { background:#f7f6f1; }
+.botao-concluir-narrativa:focus-visible { outline:2px solid var(--texto); outline-offset:2px; }
 /* Sem overflow:hidden no statement-panel (transbordaria o texto normal), o
    editor de enunciado pode ficar mais alto que a faixa minmax(136px,18vh)
    reservada a ele e vazar visualmente para a linha de baixo — onde

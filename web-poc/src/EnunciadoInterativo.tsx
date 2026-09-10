@@ -36,8 +36,8 @@ const FATOR_ATRACAO = 0.35;
  * cursor não esteja sobre ela (deveCentralizarAoSoltar do desktop).
  */
 export function EnunciadoInterativo({ elementos, figuras, organizadores = [], modeloPalavraComum = null,
-  modelagemConcluida, aoSoltar, aoAtualizarAlvo }: {
-  modelagemConcluida: boolean;
+  permiteEditarNarrativa, aoSoltar, aoAtualizarAlvo }: {
+  permiteEditarNarrativa: boolean;
   elementos: readonly ElementoTexto[];
   figuras: readonly FiguraCena[];
   organizadores?: readonly ElementoTexto[];
@@ -52,8 +52,8 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
   const alvoAtualRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!modelagemConcluida) setEditandoNarrativa(false);
-  }, [modelagemConcluida]);
+    if (!permiteEditarNarrativa) setEditandoNarrativa(false);
+  }, [permiteEditarNarrativa]);
 
   function definirAlvo(figuraId: string | null) {
     if (alvoAtualRef.current !== figuraId) {
@@ -134,14 +134,14 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
     ? elementos.find((elemento) => elemento.papel_id === arrastando)?.valor
     : undefined;
 
-  if (modelagemConcluida && editandoNarrativa) {
+  if (permiteEditarNarrativa && editandoNarrativa) {
     return <EditorNarrativa elementos={elementos} organizadores={organizadores}
       modeloPalavraComum={modeloPalavraComum}
       aoFechar={() => setEditandoNarrativa(false)} />;
   }
 
   return <>
-    {modelagemConcluida && <button type="button" className="botao-editar-narrativa"
+    {permiteEditarNarrativa && <button type="button" className="botao-editar-narrativa"
       aria-label="Editar texto" title="Editar texto"
       onClick={() => setEditandoNarrativa(true)}>
       <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">

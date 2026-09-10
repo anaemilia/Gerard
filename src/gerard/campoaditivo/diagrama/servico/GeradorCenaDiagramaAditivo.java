@@ -11,6 +11,12 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.NormalizadorRotulosSemanticosDiagrama;
 import gerard.i18n.ServicoLocalizacao;
 import java.awt.Rectangle;
+import gerard.interpretacao.modelo.ResultadoInterpretacao;
+import gerard.interpretacao.modelo.SegmentadorTextoSemantico;
+import gerard.interpretacao.modelo.SegmentoTextoSemantico;
+import gerard.interpretacao.modelo.VocabularioOrganizadoresInformacao;
+import gerard.campoaditivo.diagrama.modelo.VocabularioTextoNarrativo;
+import java.util.List;
 
 public class GeradorCenaDiagramaAditivo {
     private final FabricaRenderizadoresDiagramaAditivo fabrica;
@@ -164,5 +170,82 @@ public class GeradorCenaDiagramaAditivo {
         int maxY = Math.min(limite.y + limite.altura, base);
         return new AreaDiagrama(x, y, Math.max(0, maxX - x),
                 Math.max(0, maxY - y));
+    }
+    /**
+     * Palavras do enunciado marcadas/arrastáveis, via o mesmo
+     * SegmentadorTextoSemantico já usado por Main.java
+     * (inicializarElementosTexto) e por ServicoSorteioAtividadeWeb — uma só
+     * fonte para as duas plataformas, em vez de cada uma re-tokenizar por
+     * conta própria. Sem geometria (x/y/largura/altura): quem consome decide
+     * a apresentação (ver PainelEditorNarrativa no desktop).
+     */
+    public List<SegmentoTextoSemantico> gerarElementosTexto(String enunciadoExibido,
+            ResultadoInterpretacao interpretacao) {
+        return SegmentadorTextoSemantico.segmentar(enunciadoExibido, interpretacao);
+    }
+
+    /**
+     * Nova cena com as palavras do enunciado anexadas (ver
+     * CenaDiagramaAditivo.comElementosTexto). {@code modelagemConcluida}
+     * decide aqui — na cena, não em cada plataforma — se a edição da
+     * narrativa é permitida nesta cena (ver permiteEditarNarrativa).
+     */
+    public CenaDiagramaAditivo comElementosTextoNarrativa(CenaDiagramaAditivo cena,
+            String enunciadoExibido, ResultadoInterpretacao interpretacao,
+            boolean modelagemConcluida) {
+        if (cena == null) {
+            return null;
+        }
+        return cena.comElementosTexto(
+                gerarElementosTexto(enunciadoExibido, interpretacao),
+                gerarVocabularioTextoNarrativa(),
+                permiteEditarNarrativa(modelagemConcluida));
+    }
+
+    /** Vocabulário de apoio (candidatos a organizador da informação) — mesmo repertório do protótipo web. */
+    public VocabularioTextoNarrativo gerarVocabularioTextoNarrativa() {
+        return new VocabularioTextoNarrativo(VocabularioOrganizadoresInformacao.expressoes());
+    }
+
+    /**
+     * Decide se o editor de narrativa (botão e painel de edição) deve ficar
+     * disponível nesta cena. Hoje a única condição é a modelagem já ter
+     * sido concluída, mas o ponto de decisão fica aqui — no gerador,
+     * compartilhado por desktop e web — em vez de cada plataforma checar
+     * isoladamente (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md).
+     * Barato o bastante para ser chamado a cada quadro/requisição.
+     */
+    public boolean permiteEditarNarrativa(boolean modelagemConcluida) {
+        return modelagemConcluida;
+    }
+
+    /**
+     * Decide se os controles do diagrama abstrato (botão de ajuda do
+     * Vergnaud/complementar, restaurar, dica de posicionamento) devem ficar
+     * ocultos porque o editor de narrativa está aberto e ocupa a mesma área
+     * da tela — mesmo raciocínio de permiteEditarNarrativa: o ponto de
+     * decisão fica aqui, não recalculado localmente em cada plataforma. Sem
+     * isso, esses controles (componentes reais de interface, não pintados
+     * na cena) permanecem visíveis na posição do diagrama que o editor
+     * substituiu, e por serem componentes reais acabam desenhados por cima
+     * do conteúdo pintado do editor.
+     */
+    public boolean deveOcultarControlesDiagrama(boolean editandoNarrativa) {
+        return editandoNarrativa;
+    }
+
+    /**
+     * Cena mínima (sem figuras/conectores) carregando só os elementos de
+     * texto do enunciado e o sinalizador de edição — para quem, como
+     * Main.java no editor de narrativa, ainda não tem uma cena-base
+     * previamente gerada nesse ponto do fluxo.
+     */
+    public CenaDiagramaAditivo gerarCenaNarrativa(String enunciadoExibido,
+            ResultadoInterpretacao interpretacao, boolean modelagemConcluida) {
+        CenaDiagramaAditivo base = new CenaDiagramaAditivo(null, enunciadoExibido,
+                java.util.Collections.<FiguraDiagrama>emptyList(),
+                java.util.Collections.<ConectorDiagrama>emptyList(),
+                EstadoFeedbackDiagrama.NEUTRO);
+        return comElementosTextoNarrativa(base, enunciadoExibido, interpretacao, modelagemConcluida);
     }
 }

@@ -280,13 +280,13 @@ export default function App() {
           : itemAjuda("TEXTO")
             ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
             : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
-        {estado.elementos_texto
+        {estado.cena?.elementos_texto
           ? <EnunciadoInterativo key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
-              elementos={estado.elementos_texto}
-              modelagemConcluida={estado.modelagem?.concluida === true}
+              elementos={estado.cena?.elementos_texto}
+              permiteEditarNarrativa={estado.cena?.permite_editar_narrativa === true}
               figuras={estado.cena?.figuras ?? []}
-              organizadores={estado.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
-              modeloPalavraComum={estado.vocabulario_texto?.modelo_palavra_comum ?? null}
+              organizadores={estado.cena?.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
+              modeloPalavraComum={estado.cena?.vocabulario_texto?.modelo_palavra_comum ?? null}
               aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>

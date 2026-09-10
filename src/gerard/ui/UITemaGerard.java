@@ -74,6 +74,16 @@ public final class UITemaGerard {
     /** Tom usado em bordas/linhas tracejadas discretas. */
     public static final Color COR_TRACEJADO = new Color(0xAE, 0xA6, 0x96);
 
+    /**
+     * Tom âmbar reservado aos ícones do editor de narrativa (T de editar,
+     * círculo com marca de confirmação de concluir) — símbolo e cor
+     * fornecidos pela usuária, mesmo tom (#B88430) usado no protótipo web
+     * (.botao-editar-narrativa svg). Não é cor de feedback (ver COR_SUCESSO/
+     * COR_ERRO) nem faz parte da paleta neutra geral — uso restrito a esses
+     * dois ícones utilitários do editor de enunciado.
+     */
+    public static final Color COR_ICONE_NARRATIVA = new Color(0xB8, 0x84, 0x30);
+
     /** Cor de texto dos itens de menu. */
     public static final Color COR_TEXTO_MENU = new Color(0x33, 0x2E, 0x28);
 

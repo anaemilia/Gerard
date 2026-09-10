@@ -30,10 +30,14 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
         for (String chave : new String[] {"relacao_1", "relacao_2", "relacao_final"}) {
             @SuppressWarnings("unchecked")
             Map<String, Object> papel = (Map<String, Object>) estadoInicial.get(chave);
-            exigir(Boolean.TRUE.equals(papel.get("conhecido")),
-                    "papel " + chave + " deveria estar conhecido (curado na base).");
-            exigir(papel.get("valor") != null,
-                    "papel " + chave + " deveria ter valor não nulo.");
+            exigir(Boolean.FALSE.equals(papel.get("conhecido")) && papel.get("valor") == null,
+                    "papel " + chave + " aguarda posicionamento");
+            String id = String.valueOf(papel.get("id"));
+            servico.posicionarValorConhecido(id, id);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> posicionado = (Map<String, Object>) servico.estadoAtual().get(chave);
+            exigir(Boolean.TRUE.equals(posicionado.get("conhecido")) && posicionado.get("valor") != null,
+                    "posicionamento revela o valor curado");
         }
         exigir(Boolean.FALSE.equals(estadoInicial.get("concluida")),
                 "atividade não deveria estar concluída no estado inicial.");
@@ -45,7 +49,9 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
                 "ENTRE_TRANSFORMACOES", "SUBTRACAO");
         exigir(Boolean.FALSE.equals(resultadoErrado.get("aceita")),
                 "SUBTRACAO deveria ser rejeitada (correta é SOMA, conforme Fase 1).");
-        exigir("operacao.explicacao.composicaoRelacoes.soma"
+        exigir(gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
+                        .preencherPersonagensCurados(gerard.i18n.ServicoLocalizacao.getInstancia()
+                                .texto("operacao.explicacao.composicaoRelacoes.soma"), situacao)
                         .equals(resultadoErrado.get("chave_mensagem")),
                 "chave de explicação errada para a resposta incorreta.");
         @SuppressWarnings("unchecked")

@@ -391,7 +391,7 @@ public final class ServicoSorteioAtividadeWeb {
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
             List<Object> acoesParaCena = listaDeAcoes(estado.get("acoes_disponiveis"));
-            Object cenaProjetada = projetarCena(contextoAtual, acoesParaCena, estado.get("modelagem"));
+            Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena, estado.get("modelagem"));
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
             // pelo mesmo gerador de cena da cena abstrata — ver
@@ -405,22 +405,9 @@ public final class ServicoSorteioAtividadeWeb {
             } else {
                 estado.remove("cena_material_concreto");
             }
-            estado.put("elementos_texto", projetarElementosTexto(contextoAtual));
-            Map<String, Object> vocabularioTexto = mapa();
-            List<Object> candidatosOrganizadores = new ArrayList<Object>();
-            int indiceCandidato = 0;
-            for (String expressao : gerard.interpretacao.modelo.VocabularioOrganizadoresInformacao.expressoes()) {
-                candidatosOrganizadores.add(projetarDescritorPalavra(
-                        "vocabulario.organizador." + indiceCandidato++, expressao,
-                        gerard.interpretacao.modelo.TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO,
-                        true, "ORGANIZADORES"));
-            }
-            vocabularioTexto.put("candidatos_organizadores_informacao", candidatosOrganizadores);
-            vocabularioTexto.put("modelo_palavra_comum", projetarDescritorPalavra(
-                    "vocabulario.palavra-comum", "",
-                    gerard.interpretacao.modelo.TipoSegmentoNarrativo.COMUM,
-                    true, "COMUM"));
-            estado.put("vocabulario_texto", vocabularioTexto);
+            // Aliases preservados para consumidores v1 anteriores à cena narrativa.
+            estado.put("elementos_texto", cenaProjetada.get("elementos_texto"));
+            estado.put("vocabulario_texto", cenaProjetada.get("vocabulario_texto"));
             estado.put("confirmacao_valor_papel", ConfirmacaoValorWeb.perguntaParaCena(cenaProjetada));
         } else {
             estado.remove("categoria");
@@ -527,10 +514,8 @@ public final class ServicoSorteioAtividadeWeb {
      * tokenizador usa \S+, então isso corresponde exatamente ao texto
      * original.
      */
-    private static List<Object> projetarElementosTexto(ContextoCarregamentoAtividade contexto) {
-        List<gerard.interpretacao.modelo.SegmentoTextoSemantico> segmentos =
-                gerard.interpretacao.modelo.SegmentadorTextoSemantico.segmentar(
-                        contexto.getEnunciadoExibido(), contexto.getInterpretacao());
+    private static List<Object> projetarElementosTexto(CenaDiagramaAditivo cena) {
+        List<gerard.interpretacao.modelo.SegmentoTextoSemantico> segmentos = cena.getElementosTexto();
         List<Object> resultado = new ArrayList<Object>();
         for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento : segmentos) {
             Map<String, Object> item = projetarDescritorPalavra(
@@ -543,6 +528,23 @@ public final class ServicoSorteioAtividadeWeb {
             resultado.add(item);
         }
         return resultado;
+    }
+
+    private static Map<String, Object> projetarVocabularioTexto(CenaDiagramaAditivo cena) {
+        Map<String, Object> vocabulario = mapa();
+        List<Object> organizadores = new ArrayList<Object>();
+        int indice = 0;
+        for (String expressao : cena.getVocabularioTexto().getCandidatosOrganizadoresInformacao()) {
+            organizadores.add(projetarDescritorPalavra(
+                    "vocabulario.organizador." + indice++, expressao,
+                    gerard.interpretacao.modelo.TipoSegmentoNarrativo.CANDIDATO_ORGANIZADOR_INFORMACAO,
+                    true, "ORGANIZADORES"));
+        }
+        vocabulario.put("candidatos_organizadores_informacao", organizadores);
+        vocabulario.put("modelo_palavra_comum", projetarDescritorPalavra(
+                "vocabulario.palavra-comum", "",
+                gerard.interpretacao.modelo.TipoSegmentoNarrativo.COMUM, true, "COMUM"));
+        return vocabulario;
     }
 
     private static Map<String, Object> projetarDescritorPalavra(
@@ -576,11 +578,19 @@ public final class ServicoSorteioAtividadeWeb {
 
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
-        CenaDiagramaAditivo cena = new GeradorCenaDiagramaAditivo().gerar(
+        GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
+        CenaDiagramaAditivo cena = gerador.gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
                 contexto.getDefinicao(), new int[] {0, 0, 0});
+        boolean concluida = modelagem instanceof Map
+                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("concluida"));
+        cena = gerador.comElementosTextoNarrativa(cena,
+                contexto.getEnunciadoExibido(), contexto.getInterpretacao(), concluida);
         Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();
+        resultado.put("elementos_texto", projetarElementosTexto(cena));
+        resultado.put("vocabulario_texto", projetarVocabularioTexto(cena));
+        resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
         resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));

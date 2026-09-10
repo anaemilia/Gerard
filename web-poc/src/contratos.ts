@@ -102,7 +102,11 @@ export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;
-export type CenaDiagrama = Readonly<{ titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
+export type CenaDiagrama = Readonly<{
+  elementos_texto?: readonly ElementoTexto[];
+  vocabulario_texto?: VocabularioTexto;
+  permite_editar_narrativa?: boolean;
+  titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;
   seletor_operacao?: Readonly<{ entre_transformacoes?: CentroSeletorOperacao;
     entre_estado_transformacao?: CentroSeletorOperacao; relacao?: CentroSeletorOperacao }> }>;
