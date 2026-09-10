@@ -41,6 +41,21 @@ public class GeradorCenaDiagramaAditivo {
 
     public CenaDiagramaAditivo gerar(TipoSituacaoAditiva tipo, AreaDiagrama area,
             DefinicaoDiagramaAditivo definicao, int[] valores) {
+        return gerar(tipo, area, definicao, valores, false);
+    }
+
+    /**
+     * @param estadoInicialDecomposto só tem efeito para COMPOSICAO_TRANSFORMACOES
+     * (ver SituacaoProblemaAditiva.getEstadoInicialParte1) — quando true,
+     * desenha o estado inicial como Parte1+Parte2=Todo (ver
+     * RenderizadorComposicaoTransformacoes.criarCenaComEstadoInicialDecomposto).
+     * Ignorado por qualquer outra categoria. Downcast confinado aqui — a
+     * fábrica é o único lugar que já conhece o tipo concreto de cada
+     * renderizador; a interface RenderizadorDiagramaAditivo compartilhada
+     * pelos outros 5 renderizadores não precisa saber deste caso especial.
+     */
+    public CenaDiagramaAditivo gerar(TipoSituacaoAditiva tipo, AreaDiagrama area,
+            DefinicaoDiagramaAditivo definicao, int[] valores, boolean estadoInicialDecomposto) {
         RenderizadorDiagramaAditivo renderizador = fabrica.obter(tipo);
         if (renderizador == null) {
             renderizador = fabrica.obter(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
@@ -48,6 +63,12 @@ public class GeradorCenaDiagramaAditivo {
         DefinicaoDiagramaAditivo definicaoNormalizada =
                 normalizadorRotulos.garantir(tipo, definicao,
                         ServicoLocalizacao.getInstancia());
+        if (estadoInicialDecomposto
+                && tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
+                && renderizador instanceof RenderizadorComposicaoTransformacoes) {
+            return ((RenderizadorComposicaoTransformacoes) renderizador)
+                    .criarCenaComEstadoInicialDecomposto(area, definicaoNormalizada, valores);
+        }
         return renderizador.criarCena(area, definicaoNormalizada, valores);
     }
 

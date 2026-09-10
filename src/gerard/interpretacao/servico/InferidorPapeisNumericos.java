@@ -15,6 +15,24 @@ public class InferidorPapeisNumericos {
     private final InferidorIncognitaLinguistica inferidorIncognita = new InferidorIncognitaLinguistica();
 
     public List<PapelElementoInterpretado> inferir(String textoOriginal, CategoriaProblema categoria, List<NumeroEncontrado> numeros) {
+        return inferir(textoOriginal, categoria, numeros, null, null);
+    }
+
+    /**
+     * @param valorEstadoInicialParte1 e @param valorEstadoInicialParte2 só se
+     * aplicam a COMPOSICAO_TRANSFORMACOES (ver
+     * SituacaoProblemaAditiva.getEstadoInicialParte1/2) — quando não vazios,
+     * casam por VALOR (não por posição no texto) o número do enunciado igual
+     * a cada um com papel.estadoInicialParte1/2, removendo-o da disputa pelas
+     * posições de transformação1/2/Final. Casar por valor (em vez de pelas 2
+     * primeiras posições) é necessário porque a ordem em que Parte1/Parte2
+     * aparecem no enunciado não precisa coincidir com qual delas é "parte1"
+     * nos dados curados (ex.: narrativa da vovó — brancas=2 aparece primeiro
+     * no texto, mas o dado curado define parte1=amarelas=3). Ignorado por
+     * qualquer outra categoria, e sem efeito quando null/vazio.
+     */
+    public List<PapelElementoInterpretado> inferir(String textoOriginal, CategoriaProblema categoria,
+            List<NumeroEncontrado> numeros, String valorEstadoInicialParte1, String valorEstadoInicialParte2) {
         List<PapelElementoInterpretado> papeis = new ArrayList<PapelElementoInterpretado>();
         String texto = NormalizadorTexto.normalizar(textoOriginal);
 
@@ -33,7 +51,8 @@ public class InferidorPapeisNumericos {
                 inferirComparacaoMedidas(texto, numeros, papeis);
                 break;
             case COMPOSICAO_TRANSFORMACOES:
-                inferirComposicaoTransformacoes(numeros, papeis);
+                inferirComposicaoTransformacoes(numeros, papeis,
+                        valorEstadoInicialParte1, valorEstadoInicialParte2);
                 break;
             case TRANSFORMACAO_RELACAO:
                 inferirTransformacaoRelacao(numeros, papeis);
@@ -281,13 +300,41 @@ public class InferidorPapeisNumericos {
         return padrao.matcher(texto).find();
     }
 
-    private void inferirComposicaoTransformacoes(List<NumeroEncontrado> numeros, List<PapelElementoInterpretado> papeis) {
-        adicionarSeExiste(numeros, papeis, 0, "papel.transformacao1");
-        adicionarSeExiste(numeros, papeis, 1, "papel.transformacao2");
-        if (numeros.size() >= 3) {
-            adicionarSeExiste(numeros, papeis, 2, "papel.transformacaoFinal");
+    private void inferirComposicaoTransformacoes(List<NumeroEncontrado> numeros,
+            List<PapelElementoInterpretado> papeis,
+            String valorEstadoInicialParte1, String valorEstadoInicialParte2) {
+        List<NumeroEncontrado> restantes = new ArrayList<NumeroEncontrado>(numeros);
+        marcarPorValorSeExiste(restantes, papeis, valorEstadoInicialParte1, "papel.estadoInicialParte1");
+        marcarPorValorSeExiste(restantes, papeis, valorEstadoInicialParte2, "papel.estadoInicialParte2");
+        adicionarSeExiste(restantes, papeis, 0, "papel.transformacao1");
+        adicionarSeExiste(restantes, papeis, 1, "papel.transformacao2");
+        if (restantes.size() >= 3) {
+            adicionarSeExiste(restantes, papeis, 2, "papel.transformacaoFinal");
         } else {
             adicionarDesconhecidoSeAusente(papeis, "papel.transformacaoFinal");
+        }
+    }
+
+    /**
+     * Remove de "restantes" o primeiro número cujo valor canônico bate com
+     * "valorAlvo" e o marca com chavePapel — casamento por VALOR, não por
+     * posição (ver Javadoc de inferir(..., valorEstadoInicialParte1, ...)).
+     * Sem efeito quando valorAlvo é null/vazio, ou quando nenhum número do
+     * texto bate com ele (fica sem tag, mesmo padrão de "não aplicável"
+     * usado no resto desta classe).
+     */
+    private void marcarPorValorSeExiste(List<NumeroEncontrado> restantes,
+            List<PapelElementoInterpretado> papeis, String valorAlvo, String chavePapel) {
+        if (valorAlvo == null || valorAlvo.trim().isEmpty()) {
+            return;
+        }
+        String alvo = valorAlvo.trim();
+        for (int i = 0; i < restantes.size(); i++) {
+            if (alvo.equals(restantes.get(i).getValorCanonico())) {
+                papeis.add(new PapelElementoInterpretado(restantes.get(i).getValorCanonico(), chavePapel, true));
+                restantes.remove(i);
+                return;
+            }
         }
     }
 

@@ -2734,7 +2734,15 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     l.personagem1, l.personagem2, l.personagem3,
                     l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
                     l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao,
-                    l.estadoIntermediario, l.operacaoEstadoTransformacao);
+                    l.estadoIntermediario, l.operacaoEstadoTransformacao,
+                    // estado_inicial_parteN/personagem (decomposição opcional
+                    // do estado inicial, só usada em algumas situações
+                    // COMPOSICAO_TRANSFORMACOES) ainda não têm campo próprio
+                    // nesta tela de curadoria — LinhaSituacao não os carrega,
+                    // então salvar uma linha por aqui hoje zera esses 2
+                    // campos se a situação já os tinha. Editar/criar valores
+                    // para eles continua exigindo edição direta do TSV.
+                    "", "", "", "");
         }
 
         public int getRowCount() { return linhas.size(); }

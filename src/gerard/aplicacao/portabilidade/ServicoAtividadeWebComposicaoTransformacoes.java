@@ -45,6 +45,13 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     private PapelQuantitativo transformacao2;
     private PapelQuantitativo transformacaoFinal;
     private PapelQuantitativo estadoFinal;
+    // Decomposição opcional do estado inicial (ver
+    // SituacaoProblemaAditiva.getEstadoInicialParte1/2) — "não conhecido"
+    // como qualquer outro papel sem valor curado nesta categoria (ver
+    // reiniciar/temValorCurado); só aparecem ao aluno quando a situação tem
+    // essa decomposição.
+    private PapelQuantitativo estadoInicialParte1;
+    private PapelQuantitativo estadoInicialParte2;
     private OpcaoOperacaoCuradoria escolhaEntreTransformacoes;
     private OpcaoOperacaoCuradoria escolhaEntreEstadoTransformacao;
 
@@ -79,6 +86,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         estado.put("transformacao_2", projetarPapel(transformacao2));
         estado.put("transformacao_final", projetarPapel(transformacaoFinal));
         estado.put("estado_final", projetarPapel(estadoFinal));
+        estado.put("estado_inicial_parte1", projetarPapel(estadoInicialParte1));
+        estado.put("estado_inicial_parte2", projetarPapel(estadoInicialParte2));
         boolean primeiraCorreta = respondeuCorretamente(escolhaEntreTransformacoes,
                 TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
         boolean segundaCorreta = respondeuCorretamente(escolhaEntreEstadoTransformacao,
@@ -158,6 +167,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         transformacao2 = FabricaPapeisComposicaoDeTransformacoes.transformacao2(nenhum);
         transformacaoFinal = FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(nenhum);
         estadoFinal = FabricaPapeisComposicaoDeTransformacoes.estadoFinal(nenhum);
+        estadoInicialParte1 = FabricaPapeisComposicaoDeTransformacoes.estadoInicialParte1(nenhum);
+        estadoInicialParte2 = FabricaPapeisComposicaoDeTransformacoes.estadoInicialParte2(nenhum);
 
         // Os 3 papéis de estado (inicial/intermediário/final) não são curados
         // hoje para esta categoria — a base tabular só preenche estado_inicial/
@@ -223,7 +234,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
     private PapelQuantitativo[] todosOsPapeis() {
         return new PapelQuantitativo[] {estadoInicial, transformacao1, estadoIntermediario,
-                transformacao2, transformacaoFinal, estadoFinal};
+                transformacao2, transformacaoFinal, estadoFinal,
+                estadoInicialParte1, estadoInicialParte2};
     }
 
     private String valorCuradoDoPapel(PapelQuantitativo papel) {
@@ -233,11 +245,14 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         if (papel == transformacao2) return situacao.getQuantidade2();
         if (papel == transformacaoFinal) return situacao.getResultado();
         if (papel == estadoFinal) return situacao.getEstadoFinal();
+        if (papel == estadoInicialParte1) return situacao.getEstadoInicialParte1();
+        if (papel == estadoInicialParte2) return situacao.getEstadoInicialParte2();
         throw new IllegalStateException("papel incompatível com Composição de Transformações");
     }
 
     private boolean ehNatural(PapelQuantitativo papel) {
-        return papel == estadoInicial || papel == estadoIntermediario || papel == estadoFinal;
+        return papel == estadoInicial || papel == estadoIntermediario || papel == estadoFinal
+                || papel == estadoInicialParte1 || papel == estadoInicialParte2;
     }
 
     private boolean temValorCurado(PapelQuantitativo papel) {

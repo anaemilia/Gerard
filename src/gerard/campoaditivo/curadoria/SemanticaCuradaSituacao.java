@@ -140,6 +140,15 @@ public final class SemanticaCuradaSituacao {
             adicionar(papeis, loc, "papel.estadoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.estadoIntermediario", situacao.getEstadoIntermediario(), "", desconhecido);
             adicionar(papeis, loc, "papel.estadoFinal", situacao.getEstadoFinal(), situacao.getPersonagem3(), desconhecido);
+            // Decomposição opcional do estado inicial em 2 partes conhecidas
+            // (só populada em algumas situações curadas — ver
+            // situacoes_vergnaud.tsv, colunas estado_inicial_parteN). Depois
+            // dos 6 papéis estruturais de propósito, para não afetar a
+            // indexação posicional usada por aplicarRotulos() acima.
+            adicionar(papeis, loc, "papel.estadoInicialParte1", situacao.getEstadoInicialParte1(),
+                    situacao.getEstadoInicialParte1Personagem(), desconhecido);
+            adicionar(papeis, loc, "papel.estadoInicialParte2", situacao.getEstadoInicialParte2(),
+                    situacao.getEstadoInicialParte2Personagem(), desconhecido);
         } else if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             adicionar(papeis, loc, "papel.relacaoInicial", situacao.getEstadoInicial(), situacao.getPersonagem1(), desconhecido);
             adicionar(papeis, loc, "papel.transformacao", aplicarSinal(situacao.getTransformacao(), situacao.getSinalTransformacao()), "", desconhecido);

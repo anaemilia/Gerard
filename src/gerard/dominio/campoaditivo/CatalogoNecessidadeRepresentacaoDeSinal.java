@@ -73,6 +73,8 @@ public final class CatalogoNecessidadeRepresentacaoDeSinal {
         registrar(mapa, FabricaPapeisComposicaoDeTransformacoes.transformacao2(nenhum));
         registrar(mapa, FabricaPapeisComposicaoDeTransformacoes.transformacaoFinal(nenhum));
         registrar(mapa, FabricaPapeisComposicaoDeTransformacoes.estadoFinal(nenhum));
+        registrar(mapa, FabricaPapeisComposicaoDeTransformacoes.estadoInicialParte1(nenhum));
+        registrar(mapa, FabricaPapeisComposicaoDeTransformacoes.estadoInicialParte2(nenhum));
 
         registrar(mapa, FabricaPapeisTransformacaoDeRelacao.relacaoInicial(nenhum));
         registrar(mapa, FabricaPapeisTransformacaoDeRelacao.transformacao(nenhum));

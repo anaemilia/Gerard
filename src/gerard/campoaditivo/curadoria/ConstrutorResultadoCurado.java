@@ -113,19 +113,54 @@ public class ConstrutorResultadoCurado {
     private List<NumeroEncontrado> numeros(String textoExibido, List<PapelElementoInterpretado> papeis) {
         List<NumeroEncontrado> r = new ArrayList<NumeroEncontrado>();
         String texto = textoExibido == null ? "" : textoExibido;
+        // Faixas [inicio,fim) já atribuídas a um papel anterior nesta mesma
+        // passada — sem isto, dois papéis curados com o MESMO valor (ex.:
+        // resultado da transformação coincidindo numericamente com uma das
+        // partes do estado inicial) reivindicam o mesmo número do enunciado,
+        // e o segundo papel (posição textual idêntica) nunca fica arrastável
+        // — quem "ganha" depende só da ordem de iteração de papeis(), não do
+        // que o número realmente representa no texto.
+        List<int[]> usadas = new ArrayList<int[]>();
+        // Prioridade de reivindicação: partes do estado inicial primeiro —
+        // seu valor é sempre um número escrito literalmente no enunciado
+        // ("2 rosas brancas"), enquanto papéis como transformacaoFinal podem
+        // colidir numericamente com elas (o resultado da transformação pode
+        // coincidir com a quantidade de uma das partes) sem terem, eles
+        // próprios, uma escrita literal no texto — dar prioridade a quem
+        // sempre está escrito evita que o outro "roube" a única ocorrência.
+        // A ordem de SAÍDA (lista r) não depende disto — cada NumeroEncontrado
+        // carrega sua própria chave de papel (ver obterChavePapelDoNumero em
+        // ResolvedorPapelInterpretado, que lê numero.getChavePapelSemantico()
+        // antes de qualquer índice posicional).
+        List<PapelElementoInterpretado> ordemDeReivindicacao = new ArrayList<PapelElementoInterpretado>();
         for (PapelElementoInterpretado p : papeis) {
+            if (p != null && p.getChavePapel() != null
+                    && p.getChavePapel().startsWith("papel.estadoInicialParte")) {
+                ordemDeReivindicacao.add(p);
+            }
+        }
+        for (PapelElementoInterpretado p : papeis) {
+            if (p != null && (p.getChavePapel() == null
+                    || !p.getChavePapel().startsWith("papel.estadoInicialParte"))) {
+                ordemDeReivindicacao.add(p);
+            }
+        }
+        for (PapelElementoInterpretado p : ordemDeReivindicacao) {
             if (p == null || !p.isConhecido()) continue;
             String canonico = canonizar(p.getElemento());
             if (canonico.length() == 0) continue;
-            int[] pos = localizar(texto, p.getElemento(), canonico);
+            int[] pos = localizar(texto, p.getElemento(), canonico, usadas);
             String original = pos[0] >= 0 ? texto.substring(pos[0], pos[1]) : p.getElemento();
+            if (pos[0] >= 0) {
+                usadas.add(pos);
+            }
             r.add(new NumeroEncontrado(original, pos[0], pos[1], canonico,
                     p.getChavePapel()));
         }
         return r;
     }
 
-    private int[] localizar(String texto, String valor, String canonico) {
+    private int[] localizar(String texto, String valor, String canonico, List<int[]> usadas) {
         if (texto == null) {
             return new int[] {-1, -1};
         }
@@ -150,7 +185,7 @@ public class ConstrutorResultadoCurado {
         };
 
         for (int i = 0; i < candidatos.length; i++) {
-            int[] posicao = localizarCandidato(texto, candidatos[i]);
+            int[] posicao = localizarCandidato(texto, candidatos[i], usadas);
             if (posicao[0] >= 0) {
                 return posicao;
             }
@@ -164,6 +199,9 @@ public class ConstrutorResultadoCurado {
                     .compile("(?<![\\d])[-+]?\\d+(?:[.,]\\d+)?(?![\\d])")
                     .matcher(texto);
             while (matcher.find()) {
+                if (sobrepoe(usadas, matcher.start(), matcher.end())) {
+                    continue;
+                }
                 Double magnitudeTexto = converterMagnitude(matcher.group());
                 if (magnitudeTexto != null && Math.abs(magnitudeTexto.doubleValue() - magnitudeCurada.doubleValue()) < 0.000001d) {
                     return new int[] {matcher.start(), matcher.end()};
@@ -174,7 +212,7 @@ public class ConstrutorResultadoCurado {
         return new int[] {-1, -1};
     }
 
-    private int[] localizarCandidato(String texto, String candidato) {
+    private int[] localizarCandidato(String texto, String candidato, List<int[]> usadas) {
         String c = candidato == null ? "" : candidato.trim();
         if (c.length() == 0 || "+".equals(c) || "-".equals(c)) {
             return new int[] {-1, -1};
@@ -183,10 +221,25 @@ public class ConstrutorResultadoCurado {
         java.util.regex.Pattern padrao = java.util.regex.Pattern.compile(
                 "(?<![\\d])" + java.util.regex.Pattern.quote(c) + "(?![\\d])");
         java.util.regex.Matcher matcher = padrao.matcher(texto);
-        if (matcher.find()) {
-            return new int[] {matcher.start(), matcher.end()};
+        while (matcher.find()) {
+            if (!sobrepoe(usadas, matcher.start(), matcher.end())) {
+                return new int[] {matcher.start(), matcher.end()};
+            }
         }
         return new int[] {-1, -1};
+    }
+
+    /**
+     * Verdadeiro se [inicio,fim) intersecta alguma faixa já atribuída a
+     * outro papel nesta mesma passada de numeros() — ver comentário lá.
+     */
+    private boolean sobrepoe(List<int[]> usadas, int inicio, int fim) {
+        for (int[] faixa : usadas) {
+            if (inicio < faixa[1] && faixa[0] < fim) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String removerSinalInicial(String valor) {

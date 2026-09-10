@@ -580,9 +580,11 @@ public final class ServicoSorteioAtividadeWeb {
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
+        boolean estadoInicialDecomposto =
+                !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
         CenaDiagramaAditivo cena = gerador.gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
-                contexto.getDefinicao(), new int[] {0, 0, 0});
+                contexto.getDefinicao(), new int[] {0, 0, 0}, estadoInicialDecomposto);
         boolean concluida = modelagem instanceof Map
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("concluida"));
         cena = gerador.comElementosTextoNarrativa(cena,

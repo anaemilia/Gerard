@@ -83,11 +83,11 @@ public class TesteVisualComposicaoTransformacoesP2_1 {
         String cabecalho = linhas.get(0);
         String linhaEstadoIntermediario = localizarLinha(linhas, ID_ESTADO_INTERMEDIARIO);
         String linhaDuasOperacoes = localizarLinha(linhas, ID_DUAS_OPERACOES);
-        exigir(campos(cabecalho).length == 37, "O cabeçalho canônico não possui 37 campos.");
-        exigir(campos(linhaEstadoIntermediario).length == 37,
-                "A situação de estado intermediário não possui 37 campos.");
-        exigir(campos(linhaDuasOperacoes).length == 37,
-                "A situação das duas operações não possui 37 campos.");
+        exigir(campos(cabecalho).length == 41, "O cabeçalho canônico não possui 41 campos.");
+        exigir(campos(linhaEstadoIntermediario).length == 41,
+                "A situação de estado intermediário não possui 41 campos.");
+        exigir(campos(linhaDuasOperacoes).length == 41,
+                "A situação das duas operações não possui 41 campos.");
 
         Path raiz = Files.createTempDirectory("gerard-p2-1-home-");
         System.setProperty("user.home", raiz.toAbsolutePath().toString());

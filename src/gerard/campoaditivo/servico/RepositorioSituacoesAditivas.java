@@ -180,7 +180,9 @@ public class RepositorioSituacoesAditivas {
                 s.getRepresentacaoVisual(), s.getObservacoes(), s.getPersonagem1(), s.getPersonagem2(), s.getPersonagem3(),
                 s.getFragmentoTexto1(), s.getFragmentoTexto2(), s.getFragmentoTexto3(),
                 s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6(), s.getOperacaoRelacao(),
-                s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao());
+                s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao(),
+                s.getEstadoInicialParte1(), s.getEstadoInicialParte1Personagem(),
+                s.getEstadoInicialParte2(), s.getEstadoInicialParte2Personagem());
     }
 
     private SituacaoProblemaAditiva parseLinhaSituacao(String linha, int indice, Set<String> idsGerados) {
@@ -226,6 +228,10 @@ public class RepositorioSituacoesAditivas {
                 String operacaoRelacao = partes.length > 34 ? valor(partes, 34) : "";
                 String estadoIntermediario = partes.length > 35 ? valor(partes, 35) : "";
                 String operacaoEstadoTransformacao = partes.length > 36 ? valor(partes, 36) : "";
+                String estadoInicialParte1 = partes.length > 37 ? valor(partes, 37) : "";
+                String estadoInicialParte1Personagem = partes.length > 38 ? valor(partes, 38) : "";
+                String estadoInicialParte2 = partes.length > 39 ? valor(partes, 39) : "";
+                String estadoInicialParte2Personagem = partes.length > 40 ? valor(partes, 40) : "";
                 id = garantirId(id, idioma == null ? IdiomaInterface.PORTUGUES : idioma, tipo, contexto, enunciado, indice, idsGerados);
                 if (situacaoGrupoId.length() == 0) situacaoGrupoId = id;
                 if (tipoVersao.length() == 0) tipoVersao = "original";
@@ -234,7 +240,9 @@ public class RepositorioSituacoesAditivas {
                         referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido, representacaoVisual, observacoes,
                         personagem1, personagem2, personagem3,
                         fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4, fragmentoTexto5, fragmentoTexto6,
-                        operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao);
+                        operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao,
+                        estadoInicialParte1, estadoInicialParte1Personagem,
+                        estadoInicialParte2, estadoInicialParte2Personagem);
             }
 
             if (partes.length >= 22) {

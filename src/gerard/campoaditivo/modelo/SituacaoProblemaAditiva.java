@@ -43,6 +43,14 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     private final String operacaoRelacao;
     private final String estadoIntermediario;
     private final String operacaoEstadoTransformacao;
+    // Decomposição opcional do estado inicial em 2 partes conhecidas (só
+    // populado em algumas situações COMPOSICAO_TRANSFORMACOES — ver
+    // situacoes_vergnaud.tsv, colunas estado_inicial_parteN/
+    // estado_inicial_parteN_personagem — "" quando não aplicável).
+    private final String estadoInicialParte1;
+    private final String estadoInicialParte1Personagem;
+    private final String estadoInicialParte2;
+    private final String estadoInicialParte2Personagem;
 
     public SituacaoProblemaAditiva(TipoSituacaoAditiva tipo, IdiomaInterface idioma, String enunciado) {
         this("", false, tipo, idioma, enunciado, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
@@ -276,7 +284,8 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
                 referido, referendo, valorRelativo, sinalValorRelativo, termoDesconhecido,
                 representacaoVisual, observacoes, personagem1, personagem2, personagem3,
                 fragmentoTexto1, fragmentoTexto2, fragmentoTexto3, fragmentoTexto4,
-                fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "");
+                fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "",
+                "", "", "", "");
     }
 
     /**
@@ -303,7 +312,9 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
             String fragmentoTexto1, String fragmentoTexto2, String fragmentoTexto3,
             String fragmentoTexto4, String fragmentoTexto5, String fragmentoTexto6,
             String operacaoRelacao, String estadoIntermediario,
-            String operacaoEstadoTransformacao) {
+            String operacaoEstadoTransformacao,
+            String estadoInicialParte1, String estadoInicialParte1Personagem,
+            String estadoInicialParte2, String estadoInicialParte2Personagem) {
         this.id = limpar(id);
         this.situacaoGrupoId = limpar(situacaoGrupoId).isEmpty() ? limpar(id) : limpar(situacaoGrupoId);
         this.codigoIdioma = IdiomaSituacao.normalizarCodigo(codigoIdioma);
@@ -345,6 +356,10 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
         this.operacaoRelacao = limpar(operacaoRelacao);
         this.estadoIntermediario = limpar(estadoIntermediario);
         this.operacaoEstadoTransformacao = limpar(operacaoEstadoTransformacao);
+        this.estadoInicialParte1 = limpar(estadoInicialParte1);
+        this.estadoInicialParte1Personagem = limpar(estadoInicialParte1Personagem);
+        this.estadoInicialParte2 = limpar(estadoInicialParte2);
+        this.estadoInicialParte2Personagem = limpar(estadoInicialParte2Personagem);
     }
 
     private static String limpar(String texto) {
@@ -364,6 +379,10 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     public String getFonte() { return fonte; }
     public String getSubtipo() { return subtipo; }
     public String getEstadoInicial() { return estadoInicial; }
+    public String getEstadoInicialParte1() { return estadoInicialParte1; }
+    public String getEstadoInicialParte1Personagem() { return estadoInicialParte1Personagem; }
+    public String getEstadoInicialParte2() { return estadoInicialParte2; }
+    public String getEstadoInicialParte2Personagem() { return estadoInicialParte2Personagem; }
     public String getTransformacao() { return transformacao; }
     public String getSinalTransformacao() { return sinalTransformacao; }
     public String getEstadoFinal() { return estadoFinal; }

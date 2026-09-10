@@ -64,4 +64,28 @@ public final class FabricaPapeisComposicaoDeTransformacoes {
                         "rotulo.papel.estadoFinal", "explicacao.papel.estadoFinal"),
                 publicador);
     }
+
+    /**
+     * Decomposição opcional do estado inicial em 2 partes conhecidas (só
+     * populada em algumas situações curadas — ver
+     * SituacaoProblemaAditiva.getEstadoInicialParte1/2). Mesma família
+     * NATURAIS/FIGURA_RETANGULAR dos 3 estados — o estado inicial continua
+     * sendo "papel.estadoInicial" (agora desenhado como "Todo"); estes dois
+     * papéis são as partes que o compõem, não um substituto para ele.
+     */
+    public static PapelQuantitativo estadoInicialParte1(PublicadorEventoDominio publicador) {
+        return new PapelQuantitativo("papel.estadoInicialParte1", "Parte do Estado Inicial",
+                DominioNumerico.NATURAIS,
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "",
+                        "rotulo.papel.estadoInicialParte1", "explicacao.papel.estadoInicial"),
+                publicador);
+    }
+
+    public static PapelQuantitativo estadoInicialParte2(PublicadorEventoDominio publicador) {
+        return new PapelQuantitativo("papel.estadoInicialParte2", "Parte do Estado Inicial",
+                DominioNumerico.NATURAIS,
+                new DescritorRepresentacaoPapel(TipoRepresentacaoAbstrata.FIGURA_RETANGULAR, "",
+                        "rotulo.papel.estadoInicialParte2", "explicacao.papel.estadoInicial"),
+                publicador);
+    }
 }
