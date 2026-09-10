@@ -15,6 +15,18 @@ import type { ItemAjudaContextual } from "./contratos";
  * "?" isolado) — blur dispara ao mover o foco para os próprios botões de
  * opção do menu, o que fecharia o menu antes do clique registrar.
  */
+/** Ícone "info" (círculo + haste + ponto) — substitui o "?" nos três botões
+ * de ajuda contextual (TEXTO/VERGNAUD/COMPLEMENTAR) e no de dica de próximo
+ * passo, mesmo símbolo nas duas plataformas (ver criarIconeInterrogacaoContextual,
+ * Main.java). */
+export function IconeAjudaContextual() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4" />
+    <path d="M12 8h.01" />
+  </svg>;
+}
+
 export function MenuAjudaContextual({ item }: { item: ItemAjudaContextual | undefined }) {
   const [aberto, setAberto] = useState(false);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -48,7 +60,7 @@ export function MenuAjudaContextual({ item }: { item: ItemAjudaContextual | unde
 
   return <div className="help-mark-wrap" onMouseEnter={abrir} onMouseLeave={fechar}>
     <button type="button" className="help-mark" aria-expanded={aberto}
-      aria-label={item.cabecalho} onFocus={abrir}>?</button>
+      aria-label={item.cabecalho} onFocus={abrir}><IconeAjudaContextual /></button>
     {aberto && <div className="help-menu" role="dialog" aria-label={item.cabecalho}>
       <strong className="help-menu-cabecalho">{item.cabecalho}</strong>
       {mensagem

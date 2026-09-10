@@ -7,7 +7,7 @@ import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
 import { AvisoPosicionamentoFigura } from "./AvisoPosicionamentoFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
-import { MenuAjudaContextual } from "./MenuAjudaContextual";
+import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
@@ -274,12 +274,12 @@ export default function App() {
               onFocus={() => setDicaVisivel(true)}
               onBlur={(evento) => { if (!evento.currentTarget.contains(evento.relatedTarget as Node)) setDicaVisivel(false); }}>
               <button type="button" className="help-mark" aria-expanded={dicaVisivel}
-                aria-label="Qual é o próximo passo?">?</button>
+                aria-label="Qual é o próximo passo?"><IconeAjudaContextual /></button>
               {dicaVisivel && <p className="help-tip" role="status">{estado.dica_proximo_passo}</p>}
             </div>
           : itemAjuda("TEXTO")
             ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
-            : <span className="help-mark" aria-hidden="true">?</span>}
+            : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
         {estado.elementos_texto
           ? <EnunciadoInterativo key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
               elementos={estado.elementos_texto}

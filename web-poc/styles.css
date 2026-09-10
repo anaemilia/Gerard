@@ -29,6 +29,7 @@ button, input { font:inherit; } button { cursor:pointer; }
 .statement-panel > h1,.statement-panel > .editor-narrativa { grid-column:2; grid-row:1 / span 2; }
 .statement-panel h1 { margin:7px 0 0; font-size:clamp(1.05rem,1.4vw,1.28rem); line-height:1.45; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
+.help-mark svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .help-mark-wrap { position:relative; flex:none; }
 button.help-mark { background:var(--superficie); cursor:pointer; font:inherit; font-weight:700; }
 button.help-mark:hover,button.help-mark[aria-expanded="true"] { background:#fff3cd; }

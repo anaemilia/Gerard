@@ -2703,12 +2703,11 @@ public class Main extends JFrame {
                         g2.setColor(COR_TEXTO_SECUNDARIO);
                         g2.setStroke(new BasicStroke(1.4f));
                         g2.drawOval(x + 1, y + 1, 18, 18);
-                        g2.setFont(new Font("Arial", Font.BOLD, 14));
-                        FontMetrics fm = g2.getFontMetrics();
-                        String simbolo = "?";
-                        int tx = x + 10 - fm.stringWidth(simbolo) / 2;
-                        int ty = y + 10 + (fm.getAscent() - fm.getDescent()) / 2;
-                        g2.drawString(simbolo, tx, ty);
+                        // Icone "info" (circulo + haste + ponto), mesmo simbolo
+                        // do botao web (IconeAjudaContextual, MenuAjudaContextual.tsx).
+                        g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                        g2.drawLine(x + 10, y + 9, x + 10, y + 13);
+                        g2.fillOval(x + 9, y + 5, 2, 2);
                     } finally {
                         g2.dispose();
                     }
