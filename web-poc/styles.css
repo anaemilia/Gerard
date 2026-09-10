@@ -128,7 +128,16 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .botao-editar-narrativa svg { width:16px; height:16px; fill:none; stroke:#b88430; stroke-width:1; stroke-linecap:round; stroke-linejoin:round; }
 .botao-editar-narrativa:hover { background:#f7f6f1; }
 .botao-editar-narrativa:focus-visible { outline:2px solid var(--texto); outline-offset:2px; }
-.editor-narrativa { flex:1; min-width:0; }
+/* Sem overflow:hidden no statement-panel (transbordaria o texto normal), o
+   editor de enunciado pode ficar mais alto que a faixa minmax(136px,18vh)
+   reservada a ele e vazar visualmente para a linha de baixo — onde
+   .diagram-panel/.response-panel (mesma camada de empilhamento, sem
+   z-index próprio) acabam pintados por cima dele por virem depois no DOM,
+   mesmo bug do desktop (desenharAreaDiagrama pulado inteiro durante a
+   edição, ver GeradorCenaDiagramaAditivo.deveOcultarControlesDiagrama).
+   position+z-index aqui garante que o editor fique acima dos dois onde
+   quer que transborde, sem depender da ordem do DOM. */
+.editor-narrativa { flex:1; min-width:0; position:relative; z-index:1; }
 .editor-narrativa-topo { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
 .linha-palavras { min-height:74px; padding:10px; border:1px solid var(--borda); border-radius:8px; line-height:2.4; }
 .peca-palavra { display:inline-flex; align-items:center; gap:3px; margin:2px 3px; padding:0 6px; border:1px solid var(--borda); border-radius:6px; background:var(--superficie); cursor:grab; }
