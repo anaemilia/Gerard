@@ -1,11 +1,26 @@
 import type { FiguraCena, InteracaoPermitidaFigura } from "../contratos";
 import { coordenadaYDoRotulo, coordenadaYDoSubtitulo, coordenadaYDoValor } from "./geometriaSvg";
 
-function LupaCenaGerard({ figura }: { figura: FiguraCena }) {
+function LupaCenaGerard({ figura, aoAlternarEixo }: { figura: FiguraCena;
+    aoAlternarEixo?: (figura: FiguraCena) => void }) {
   if (!figura.exibir_lupa) return null;
+  // Mesmos textos do desktop (PaineisEixosRelacoes.obterDicaLupa/
+  // ScaffoldingGraficoInteiros.obterDicaBotaoEsconder, chaves
+  // ui.tooltip.integerAxis.reveal/hide em mensagens_pt.properties) — o
+  // protocolo REVELAR_EIXO/OCULTAR_EIXO ainda não desenha o eixo em si no
+  // web (só alterna o estado revelado/fechado, ver LEVANTAMENTO_ACOPLAMENTO_
+  // MAIN_WEB_2026-08-31.md), por isso o rótulo não promete o widget completo.
+  const rotulo = figura.lupa_habilitada ? "Ocultar eixo X" : "Ver o eixo x deste número relativo";
   return <g className={`scene-magnifier${figura.lupa_habilitada ? " scene-magnifier-enabled" : ""}`}
       transform={`translate(${figura.x + figura.largura + 12} ${figura.y + 4})`}
-      aria-label="Eixo numérico em desenvolvimento">
+      role={aoAlternarEixo ? "button" : undefined} tabIndex={aoAlternarEixo ? 0 : undefined}
+      aria-label={rotulo}
+      onClick={aoAlternarEixo ? () => aoAlternarEixo(figura) : undefined}
+      onKeyDown={aoAlternarEixo ? (evento) => {
+        if (evento.key === "Enter" || evento.key === " ") {
+          evento.preventDefault(); aoAlternarEixo(figura);
+        }
+      } : undefined}>
     <circle cx="8" cy="8" r="7"/><path d="M 13 13 L 19 19"/><circle cx="8" cy="8" r="2"/>
   </g>;
 }
@@ -47,7 +62,7 @@ function GrupoQuadradinhosCenaGerard({ figura, ehAlvo, ocupado, aoAjustar, texto
 }
 
 export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, aoAjustarQuadradinho,
-    textoAdicionarQuadradinho, textoRemoverQuadradinho }: {
+    textoAdicionarQuadradinho, textoRemoverQuadradinho, aoAlternarEixo }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
   destacada?: boolean;
@@ -55,6 +70,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
   aoAjustarQuadradinho?: (papelId: string, delta: 1 | -1) => void;
   textoAdicionarQuadradinho?: string;
   textoRemoverQuadradinho?: string;
+  aoAlternarEixo?: (figura: FiguraCena) => void;
 }) {
   if (figura.tipo === "GRUPO_QUADRADINHOS") {
     const interacaoAjustar = figura.interacoes_permitidas.find(
@@ -107,6 +123,6 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
     </text>
     {(conhecida || engatada) && <text className="scene-figure-role"
       x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>}
-    <LupaCenaGerard figura={figura} />
+    <LupaCenaGerard figura={figura} aoAlternarEixo={aoAlternarEixo} />
   </g>;
 }

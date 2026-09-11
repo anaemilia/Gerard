@@ -44,12 +44,28 @@ public class TesteServicoSorteioAtividadeWeb {
             boolean possuiAcaoParaPapel = acoesFigura.stream().map(a -> (Map<String, Object>) a)
                     .anyMatch(a -> a.get("corpo") instanceof Map
                             && papel.equals(((Map<String, Object>) a.get("corpo")).get("papel_id")));
-            exigir(interacoes.isEmpty() == !possuiAcaoParaPapel,
+            // REVELAR_EIXO/OCULTAR_EIXO não vem de acoes_disponiveis (ver
+            // comentário mais abaixo) — ignorado aqui para isolar a
+            // comparação original (interações originadas das ações globais
+            // da atividade) do protocolo independente do eixo.
+            long interacoesForaDoEixo = interacoes.stream().map(i -> (Map<String, Object>) i)
+                    .filter(i -> !"REVELAR_EIXO".equals(i.get("tipo")) && !"OCULTAR_EIXO".equals(i.get("tipo")))
+                    .count();
+            exigir((interacoesForaDoEixo == 0) == !possuiAcaoParaPapel,
                     "a figura oferece interação somente quando há ação para seu papel");
             for (Object item : interacoes) {
                 Map<String, Object> interacao = (Map<String, Object>) item;
                 exigir(!"EDITAR_VALOR".equals(interacao.get("tipo")),
                         "a digitação não é oferecida antes do engate");
+                // REVELAR_EIXO/OCULTAR_EIXO (protocolo do eixo dos inteiros,
+                // ver ServicoSorteioAtividadeWeb.revelarEixo/ocultarEixo) é
+                // decidido localmente por figura (isExibirLupa + estado do
+                // mapa de visibilidade), não publicado em acoes_disponiveis
+                // por nenhuma atividade — não tem o que casar ali.
+                if ("REVELAR_EIXO".equals(interacao.get("tipo"))
+                        || "OCULTAR_EIXO".equals(interacao.get("tipo"))) {
+                    continue;
+                }
                 exigir(acoesFigura.stream().map(a -> (Map<String, Object>) a).anyMatch(a ->
                         interacao.get("acao_id").equals(a.get("id"))
                         && a.get("corpo") instanceof Map

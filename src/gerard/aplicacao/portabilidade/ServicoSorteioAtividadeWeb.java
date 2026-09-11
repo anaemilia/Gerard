@@ -28,6 +28,7 @@ import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
 import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
 import gerard.campoaditivo.servico.ControladorContextoSituacao;
+import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -51,6 +52,16 @@ public final class ServicoSorteioAtividadeWeb {
     private String questionamento;
     private ServicoAtividadeWeb atividadeModelagem;
     private ServicoAtividadeWebEscolhaOperacao atividadeEscolhaOperacao;
+    // Estado revelado/fechado do eixo dos inteiros por papel (protocolo
+    // REVELAR_EIXO/OCULTAR_EIXO — ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_
+    // 2026-08-31.md, "próxima fronteira recomendada"). Mesmo objeto de
+    // domínio que o desktop já usa (gerard.interacao.eixo.
+    // ControleVisibilidadeEixoPapel, via PaineisEixosRelacoes.Painel) — só a
+    // estrutura de mapeamento por chave é nova aqui, específica do web.
+    // Zerado a cada sorteio novo (ver sortear), mesmo momento em que
+    // PaineisEixosRelacoes.desativar()/ativar() reinicia o desktop.
+    private final Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel =
+            new LinkedHashMap<String, ControleVisibilidadeEixoPapel>();
     private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
     private final ControladorContextoSituacao controladorContextoSituacao =
             new ControladorContextoSituacao(LoggerInteracaoGerard.getInstancia());
@@ -114,6 +125,7 @@ public final class ServicoSorteioAtividadeWeb {
         questionamento = null;
         atividadeModelagem = null;
         atividadeEscolhaOperacao = null;
+        visibilidadeEixoPorPapel.clear();
         return projetarEstado();
     }
 
@@ -217,6 +229,64 @@ public final class ServicoSorteioAtividadeWeb {
         }
         resultado.put("estado", projetarEstado());
         return resultado;
+    }
+
+    /**
+     * Revela o eixo dos inteiros de um papel — protocolo portátil
+     * REVELAR_EIXO/OCULTAR_EIXO (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_
+     * 2026-08-31.md). Só existe para papéis com {@code exibir_lupa=true} na
+     * cena atual (mesma regra do desktop, "todo número relativo ou
+     * transformação carrega uma lupa" — ver
+     * RenderizadorDiagramaAditivoBase.relacao/transformacao/relacaoGrande).
+     * {@code aceita=false} (sem lançar exceção) quando o papel já está
+     * revelado — mesma guarda de {@link ControleVisibilidadeEixoPapel#podeRevelar()}.
+     */
+    public synchronized Map<String, Object> revelarEixo(String papelId) {
+        return aplicarTransicaoEixo(papelId, true);
+    }
+
+    /** Oculta o eixo de um papel já revelado — ver {@link #revelarEixo(String)}. */
+    public synchronized Map<String, Object> ocultarEixo(String papelId) {
+        return aplicarTransicaoEixo(papelId, false);
+    }
+
+    private Map<String, Object> aplicarTransicaoEixo(String papelId, boolean revelar) {
+        if (!exibeLupa(papelId)) {
+            throw new IllegalArgumentException(
+                    "papel sem lupa de eixo dos inteiros: " + papelId);
+        }
+        ControleVisibilidadeEixoPapel controle = visibilidadeEixoPorPapel.get(papelId);
+        if (controle == null) {
+            controle = new ControleVisibilidadeEixoPapel();
+            visibilidadeEixoPorPapel.put(papelId, controle);
+        }
+        boolean aceita = revelar ? controle.revelar() : controle.ocultar();
+        // Mesmo schema/formato de ResultadoPosicionarConhecido — nenhuma
+        // mensagem de rejeição própria (revelar/ocultar não tem o conceito
+        // de origem/destino errado, só "já estava nesse estado").
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.valueOf(aceita));
+        resultado.put("chave_mensagem", null);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
+    /** Mesma geração de cena de projetarCena, só para localizar a figura por chave. */
+    private boolean exibeLupa(String papelId) {
+        if (papelId == null || contextoAtual == null) {
+            return false;
+        }
+        GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
+        CenaDiagramaAditivo cena = gerador.gerar(
+                contextoAtual.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
+                contextoAtual.getDefinicao(), new int[] {0, 0, 0});
+        for (FiguraDiagrama figura : cena.getFiguras()) {
+            if (papelId.equals(figura.getChavePapelSemantico())) {
+                return figura.isExibirLupa();
+            }
+        }
+        return false;
     }
 
     /**
@@ -392,7 +462,8 @@ public final class ServicoSorteioAtividadeWeb {
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
             List<Object> acoesParaCena = listaDeAcoes(estado.get("acoes_disponiveis"));
-            Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena, estado.get("modelagem"));
+            Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena,
+                    estado.get("modelagem"), visibilidadeEixoPorPapel);
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
             // pelo mesmo gerador de cena da cena abstrata — ver
@@ -400,7 +471,7 @@ public final class ServicoSorteioAtividadeWeb {
             // contrato (não posta como null) quando não disponível agora ou
             // quando a categoria ainda não tem essa cena implementada.
             Object cenaMaterialConcretoProjetada = projetarCenaMaterialConcreto(
-                    contextoAtual, acoesParaCena, estado.get("modelagem"));
+                    contextoAtual, acoesParaCena, estado.get("modelagem"), visibilidadeEixoPorPapel);
             if (cenaMaterialConcretoProjetada != null) {
                 estado.put("cena_material_concreto", cenaMaterialConcretoProjetada);
             } else {
@@ -578,7 +649,8 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     private static Map<String, Object> projetarCena(
-            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
+            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
+            Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
         boolean estadoInicialDecomposto =
                 !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
@@ -596,7 +668,8 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
-        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));
+        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
+                visibilidadeEixoPorPapel));
         resultado.put("conectores", serializarConectores(cena.getConectores()));
         Map<String, Object> seletorOperacao = projetarSeletorOperacao(
                 contexto.getSituacao().getTipo(), cena);
@@ -639,7 +712,8 @@ public final class ServicoSorteioAtividadeWeb {
      * simplesmente omite "cena_material_concreto" do contrato nesse caso.
      */
     private static Map<String, Object> projetarCenaMaterialConcreto(
-            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem) {
+            ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
+            Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel) {
         boolean disponivel = modelagem instanceof Map
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"));
         if (!disponivel) {
@@ -657,7 +731,8 @@ public final class ServicoSorteioAtividadeWeb {
         Map<String, Object> resultado = mapa();
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
-        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes));
+        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
+                visibilidadeEixoPorPapel));
         resultado.put("conectores", serializarConectores(cena.getConectores()));
         resultado.put("viewport", projetarViewport(cena, contexto, null, DirecaoDeslocamentoDiagrama.SEM_DESLOCAMENTO));
         return resultado;
@@ -665,7 +740,7 @@ public final class ServicoSorteioAtividadeWeb {
 
     private static List<Object> serializarFiguras(List<FiguraDiagrama> figurasFonte,
             ContextoCarregamentoAtividade contexto, Map<String, Object> valoresPorChave,
-            List<Object> acoes) {
+            List<Object> acoes, Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel) {
         List<Object> figuras = new ArrayList<Object>();
         int indice = 0;
         for (FiguraDiagrama figura : figurasFonte) {
@@ -684,7 +759,13 @@ public final class ServicoSorteioAtividadeWeb {
                     SemanticaCuradaSituacao.buscar(contexto.getSituacao(), null,
                             figura.getChavePapelSemantico());
             item.put("subtitulo", papel == null ? "" : papel.getParticipante());
-            item.put("lupa_habilitada", Boolean.FALSE);
+            // Estado real do protocolo revelar/ocultar (ver revelarEixo/
+            // ocultarEixo) — só pode ser true para papéis com exibir_lupa;
+            // sem entrada no mapa (nunca revelado ainda) conta como fechado.
+            boolean revelado = figura.isExibirLupa()
+                    && visibilidadeEixoPorPapel.containsKey(figura.getChavePapelSemantico())
+                    && visibilidadeEixoPorPapel.get(figura.getChavePapelSemantico()).estaRevelado();
+            item.put("lupa_habilitada", Boolean.valueOf(revelado));
             // Valor atual do papel (null enquanto não posicionado) — sem
             // isso o cliente nunca saberia o que mostrar na caixa depois de
             // arrastar/confirmar um valor (achado ao testar o arraste ao
@@ -694,8 +775,21 @@ public final class ServicoSorteioAtividadeWeb {
             item.put("valor", extrairCampo(papelProjetado, "valor"));
             item.put("conhecido", extrairCampo(papelProjetado, "conhecido"));
             item.put("engatada", extrairCampo(papelProjetado, "engatada"));
-            item.put("interacoes_permitidas", projetarInteracoesPermitidas(
-                    acoes, figura.getChavePapelSemantico()));
+            List<Object> interacoes = projetarInteracoesPermitidas(
+                    acoes, figura.getChavePapelSemantico());
+            // Revelar/ocultar eixo — decidida aqui (não via acoes_disponiveis
+            // global de cada atividade) porque já sabemos localmente,
+            // por figura, se ela tem lupa e o estado atual (revelado acima):
+            // nenhuma atividade precisa saber sobre este protocolo.
+            if (figura.isExibirLupa()) {
+                Map<String, Object> interacaoEixo = mapa();
+                interacaoEixo.put("tipo", revelado ? "OCULTAR_EIXO" : "REVELAR_EIXO");
+                interacaoEixo.put("acao_id", revelado ? "OCULTAR_EIXO" : "REVELAR_EIXO");
+                interacaoEixo.put("fase_envio", "IMEDIATA");
+                interacaoEixo.put("papel_id", figura.getChavePapelSemantico());
+                interacoes.add(interacaoEixo);
+            }
+            item.put("interacoes_permitidas", interacoes);
             figuras.add(item);
         }
         return figuras;

@@ -88,8 +88,10 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
-  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO";
-  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO";
+  tipo: "EDITAR_VALOR" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO"
+    | "REVELAR_EIXO" | "OCULTAR_EIXO";
+  acao_id: "PROPOR_VALOR_PAPEL" | "POSICIONAR_CONHECIDO" | "ENGATAR_INCOGNITA" | "AJUSTAR_QUADRADINHO"
+    | "REVELAR_EIXO" | "OCULTAR_EIXO";
   fase_envio: "CONFIRMACAO" | "IMEDIATA";
   papel_id: string;
 }>;

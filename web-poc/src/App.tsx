@@ -223,6 +223,20 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  async function alternarEixo(figura: FiguraCena) {
+    const interacao = figura.interacoes_permitidas.find(
+      (item) => item.tipo === (figura.lupa_habilitada ? "OCULTAR_EIXO" : "REVELAR_EIXO"));
+    if (!interacao) return;
+    setOcupado(true);
+    try {
+      const resultado = figura.lupa_habilitada
+        ? await api.ocultarEixo(interacao.papel_id)
+        : await api.revelarEixo(interacao.papel_id);
+      receberSnapshot(resultado.estado);
+    } catch (erro) { console.error(erro); }
+    finally { setOcupado(false); }
+  }
+
   const figuraEmEdicao = estado && representacoes.elementoEmEdicao
     ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
     : undefined;
@@ -297,6 +311,7 @@ export default function App() {
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
             figuraDestacadaId={figuraDestacadaId}
+            aoAlternarEixo={(figura) => void alternarEixo(figura)}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
           {figuraEmEdicao && <EdicaoValorFigura figuraId={figuraEmEdicao.id}

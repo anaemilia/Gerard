@@ -50,6 +50,16 @@ export const api = {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
       body: JSON.stringify(acao.corpo ?? {})
     }),
+  revelarEixo: (papelId: string) =>
+    requisitar<ResultadoPosicionarConhecido>("/api/acoes/revelar-eixo", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ papel_id: papelId })
+    }),
+  ocultarEixo: (papelId: string) =>
+    requisitar<ResultadoPosicionarConhecido>("/api/acoes/ocultar-eixo", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ papel_id: papelId })
+    }),
   ajudaContextual: (area: AreaAjudaContextual, intencao: IntencaoAjuda) =>
     requisitar<ResultadoAjudaContextual>("/api/acoes/ajuda-contextual", {
       method: "POST", headers: { "Content-Type": "application/json" },
