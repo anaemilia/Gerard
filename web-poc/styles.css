@@ -156,8 +156,10 @@ button:disabled { cursor:not-allowed; opacity:.5; }
    estilo de interação fixo do desktop desde 2026-07-28, Main.java:817): mesmas
    cores exatas rgb(250,235,224)/rgb(169,92,47), espessura 2.8. */
 .scene-figure-destacada rect,.scene-figure-destacada ellipse { fill:#faebe0; stroke:#a95c2f; stroke-width:2.8; }
-.scene-figure text,.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
+.scene-figure text { fill:var(--texto); font-size:18px; text-anchor:middle; }
+.scene-connector text { fill:var(--texto); font-size:13px; text-anchor:middle; }
 .scene-figure .scene-figure-subtitle,.scene-figure .scene-figure-role { fill:var(--texto-secundario); font-weight:700; }
+.scene-figure .scene-figure-valor { font-size:24px; }
 .scene-connector path { fill:none; stroke:var(--texto-secundario); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .scene-connector marker path { fill:var(--texto-secundario); stroke:none; }
 .scene-magnifier { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:1.5; opacity:.72; }

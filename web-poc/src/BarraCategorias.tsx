@@ -216,7 +216,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <p>Gérard Vergnaud (1933–2021), referência teórica das estruturas aditivas.</p>
         <div className="gerard-links"><a href="https://pt.wikipedia.org/wiki/G%C3%A9rard_Vergnaud" target="_blank" rel="noreferrer">Abrir página na Wikipédia</a><a href="https://www.youtube.com/watch?v=pU7um4GX5XQ" target="_blank" rel="noreferrer">Abrir vídeo no YouTube</a><a href="https://vergnaudbrasil.com/" target="_blank" rel="noreferrer">Abrir site Vergnaud Brasil</a></div>
         <h3>Na UFPE em 2009</h3>
-        <p>Registro em Recife, exibido apenas com o recorte dos rostos.</p>
+        <p>Registro em Recife.</p>
         <div className="recife-photos"><img src="/em_recife_rostos.png" alt="Gérard Vergnaud na UFPE"/><img src="/em_recife_adicional.png" alt="Gérard Vergnaud com participantes na UFPE"/></div>
       </section>
     </div>}

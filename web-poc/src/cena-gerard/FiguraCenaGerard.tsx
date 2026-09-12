@@ -116,7 +116,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
         rótulo/papel. */}
     {figura.subtitulo && <text className="scene-figure-subtitle"
       x={figura.x + figura.largura / 2} y={coordenadaYDoSubtitulo(figura)}>{figura.subtitulo}</text>}
-    <text className={figura.subtitulo ? "scene-figure-role" : undefined}
+    <text className={`${conhecida || engatada ? "scene-figure-valor" : ""}${figura.subtitulo ? " scene-figure-role" : ""}`.trim() || undefined}
       x={figura.x + figura.largura / 2}
       y={conhecida || engatada ? coordenadaYDoValor(figura) : coordenadaYDoRotulo(figura)}>
       {conhecida ? figura.valor : engatada ? "?" : figura.rotulo}
