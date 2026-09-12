@@ -9,6 +9,7 @@ import { AvisoPosicionamentoFigura } from "./AvisoPosicionamentoFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
+import { ChatbotGerard } from "./ChatbotGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
   const [avisoSinal, setAvisoSinal] = useState<{ figuraId: string; mensagem: string } | null>(null);
   const [avisoPosicionamento, setAvisoPosicionamento] =
     useState<{ figuraId: string; mensagem: string } | null>(null);
+  const [chatAberto, setChatAberto] = useState(false);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
@@ -273,13 +275,17 @@ export default function App() {
 
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
+      aoAbrirChat={() => setChatAberto(true)}
       podeSortearMedidas={Boolean(acao("SORTEAR_MEDIDAS"))}
       podeSortearRelacoes={Boolean(acao("SORTEAR_RELACOES"))}
       aoSortearMedidas={() => sortear("SORTEAR_MEDIDAS")}
       aoSortearRelacoes={() => sortear("SORTEAR_RELACOES")}
       categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
       categoriaSelecionada={estado ? estado.categoria_selecionada : null}
-      aoEscolherCategoria={escolherCategoria} />
+      aoEscolherCategoria={escolherCategoria}
+      contextoRelatoBug={estado ? { situacaoId: estado.situacao_id,
+        categoria: estado.categoria, enunciado: estado.enunciado } : null} />
+    <ChatbotGerard aberto={chatAberto} aoFechar={() => setChatAberto(false)} />
     {estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
         {estado.dica_proximo_passo

@@ -1,6 +1,7 @@
 import type { AcaoDisponivel, AreaAjudaContextual, EstadoWeb, IntencaoAjuda, ResultadoAcao,
   ResultadoAjudaContextual, ResultadoClassificacao, ResultadoEscolherSinal,
-  ResultadoPosicionarConhecido, ResultadoQuadradinho } from "./contratos";
+  ResultadoPosicionarConhecido, ResultadoQuadradinho, CadastroUsuarioWeb, ListaUsuariosWeb,
+  PerfilUsuarioWeb, SessaoUsuarioWeb, ResultadoRelatoBug } from "./contratos";
 
 async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
   const resposta = await fetch(url, init);
@@ -10,6 +11,13 @@ async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  listarUsuarios: () => requisitar<ListaUsuariosWeb>("/api/usuarios"),
+  cadastrarUsuario: (cadastro: CadastroUsuarioWeb) => requisitar<PerfilUsuarioWeb>("/api/usuarios", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cadastro)
+  }),
+  entrarUsuario: (usuarioId: string) => requisitar<SessaoUsuarioWeb>("/api/sessao/usuario", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario_id: usuarioId })
+  }),
   carregar: () => requisitar<EstadoWeb>("/api/situacao"),
   executar: (acao: AcaoDisponivel) => requisitar<EstadoWeb>(acao.href, {
     method: acao.metodo,
@@ -64,5 +72,11 @@ export const api = {
     requisitar<ResultadoAjudaContextual>("/api/acoes/ajuda-contextual", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ area, intencao })
+    }),
+  relatarBug: (dados: { descricao: string; situacao_id: string; categoria: string;
+      representacoes: string; idioma_interface: string; idioma_situacao: string; enunciado: string }) =>
+    requisitar<ResultadoRelatoBug>("/api/acoes/relato-bug", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados)
     })
 };

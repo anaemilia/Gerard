@@ -4,7 +4,15 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
 import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.adaptacao.sessao.SessaoAdaptativaUsuario;
+import gerard.agente.modelador.RepositorioRegrasAdaptativasPublicadas;
+import gerard.agente.modelousuario.Genero;
+import gerard.agente.modelousuario.MidiaPreferida;
+import gerard.agente.modelousuario.ModeloUsuario;
+import gerard.agente.modelousuario.NivelEscolaridade;
+import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.pesquisador.auditoria.EscritorJsonSimples;
+import gerard.suporte.PreparadorEmailRelatoBug;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -12,6 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -21,6 +33,9 @@ public final class ServidorPrototipoWeb {
             new ServicoSorteioAtividadeWeb();
     private final Path raizWeb;
     private final AtomicLong gestosRecebidos = new AtomicLong();
+    private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
+    private final SessaoAdaptativaUsuario sessaoUsuario = new SessaoAdaptativaUsuario(
+            usuarios, new RepositorioRegrasAdaptativasPublicadas());
 
     private ServidorPrototipoWeb(Path raizWeb) {
         this.raizWeb = raizWeb.toAbsolutePath().normalize();
@@ -50,6 +65,9 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/sorteios/relacoes", aplicacao::sortearRelacoes);
         servidor.createContext("/api/classificacao/categoria", aplicacao::escolherCategoria);
         servidor.createContext("/api/classificacao/confirmacao", aplicacao::confirmarCategoria);
+        servidor.createContext("/api/usuarios", aplicacao::usuarios);
+        servidor.createContext("/api/sessao/usuario", aplicacao::entrarUsuario);
+        servidor.createContext("/api/acoes/relato-bug", aplicacao::relatoBug);
         servidor.createContext("/", aplicacao::arquivoEstatico);
         servidor.setExecutor(null);
         servidor.start();
@@ -65,6 +83,133 @@ public final class ServidorPrototipoWeb {
         // pelo widget fixo legado (atividade) — diagrama só depois de a
         // categoria ser acertada, ver ServicoSorteioAtividadeWeb.estadoInicial.
         responder(troca, 200, sorteios.estadoInicial());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void usuarios(HttpExchange troca) throws IOException {
+        if ("GET".equals(troca.getRequestMethod())) {
+            List<Object> perfis = new ArrayList<Object>();
+            for (ModeloUsuario modelo : usuarios.listarPerfisCadastrados()) {
+                perfis.add(perfilJson(modelo));
+            }
+            Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+            resposta.put("schema", "gerard.usuarios-web.v1");
+            resposta.put("usuarios", perfis);
+            responder(troca, 200, resposta);
+            return;
+        }
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        Path fotoTemporaria = null;
+        try {
+            Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
+                    new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            String nome = textoObrigatorio(corpo, "nome");
+            int idade = ((Number) corpo.get("idade")).intValue();
+            if (idade < 1 || idade > 120) throw new IllegalArgumentException("idade inválida");
+            Genero sexo = Genero.valueOf(textoObrigatorio(corpo, "sexo"));
+            MidiaPreferida midia = MidiaPreferida.valueOf(textoObrigatorio(corpo, "midia_preferida"));
+            NivelEscolaridade escolaridade = NivelEscolaridade.valueOf(
+                    textoObrigatorio(corpo, "nivel_escolaridade"));
+            Object foto = corpo.get("foto_data_url");
+            if (foto instanceof String && !((String) foto).isBlank()) {
+                String dataUrl = (String) foto;
+                int virgula = dataUrl.indexOf(',');
+                if (virgula < 0 || !dataUrl.startsWith("data:image/")) {
+                    throw new IllegalArgumentException("foto inválida");
+                }
+                byte[] bytes = Base64.getDecoder().decode(dataUrl.substring(virgula + 1));
+                if (bytes.length > 5 * 1024 * 1024) throw new IllegalArgumentException("a foto excede 5 MB");
+                fotoTemporaria = Files.createTempFile("gerard-perfil-", ".img");
+                Files.write(fotoTemporaria, bytes);
+            }
+            String id = usuarios.cadastrarPerfil(nome, Integer.valueOf(idade), sexo, midia,
+                    escolaridade, fotoTemporaria == null ? null : fotoTemporaria.toFile());
+            responder(troca, 201, perfilJson(usuarios.obter(id)));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        } finally {
+            if (fotoTemporaria != null) Files.deleteIfExists(fotoTemporaria);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void entrarUsuario(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
+                    new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            String id = textoObrigatorio(corpo, "usuario_id");
+            if (sessaoUsuario.fotografiaAtual().isPresent()
+                    && !id.equals(sessaoUsuario.fotografiaAtual().get().getUsuarioId())) {
+                sessaoUsuario.encerrarNoLogout();
+            }
+            String versao = sessaoUsuario.iniciarNoLogin(id).getVersaoModelo();
+            Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+            resposta.put("schema", "gerard.sessao-usuario-web.v1");
+            resposta.put("usuario_id", id);
+            resposta.put("versao_modelo", versao);
+            responder(troca, 200, resposta);
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void relatoBug(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
+                    new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            String descricao = textoObrigatorio(corpo, "descricao");
+            String situacaoId = textoOpcional(corpo, "situacao_id");
+            String categoria = textoOpcional(corpo, "categoria");
+            String representacoes = textoOpcional(corpo, "representacoes");
+            String idiomaInterface = textoOpcional(corpo, "idioma_interface");
+            String idiomaSituacao = textoOpcional(corpo, "idioma_situacao");
+            String enunciado = textoOpcional(corpo, "enunciado");
+            PreparadorEmailRelatoBug.MensagemPreparada mensagem = PreparadorEmailRelatoBug.preparar(
+                    descricao, situacaoId, categoria, representacoes,
+                    idiomaInterface, idiomaSituacao, enunciado);
+            Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+            resposta.put("uri_gmail", mensagem.getUriGmail().toString());
+            resposta.put("uri_mailto", mensagem.getUriMailto().toString());
+            responder(troca, 200, resposta);
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    private static String textoOpcional(Map<String, Object> corpo, String campo) {
+        Object valor = corpo.get(campo);
+        return valor == null ? "" : String.valueOf(valor);
+    }
+
+    private static Map<String, Object> perfilJson(ModeloUsuario modelo) {
+        Map<String, Object> perfil = new LinkedHashMap<String, Object>();
+        perfil.put("id", modelo.getPerfilAluno().getId());
+        perfil.put("nome", modelo.getPerfilAluno().getNome());
+        perfil.put("idade", modelo.getPerfilAluno().getIdade());
+        perfil.put("sexo", modelo.getPerfilAluno().getSexo() == null ? null : modelo.getPerfilAluno().getSexo().name());
+        perfil.put("midia_preferida", modelo.getPerfilAprendizagem().getMidiaPreferida() == null ? null : modelo.getPerfilAprendizagem().getMidiaPreferida().name());
+        perfil.put("nivel_escolaridade", modelo.getPerfilAprendizagem().getNivelEscolaridade() == null ? null : modelo.getPerfilAprendizagem().getNivelEscolaridade().name());
+        perfil.put("possui_foto", modelo.getPerfilAluno().getFotoCaminho() != null);
+        return perfil;
+    }
+
+    private static String textoObrigatorio(Map<String, Object> corpo, String campo) {
+        Object valor = corpo.get(campo);
+        String texto = valor == null ? "" : String.valueOf(valor).trim();
+        if (texto.isEmpty()) throw new IllegalArgumentException(campo + " é obrigatório");
+        return texto;
     }
 
     @SuppressWarnings("unchecked")
