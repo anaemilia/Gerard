@@ -25,6 +25,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Servidor local da prova funcional; HTTP e arquivos ficam na infraestrutura. */
@@ -98,6 +99,30 @@ public final class ServidorPrototipoWeb {
             responder(troca, 200, resposta);
             return;
         }
+        if ("PUT".equals(troca.getRequestMethod())) {
+            Path fotoTemporariaEdicao = null;
+            try {
+                Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
+                        new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+                String id = textoObrigatorio(corpo, "usuario_id");
+                String nome = textoObrigatorio(corpo, "nome");
+                int idade = ((Number) corpo.get("idade")).intValue();
+                if (idade < 1 || idade > 120) throw new IllegalArgumentException("idade inválida");
+                Genero sexo = Genero.valueOf(textoObrigatorio(corpo, "sexo"));
+                MidiaPreferida midia = MidiaPreferida.valueOf(textoObrigatorio(corpo, "midia_preferida"));
+                NivelEscolaridade escolaridade = NivelEscolaridade.valueOf(
+                        textoObrigatorio(corpo, "nivel_escolaridade"));
+                fotoTemporariaEdicao = decodificarFotoTemporaria(corpo.get("foto_data_url"));
+                usuarios.atualizarPerfil(id, nome, Integer.valueOf(idade), sexo, midia,
+                        escolaridade, fotoTemporariaEdicao == null ? null : fotoTemporariaEdicao.toFile());
+                responder(troca, 200, perfilJson(usuarios.obter(id)));
+            } catch (RuntimeException erro) {
+                responder(troca, 400, erro(erro.getMessage()));
+            } finally {
+                if (fotoTemporariaEdicao != null) Files.deleteIfExists(fotoTemporariaEdicao);
+            }
+            return;
+        }
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
             return;
@@ -113,18 +138,7 @@ public final class ServidorPrototipoWeb {
             MidiaPreferida midia = MidiaPreferida.valueOf(textoObrigatorio(corpo, "midia_preferida"));
             NivelEscolaridade escolaridade = NivelEscolaridade.valueOf(
                     textoObrigatorio(corpo, "nivel_escolaridade"));
-            Object foto = corpo.get("foto_data_url");
-            if (foto instanceof String && !((String) foto).isBlank()) {
-                String dataUrl = (String) foto;
-                int virgula = dataUrl.indexOf(',');
-                if (virgula < 0 || !dataUrl.startsWith("data:image/")) {
-                    throw new IllegalArgumentException("foto inválida");
-                }
-                byte[] bytes = Base64.getDecoder().decode(dataUrl.substring(virgula + 1));
-                if (bytes.length > 5 * 1024 * 1024) throw new IllegalArgumentException("a foto excede 5 MB");
-                fotoTemporaria = Files.createTempFile("gerard-perfil-", ".img");
-                Files.write(fotoTemporaria, bytes);
-            }
+            fotoTemporaria = decodificarFotoTemporaria(corpo.get("foto_data_url"));
             String id = usuarios.cadastrarPerfil(nome, Integer.valueOf(idade), sexo, midia,
                     escolaridade, fotoTemporaria == null ? null : fotoTemporaria.toFile());
             responder(troca, 201, perfilJson(usuarios.obter(id)));
@@ -135,8 +149,31 @@ public final class ServidorPrototipoWeb {
         }
     }
 
+    private static Path decodificarFotoTemporaria(Object foto) throws IOException {
+        if (!(foto instanceof String) || ((String) foto).isBlank()) return null;
+        String dataUrl = (String) foto;
+        int virgula = dataUrl.indexOf(',');
+        if (virgula < 0 || !dataUrl.startsWith("data:image/")) {
+            throw new IllegalArgumentException("foto inválida");
+        }
+        byte[] bytes = Base64.getDecoder().decode(dataUrl.substring(virgula + 1));
+        if (bytes.length > 5 * 1024 * 1024) throw new IllegalArgumentException("a foto excede 5 MB");
+        Path fotoTemporaria = Files.createTempFile("gerard-perfil-", ".img");
+        Files.write(fotoTemporaria, bytes);
+        return fotoTemporaria;
+    }
+
     @SuppressWarnings("unchecked")
     private void entrarUsuario(HttpExchange troca) throws IOException {
+        if ("GET".equals(troca.getRequestMethod())) {
+            Optional<String> idAtual = sessaoUsuario.fotografiaAtual().map(f -> f.getUsuarioId());
+            Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+            resposta.put("schema", "gerard.sessao-usuario-web.v1");
+            resposta.put("usuario_id", idAtual.orElse(null));
+            resposta.put("perfil", idAtual.map(id -> perfilJson(usuarios.obter(id))).orElse(null));
+            responder(troca, 200, resposta);
+            return;
+        }
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
             return;

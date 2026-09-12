@@ -3,6 +3,12 @@ import { IconeChat } from "./ChatbotGerard";
 import { api } from "./api";
 import type { PerfilUsuarioWeb } from "./contratos";
 
+const ROTULOS_MIDIA: Record<string, string> = { SOM: "Som", GRAFICO: "Gráfico",
+  LINGUAGEM_NATURAL: "Linguagem natural", VIDEO: "Vídeo", HISTORIA_EM_QUADRINHOS: "História em quadrinhos" };
+const VALORES_MIDIA: Record<string, string> = { "Som": "SOM", "Gráfico": "GRAFICO",
+  "Linguagem natural": "LINGUAGEM_NATURAL", "Vídeo": "VIDEO", "História em quadrinhos": "HISTORIA_EM_QUADRINHOS" };
+const ROTULOS_SEXO: Record<string, string> = { MASCULINO: "Masculino", FEMININO: "Feminino", OUTRO: "Outro" };
+
 type IconeProps = { tipo: "composicao" | "transformacao" | "comparacao" | "relacoes" | "transformacaoRelacao" | "composicaoTransformacoes" };
 
 function IconeCategoria({ tipo }: IconeProps) {
@@ -71,6 +77,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
   const [enviandoRelatoBug, setEnviandoRelatoBug] = useState(false);
   const [usuarios, setUsuarios] = useState<readonly PerfilUsuarioWeb[]>([]);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState("");
+  const [usuarioAtual, setUsuarioAtual] = useState<PerfilUsuarioWeb | null>(null);
   const [nome, setNome] = useState("");
   const [idade, setIdade] = useState(30);
   const [sexo, setSexo] = useState("Masculino");
@@ -79,7 +86,20 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
   const [foto, setFoto] = useState<string | null>(null);
   const [erroUsuario, setErroUsuario] = useState("");
   const [salvandoUsuario, setSalvandoUsuario] = useState(false);
-  useEffect(() => { if (dialogo === "usuario") api.listarUsuarios().then(r => setUsuarios(r.usuarios)).catch(e => setErroUsuario(e.message)); }, [dialogo]);
+  useEffect(() => {
+    api.consultarSessaoUsuario().then(r => setUsuarioAtual(r.perfil)).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (dialogo !== "usuario") return;
+    if (usuarioAtual) {
+      setNome(usuarioAtual.nome); setIdade(usuarioAtual.idade);
+      setSexo(ROTULOS_SEXO[usuarioAtual.sexo] ?? "Masculino");
+      setMidia(ROTULOS_MIDIA[usuarioAtual.midia_preferida] ?? "Som");
+      setEscolaridade(usuarioAtual.nivel_escolaridade); setFoto(null);
+    } else {
+      api.listarUsuarios().then(r => setUsuarios(r.usuarios)).catch(e => setErroUsuario(e.message));
+    }
+  }, [dialogo, usuarioAtual]);
   // Mesmo conteúdo/ordem de PreparadorEmailRelatoBug.montarCorpo (Java) —
   // o servidor monta o assunto/corpo reais e devolve a URL do Gmail Web
   // (preferida) e do mailto (contingência), como no desktop.
@@ -110,7 +130,12 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
   };
   const entrar = async (id: string) => {
     setSalvandoUsuario(true); setErroUsuario("");
-    try { await api.entrarUsuario(id); setUsuarioSelecionado(id); setDialogo(null); }
+    try {
+      await api.entrarUsuario(id);
+      setUsuarioSelecionado(id);
+      setUsuarioAtual(usuarios.find(u => u.id === id) ?? null);
+      setDialogo(null);
+    }
     catch (erro) { setErroUsuario(erro instanceof Error ? erro.message : String(erro)); }
     finally { setSalvandoUsuario(false); }
   };
@@ -119,11 +144,27 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
     if (!nomeLimpo) return;
     setSalvandoUsuario(true); setErroUsuario("");
     try {
-      const midias: Record<string,string> = { "Som":"SOM", "Gráfico":"GRAFICO", "Linguagem natural":"LINGUAGEM_NATURAL", "Vídeo":"VIDEO", "História em quadrinhos":"HISTORIA_EM_QUADRINHOS" };
-      const perfil = await api.cadastrarUsuario({ nome:nomeLimpo, idade, sexo:sexo.toUpperCase(), midia_preferida:midias[midia], nivel_escolaridade:escolaridade, foto_data_url:foto });
+      const perfil = await api.cadastrarUsuario({ nome:nomeLimpo, idade, sexo:sexo.toUpperCase(),
+        midia_preferida:VALORES_MIDIA[midia], nivel_escolaridade:escolaridade, foto_data_url:foto });
       setUsuarios(atuais => [...atuais, perfil]);
-      await entrar(perfil.id);
-    } catch (erro) { setErroUsuario(erro instanceof Error ? erro.message : String(erro)); setSalvandoUsuario(false); }
+      await api.entrarUsuario(perfil.id);
+      setUsuarioAtual(perfil);
+      setDialogo(null);
+    } catch (erro) { setErroUsuario(erro instanceof Error ? erro.message : String(erro)); }
+    finally { setSalvandoUsuario(false); }
+  };
+  const salvarEdicao = async () => {
+    const nomeLimpo = nome.trim();
+    if (!nomeLimpo || !usuarioAtual) return;
+    setSalvandoUsuario(true); setErroUsuario("");
+    try {
+      const perfil = await api.atualizarUsuario({ usuario_id: usuarioAtual.id, nome:nomeLimpo, idade,
+        sexo:sexo.toUpperCase(), midia_preferida:VALORES_MIDIA[midia],
+        nivel_escolaridade:escolaridade, foto_data_url:foto });
+      setUsuarioAtual(perfil);
+      setDialogo(null);
+    } catch (erro) { setErroUsuario(erro instanceof Error ? erro.message : String(erro)); }
+    finally { setSalvandoUsuario(false); }
   };
 
   return <header className="top-area">
@@ -133,7 +174,13 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <a href="https://anaemilia.github.io/Gerard/" target="_blank" rel="noreferrer" aria-label="Abrir a página do Gérard" title="Abrir a página do Gérard"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c4 4 4 14 0 18M12 3c-4 4-4 14 0 18"/></svg></a>
         <button type="button" onClick={() => setDialogo("bug")} aria-label="Informar um problema encontrado no Gérard" title="Informar um problema encontrado no Gérard"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><rect x="7" y="10" width="10" height="9" rx="4"/><path d="M4 11h3M17 11h3M4 16h3M17 16h3M8 5 6 3M16 5l2-2"/></svg></button>
         <button type="button" onClick={() => setDialogo("gerard")} className="gerard-info" aria-label="Gérard Vergnaud" title="Gérard Vergnaud"><img src="/gerard_vergnaud.png" alt="" /></button>
-        <button type="button" onClick={() => setDialogo("usuario")} aria-label="Selecionar ou cadastrar usuário" title="Selecionar ou cadastrar usuário"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M9 16h13m-5-5 5 5-5 5"/></svg></button>
+        <button type="button" className={usuarioAtual ? "usuario-trigger-logado" : undefined}
+            onClick={() => setDialogo("usuario")} aria-label="Selecionar ou cadastrar usuário"
+            title="Selecionar ou cadastrar usuário">
+          {usuarioAtual
+            ? <span>{usuarioAtual.nome}  ▼</span>
+            : <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M9 16h13m-5-5 5 5-5 5"/></svg>}
+        </button>
       </div>
       <div className="utility-right"><button className="chat-trigger" type="button" onClick={aoAbrirChat} aria-label="Abrir o chat de ajuda" title="Abrir o chat de ajuda"><IconeChat /></button><span className="language">Português</span></div>
     </div>
@@ -173,7 +220,23 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <div className="recife-photos"><img src="/em_recife_rostos.png" alt="Gérard Vergnaud na UFPE"/><img src="/em_recife_adicional.png" alt="Gérard Vergnaud com participantes na UFPE"/></div>
       </section>
     </div>}
-    {dialogo === "usuario" && <div className="utility-modal-backdrop" role="presentation" onMouseDown={() => setDialogo(null)}>
+    {dialogo === "usuario" && usuarioAtual && <div className="utility-modal-backdrop" role="presentation" onMouseDown={() => setDialogo(null)}>
+      <section className="utility-dialog usuario-dialog" role="dialog" aria-modal="true" aria-labelledby="usuario-title" onMouseDown={e => e.stopPropagation()}>
+        <header><h2 id="usuario-title">Meus dados</h2><button type="button" onClick={() => setDialogo(null)} aria-label="Fechar">×</button></header>
+        <p>Edite seus dados cadastrados.</p>
+        <section className="usuario-cadastro">
+          <div className="usuario-nome-foto"><label>Nome<input value={nome} onChange={e => setNome(e.target.value)} /></label><label className="usuario-foto"><span className="foto-preview">{foto ? <img src={foto} alt="Foto escolhida" /> : "Foto"}</span><span className="foto-escolher">Escolher foto…</span><input type="file" accept="image/*" onChange={e => { const arquivo=e.target.files?.[0]; if (arquivo) { const leitor=new FileReader(); leitor.onload=() => setFoto(String(leitor.result)); leitor.readAsDataURL(arquivo); } }} /></label></div>
+          <label>Idade<input type="number" min="1" max="120" value={idade} onChange={e => setIdade(Number(e.target.value))} /></label>
+          <label>Sexo<select value={sexo} onChange={e => setSexo(e.target.value)}><option>Masculino</option><option>Feminino</option><option>Outro</option></select></label>
+          <fieldset><legend>Mídia preferida</legend>{["Som","Gráfico","Linguagem natural","Vídeo","História em quadrinhos"].map(opcao => <label key={opcao}><input type="radio" name="midia" value={opcao} checked={midia === opcao} onChange={e => setMidia(e.target.value)} />{opcao}</label>)}</fieldset>
+          <label>Nível de escolaridade<select value={escolaridade} onChange={e => setEscolaridade(e.target.value)}><option value="PRIMEIRO_GRAU">1º grau</option><option value="SEGUNDO_GRAU">2º grau</option><option value="GRADUACAO">Graduação</option><option value="POS_GRADUACAO">Pós-graduação</option></select></label>
+          <button className="usuario-acao" type="button" disabled={!nome.trim() || salvandoUsuario} onClick={salvarEdicao}>Salvar</button>
+        </section>
+        {erroUsuario && <p className="message message-erro" role="alert">{erroUsuario}</p>}
+        <div className="utility-dialog-actions"><button type="button" onClick={() => setDialogo(null)}>Cancelar</button></div>
+      </section>
+    </div>}
+    {dialogo === "usuario" && !usuarioAtual && <div className="utility-modal-backdrop" role="presentation" onMouseDown={() => setDialogo(null)}>
       <section className="utility-dialog usuario-dialog" role="dialog" aria-modal="true" aria-labelledby="usuario-title" onMouseDown={e => e.stopPropagation()}>
         <header><h2 id="usuario-title">Usuário</h2><button type="button" onClick={() => setDialogo(null)} aria-label="Fechar">×</button></header>
         <p>Quem está usando o Gérard agora?</p>

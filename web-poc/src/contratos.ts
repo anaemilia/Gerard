@@ -3,7 +3,9 @@ export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as cons
 export type PerfilUsuarioWeb = Readonly<{ id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; possui_foto:boolean }>;
 export type ListaUsuariosWeb = Readonly<{ schema:"gerard.usuarios-web.v1"; usuarios:readonly PerfilUsuarioWeb[] }>;
 export type CadastroUsuarioWeb = Readonly<{ nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; foto_data_url:string|null }>;
+export type EdicaoUsuarioWeb = Readonly<{ usuario_id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; foto_data_url:string|null }>;
 export type SessaoUsuarioWeb = Readonly<{ schema:"gerard.sessao-usuario-web.v1"; usuario_id:string; versao_modelo:string }>;
+export type SessaoAtualUsuarioWeb = Readonly<{ schema:"gerard.sessao-usuario-web.v1"; usuario_id:string|null; perfil:PerfilUsuarioWeb|null }>;
 
 export type AcaoDisponivel = Readonly<{
   id: "SORTEAR_MEDIDAS" | "SORTEAR_RELACOES" | "REINICIAR_TENTATIVA" | "PROPOR_VALOR_PAPEL" |

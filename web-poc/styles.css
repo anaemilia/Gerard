@@ -13,6 +13,7 @@ button, input { font:inherit; } button { cursor:pointer; }
 .utility-left>a:hover,.utility-left>button:hover,.chat-trigger:hover { background:var(--borda); }
 .utility-left svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 .utility-left .gerard-info img { width:24px; height:24px; border-radius:50%; object-fit:cover; }
+.utility-left .usuario-trigger-logado { width:auto; padding:3px 10px; font-size:.82rem; font-weight:700; white-space:nowrap; }
 .chat-trigger { width:38px; }
 .chat-trigger svg { width:34px; height:26px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 .chat-trigger svg circle { fill:currentColor; stroke:none; }

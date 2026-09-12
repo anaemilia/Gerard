@@ -1,7 +1,8 @@
 import type { AcaoDisponivel, AreaAjudaContextual, EstadoWeb, IntencaoAjuda, ResultadoAcao,
   ResultadoAjudaContextual, ResultadoClassificacao, ResultadoEscolherSinal,
-  ResultadoPosicionarConhecido, ResultadoQuadradinho, CadastroUsuarioWeb, ListaUsuariosWeb,
-  PerfilUsuarioWeb, SessaoUsuarioWeb, ResultadoRelatoBug } from "./contratos";
+  ResultadoPosicionarConhecido, ResultadoQuadradinho, CadastroUsuarioWeb, EdicaoUsuarioWeb,
+  ListaUsuariosWeb, PerfilUsuarioWeb, SessaoUsuarioWeb, SessaoAtualUsuarioWeb,
+  ResultadoRelatoBug } from "./contratos";
 
 async function requisitar<T>(url: string, init?: RequestInit): Promise<T> {
   const resposta = await fetch(url, init);
@@ -18,6 +19,10 @@ export const api = {
   entrarUsuario: (usuarioId: string) => requisitar<SessaoUsuarioWeb>("/api/sessao/usuario", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ usuario_id: usuarioId })
   }),
+  atualizarUsuario: (edicao: EdicaoUsuarioWeb) => requisitar<PerfilUsuarioWeb>("/api/usuarios", {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(edicao)
+  }),
+  consultarSessaoUsuario: () => requisitar<SessaoAtualUsuarioWeb>("/api/sessao/usuario"),
   carregar: () => requisitar<EstadoWeb>("/api/situacao"),
   executar: (acao: AcaoDisponivel) => requisitar<EstadoWeb>(acao.href, {
     method: acao.metodo,
