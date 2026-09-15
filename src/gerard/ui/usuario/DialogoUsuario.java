@@ -38,7 +38,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -551,12 +550,23 @@ public final class DialogoUsuario extends JDialog {
     }
 
     private JButton criarBotaoPrimario(String texto) {
-        JButton botao = new JButton(texto);
+        final JButton botao = new JButton(texto);
         botao.setFont(UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-        botao.setForeground(Color.WHITE);
-        botao.setBackground(UITemaGerard.COR_PRIMARIA);
+        botao.setForeground(UITemaGerard.COR_TEXTO);
+        botao.setBackground(UITemaGerard.COR_SUPERFICIE_SUAVE);
+        botao.setOpaque(true);
         botao.setFocusPainted(false);
-        botao.setBorder(BorderFactory.createEmptyBorder(8, 13, 8, 13));
+        botao.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITemaGerard.COR_BORDA),
+                BorderFactory.createEmptyBorder(7, 12, 7, 12)));
+        botao.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                botao.setBackground(UITemaGerard.COR_DESTAQUE);
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                botao.setBackground(UITemaGerard.COR_SUPERFICIE_SUAVE);
+            }
+        });
         return botao;
     }
 
