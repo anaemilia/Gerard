@@ -68,10 +68,26 @@ há convenção prévia de `.gitignore` para esse padrão nem histórico de comm
 dele. Decisão (apagar ou manter fora do versionamento) não tomada nesta
 sessão — cabe à pesquisadora.
 
-## 5. A verificar — versão-alvo do build de deploy
+## 5. Esclarecida — versão-alvo do build de deploy
 
-`Dockerfile` compila com `eclipse-temurin:11-jdk`/`-source 8 -target 8`. Uma
-memória de projeto anterior registra um incidente de incompatibilidade
-envolvendo JDK 17 no runtime de deploy. Não investigado a fundo nesta
-sessão (fora do escopo tratado); verificar qual é a versão-alvo correta
-antes do próximo deploy em Render.
+Não é uma inconsistência: existem dois pipelines de deploy distintos,
+verificados diretamente nesta sessão.
+
+- Este repositório (`Dockerfile`/`render.yaml`, serviço Render
+  `gerard-web-poc`) compila a partir do código-fonte dentro da imagem
+  Docker, com `eclipse-temurin:11-jdk` e `-source 8 -target 8` — build
+  autocontido, criado em 31/08 e último ajuste em 04/09/2026.
+- `C:\gd` (repositório separado `gerard-web-deploy`, README confirma "não é
+  o repositório de código-fonte") copia artefatos já compilados
+  (`app/build`, `app/lib`, `app/web-poc`) para uma imagem
+  `eclipse-temurin:17-jre-jammy`; é este que roda o serviço
+  `gerard-web-deploy-1`. Já contém o commit `212fd89` ("recompilar com
+  --release 17") que corrigiu o `UnsupportedClassVersionError` registrado
+  na memória de projeto — a correção já está em produção desde 11/09/2026.
+
+Pendência real aqui: `C:\gd` está 4 commits atrás deste repositório (parado
+em `19d6ce7`, o mesmo commit que antecede os quatro commits desta sessão —
+`77a4e67`, `6ce0916`, `75a809f`, `ff65101`). Se as mudanças de hoje devem
+ir ao ar, falta recompilar com `--release 17`, copiar os artefatos para
+`C:\gd` e dar push — passo manual, não deve ser feito sem autorização
+explícita da pesquisadora (é ação visível externamente/deploy).
