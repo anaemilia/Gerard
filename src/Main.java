@@ -114,6 +114,8 @@ import gerard.semantica.quantidade.ServicoQuantidadeContextual;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
 import gerard.interpretacao.modelo.NumeroEncontrado;
 import gerard.i18n.ServicoLocalizacao;
+import gerard.ui.chat.DialogoChatbotGerard;
+import gerard.ui.chat.MensagensComunicabilidadeChatbot;
 import gerard.Scaffolding.ScaffoldingNumeroRelativo;
 import gerard.Scaffolding.proximidade.EstadoRealceAlvo;
 import gerard.Scaffolding.proximidade.EstiloRealceAlvo;
@@ -626,6 +628,7 @@ public class Main extends JFrame {
         JMenuBar menuBarPrincipal;
         JMenuItem itemNovaSituacao;
         JMenu menuCategoria;
+        JPanel painelAcoesCabecalhoEsquerda;
         // Botões de ícone embutidos no cabeçalho desta aba (decisão da
         // usuária, 2026-07-28) — Sortear traz o Sortear pra fora do menu
         // Arquivo, que ela achou escondido demais; Comparar tem a mesma
@@ -660,6 +663,8 @@ public class Main extends JFrame {
         JButton botaoRestaurar;
         JButton botaoCorrigirCuradoria;
         JButton botaoIdiomaSituacao;
+        JButton botaoChat;
+        DialogoChatbotGerard dialogoChatbot;
         JButton botaoRestaurarDiagrama;
         JButton botaoEditarNarrativa;
         JButton botaoConcluirEditorNarrativa;
@@ -1116,11 +1121,13 @@ public class Main extends JFrame {
             criarBotaoRestaurar();
             criarBotaoCorrigirCuradoria();
             criarBotaoIdiomaSituacao();
+            criarBotaoChat();
             criarBotaoArtefatoExplicativo();
             criarBotaoRestaurarDiagrama();
             criarBotaoEditarNarrativa();
             criarBotoesAjudaContextual();
             criarMenuPrincipal();
+            criarPainelAcoesCabecalhoEsquerda();
             criarBotoesCabecalhoEmbutidos();
             configurarFeedbackConclusaoModelagem();
             inicializarTelaSemCategoria();
@@ -2291,6 +2298,59 @@ public class Main extends JFrame {
             add(botaoIdiomaSituacao);
         }
 
+        private void criarBotaoChat() {
+            botaoChat = new JButton(criarIconeChat());
+            botaoChat.setBounds(0, 0, 34, 26);
+            configurarBotaoAcaoContextual(botaoChat, localizacao.texto("ui.chat.tooltip"));
+            botaoChat.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { abrirChatbot(); }
+            });
+            add(botaoChat);
+        }
+
+        private Icon criarIconeChat() {
+            return new Icon() {
+                public int getIconWidth() { return 30; }
+                public int getIconHeight() { return 22; }
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    try {
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g2.setColor(c.isEnabled() ? COR_TEXTO_SECUNDARIO : gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO);
+                        g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                        g2.drawRoundRect(x + 1, y + 1, 27, 16, 14, 14);
+                        Path2D cauda = new Path2D.Float();
+                        cauda.moveTo(x + 9, y + 17);
+                        cauda.curveTo(x + 8, y + 19, x + 6, y + 20, x + 4, y + 21);
+                        cauda.curveTo(x + 6, y + 19, x + 6, y + 18, x + 6, y + 16);
+                        g2.draw(cauda);
+                        g2.fillOval(x + 8, y + 8, 3, 3);
+                        g2.fillOval(x + 14, y + 8, 3, 3);
+                        g2.fillOval(x + 20, y + 8, 3, 3);
+                    } finally { g2.dispose(); }
+                }
+            };
+        }
+
+        private void abrirChatbot() {
+            if (dialogoChatbot == null || !dialogoChatbot.isDisplayable()) {
+                dialogoChatbot = new DialogoChatbotGerard(
+                        SwingUtilities.getWindowAncestor(this), localizacao,
+                        new MensagensComunicabilidadeChatbot(),
+                        new DialogoChatbotGerard.OuvinteAcaoNeutra() {
+                            public void registrar(String categoria, String detalhes) {
+                                registrarAcaoGranular("SELECIONAR", "Conversar com o chatbot", categoria,
+                                        "CHATBOT", "Solicitar apoio pela conversa", detalhes,
+                                        "Ação neutra registrada sem avaliação matemática.");
+                            }
+                        });
+            }
+            registrarAcaoGranular("ABRIR", "Abrir chatbot", "NEUTRA_OPERACIONAL",
+                    "BOTAO_CHAT", "Abrir conversa de apoio", "origem=botao_chat",
+                    "A janela de conversa foi aberta.");
+            dialogoChatbot.abrirPertoDe(botaoChat);
+        }
+
         private String descricaoBotaoIdiomaSituacao() {
             String idiomaAtual = situacaoProblemaAtual == null ? "" : nomeIdiomaSituacao(situacaoProblemaAtual.getCodigoIdioma());
             String base = localizacao.texto("ui.tooltip.problemLanguage");
@@ -3065,29 +3125,6 @@ public class Main extends JFrame {
             menuBarPrincipal.add(criarMenuExibir());
             menuBarPrincipal.add(criarMenuFerramentas());
             menuBarPrincipal.add(criarMenuAjuda());
-            // Comunidade, Site e Reportar bug ficam como ícones no canto
-            // superior direito da barra, fora dos menus (decisão da usuária,
-            // 2026-07-28).
-            menuBarPrincipal.add(criarBotaoIconeMenuBar(
-                    criarIconeComunidade(), localizacao.texto("ui.tooltip.comunidade"),
-                    new Runnable() {
-                        public void run() {
-                            abrirLinkExterno(URL_COMUNIDADE_GERARD);
-                        }
-                    }));
-            menuBarPrincipal.add(criarBotaoIconeMenuBar(
-                    criarIconeSite(), localizacao.texto("ui.tooltip.site"),
-                    new Runnable() {
-                        public void run() {
-                            abrirLinkExterno(URL_SITE_GERARD);
-                        }
-                    }));
-            menuBarPrincipal.add(criarBotaoReportarBugMenuBar());
-            // Estado logado/deslogado no canto direito da barra (decisão da
-            // usuária, 2026-07-28, com captura de referência) — substitui o
-            // antigo item "Usuário" dentro do menu Ferramentas.
-            menuBarPrincipal.add(criarBotaoUsuarioMenuBar());
-
             atualizarEstadoItensMenuPorAba();
             menuBarPrincipal.revalidate();
             menuBarPrincipal.repaint();
@@ -3111,6 +3148,59 @@ public class Main extends JFrame {
             return botao;
         }
 
+        private void criarPainelAcoesCabecalhoEsquerda() {
+            if (painelAcoesCabecalhoEsquerda != null) remove(painelAcoesCabecalhoEsquerda);
+            painelAcoesCabecalhoEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+            painelAcoesCabecalhoEsquerda.setOpaque(false);
+            painelAcoesCabecalhoEsquerda.add(criarBotaoIconeMenuBar(
+                    criarIconeComunidade(), localizacao.texto("ui.tooltip.comunidade"),
+                    new Runnable() { public void run() { abrirLinkExterno(URL_COMUNIDADE_GERARD); } }));
+            painelAcoesCabecalhoEsquerda.add(criarBotaoIconeMenuBar(
+                    criarIconeSite(), localizacao.texto("ui.tooltip.site"),
+                    new Runnable() { public void run() { abrirLinkExterno(URL_SITE_GERARD); } }));
+            painelAcoesCabecalhoEsquerda.add(criarBotaoReportarBugMenuBar());
+            painelAcoesCabecalhoEsquerda.add(criarAcessoGerardVergnaudMenuBar());
+            painelAcoesCabecalhoEsquerda.add(criarBotaoUsuarioMenuBar());
+            add(painelAcoesCabecalhoEsquerda);
+            setComponentZOrder(painelAcoesCabecalhoEsquerda, 0);
+        }
+
+        private JButton criarAcessoGerardVergnaudMenuBar() {
+            String descricao = localizacao.texto("ui.menu.gerardVergnaud");
+            final JButton acesso = new JButton(criarIconeGerardVergnaudMenuBar());
+            acesso.setFocusable(false);
+            acesso.setOpaque(false);
+            acesso.setContentAreaFilled(false);
+            acesso.setBorderPainted(false);
+            acesso.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            acesso.setToolTipText(descricao);
+            acesso.getAccessibleContext().setAccessibleName(descricao);
+            acesso.getAccessibleContext().setAccessibleDescription(descricao);
+            acesso.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    JPopupMenu popup = new JPopupMenu();
+                    estilizarMenuPopup(popup);
+                    popup.add(criarMenuGerardVergnaud());
+                    popup.show(acesso, 0, acesso.getHeight() + 2);
+                }
+            });
+            return acesso;
+        }
+
+        private Icon criarIconeGerardVergnaudMenuBar() {
+            final int tamanho = 22;
+            try {
+                java.net.URL recurso = Main.class.getResource("/gerard/imagens/gerard_vergnaud.png");
+                if (recurso != null) {
+                    BufferedImage imagem = javax.imageio.ImageIO.read(recurso);
+                    if (imagem != null) return new ImageIcon(recortarImagemCircular(imagem, tamanho));
+                }
+            } catch (java.io.IOException ex) {
+                // Se a foto não estiver disponível, mantém um ícone informativo neutro.
+            }
+            return criarIconeInterrogacaoContextual();
+        }
+
         /** Duas silhuetas de pessoa (comunidade) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
         private Icon criarIconeComunidade() {
             final int tamanho = 22;
@@ -3121,6 +3211,8 @@ public class Main extends JFrame {
                 public void paintIcon(Component c, Graphics g, int x, int y) {
                     Graphics2D g2 = prepararTracoIconeCategoria(g);
                     try {
+                        g2.setColor(COR_TEXTO_SECUNDARIO);
+                        g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                         desenharPessoaIconeComunidade(g2, x + 6, y + 4);
                         desenharPessoaIconeComunidade(g2, x + 13, y + 6);
                     } finally {
@@ -3189,8 +3281,9 @@ public class Main extends JFrame {
                         meuPerfilBotao == null ? null : meuPerfilBotao.getPerfilAluno().getFotoCaminho()));
                 botao.setText(textoBotaoUsuario() + "  ▼");
             } else {
-                botao.setIcon(null);
-                botao.setText(localizacao.texto("ui.userDialog.enter"));
+                botao.setIcon(criarIconeEntrar());
+                botao.setText(null);
+                botao.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
             }
             botao.setToolTipText(localizacao.texto("ui.tooltip.user"));
             botao.addMouseListener(new MouseAdapter() {
@@ -3212,6 +3305,7 @@ public class Main extends JFrame {
                                 proprietario, repositorioModeloUsuario, meuPerfil);
                         dialogoEdicao.mostrarESelecionar();
                         criarMenuPrincipal();
+                        criarPainelAcoesCabecalhoEsquerda();
                     } else {
                         gerard.ui.usuario.DialogoUsuario dialogo = new gerard.ui.usuario.DialogoUsuario(
                                 proprietario, repositorioModeloUsuario);
@@ -3229,12 +3323,36 @@ public class Main extends JFrame {
                             atualizarContextoAdaptativoIncognitaAtual();
                             loggerInteracaoGerard.definirUsuario(idEscolhido);
                             criarMenuPrincipal();
+                            criarPainelAcoesCabecalhoEsquerda();
                         }
                     }
                     requestFocusInWindow();
                 }
             });
             return botao;
+        }
+
+        private Icon criarIconeEntrar() {
+            final int tamanho = 28;
+            return new Icon() {
+                public int getIconWidth() { return tamanho; }
+                public int getIconHeight() { return tamanho; }
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    try {
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g2.setColor(COR_TEXTO_SECUNDARIO);
+                        g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                        g2.drawOval(x + 2, y + 2, tamanho - 5, tamanho - 5);
+                        int cy = y + tamanho / 2;
+                        g2.drawLine(x + 8, cy, x + 19, cy);
+                        g2.drawLine(x + 15, cy - 4, x + 19, cy);
+                        g2.drawLine(x + 15, cy + 4, x + 19, cy);
+                    } finally {
+                        g2.dispose();
+                    }
+                }
+            };
         }
 
         private boolean usuarioLogado() {
@@ -4266,12 +4384,6 @@ public class Main extends JFrame {
             itemRegistro.add(criarMenuRegistroGerard());
             menuSobreItem.add(itemRegistro);
 
-            JMenu itemGerardVergnaud = new JMenu(localizacao.texto("ui.menu.gerardVergnaud"));
-            estilizarItemMenuPopup(itemGerardVergnaud);
-            estilizarMenuPopup(itemGerardVergnaud.getPopupMenu());
-            itemGerardVergnaud.add(criarMenuGerardVergnaud());
-            menuSobreItem.add(itemGerardVergnaud);
-
             menu.add(menuSobreItem);
 
             // Reportar bug saiu daqui — agora é um ícone ao lado do menu
@@ -5057,6 +5169,7 @@ public class Main extends JFrame {
             // atualizados (chamado sempre que idioma/categoria/usuário/
             // interpretação mudam).
             criarMenuPrincipal();
+            criarPainelAcoesCabecalhoEsquerda();
             criarBotoesCabecalhoEmbutidos();
             if (botaoRestaurar != null) {
                 String descricao = localizacao.texto("ui.tooltip.restore.elements");
@@ -5075,6 +5188,12 @@ public class Main extends JFrame {
                 botaoIdiomaSituacao.setToolTipText(descricao);
                 botaoIdiomaSituacao.getAccessibleContext().setAccessibleName(descricao);
                 botaoIdiomaSituacao.getAccessibleContext().setAccessibleDescription(descricao);
+            }
+            if (botaoChat != null) {
+                String descricao = localizacao.texto("ui.chat.tooltip");
+                botaoChat.setToolTipText(descricao);
+                botaoChat.getAccessibleContext().setAccessibleName(descricao);
+                botaoChat.getAccessibleContext().setAccessibleDescription(descricao);
             }
             if (botaoArtefatoExplicativo != null) {
                 String descricao = localizacao.texto("analise.button.tooltip");
@@ -5175,6 +5294,28 @@ public class Main extends JFrame {
             int limiteDireitoStatus = getWidth() - 18;
             int xStatus = Math.max(800, limiteDireitoStatus - larguraStatus);
             g2.drawString(status, xStatus, 28);
+            if (painelAcoesCabecalhoEsquerda != null) {
+                Dimension tamanhoAcoes = painelAcoesCabecalhoEsquerda.getPreferredSize();
+                int alturaAcoes = Math.min(32, tamanhoAcoes.height);
+                int xAcoes = 10;
+                if (caixaIndicadorAgenteModelador != null) {
+                    xAcoes = caixaIndicadorAgenteModelador.getX()
+                            + caixaIndicadorAgenteModelador.getWidth() + 8;
+                } else if (botaoCompararCategorias != null) {
+                    xAcoes = botaoCompararCategorias.getX()
+                            + botaoCompararCategorias.getWidth() + 8;
+                }
+                painelAcoesCabecalhoEsquerda.setBounds(
+                        xAcoes, (45 - alturaAcoes) / 2,
+                        tamanhoAcoes.width, alturaAcoes);
+            }
+            if (botaoChat != null) {
+                int espacoEntreChatEIdioma = 8;
+                int xChat = xStatus - espacoEntreChatEIdioma - botaoChat.getWidth();
+                int yChat = (45 - botaoChat.getHeight()) / 2;
+                botaoChat.setLocation(xChat, yChat);
+                botaoChat.setVisible(true);
+            }
         }
 
         /** Fundo da faixa de atalhos de categoria (ver criarPainelAtalhoCategoria). */
