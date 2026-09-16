@@ -58,15 +58,13 @@ Depende do item 2. Sem repertório P3 real e homologado, não há conteúdo
 pedagógico aprovado para popular essa apresentação. Nenhuma linha de
 código deve ser escrita para P6 antes disso.
 
-## 4. Aberta — decisão sobre `_descartado_editor_narrativa_canvas/`
+## 4. Encerrada — decisão sobre `_descartado_editor_narrativa_canvas/`
 
-Diretório não rastreado, fora de `src/`, contendo `ChipPalavraRascunho.
+Diretório não rastreado, fora de `src/`, continha `ChipPalavraRascunho.
 java`, `PainelEditorNarrativa.java`, `PainelSacoPalavras.java`,
-`TransferHandlerPecaPalavra.java` e `WrapLayout.java`. O nome indica
-descarte deliberado de um protótipo (editor de narrativa em canvas); não
-há convenção prévia de `.gitignore` para esse padrão nem histórico de commit
-dele. Decisão (apagar ou manter fora do versionamento) não tomada nesta
-sessão — cabe à pesquisadora.
+`TransferHandlerPecaPalavra.java` e `WrapLayout.java` (protótipo
+descartado de um editor de narrativa em canvas, nunca versionado). A
+pesquisadora decidiu apagar (16/09/2026); diretório removido do disco.
 
 ## 5. Esclarecida — versão-alvo do build de deploy
 
