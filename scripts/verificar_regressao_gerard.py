@@ -838,19 +838,28 @@ check('paineisEixosRelacoes.ativar' in main
       'tela preserva ciclo de vida e desenho, roteando a interação dos painéis pelo handler')
 check('private boolean devemExibirPaineisEixosRelacoes' in main
       and 'if (!categoriaSelecionadaParaAtividade || elementosVergnaud == null) {' in main
-      and 'flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;' in main
-      and 'DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa)' in main,
+      and 'DecisaoExibicaoPaineisEixo.existeAlgumComLupa(elementosVergnaud)' in main,
       'visibilidade dos painéis de eixo depende só de existir um elemento cujo descritor semântico '
       'solicita lupa no diagrama atual (regra generalizada 2026-08-18: "todo número relativo ou '
       'transformação carrega uma lupa. Essa é a regra") — não infere pela forma geométrica nem usa '
       'uma lista fixa de categorias — não espera '
       'nenhuma tentativa rejeitada, diferente de quadradinhos/barras/processo; a redução booleana '
-      'foi extraída para DecisaoExibicaoPaineisEixo (2026-09-01), compartilhada com a API web')
+      'foi extraída para DecisaoExibicaoPaineisEixo (2026-09-01), compartilhada com a API web. '
+      'Atualizado 2026-09-16: a assinatura evoluiu de um array booleano paralelo '
+      '(flagsExibirLupa) para List<? extends ElementoComLupa>, aplicada direto sobre '
+      'elementosVergnaud — ElementoVergnaud implementa ElementoComLupa — eliminando a '
+      'reconstrução de flags paralelas sem perder o desacoplamento de Swing/AWT')
 decisao_exibicao_paineis=text(
     'src/gerard/campoaditivo/diagrama/modelo/DecisaoExibicaoPaineisEixo.java')
 check('existeAlgumComLupa' in decisao_exibicao_paineis
+      and 'ElementoComLupa' in decisao_exibicao_paineis
       and all(token not in decisao_exibicao_paineis for token in ('javax.swing', 'java.awt')),
       'DecisaoExibicaoPaineisEixo é redução pura, sem depender de Swing/AWT')
+elemento_vergnaud=text(
+    'src/gerard/campoaditivo/diagrama/elementos/ElementoVergnaud.java')
+check('implements ElementoComLupa' in elemento_vergnaud,
+      'ElementoVergnaud implementa ElementoComLupa, permitindo que '
+      'devemExibirPaineisEixosRelacoes use a lista real sem reconstruir flags paralelas')
 check('elemento != null && elemento.exibirLupa' in paineis_relacoes,
       'PaineisEixosRelacoes.ativar cria painel somente quando o descritor semântico solicita lupa — '
       'filtra fora âncoras de medida sem inferir significado de quadrado/elipse')
