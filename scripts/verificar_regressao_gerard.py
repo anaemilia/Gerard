@@ -1070,14 +1070,36 @@ print('APROVADO: compilação, vínculos, curadoria, log, i18n, usabilidade e in
 # Regressão semântica do texto: todos os valores e a interrogação devem manter papel + mobilidade.
 main_src = (ROOT / 'src' / 'Main.java').read_text(encoding='utf-8')
 construtor_src = (ROOT / 'src' / 'gerard' / 'campoaditivo' / 'curadoria' / 'ConstrutorResultadoCurado.java').read_text(encoding='utf-8')
+# obterChavePapelExataPorValor foi extraído de Main para
+# ResolvedorPapelInterpretado (ver refactor 2e2cfb2 e portabilidade web
+# e223a3f/fe45b61); Main continua usando o resultado via
+# SegmentadorTextoSemantico.segmentar, sem reimplementar a resolução —
+# checks atualizados em 2026-09-16 para olhar o local real, não Main.
+segmentador_src = (ROOT / 'src' / 'gerard' / 'interpretacao' / 'modelo' / 'SegmentadorTextoSemantico.java').read_text(encoding='utf-8')
+resolvedor_papel_src = (ROOT / 'src' / 'gerard' / 'interpretacao' / 'modelo' / 'ResolvedorPapelInterpretado.java').read_text(encoding='utf-8')
 checks_semanticos = [
     ('interpretação usa o texto efetivamente renderizado', 'construir(SituacaoProblemaAditiva s, String textoExibido)' in construtor_src),
     ('todos os números recebem o papel pela ordem curada', 'obterChavePapelDoNumero' in main_src),
-    ('interrogação recebe o papel desconhecido curado', 'obterChavePapelExataPorValor(resultadoInterpretacao, "?")' in main_src),
+    ('interrogação recebe o papel desconhecido curado',
+     'ResolvedorPapelInterpretado.obterChavePapelExataPorValor(interpretacao, "?")' in segmentador_src
+     and 'SegmentadorTextoSemantico.segmentar(' in main_src),
     ('realce visual depende do papel semântico', 'corFundoDoPapel(m.chavePapel)' in main_src and 'corTextoDoPapel(chavePapel)' in main_src),
     ('mobilidade dos elementos textuais permanece', 'desenharElementoTextoMovel' in main_src and 'converterElementoTextoEmItemDiagrama' in main_src),
-    ('símbolo canônico de desconhecido preservado como interrogação ocidental', 'SimboloDesconhecido.eh' in main_src and 'regexClasse()' in main_src),
-    ('papel semântico do desconhecido independe do glifo', 'obterChavePapelExataPorValor' in main_src and 'SimboloDesconhecido.eh(item.valor)' in main_src),
+    ('símbolo canônico de desconhecido preservado como interrogação ocidental', 'SimboloDesconhecido.eh' in main_src),
+    ('papel semântico do desconhecido independe do glifo',
+     'obterChavePapelExataPorValor' in resolvedor_papel_src
+     and 'SimboloDesconhecido.eh(valor)' in resolvedor_papel_src
+     and 'SimboloDesconhecido.eh(item.valor)' in main_src),
+    # Auditoria 2026-09-16: extrairValorArrastavel (fallback via regex para
+    # elemento sem vínculo semântico) foi removido em ab4e4dc. Confirmado
+    # seguro (não era regressão) porque converterElementoTextoEmItemDiagrama
+    # só é chamado atrás deste gate — nenhum elemento sem vínculo chega lá.
+    # Protege esse invariante para que uma extração futura não reabra o
+    # caminho morto sem repor a checagem de vínculo.
+    ('conversão para o diagrama exige vínculo semântico já estabelecido',
+     'private boolean podeEnviarParaDiagrama(ElementoTextoMovel elemento) {' in main_src
+     and 'return ehNumeroOuInterrogacaoDoTexto(elemento);' in main_src
+     and 'elemento.possuiVinculoSemantico()' in main_src),
 ]
 print('== Papéis semânticos no enunciado ==')
 for nome, ok in checks_semanticos:

@@ -17,8 +17,4 @@ public final class SimboloDesconhecido {
     public static String canonizar(String valor) {
         return eh(valor) ? CANONICO : valor;
     }
-
-    public static String regexClasse() {
-        return "[?]";
-    }
 }
