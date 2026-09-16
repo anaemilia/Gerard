@@ -91,3 +91,16 @@ em `19d6ce7`, o mesmo commit que antecede os quatro commits desta sessão —
 ir ao ar, falta recompilar com `--release 17`, copiar os artefatos para
 `C:\gd` e dar push — passo manual, não deve ser feito sem autorização
 explícita da pesquisadora (é ação visível externamente/deploy).
+
+**Atualização 16/09/2026 — executado com autorização da pesquisadora:**
+build limpo via `git archive HEAD` + `javac --release 17` (classpath dos
+jars locais, já que `lib/*.jar` está no `.gitignore` e não entra no
+archive); class file version verificada em `61` (Java 17, bate com o
+runtime `eclipse-temurin:17-jre-jammy`). `web-poc/dist` recompilado
+(`npm run build`) mas ficou byte-idêntico ao anterior — só `src/Main.java`
+e `src/gerard/ui/usuario/DialogoUsuario.java` mudaram desde o último sync,
+nenhum arquivo de `web-poc/src`. Testado localmente (servidor subiu na
+porta 8091, respondeu HTTP 200) antes de sincronizar. Commit `6f550d3` em
+`C:\gd`, push feito (`954ee68..6f550d3`). **Não verificado**: se o deploy
+no Render (`gerard-web-deploy-1`) terminou com sucesso — isso só se
+confirma no dashboard do Render (aba Events), não por este ambiente.
