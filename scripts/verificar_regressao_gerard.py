@@ -271,12 +271,23 @@ print('== Main compositora e roteadora: ratchet dos protocolos de interação ==
 # medem o tamanho total de Main.java: novas categorias podem acrescentar UI sem
 # justificar que a mecânica particular volte aos protocolos centrais. Cada
 # extração deve reduzir o método e, na mesma alteração, reduzir este limite.
+#
+# Atualização 2026-09-16: mousePressed/mouseDragged/mouseReleased/
+# mouseClicked subiram (401->406, 20->28, 103->108, 34->38) por causa de
+# guardas de 3-8 linhas adicionadas em cada um pelo commit 8822899 (editor
+# de enunciado, rascunho efêmero): 'if (controladorEditorNarrativa != null)
+# { ...; return; }', delegando para controladorEditorNarrativa/
+# handlerInteracaoPecaPalavra (HandlerInteracaoPecaPalavraRascunho), que
+# mantêm seu próprio estado e hit-testing. É composição/roteamento
+# (categoria 2 de gerard-handlers-de-interacao/SKILL.md), não mecânica
+# particular solta em Main — mas o commit não ajustou este limite junto,
+# deixando o ratchet quebrado sem detecção até esta auditoria.
 LIMITES_PROTOCOLOS_MAIN = {
-    'public void mousePressed(MouseEvent e)': 401,
-    'public void mouseDragged(MouseEvent e)': 20,
+    'public void mousePressed(MouseEvent e)': 406,
+    'public void mouseDragged(MouseEvent e)': 28,
     'private void processarMovimentoArraste(int x, int y)': 60,
-    'public void mouseReleased(MouseEvent e)': 103,
-    'public void mouseClicked(MouseEvent e)': 34,
+    'public void mouseReleased(MouseEvent e)': 108,
+    'public void mouseClicked(MouseEvent e)': 38,
     'public void mouseMoved(MouseEvent e)': 205,
 }
 for assinatura, limite in LIMITES_PROTOCOLOS_MAIN.items():
