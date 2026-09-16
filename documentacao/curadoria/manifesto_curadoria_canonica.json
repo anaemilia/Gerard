@@ -5,9 +5,9 @@
   "fonte_humana_ativa": "C:\\Users\\cecomp\\Gerard\\curadoria\\situacoes_vergnaud_curadas.tsv",
   "backup_local": "C:\\Users\\cecomp\\Gerard\\curadoria\\backups\\situacoes_vergnaud_curadas_2026-08-24_29686D1B.tsv",
   "fonte_canonica_versionada": "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
-  "sha256": "29686D1BF0B3CA334C7B4034748C19BA2EC91478CF4D9B2A13A2448C67DB4ECE",
-  "bytes": 70359,
-  "colunas": 37,
+  "sha256": "FF385403410A95C1A2E2C428A12376881B8B65FA77048E209FCEC51DBB011E73",
+  "bytes": 71432,
+  "colunas": 41,
   "linhas_de_dados": 210,
   "linhas_validadas": 40,
   "categorias": {
@@ -18,5 +18,11 @@
     "TRANSFORMACAO_RELACAO": 8,
     "COMPOSICAO_RELACOES": 8
   },
-  "observacao": "Cópia literal da fonte curada; nenhum valor, personagem, categoria, estado_final, operacao_relacao, estado_intermediario ou operacao_estado_transformacao foi inferido ou recalculado."
+  "observacao": "Cópia literal da fonte curada; nenhum valor, personagem, categoria, estado_final, operacao_relacao, estado_intermediario ou operacao_estado_transformacao foi inferido ou recalculado.",
+  "atualizacoes": [
+    {
+      "em": "2026-09-16",
+      "motivo": "commit 966a644 (2026-09-10) adicionou 4 colunas (estado_inicial_parte1, estado_inicial_parte1_personagem, estado_inicial_parte2, estado_inicial_parte2_personagem) para a decomposição Parte1+Parte2=Todo em 5 linhas da Composição de Transformações, sem atualizar este manifesto. As outras 205 linhas ficaram com largura de linha TSV inconsistente (sem as 4 tabulações finais vazias); preenchidas nesta atualização (decisão explícita da pesquisadora) sem alterar nenhum valor existente — verificado byte a byte, só tabs finais adicionadas. hash/bytes recalculados; linhas_de_dados, linhas_validadas e categorias inalterados."
+    }
+  ]
 }

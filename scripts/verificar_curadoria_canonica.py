@@ -27,6 +27,10 @@ CABECALHO_ESPERADO = [
     "fragmento_texto_2", "fragmento_texto_3", "fragmento_texto_4",
     "fragmento_texto_5", "fragmento_texto_6", "operacao_relacao",
     "estado_intermediario", "operacao_estado_transformacao",
+    # Adicionadas em 2026-09-10 (commit 966a644, decomposição do estado
+    # inicial em Parte1+Parte2=Todo na Composição de Transformações).
+    "estado_inicial_parte1", "estado_inicial_parte1_personagem",
+    "estado_inicial_parte2", "estado_inicial_parte2_personagem",
 ]
 
 CATEGORIAS_CANONICAS = {
@@ -77,7 +81,7 @@ def validar(comparar_ativo: bool) -> None:
     if not linhas:
         falhar("arquivo canônico vazio")
     if linhas[0] != CABECALHO_ESPERADO:
-        falhar("cabeçalho diferente do esquema curado de 37 colunas")
+        falhar("cabeçalho diferente do esquema curado de 41 colunas")
 
     dados = linhas[1:]
     if len(dados) != int(manifesto["linhas_de_dados"]):
@@ -108,7 +112,7 @@ def validar(comparar_ativo: bool) -> None:
         if ativo.read_bytes() != CANONICO.read_bytes():
             falhar("fonte canônica não é cópia literal da fonte humana ativa")
 
-    print("APROVADO: fonte canônica íntegra, 210 situações, 37 colunas e 6 categorias.")
+    print("APROVADO: fonte canônica íntegra, 210 situações, 41 colunas e 6 categorias.")
     print(f"SHA256={hash_atual}")
 
 
