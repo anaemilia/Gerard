@@ -22,6 +22,7 @@ import gerard.campoaditivo.diagrama.servico.PosicaoSeletorOperacaoDiagrama;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.idioma.IdiomaInterface;
+import gerard.idioma.IdiomaSituacao;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
 import gerard.interpretacao.modelo.ResultadoInterpretacao;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
@@ -64,6 +65,8 @@ public final class ServicoSorteioAtividadeWeb {
     private final Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel =
             new LinkedHashMap<String, ControleVisibilidadeEixoPapel>();
     private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
+    private final gerard.idioma.CadastroIdiomasSituacao cadastroIdiomasSituacao =
+            new gerard.idioma.CadastroIdiomasSituacao();
     private final ControladorContextoSituacao controladorContextoSituacao =
             new ControladorContextoSituacao(LoggerInteracaoGerard.getInstancia());
 
@@ -144,52 +147,66 @@ public final class ServicoSorteioAtividadeWeb {
             controladorContextoSituacao.registrarNovaSituacao(
                     contextoAtual.getSituacao(), escolhida.name(),
                     contextoAtual.getEnunciadoExibido());
-            if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
-                atividadeModelagem = new ServicoAtividadeWebComposicao(
-                        "tentativa.web." + contextoAtual.getSituacao().getId(),
-                        contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
-                atividadeModelagem = new ServicoAtividadeWebTransformacaoMedidas(
-                        "tentativa.web." + contextoAtual.getSituacao().getId(),
-                        contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
-                atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
-                        "tentativa.web." + contextoAtual.getSituacao().getId(),
-                        contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-                // RelacaoEstruturalTransformacaoDeRelacao (básica, só dado
-                // tabular) é o caminho CANÔNICO real — confirmado em
-                // CatalogoRelacoesEstruturaisAditivas, o resolvedor usado por
-                // EstadoSemanticoCompartilhado.resolverRelacaoAditiva em todo
-                // o desktop, que nunca referencia a variante "Orientada".
-                // A variante Orientada/rica só existe dentro de
-                // ConversorSituacaoProblemaRica, uma ponte de CURADORIA
-                // (gera SituacaoProblema validado para ferramentas de
-                // pesquisador) — não o caminho de resolução em tempo real.
-                // ServicoAtividadeWebTransformacaoRelacaoRica usava esse
-                // mecanismo secundário por engano; removido em 2026-09-04
-                // (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md-style
-                // achado: fonte de verdade divergente da canônica).
-                atividadeModelagem = new ServicoAtividadeWebTransformacaoRelacao(
-                        "tentativa.web." + contextoAtual.getSituacao().getId(),
-                        contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-                atividadeEscolhaOperacao =
-                        new ServicoAtividadeWebComposicaoTransformacoes(
-                                "tentativa.web." + contextoAtual.getSituacao().getId(),
-                                contextoAtual.getSituacao());
-            } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-                atividadeEscolhaOperacao =
-                        new ServicoAtividadeWebComposicaoRelacoes(
-                                "tentativa.web." + contextoAtual.getSituacao().getId(),
-                                contextoAtual.getSituacao());
-            }
+            construirAtividadeParaCategoria(escolhida);
         }
         questionamento = tentativaClassificacao.aguardaConfirmacao()
                 ? "A definição da categoria " + escolhida.name()
                         + " se aplica a esta situação?"
                 : null;
         return resultadoClassificacao(registro);
+    }
+
+    /**
+     * Extraído de escolherCategoria (auditoria de acoplamento, 2026-09-17)
+     * para ser reaproveitado por trocarIdiomaSituacao: quando a categoria já
+     * foi classificada e a pesquisadora troca o idioma da situação, a
+     * atividade é reconstruída do zero com a versão no novo idioma (mesmos
+     * valores curados, texto diferente) — mais simples que replicar o
+     * "atualizarRotulosDiagramaVergnaudSemReposicionar" do desktop, que
+     * preserva posições já arrastadas; aqui a modelagem reinicia junto,
+     * comportamento diferente do desktop e assim documentado.
+     */
+    private void construirAtividadeParaCategoria(TipoSituacaoAditiva escolhida) {
+        if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            atividadeModelagem = new ServicoAtividadeWebComposicao(
+                    "tentativa.web." + contextoAtual.getSituacao().getId(),
+                    contextoAtual.getSituacao());
+        } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
+            atividadeModelagem = new ServicoAtividadeWebTransformacaoMedidas(
+                    "tentativa.web." + contextoAtual.getSituacao().getId(),
+                    contextoAtual.getSituacao());
+        } else if (escolhida == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+            atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
+                    "tentativa.web." + contextoAtual.getSituacao().getId(),
+                    contextoAtual.getSituacao());
+        } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            // RelacaoEstruturalTransformacaoDeRelacao (básica, só dado
+            // tabular) é o caminho CANÔNICO real — confirmado em
+            // CatalogoRelacoesEstruturaisAditivas, o resolvedor usado por
+            // EstadoSemanticoCompartilhado.resolverRelacaoAditiva em todo
+            // o desktop, que nunca referencia a variante "Orientada".
+            // A variante Orientada/rica só existe dentro de
+            // ConversorSituacaoProblemaRica, uma ponte de CURADORIA
+            // (gera SituacaoProblema validado para ferramentas de
+            // pesquisador) — não o caminho de resolução em tempo real.
+            // ServicoAtividadeWebTransformacaoRelacaoRica usava esse
+            // mecanismo secundário por engano; removido em 2026-09-04
+            // (ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md-style
+            // achado: fonte de verdade divergente da canônica).
+            atividadeModelagem = new ServicoAtividadeWebTransformacaoRelacao(
+                    "tentativa.web." + contextoAtual.getSituacao().getId(),
+                    contextoAtual.getSituacao());
+        } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            atividadeEscolhaOperacao =
+                    new ServicoAtividadeWebComposicaoTransformacoes(
+                            "tentativa.web." + contextoAtual.getSituacao().getId(),
+                            contextoAtual.getSituacao());
+        } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+            atividadeEscolhaOperacao =
+                    new ServicoAtividadeWebComposicaoRelacoes(
+                            "tentativa.web." + contextoAtual.getSituacao().getId(),
+                            contextoAtual.getSituacao());
+        }
     }
 
     public synchronized boolean possuiAtividadeModelagemAtiva() {
@@ -368,6 +385,53 @@ public final class ServicoSorteioAtividadeWeb {
         return projetarEstado();
     }
 
+    /**
+     * Porta trocarIdiomaDaSituacao (Main.java) — mesma regra semântica:
+     * troca para a versão validada do mesmo situacaoGrupoId no idioma
+     * pedido, via FachadaCarregamentoAtividade.carregarCorrespondente (já
+     * existia, nunca tinha rota nenhuma ligada). Diferença documentada do
+     * desktop: aqui, se a categoria já foi classificada, a atividade é
+     * reconstruída do zero (construirAtividadeParaCategoria) em vez de só
+     * re-rotular o diagrama preservando posições já arrastadas — trocar
+     * idioma reinicia a modelagem em curso.
+     */
+    public synchronized Map<String, Object> trocarIdiomaSituacao(String codigoIdioma) {
+        if (contextoAtual == null) {
+            throw new IllegalStateException("nenhuma situação carregada");
+        }
+        SituacaoProblemaAditiva atual = contextoAtual.getSituacao();
+        String codigoNormalizado = IdiomaSituacao.normalizarCodigo(codigoIdioma);
+        IdiomaInterface destino = IdiomaSituacao.paraIdiomaInterface(codigoNormalizado);
+        ContextoCarregamentoAtividade novoContexto = carregamento.carregarCorrespondente(
+                atual, destino, atual.getTipo(), null);
+        if (!novoContexto.possuiSituacaoExibivel()
+                || atual.getSituacaoGrupoId() == null
+                || !atual.getSituacaoGrupoId().equals(
+                        novoContexto.getSituacao().getSituacaoGrupoId())) {
+            throw new IllegalArgumentException(
+                    "idioma não disponível para esta situação: " + codigoIdioma);
+        }
+        String anterior = atual.getCodigoIdioma();
+        SituacaoProblemaAditiva versaoNova = novoContexto.getSituacao();
+        contextoAtual = novoContexto;
+        if (categoriaSelecionada != null) {
+            atividadeModelagem = null;
+            atividadeEscolhaOperacao = null;
+            construirAtividadeParaCategoria(categoriaSelecionada);
+        } else {
+            tentativaClassificacao = new TentativaClassificacaoCategoriaAditiva(versaoNova);
+            questionamento = null;
+        }
+        LoggerInteracaoGerard.getInstancia().registrarAcaoGranularUsuario(
+                "SELECIONAR", "Alterar idioma da situação-problema",
+                "Escolha de versão linguística", "BOTAO_IDIOMA_SITUACAO",
+                "trocar_idioma_situacao", "OBJ_INTERACAO", "ACAO_GRANULAR_SELECIONAR",
+                "idioma_anterior=" + anterior + "; idioma_novo=" + versaoNova.getCodigoIdioma()
+                        + "; situacao_grupo_id=" + versaoNova.getSituacaoGrupoId(),
+                "O enunciado foi substituído por uma versão validada do mesmo grupo conceitual.");
+        return projetarEstado();
+    }
+
     public synchronized Map<String, Object> confirmarCategoria(boolean concordou) {
         exigirClassificacaoAtiva();
         RegistroAcaoClassificacaoCategoria registro = tentativaClassificacao
@@ -416,8 +480,38 @@ public final class ServicoSorteioAtividadeWeb {
                 "Resposta registrada", Collections.<String>emptyList());
     }
 
+    /**
+     * Publica as versões de idioma disponíveis para a situação atual (mesmo
+     * grupo conceitual) — porta a coleta de mostrarMenuIdiomaDaSituacao
+     * (Main.java) para o estado web, sem o menu Swing.
+     */
+    private List<Object> listarIdiomasSituacao() {
+        List<Object> idiomas = new ArrayList<Object>();
+        if (contextoAtual == null) {
+            return idiomas;
+        }
+        SituacaoProblemaAditiva atual = contextoAtual.getSituacao();
+        String codigoAtual = IdiomaSituacao.normalizarCodigo(atual.getCodigoIdioma());
+        Map<String, SituacaoProblemaAditiva> porCodigo = new LinkedHashMap<String, SituacaoProblemaAditiva>();
+        for (SituacaoProblemaAditiva versao : carregamento.listarVersoesDoGrupo(atual)) {
+            porCodigo.put(IdiomaSituacao.normalizarCodigo(versao.getCodigoIdioma()), versao);
+        }
+        for (IdiomaSituacao idioma : cadastroIdiomasSituacao.listar()) {
+            if (!porCodigo.containsKey(idioma.getCodigo())) {
+                continue;
+            }
+            Map<String, Object> item = mapa();
+            item.put("codigo", idioma.getCodigo());
+            item.put("nome", idioma.getNome());
+            item.put("atual", Boolean.valueOf(idioma.getCodigo().equals(codigoAtual)));
+            idiomas.add(item);
+        }
+        return idiomas;
+    }
+
     private Map<String, Object> projetarEstado() {
         Map<String, Object> estado = projetar(contextoAtual, grupoAtual);
+        estado.put("idiomas_situacao", listarIdiomasSituacao());
         estado.put("categoria_selecionada",
                 categoriaSelecionada == null ? null : categoriaSelecionada.name());
         if (tentativaClassificacao.aguardaConfirmacao()) {

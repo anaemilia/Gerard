@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { api } from "./api";
 import type { AcaoDisponivel, EstadoWeb, FiguraCena,
-  InteracaoPermitidaFigura } from "./contratos";
+  IdiomaSituacaoWeb, InteracaoPermitidaFigura } from "./contratos";
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
@@ -11,6 +11,33 @@ import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { ChatbotGerard } from "./ChatbotGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
+
+// Ícones dos botões contextuais portados de Main.java (criarIconeRestaurar/
+// criarIconeIdiomaSituacao) — mesma affordance convencional descrita lá:
+// "seta circular para restaurar/refazer o estado", "A"/"文" com setas de
+// troca para idioma (auditoria de acoplamento de Main, 2026-09-17).
+function IconeRestaurar() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M4 12a8 8 0 1 1 2.5 5.8" />
+    <path d="M4 6v6h6" />
+  </svg>;
+}
+function IconeIdioma() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <text x="1" y="11" fontSize="9" fontWeight="700" stroke="none" fill="currentColor">A</text>
+    <text x="13" y="11" fontSize="8" stroke="none" fill="currentColor">文</text>
+    <path d="M7 20h12m-4-3 4 3-4 3" />
+  </svg>;
+}
+
+// Porta descricaoBotaoIdiomaSituacao (Main.java): tooltip do botão de idioma
+// da situação = ui.tooltip.problemLanguage + ": " + nome do idioma atual
+// (mensagens_pt.properties), mesmo texto-base do desktop.
+function descricaoBotaoIdiomaSituacao(idiomas: readonly IdiomaSituacaoWeb[]) {
+  const base = "Alterar o idioma desta situação-problema";
+  const atual = idiomas.find((idioma) => idioma.atual);
+  return atual ? `${base}: ${atual.nome}` : base;
+}
 
 export default function App() {
   const [representacoes, enviarEventoRepresentacional] = useReducer(
@@ -25,6 +52,7 @@ export default function App() {
     useState<{ figuraId: string; mensagem: string } | null>(null);
   const [chatAberto, setChatAberto] = useState(false);
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
+  const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
@@ -56,6 +84,25 @@ export default function App() {
     setOcupado(true);
     try {
       receberSnapshot(await api.executar(controle));
+    } catch (erro) { console.error(erro); }
+    finally { setOcupado(false); }
+  }
+
+  async function restaurarDiagrama() {
+    const controle = acao("REINICIAR_TENTATIVA");
+    if (!controle) return;
+    setOcupado(true);
+    try {
+      receberSnapshot(await api.reiniciar());
+    } catch (erro) { console.error(erro); }
+    finally { setOcupado(false); }
+  }
+
+  async function trocarIdioma(codigo: string) {
+    setMenuIdiomaAberto(false);
+    setOcupado(true);
+    try {
+      receberSnapshot(await api.trocarIdiomaSituacao(codigo));
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -301,6 +348,23 @@ export default function App() {
           : itemAjuda("TEXTO")
             ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
             : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
+        {estado.idiomas_situacao.length > 1 &&
+          <div className="help-mark-wrap language-switch-wrap">
+            <button type="button" className="help-mark" aria-expanded={menuIdiomaAberto}
+              aria-label={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
+              title={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
+              onClick={() => setMenuIdiomaAberto((aberto) => !aberto)} disabled={ocupado}>
+              <IconeIdioma />
+            </button>
+            {menuIdiomaAberto && <div className="help-menu language-switch-menu" role="dialog" aria-label="Idioma da situação-problema">
+              <div className="help-menu-opcoes">
+                {estado.idiomas_situacao.map((idioma) => <button key={idioma.codigo} type="button"
+                  disabled={idioma.atual || ocupado} onClick={() => void trocarIdioma(idioma.codigo)}>
+                  {idioma.atual ? "✓ " : ""}{idioma.nome}
+                </button>)}
+              </div>
+            </div>}
+          </div>}
         {estado.cena?.elementos_texto
           ? <EnunciadoInterativo key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
               elementos={estado.cena?.elementos_texto}
@@ -314,6 +378,14 @@ export default function App() {
       <div className="workspace workspace-awaiting-category">
         <section className={`diagram-panel${estado.modelagem?.concluida === true ? " diagram-panel-concluido" : ""}`} aria-label="Área do diagrama">
           <MenuAjudaContextual item={itemAjuda("VERGNAUD")} />
+          {acao("REINICIAR_TENTATIVA") && <span className="help-mark-wrap diagram-restore-wrap">
+            <button type="button" className="help-mark"
+              aria-label="Limpar a área do diagrama e recomeçar a modelagem"
+              title="Limpar a área do diagrama e recomeçar a modelagem"
+              disabled={ocupado} onClick={() => void restaurarDiagrama()}>
+              <IconeRestaurar />
+            </button>
+          </span>}
           {estado.cena && <GeradorCenaGerard cena={estado.cena}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}

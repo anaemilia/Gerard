@@ -87,7 +87,9 @@ button, input { font:inherit; } button { cursor:pointer; }
 .statement-panel,.diagram-panel,.response-panel { border:1px solid var(--borda); border-radius:var(--raio); background:var(--superficie); }
 .statement-panel { display:grid; grid-template-columns:max-content minmax(0,1fr); align-content:start; align-items:start; gap:8px 22px; padding:18px 20px; }
 .statement-panel > .help-mark-wrap,.statement-panel > .help-mark { grid-column:1; grid-row:1; justify-self:center; }
+.statement-panel > .language-switch-wrap { grid-row:2; }
 .statement-panel > h1,.statement-panel > .editor-narrativa { grid-column:2; grid-row:1 / span 2; }
+.language-switch-menu .help-menu-opcoes button { min-width:180px; }
 .statement-panel h1 { margin:7px 0 0; font-size:clamp(1.05rem,1.4vw,1.28rem); line-height:1.45; }
 .help-mark { width:36px; height:36px; flex:none; display:grid; place-items:center; border:1px solid var(--borda); border-radius:50%; color:var(--texto-secundario); }
 .help-mark svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
@@ -105,6 +107,7 @@ button.help-mark:hover,button.help-mark[aria-expanded="true"] { background:#fff3
 .diagram-panel { position:relative; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .response-panel { position:relative; min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
 .diagram-panel > .help-mark-wrap,.response-panel > .help-mark-wrap { position:absolute; top:10px; right:10px; z-index:4; }
+.diagram-panel > .diagram-restore-wrap { left:10px; right:auto; }
 .diagram-panel > .help-mark-wrap .help-menu,.response-panel > .help-mark-wrap .help-menu,
 .diagram-panel > .help-mark-wrap .help-tip,.response-panel > .help-mark-wrap .help-tip { left:auto; right:0; }
 .response-panel h2 { margin:4px 0 8px; font-size:1.3rem; }

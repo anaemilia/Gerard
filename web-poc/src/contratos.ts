@@ -40,12 +40,14 @@ export type EstadoAtividade = Readonly<{
   material_concreto_texto_remover?: string;
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
+export type IdiomaSituacaoWeb = Readonly<{ codigo: string; nome: string; atual: boolean }>;
 export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |
     "AGUARDANDO_CONFIRMACAO_CATEGORIA" | "CATEGORIA_CLASSIFICADA" | "REEXPLICACAO_CATEGORIA";
   grupo_sorteio: "MEDIDAS" | "RELACOES"; situacao_id: string;
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
+  idiomas_situacao: readonly IdiomaSituacaoWeb[];
   questionamento?: string; categoria_revelada?: string;
   explicacao_categoria_titulo?: string; explicacao_categoria_intro?: string;
   explicacao_categoria_rotulo?: string; explicacao_categoria_definicao?: string;

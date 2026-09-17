@@ -63,6 +63,29 @@ public final class FachadaCarregamentoAtividade {
         return construirContexto(situacao, tipo);
     }
 
+    /**
+     * Versões validadas do mesmo grupo conceitual de `atual`, em qualquer
+     * idioma — mesma coleta de mostrarMenuIdiomaDaSituacao (Main.java),
+     * usada para publicar as opções de troca de idioma no web (auditoria de
+     * acoplamento de Main, 2026-09-17).
+     */
+    public java.util.List<SituacaoProblemaAditiva> listarVersoesDoGrupo(
+            SituacaoProblemaAditiva atual) {
+        java.util.List<SituacaoProblemaAditiva> versoes =
+                new java.util.ArrayList<SituacaoProblemaAditiva>();
+        if (atual == null || atual.getSituacaoGrupoId() == null
+                || atual.getSituacaoGrupoId().trim().length() == 0) {
+            return versoes;
+        }
+        for (SituacaoProblemaAditiva s : repositorio.listarValidadas()) {
+            if (atual.getSituacaoGrupoId().equals(s.getSituacaoGrupoId())
+                    && s.getEnunciado() != null && s.getEnunciado().trim().length() > 0) {
+                versoes.add(s);
+            }
+        }
+        return versoes;
+    }
+
     private ContextoCarregamentoAtividade construirContexto(
             SituacaoProblemaAditiva situacao, TipoSituacaoAditiva tipo) {
         DefinicaoDiagramaAditivo definicao = catalogo.obter(tipo);

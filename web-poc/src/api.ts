@@ -34,6 +34,9 @@ export const api = {
     body: JSON.stringify(acao.corpo ?? {})
   }),
   reiniciar: () => requisitar<EstadoWeb>("/api/reiniciar", { method: "POST" }),
+  trocarIdiomaSituacao: (codigo: string) => requisitar<EstadoWeb>("/api/situacao/idioma", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codigo })
+  }),
   posicionar: (acao: AcaoDisponivel, valor: number) => requisitar<ResultadoAcao>(acao.href, {
     method: acao.metodo, headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...(acao.corpo ?? {}), valor })
