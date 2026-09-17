@@ -567,6 +567,14 @@ public class TelaCuradoriaSituacoes extends JPanel {
         // final" — reaproveita campoEstadoInicial/campoEstadoFinal (já
         // existentes, medida, sem painel de sinal) para os outros dois.
         final JTextField campoEstadoIntermediario = campoTexto(linha.estadoIntermediario);
+        // Decomposição Parte1+Parte2=Todo do estado inicial (2026-09-10, ver
+        // CLAUDE.md/levantamento de acoplamento 2026-09-16): opcional, só
+        // relevante em Composição de Transformações quando o enunciado
+        // apresenta o estado inicial já dividido entre dois personagens.
+        final JTextField campoEstadoInicialParte1 = campoTexto(linha.estadoInicialParte1);
+        final JTextField campoEstadoInicialParte1Personagem = campoTexto(linha.estadoInicialParte1Personagem);
+        final JTextField campoEstadoInicialParte2 = campoTexto(linha.estadoInicialParte2);
+        final JTextField campoEstadoInicialParte2Personagem = campoTexto(linha.estadoInicialParte2Personagem);
         final JTextField campoQuantidade1 = campoTexto(linha.quantidade1);
         final JTextField campoQuantidade2 = campoTexto(linha.quantidade2);
         final JTextField campoResultado = campoTexto(linha.resultado);
@@ -901,6 +909,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
             // estado_final, por isso ele aparece por último, como valor
             // derivado.
             y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);
+            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1", campoEstadoInicialParte1);
+            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1_personagem", campoEstadoInicialParte1Personagem);
+            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2", campoEstadoInicialParte2);
+            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2_personagem", campoEstadoInicialParte2Personagem);
             y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);
             y = adicionarCampo(formulario, gbc, y, "estado_intermediario", campoEstadoIntermediario);
             y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);
@@ -990,6 +1002,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
                 configurarCampoHerdado(campoEstadoFinal, dicaHerdado, semanticaHerdada);
             }
             configurarCampoHerdado(campoEstadoIntermediario, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoEstadoInicialParte1, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoEstadoInicialParte1Personagem, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoEstadoInicialParte2, dicaHerdado, semanticaHerdada);
+            configurarCampoHerdado(campoEstadoInicialParte2Personagem, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferido, dicaHerdado, semanticaHerdada);
             configurarCampoHerdado(campoReferendo, dicaHerdado, semanticaHerdada);
             controladorSinais.definirSemanticaHerdada(semanticaHerdada, dicaHerdado);
@@ -1068,7 +1084,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
                             campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                             campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
                             campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                            campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
+                            campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,
+                            campoEstadoInicialParte1, campoEstadoInicialParte1Personagem,
+                            campoEstadoInicialParte2, campoEstadoInicialParte2Personagem);
                     modelo.atualizarLinha(linhaModelo);
 
                     // A área de tradução é um editor independente do formulário principal.
@@ -1139,7 +1157,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                     campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
                     campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
+                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,
+                    campoEstadoInicialParte1, campoEstadoInicialParte1Personagem,
+                    campoEstadoInicialParte2, campoEstadoInicialParte2Personagem);
             IdiomaSituacao idiomaSelecionadoTraducao = (IdiomaSituacao) campoIdiomaTraducao.getSelectedItem();
             String idiomaDestino = idiomaSelecionadoTraducao == null ? "" : idiomaSelecionadoTraducao.getCodigo();
             String textoTraduzido = UnicodeTexto.normalizarNfc(campoTextoTraducao.getText() == null ? "" : campoTextoTraducao.getText().trim());
@@ -1193,7 +1213,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
                     campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
                     campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);
+                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,
+                    campoEstadoInicialParte1, campoEstadoInicialParte1Personagem,
+                    campoEstadoInicialParte2, campoEstadoInicialParte2Personagem);
             if (linha.id == null || linha.id.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(
                         dialogo,
@@ -1565,6 +1587,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         if (SimboloDesconhecido.eh(linha.transformacao)) encontrados.add("transformacao");
         if (SimboloDesconhecido.eh(linha.estadoFinal)) encontrados.add("estado_final");
         if (SimboloDesconhecido.eh(linha.estadoIntermediario)) encontrados.add("estado_intermediario");
+        if (SimboloDesconhecido.eh(linha.estadoInicialParte1)) encontrados.add("estado_inicial_parte1");
+        if (SimboloDesconhecido.eh(linha.estadoInicialParte2)) encontrados.add("estado_inicial_parte2");
         if (SimboloDesconhecido.eh(linha.quantidade1)) encontrados.add("quantidade_1");
         if (SimboloDesconhecido.eh(linha.quantidade2)) encontrados.add("quantidade_2");
         if (SimboloDesconhecido.eh(linha.resultado)) encontrados.add("resultado");
@@ -1897,6 +1921,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.operacaoRelacao = origem.operacaoRelacao;
         destino.estadoIntermediario = origem.estadoIntermediario;
         destino.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
+        destino.estadoInicialParte1 = origem.estadoInicialParte1;
+        destino.estadoInicialParte1Personagem = origem.estadoInicialParte1Personagem;
+        destino.estadoInicialParte2 = origem.estadoInicialParte2;
+        destino.estadoInicialParte2Personagem = origem.estadoInicialParte2Personagem;
     }
 
     private LinhaSituacao copiarLinha(LinhaSituacao origem) {
@@ -1921,6 +1949,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
         copia.operacaoRelacao = origem.operacaoRelacao;
         copia.estadoIntermediario = origem.estadoIntermediario;
         copia.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
+        copia.estadoInicialParte1 = origem.estadoInicialParte1;
+        copia.estadoInicialParte1Personagem = origem.estadoInicialParte1Personagem;
+        copia.estadoInicialParte2 = origem.estadoInicialParte2;
+        copia.estadoInicialParte2Personagem = origem.estadoInicialParte2Personagem;
         return copia;
     }
 
@@ -1945,6 +1977,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
         destino.operacaoRelacao = origem.operacaoRelacao;
         destino.estadoIntermediario = origem.estadoIntermediario;
         destino.operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;
+        destino.estadoInicialParte1 = origem.estadoInicialParte1;
+        destino.estadoInicialParte1Personagem = origem.estadoInicialParte1Personagem;
+        destino.estadoInicialParte2 = origem.estadoInicialParte2;
+        destino.estadoInicialParte2Personagem = origem.estadoInicialParte2Personagem;
     }
 
     private void configurarCampoHerdado(JTextField campo, String dica, boolean herdado) {
@@ -2108,7 +2144,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
             JTextField campoFragmentoTexto1, JTextField campoFragmentoTexto2, JTextField campoFragmentoTexto3,
             JTextField campoFragmentoTexto4, JTextField campoFragmentoTexto5, JTextField campoFragmentoTexto6,
             JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoEstadoIntermediario,
-            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao) {
+            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao,
+            JTextField campoEstadoInicialParte1, JTextField campoEstadoInicialParte1Personagem,
+            JTextField campoEstadoInicialParte2, JTextField campoEstadoInicialParte2Personagem) {
         linha.validada = campoValidada.isSelected();
         linha.enunciado = UnicodeTexto.normalizarNfc(areaEnunciado.getText() == null ? "" : areaEnunciado.getText().trim());
         linha.id = campoId.getText().trim();
@@ -2157,6 +2195,12 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     PapelSinalCuradoria.RELACAO_FINAL,
                     campoEstadoFinal.getText());
             linha.estadoIntermediario = campoEstadoIntermediario.getText().trim();
+            linha.estadoInicialParte1 = campoEstadoInicialParte1.getText().trim();
+            linha.estadoInicialParte1Personagem = UnicodeTexto.normalizarNfc(
+                    campoEstadoInicialParte1Personagem.getText().trim());
+            linha.estadoInicialParte2 = campoEstadoInicialParte2.getText().trim();
+            linha.estadoInicialParte2Personagem = UnicodeTexto.normalizarNfc(
+                    campoEstadoInicialParte2Personagem.getText().trim());
             linha.quantidade1 = controladorSinais.obterValorParaPersistencia(
                     PapelSinalCuradoria.RELACAO_1,
                     controladorSinais.obterValorParaPersistencia(
@@ -2369,6 +2413,15 @@ public class TelaCuradoriaSituacoes extends JPanel {
         if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             linha.operacaoEstadoTransformacao = "";
         }
+        // Decomposição Parte1+Parte2=Todo do estado inicial: só existe em
+        // Composição de Transformações (mesmo padrão de estadoIntermediario
+        // acima).
+        if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+            linha.estadoInicialParte1 = "";
+            linha.estadoInicialParte1Personagem = "";
+            linha.estadoInicialParte2 = "";
+            linha.estadoInicialParte2Personagem = "";
+        }
     }
 
     private ResolvedorIncognitaCurada.Resultado resolverIncognitaCurada(
@@ -2562,6 +2615,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
         String operacaoRelacao;
         String estadoIntermediario;
         String operacaoEstadoTransformacao;
+        String estadoInicialParte1;
+        String estadoInicialParte1Personagem;
+        String estadoInicialParte2;
+        String estadoInicialParte2Personagem;
     }
 
     static class ModeloTabelaSituacoes extends AbstractTableModel {
@@ -2619,6 +2676,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     l.operacaoRelacao = s.getOperacaoRelacao();
                     l.estadoIntermediario = s.getEstadoIntermediario();
                     l.operacaoEstadoTransformacao = s.getOperacaoEstadoTransformacao();
+                    l.estadoInicialParte1 = s.getEstadoInicialParte1();
+                    l.estadoInicialParte1Personagem = s.getEstadoInicialParte1Personagem();
+                    l.estadoInicialParte2 = s.getEstadoInicialParte2();
+                    l.estadoInicialParte2Personagem = s.getEstadoInicialParte2Personagem();
                     linhas.add(l);
                     i++;
                 }
@@ -2665,6 +2726,10 @@ public class TelaCuradoriaSituacoes extends JPanel {
             l.operacaoRelacao = "";
             l.estadoIntermediario = "";
             l.operacaoEstadoTransformacao = "";
+            l.estadoInicialParte1 = "";
+            l.estadoInicialParte1Personagem = "";
+            l.estadoInicialParte2 = "";
+            l.estadoInicialParte2Personagem = "";
             linhas.add(l);
             int i = linhas.size() - 1;
             fireTableRowsInserted(i, i);
@@ -2735,14 +2800,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     l.fragmentoTexto1, l.fragmentoTexto2, l.fragmentoTexto3,
                     l.fragmentoTexto4, l.fragmentoTexto5, l.fragmentoTexto6, l.operacaoRelacao,
                     l.estadoIntermediario, l.operacaoEstadoTransformacao,
-                    // estado_inicial_parteN/personagem (decomposição opcional
-                    // do estado inicial, só usada em algumas situações
-                    // COMPOSICAO_TRANSFORMACOES) ainda não têm campo próprio
-                    // nesta tela de curadoria — LinhaSituacao não os carrega,
-                    // então salvar uma linha por aqui hoje zera esses 2
-                    // campos se a situação já os tinha. Editar/criar valores
-                    // para eles continua exigindo edição direta do TSV.
-                    "", "", "", "");
+                    l.estadoInicialParte1, l.estadoInicialParte1Personagem,
+                    l.estadoInicialParte2, l.estadoInicialParte2Personagem);
         }
 
         public int getRowCount() { return linhas.size(); }
