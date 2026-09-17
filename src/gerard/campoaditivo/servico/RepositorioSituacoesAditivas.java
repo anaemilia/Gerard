@@ -851,7 +851,11 @@ public class RepositorioSituacoesAditivas {
                 + "\t" + campo(s.getFragmentoTexto6())
                 + "\t" + campo(s.getOperacaoRelacao())
                 + "\t" + campo(s.getEstadoIntermediario())
-                + "\t" + campo(s.getOperacaoEstadoTransformacao());
+                + "\t" + campo(s.getOperacaoEstadoTransformacao())
+                + "\t" + campo(s.getEstadoInicialParte1())
+                + "\t" + campo(s.getEstadoInicialParte1Personagem())
+                + "\t" + campo(s.getEstadoInicialParte2())
+                + "\t" + campo(s.getEstadoInicialParte2Personagem());
     }
 
     private static String campo(String valor) {

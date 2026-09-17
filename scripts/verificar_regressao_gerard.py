@@ -1726,7 +1726,7 @@ check('operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao,' in re
       'parseLinhaSituacao propaga operacaoEstadoTransformacao ao reconstruir SituacaoProblemaAditiva')
 check('s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao(),' in repositorio,
       'copiarComVinculo (usado ao gerar uma nova versão/tradução) propaga operacaoEstadoTransformacao')
-check('+ "\\t" + campo(s.getOperacaoEstadoTransformacao());' in repositorio,
+check('+ "\\t" + campo(s.getOperacaoEstadoTransformacao())' in repositorio,
       'formatarLinhaCuradoria grava operacaoEstadoTransformacao na 37ª coluna do TSV')
 
 check('String operacaoEstadoTransformacao;' in cur,
@@ -1904,6 +1904,20 @@ check('l.estadoInicialParte1, l.estadoInicialParte1Personagem,\n'
       '                    l.estadoInicialParte2, l.estadoInicialParte2Personagem);' in cur,
       'paraSituacao devolve os 4 campos reais da linha ao reconstruir SituacaoProblemaAditiva — '
       'o bug era devolver "", "", "", "" aqui, zerando qualquer situação salva pela tela')
+# Segundo bug real, achado só pelo teste de ponta a ponta com clique real
+# (Robot): formatarLinhaCuradoria (serialização para o TSV em disco) nunca
+# tinha sido atualizado por 966a644 e parava em operacaoEstadoTransformacao
+# — a linha em memória estava certa, mas o arquivo gravado no disco saía
+# com 37 colunas em vez de 41, perdendo os 4 campos permanentemente a cada
+# salvamento. Verificado: 210 situações + build completo continuam
+# aprovando após a correção.
+check('+ "\\t" + campo(s.getEstadoInicialParte1())\n'
+      '                + "\\t" + campo(s.getEstadoInicialParte1Personagem())\n'
+      '                + "\\t" + campo(s.getEstadoInicialParte2())\n'
+      '                + "\\t" + campo(s.getEstadoInicialParte2Personagem());' in repositorio,
+      'formatarLinhaCuradoria grava os 4 campos novos nas colunas 38-41 do TSV — '
+      'confirmado com teste real (clique via Robot em Salvar e fechar + leitura do '
+      'arquivo gravado em disco)')
 
 print('== Item 31 (2026-08-23): conclusão (azulzinho) só depois da operação correta ==')
 check('private boolean operacoesDeSomaSubtracaoRespondidasCorretamente() {' in main
