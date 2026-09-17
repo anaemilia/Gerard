@@ -1585,11 +1585,13 @@ check('public boolean exibirLupa' in elemento_vergnaud
       and 'figura.isExibirLupa(),' in main,
       'descritor vindo da cena decide quem ganha painel/lupa; Main apenas materializa a decisão '
       '(passado ao construtor de ElementoVergnaud, não atribuído depois)')
-check('flagsExibirLupa[i] = elemento != null && elemento.exibirLupa;' in main
-      and 'DecisaoExibicaoPaineisEixo.existeAlgumComLupa(flagsExibirLupa)' in main,
+check('DecisaoExibicaoPaineisEixo.existeAlgumComLupa(elementosVergnaud)' in main,
       'devemExibirPaineisEixosRelacoes não filtra mais por TipoSituacaoAditiva — qualquer categoria '
       'com pelo menos um descritor exibirLupa no diagrama atual ganha os painéis (redução extraída '
-      'para DecisaoExibicaoPaineisEixo em 2026-09-01, compartilhada com a API web)')
+      'para DecisaoExibicaoPaineisEixo em 2026-09-01, compartilhada com a API web). Atualizado '
+      '2026-09-16: mesmo ajuste de assinatura do check em "Controles de unidades" acima — '
+      'existeAlgumComLupa passou a receber List<? extends ElementoComLupa> diretamente, sem '
+      'reconstruir flagsExibirLupa')
 check(paineis_relacoes.count('elemento != null && elemento.exibirLupa') == 1,
       'PaineisEixosRelacoes.ativar respeita o descritor exibirLupa ao criar os Painel')
 check('import gerard.campoaditivo.diagrama.modelo.TipoFiguraDiagrama;' not in paineis_relacoes
@@ -1608,11 +1610,12 @@ check('if (papeis.size() >= 3) {\n'
       '            rotulo1 = papeis.get(0).getRotulo();' in semantica_curada,
       'Composição de Transformações passa a usar o mesmo caminho das demais categorias — papeis já '
       'traz "Transformação 1"/"Transformação 2"/"Transformação final" (mapear()) para os 3 círculos')
-check('medida("papel.estadoInicial", area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0)' in renderizador_composicao_transf
-      and 'medida("papel.estadoIntermediario", area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0)' in renderizador_composicao_transf
-      and 'medida("papel.estadoFinal", area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0)' in renderizador_composicao_transf,
+check('medida("papel.estadoInicial", area.x + 51, area.y + 177, loc.texto("papel.estadoInicial"), 0,' in renderizador_composicao_transf
+      and 'medida("papel.estadoIntermediario", area.x + 378, area.y + 177, loc.texto("papel.estadoIntermediario"), 0,' in renderizador_composicao_transf
+      and 'medida("papel.estadoFinal", area.x + 705, area.y + 177, loc.texto("papel.estadoFinal"), 0,' in renderizador_composicao_transf,
       'os 3 quadrados de estado (medida) ganham rótulo próprio — antes ficavam com "" (sem rótulo '
-      'algum), diferente de todo outro renderizador que usa medida() com um rótulo real')
+      'algum), diferente de todo outro renderizador que usa medida() com um rótulo real. Atualizado '
+      '2026-09-16: medida() ganhou o parâmetro final PosicaoRotuloFigura, sem afetar rótulo/coordenadas')
 
 print('== Item 28 (2026-08-23): campos estado_inicial/estado_intermediario/estado_final na curadoria ==')
 repositorio = text('src/gerard/campoaditivo/servico/RepositorioSituacoesAditivas.java')
@@ -1634,6 +1637,10 @@ check('campo(s.getEstadoIntermediario())' in repositorio,
 check('final JTextField campoEstadoIntermediario = campoTexto(linha.estadoIntermediario);' in cur,
       'formulário de curadoria ganha o campo de texto para estado_intermediario')
 check('y = adicionarCampo(formulario, gbc, y, "estado_inicial", campoEstadoInicial);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1", campoEstadoInicialParte1);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1_personagem", campoEstadoInicialParte1Personagem);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2", campoEstadoInicialParte2);\n'
+      '            y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2_personagem", campoEstadoInicialParte2Personagem);\n'
       '            y = adicionarCampo(formulario, gbc, y, "transformacao_1", painelSinalTransformacao1);\n'
       '            y = adicionarCampo(formulario, gbc, y, "estado_intermediario", campoEstadoIntermediario);\n'
       '            y = adicionarCampo(formulario, gbc, y, "transformacao_2", painelSinalTransformacao2);' in cur,
@@ -1698,11 +1705,15 @@ check('private final String operacaoEstadoTransformacao;' in sit_modelo
       '"vai ter que diferenciar dois tipos de operações" — SituacaoProblemaAditiva ganha o campo '
       'operacao_estado_transformacao, distinto de operacaoRelacao (que passa a significar só a operação '
       'entre transformação_1 e transformação_2)')
-check(sit_modelo.count('String operacaoRelacao, String estadoIntermediario,\n            String operacaoEstadoTransformacao) {') == 1,
+# Atualizado 2026-09-16: o construtor completo ganhou mais 4 parâmetros
+# depois de operacaoEstadoTransformacao (estadoInicialParte1/1Personagem/
+# 2/2Personagem, ver auditoria de acoplamento) — deixou de ser o último
+# antes de "{" e o overload anterior deixou de delegar terminando em ");".
+check(sit_modelo.count('String operacaoRelacao, String estadoIntermediario,\n            String operacaoEstadoTransformacao,') == 1,
       'novo construtor completo acrescenta operacaoEstadoTransformacao ao final, mesmo padrão usado para '
       'estadoIntermediario e operacaoRelacao — o overload anterior (sem esse parâmetro) delega pra este '
       'com "", preservando os chamadores existentes sem alteração')
-check('fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "");' in sit_modelo,
+check('fragmentoTexto5, fragmentoTexto6, operacaoRelacao, estadoIntermediario, "",' in sit_modelo,
       'o overload anterior (Item 28) delega para o novo construtor completo com operacaoEstadoTransformacao '
       'vazio — nenhum chamador existente precisa mudar')
 
@@ -1711,9 +1722,9 @@ check('operacao_estado_transformacao' in repositorio.split('CABECALHO_CURADORIA 
 check('String operacaoEstadoTransformacao = partes.length > 36 ? valor(partes, 36) : "";' in repositorio,
       'leitura do TSV recupera operacao_estado_transformacao da nova coluna (36), com fallback vazio para '
       'linhas antigas mais curtas')
-check('operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao);' in repositorio,
+check('operacaoRelacao, estadoIntermediario, operacaoEstadoTransformacao,' in repositorio,
       'parseLinhaSituacao propaga operacaoEstadoTransformacao ao reconstruir SituacaoProblemaAditiva')
-check('s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao());' in repositorio,
+check('s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao(),' in repositorio,
       'copiarComVinculo (usado ao gerar uma nova versão/tradução) propaga operacaoEstadoTransformacao')
 check('+ "\\t" + campo(s.getOperacaoEstadoTransformacao());' in repositorio,
       'formatarLinhaCuradoria grava operacaoEstadoTransformacao na 37ª coluna do TSV')
@@ -1722,7 +1733,7 @@ check('String operacaoEstadoTransformacao;' in cur,
       'LinhaSituacao (modelo de tela da curadoria) ganha o campo operacaoEstadoTransformacao')
 check('l.operacaoEstadoTransformacao = s.getOperacaoEstadoTransformacao();' in cur
       and 'l.operacaoEstadoTransformacao = "";' in cur
-      and 'l.estadoIntermediario, l.operacaoEstadoTransformacao);' in cur,
+      and 'l.estadoIntermediario, l.operacaoEstadoTransformacao,' in cur,
       'ModeloTabelaSituacoes.substituir/adicionarLinha/paraSituacoes leem, inicializam e devolvem '
       'operacaoEstadoTransformacao, mesmo padrão já usado para estadoIntermediario')
 check(cur.count('operacaoEstadoTransformacao = origem.operacaoEstadoTransformacao;') == 3,
@@ -1768,9 +1779,13 @@ check('y = adicionarCampo(formulario, gbc, y, "operacao_transformacao", campoOpe
       'curadoria direta nesta categoria')
 
 check('JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoEstadoIntermediario,\n'
-      '            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao) {' in cur,
+      '            JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao,' in cur,
       'aplicarCamposDaCuradoriaDetalhada ganha o parâmetro campoOperacaoEstadoTransformacao')
-check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao);') >= 2,
+# Atualizado 2026-09-16: a assinatura ganhou mais 4 parâmetros depois deste
+# (campoEstadoInicialParte1/1Personagem/2/2Personagem, ver auditoria de
+# acoplamento), então a chamada não termina mais em ");" logo após
+# campoOperacaoEstadoTransformacao — termina em "," seguido dos 4 novos args.
+check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,') >= 3,
       'todos os fluxos que materializam os campos da curadoria passam o novo '
       'campoOperacaoEstadoTransformacao')
 check('linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorCanonico();' in cur
@@ -1847,6 +1862,48 @@ for lang in ('pt', 'en', 'es', 'fr'):
               for explicacao in explicacoes_estado_transformacao)
           and all('{Personagem_1}' in explicacao for explicacao in explicacoes_estado_transformacao),
           f'explicações da segunda operação usam campo de personagem nomeado, sem marcadores posicionais ({lang})')
+
+print('== Item 30b (2026-09-16): tela de curadoria não zera mais estado_inicial_parteN/personagem ==')
+# Bug encontrado na auditoria de acoplamento de Main pedida pela
+# pesquisadora: LinhaSituacao nunca ganhou os 4 campos que 966a644
+# (2026-09-10) criou em SituacaoProblemaAditiva (estadoInicialParte1/
+# 1Personagem/2/2Personagem), então salvar qualquer linha pela tela de
+# curadoria zerava esses campos em TODAS as situações que os tinham —
+# inclusive a própria situação "flores" que motivou a feature. Corrigido
+# com edição completa na tela (decisão explícita da pesquisadora), mesmo
+# padrão já usado para estado_intermediario/operacaoEstadoTransformacao.
+check('String estadoInicialParte1;' in cur
+      and 'String estadoInicialParte1Personagem;' in cur
+      and 'String estadoInicialParte2;' in cur
+      and 'String estadoInicialParte2Personagem;' in cur,
+      'LinhaSituacao ganha os 4 campos da decomposição do estado inicial')
+check('final JTextField campoEstadoInicialParte1 = campoTexto(linha.estadoInicialParte1);' in cur
+      and 'final JTextField campoEstadoInicialParte1Personagem = campoTexto(linha.estadoInicialParte1Personagem);' in cur
+      and 'final JTextField campoEstadoInicialParte2 = campoTexto(linha.estadoInicialParte2);' in cur
+      and 'final JTextField campoEstadoInicialParte2Personagem = campoTexto(linha.estadoInicialParte2Personagem);' in cur,
+      'formulário de curadoria ganha os 4 campos de texto da decomposição do estado inicial')
+check('y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1", campoEstadoInicialParte1);' in cur
+      and 'y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte1_personagem", campoEstadoInicialParte1Personagem);' in cur
+      and 'y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2", campoEstadoInicialParte2);' in cur
+      and 'y = adicionarCampo(formulario, gbc, y, "estado_inicial_parte2_personagem", campoEstadoInicialParte2Personagem);' in cur,
+      'os 4 campos aparecem no formulário de Composição de Transformações, logo após estado_inicial')
+check('linha.estadoInicialParte1 = campoEstadoInicialParte1.getText().trim();' in cur
+      and 'linha.estadoInicialParte2 = campoEstadoInicialParte2.getText().trim();' in cur,
+      'os 4 campos são salvos da tela para LinhaSituacao ao confirmar o formulário')
+check(cur.count('l.estadoInicialParte1 = origem.estadoInicialParte1;') == 0
+      and cur.count('estadoInicialParte1 = origem.estadoInicialParte1;') == 3,
+      'os 3 auxiliares de cópia entre linhas (copiarMetadadosConceituais, copiarLinha, restaurarLinha) '
+      'propagam os 4 campos, mesmo padrão de estadoIntermediario/operacaoEstadoTransformacao')
+check('l.estadoInicialParte1 = s.getEstadoInicialParte1();' in cur,
+      'ModeloTabelaSituacoes carrega os 4 campos de SituacaoProblemaAditiva ao ler o TSV')
+check(cur.count('l.estadoInicialParte1 = "";') == 1,
+      'nova linha em branco começa com os 4 campos vazios')
+check('if (t != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {\n            linha.estadoInicialParte1 = "";' in cur,
+      'limparCamposSemanticosNaoAplicaveis zera os 4 campos fora de Composição de Transformações')
+check('l.estadoInicialParte1, l.estadoInicialParte1Personagem,\n'
+      '                    l.estadoInicialParte2, l.estadoInicialParte2Personagem);' in cur,
+      'paraSituacao devolve os 4 campos reais da linha ao reconstruir SituacaoProblemaAditiva — '
+      'o bug era devolver "", "", "", "" aqui, zerando qualquer situação salva pela tela')
 
 print('== Item 31 (2026-08-23): conclusão (azulzinho) só depois da operação correta ==')
 check('private boolean operacoesDeSomaSubtracaoRespondidasCorretamente() {' in main
