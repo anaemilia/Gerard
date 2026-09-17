@@ -24,6 +24,7 @@ export default function App() {
   const [avisoPosicionamento, setAvisoPosicionamento] =
     useState<{ figuraId: string; mensagem: string } | null>(null);
   const [chatAberto, setChatAberto] = useState(false);
+  const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
@@ -355,6 +356,17 @@ export default function App() {
           <h2 id="pergunta-categoria">Confirme sua escolha</h2><p>{estado.questionamento}</p>
           <div className="dialog-actions"><button type="button" onClick={() => confirmarCategoria(true)} disabled={ocupado}>Sim</button>
             <button type="button" onClick={() => confirmarCategoria(false)} disabled={ocupado}>Não</button></div>
+        </section></div>}
+      {estado.modo === "REEXPLICACAO_CATEGORIA" && explicacaoCategoriaVista !== estado.situacao_id &&
+        <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="titulo-reexplicacao-categoria">
+          <h2 id="titulo-reexplicacao-categoria">{estado.explicacao_categoria_titulo}</h2>
+          <p>{estado.explicacao_categoria_intro}</p>
+          <p><strong>{estado.explicacao_categoria_rotulo}</strong> — {estado.explicacao_categoria_definicao}</p>
+          <div className="dialog-actions">
+            <button type="button" onClick={() => setExplicacaoCategoriaVista(estado.situacao_id)}>
+              {estado.explicacao_categoria_fechar}
+            </button>
+          </div>
         </section></div>}
     </div>}
   </main>;

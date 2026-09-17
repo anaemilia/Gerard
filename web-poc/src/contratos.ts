@@ -47,6 +47,9 @@ export type EstadoClassificacao = Readonly<{
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   questionamento?: string; categoria_revelada?: string;
+  explicacao_categoria_titulo?: string; explicacao_categoria_intro?: string;
+  explicacao_categoria_rotulo?: string; explicacao_categoria_definicao?: string;
+  explicacao_categoria_fechar?: string;
   dica_proximo_passo?: string | null;
   ajuda_contextual?: readonly ItemAjudaContextual[];
   confirmacao_valor_papel?: string | null;

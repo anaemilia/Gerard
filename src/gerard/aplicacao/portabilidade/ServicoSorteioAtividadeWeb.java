@@ -5,6 +5,7 @@ import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas.Grupo;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
+import gerard.i18n.ServicoLocalizacao;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
@@ -440,9 +441,25 @@ public final class ServicoSorteioAtividadeWeb {
                 estado.put("acoes_disponiveis", AcoesDisponiveisAtividadeWeb.sorteios());
             }
         } else if (tentativaClassificacao.estaEncerrada()) {
+            TipoSituacaoAditiva categoriaRevelada = tentativaClassificacao.getCategoriaEsperada();
+            ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
             estado.put("modo", "REEXPLICACAO_CATEGORIA");
-            estado.put("categoria_revelada",
-                    tentativaClassificacao.getCategoriaEsperada().name());
+            estado.put("categoria_revelada", categoriaRevelada.name());
+            // Mesmo texto real do diálogo de reexplicação do desktop
+            // (acionarTimeoutCategoria/mostrarExplicacaoCategorias em
+            // Main.java), sem o repertório de vídeo/história em quadrinhos
+            // adaptado à mídia preferida — paridade mínima de texto puro
+            // pedida pela pesquisadora (auditoria de acoplamento, 2026-09-17).
+            estado.put("explicacao_categoria_titulo",
+                    localizacao.texto("ui.dialog.categoryExplanation.title"));
+            estado.put("explicacao_categoria_intro",
+                    localizacao.texto("ui.dialog.categoryExplanation.intro"));
+            estado.put("explicacao_categoria_rotulo",
+                    localizacao.rotuloBotaoTipo(categoriaRevelada));
+            estado.put("explicacao_categoria_definicao",
+                    localizacao.texto("ui.question.category." + categoriaRevelada.name().toLowerCase()));
+            estado.put("explicacao_categoria_fechar",
+                    localizacao.texto("ui.dialog.categoryExplanation.close"));
             estado.put("acoes_disponiveis", AcoesDisponiveisAtividadeWeb.sorteios());
         } else {
             estado.put("acoes_disponiveis",
