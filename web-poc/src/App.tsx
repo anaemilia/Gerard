@@ -247,7 +247,13 @@ export default function App() {
   }
 
   async function escolherOperacao(operacao: "SOMA" | "SUBTRACAO") {
-    const controle = estado?.acoes_disponiveis.find((item) => item.id === "ESCOLHER_OPERACAO_RELACAO");
+    // A ação vive em estado.modelagem.acoes_disponiveis (a modelagem tem sua
+    // própria lista, distinta da lista de classificação em estado.acoes_disponiveis)
+    // — bug real encontrado por protocolo de mouse: clicar Soma/Subtração
+    // nunca disparava requisição nenhuma, em nenhuma categoria (auditoria de
+    // acoplamento de Main/web, 2026-09-18).
+    const controle = estado?.modelagem?.acoes_disponiveis
+      .find((item) => item.id === "ESCOLHER_OPERACAO_RELACAO");
     if (!controle) return;
     setOcupado(true);
     try {
@@ -301,10 +307,15 @@ export default function App() {
     ? estado?.cena?.figuras.find(
         (item) => item.chave_papel_semantico === modelagemComSinal.papel_aguardando_sinal)
     : undefined;
+  // Generalizado por capacidade, não por categoria: qualquer modelagem que
+  // exponha um dos dois campos de escolha de operação (formatos distintos
+  // hoje só em Composição de Transformações/Relações, ver
+  // AcoesDisponiveisAtividadeWeb.escolhaOperacaoRelacao no servidor) acende
+  // o seletor — sem comparar nome de categoria (auditoria de acoplamento de
+  // Main/web, 2026-09-18).
   const modelagemEscolhaOperacao = estado && estado.modelagem
-    && "categoria" in estado.modelagem
-    && (estado.modelagem.categoria === "COMPOSICAO_TRANSFORMACOES"
-      || estado.modelagem.categoria === "COMPOSICAO_RELACOES")
+    && ("escolha_operacao" in estado.modelagem
+      || "escolha_entre_transformacoes" in estado.modelagem)
     ? estado.modelagem
     : undefined;
   // Generalizado por categoria: qualquer modelagem que exponha
