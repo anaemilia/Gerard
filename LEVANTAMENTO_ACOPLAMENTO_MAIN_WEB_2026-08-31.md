@@ -1645,3 +1645,134 @@ de valores e à conclusão da modelagem. A execução integral da bateria não f
 considerada concluída neste corte porque a versão desktop estava aberta pelo
 IntelliJ durante a tentativa e testes que normalmente encerram rapidamente
 passaram a expirar; nenhum processo do IntelliJ foi interrompido.
+
+## Nova varredura: 2 métodos privados mortos removidos de `Main` (2026-09-18)
+
+Com a fila original (P0/P1) e a varredura de 2026-09-03 já esgotadas, repeti o
+mesmo critério (métodos `private`/`protected` sem nenhuma outra ocorrência
+textual no arquivo além da própria declaração) sobre o `Main.java` atual
+(13.816 linhas). De 473 métodos `private`/`protected` declarados, apenas 2
+não tinham chamador algum:
+
+- `obterNumerosInterpretados()` (linha 5142): retornava
+  `resultadoInterpretacao.getNumeros()` ou lista vazia; sem chamador em
+  `src/`, `tests/` ou `scripts/`.
+- `elementoContemNumeralInterpretado(ElementoTextoMovel)` (linha 7178):
+  predicado sobre vínculo semântico/incógnita original; também sem chamador
+  algum.
+
+Nenhum dos dois chamava outro método sem chamadores vivos (sem órfão
+transitivo), e nenhum verificador estrutural dependia do texto exato dessas
+declarações. Ambos removidos; nenhuma lógica foi promovida a serviço — não
+havia conhecimento a realocar, só indireção morta.
+
+Verificação: compilação isolada de `Main.java` via Ant (embutido no plugin
+Gradle do IntelliJ, já que `ant` não está no PATH desta máquina) aprovada sem
+erros; `verificar_regressao_gerard.py` aprovado por completo (nenhuma falha).
+
+### Achado colateral: cabeçalho da curadoria desatualizado desde 2026-09-10
+
+Ao tentar validar a remoção acima pela bateria completa
+(`verificar_linha_base_windows.py`), a compilação dos testes falhou — não por
+causa do corte, mas porque `tests/java/*.java` (8 arquivos: os dois
+construtores de `TesteMontadorCuradoriaNarrativaRica` e
+`TestePersistenciaCuradoriaNarrativaRica`, mais
+`TesteConversorComposicaoMedidasRica`, `TesteConversorComposicaoRelacoesRica`,
+`TesteConversorSituacaoProblemaRica`, `TesteConversorTransformacaoMedidasRica`,
+`TesteConversorTransformacaoRelacaoRica` e `TesteDialogoCuradoriaNarrativaRica`)
+ainda chamavam o construtor completo de `SituacaoProblemaAditiva` com 37
+argumentos. O commit `966a644` (2026-09-10, decomposição do estado inicial em
+Parte1+Parte2) estendeu esse construtor para 41 argumentos *no mesmo
+overload*, em vez de criar um novo overload delegante como os dois acréscimos
+anteriores (`operacaoRelacao`, `estadoIntermediario`/`operacaoEstadoTransformacao`)
+já haviam feito — quebrando esses 8 pontos de chamada em silêncio, sem que
+nenhuma bateria completa tivesse rodado desde então para pegar o erro de
+compilação. Corrigido passando `""` para os 4 parâmetros novos em cada
+chamada, já que nenhum desses testes exercita a decomposição.
+
+Isso revelou um segundo defeito real, já em produção: `formatarLinhaCuradoria`
+e o parser de `RepositorioSituacoesAditivas` já liam/gravavam os 4 campos
+novos corretamente (posições 37–40), mas a constante `CABECALHO_CURADORIA`
+usada ao regravar o cabeçalho do `.tsv` ainda listava só os 37 nomes antigos
+— qualquer `salvarCuradoria` real produziria um cabeçalho de 37 colunas sobre
+linhas de dados com 41, um `.tsv` estruturalmente inconsistente. Corrigido
+acrescentando os 4 nomes de coluna que faltavam (mesmos nomes já usados pelo
+`CABECALHO_ESPERADO` de `scripts/verificar_curadoria_canonica.py`, que já
+tinha sido sincronizado em `f750962`, 2026-09-16). `TesteRoundTripCuradoriaCanonica`
+ainda esperava `TOTAL_COLUNAS = 37` e falhava por isso — atualizado para 41
+(único número mudado; os índices de colunas existentes não se moveram, pois
+os 4 campos novos só foram anexados ao final).
+
+Verificação final: bateria completa aprovada — 133 testes executáveis, 5
+gráficos compilados/não executados por exigirem display, zero reprovações;
+`verificar_regressao_gerard.py` e `verificar_curadoria_canonica.py` (210
+situações, 41 colunas, 6 categorias) aprovados sem falhas.
+
+## Corte: ramificação de categoria no seletor de operação do cliente web (2026-09-18)
+
+Revisitei os três vazamentos do cliente React ainda listados como pendentes
+em "Correção de fronteira: descritores do editor narrativo (2026-09-08)".
+Dois já não existem mais na árvore atual: `AvisoPosicionamentoFigura.tsx` só
+materializa a mensagem/posição já resolvida pelo servidor (mesma avaliação de
+`ScaffoldingQuestionamento.avaliarPosicionamento`), e não encontrei mais
+nenhum parâmetro de atração magnética em `web-poc/src`. O terceiro
+persistia: `App.tsx` decidia se mostrava o seletor de operação (soma/
+subtração) comparando `estado.modelagem.categoria` contra os dois nomes
+literais `COMPOSICAO_TRANSFORMACOES`/`COMPOSICAO_RELACOES`, ao lado de um
+comentário do próprio arquivo (sobre `modelagemMaterialConcreto`, algumas
+linhas abaixo) descrevendo exatamente o padrão correto: checar presença de
+campo estrutural, não nome de categoria.
+
+- `modelagemEscolhaOperacao` passou a checar `"escolha_operacao" in
+  estado.modelagem || "escolha_entre_transformacoes" in estado.modelagem` —
+  os dois campos que os respectivos contratos (`EstadoEscolhaOperacaoRelacoes`/
+  `EstadoEscolhaOperacaoTransformacoes`) sempre publicam (`estado.put(...)`
+  incondicional nos dois serviços Java), em vez do nome da categoria.
+  Comportamento observável idêntico ao anterior, já que hoje só essas duas
+  categorias publicam algum desses dois campos — não há regressão, é remoção
+  de acoplamento por nome.
+- Investiguei primeiro se um campo-capacidade genérico já existia (mesmo
+  padrão do `ESCOLHER_OPERACAO_RELACAO` em `acoes_disponiveis`), mas os dois
+  serviços (`ServicoAtividadeWebComposicaoRelacoes`/
+  `ServicoAtividadeWebComposicaoTransformacoes`) publicam formatos JSON
+  próprios e distintos — generalizar de verdade exigiria mudar contrato dos
+  dois lados, decisão de design maior que fica registrada aqui, não
+  executada sem autorização explícita.
+
+**Achado real durante a verificação por protocolo de mouse.** Ao testar a
+mudança acima com um clique de verdade em "Soma" (Composição de Relações,
+narrativa "Carlos/João/Pedro"), a requisição HTTP nunca disparava —
+confirmado tanto por clique físico simulado quanto por invocar diretamente
+o `onClick` do fiber React, e por um listener de `click` no documento que
+provou que o evento chegava ao botão. `escolherOperacao` (`App.tsx`, desde o
+commit `e223a3f`, 2026-09-04, "fase em andamento") procurava a ação
+`ESCOLHER_OPERACAO_RELACAO` em `estado.acoes_disponiveis` — a lista de
+CLASSIFICAÇÃO (`EstadoClassificacao.acoes_disponiveis`, sempre
+`SORTEAR_MEDIDAS`/`ESCOLHER_CATEGORIA`/etc.), nunca a de modelagem. A ação
+só existe em `estado.modelagem.acoes_disponiveis` — confirmado lendo o
+estado React ao vivo via fiber (`modelagem.acoes_disponiveis` continha
+`POSICIONAR_CONHECIDO` × 3, nunca `ESCOLHER_OPERACAO_RELACAO` até as
+relações serem posicionadas, e a lista do topo nunca continha a ação em
+nenhum momento). Ou seja: desde 04/09/2026, clicar Soma/Subtração nunca
+fazia nada, em nenhuma categoria — bug real, não relacionado à minha mudança
+de gating, só descoberto por insistir no clique real em vez de parar na
+leitura do código. Corrigido trocando para
+`estado?.modelagem?.acoes_disponiveis.find(...)`.
+
+**Verificação parcial, registrada com a ressalva da Regra 2.** `tsc --noEmit`
+e `vite build` (45 módulos) aprovados para as duas mudanças. O gating de
+visibilidade foi confirmado por captura de tela real (categoria Composição
+de Relações, seletor aparece). O clique em si (evento chegando ao botão,
+`escolherOperacao` sendo chamado, `controle` deixando de ser `undefined`)
+foi confirmado por inspeção do estado React ao vivo, não por completar o
+ciclo HTTP inteiro: posicionar os valores conhecidos nas Relações 1/2 exige
+arrastar os números do enunciado (elementos `span.enunciado-elemento-
+semantico`), e esse arraste usa a API HTML5 de drag-and-drop nativa
+(`onDragStart`/`dataTransfer`), que a ferramenta de automação de mouse
+disponível neste ambiente não consegue simular (`left_click_drag` dispara
+apenas mousedown/mousemove/mouseup, sem os eventos `dragstart`/`dragover`/
+`drop`). Não consegui, portanto, produzir a sequência HTTP real completa
+(posicionar → escolher operação → resultado) exigida pela Regra 2 para
+"correção validada" — só a causa raiz confirmada e a correção aplicada.
+Fica como pendência para quem tiver uma ferramenta de automação com suporte
+a HTML5 DnD, ou para validação manual da pesquisadora.
