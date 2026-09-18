@@ -5139,13 +5139,6 @@ public class Main extends JFrame {
         }
 
 
-        private java.util.List<NumeroEncontrado> obterNumerosInterpretados() {
-            if (textoProblemaEhMensagemSistema || resultadoInterpretacao == null) {
-                return new ArrayList<NumeroEncontrado>();
-            }
-            return resultadoInterpretacao.getNumeros();
-        }
-
         private int converterTextoNumeroParaInteiro(String texto) {
             if (texto == null) {
                 return 0;
@@ -7173,13 +7166,6 @@ public class Main extends JFrame {
                     valorAtual,
                     elemento.representaIncognitaOriginal(),
                     elemento.chavePapelSemantico);
-        }
-
-        private boolean elementoContemNumeralInterpretado(ElementoTextoMovel elemento) {
-            return !textoProblemaEhMensagemSistema
-                    && elemento != null
-                    && elemento.possuiVinculoSemantico()
-                    && !elemento.representaIncognitaOriginal();
         }
 
         private void adicionarMarcador(
