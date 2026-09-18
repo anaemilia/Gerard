@@ -187,7 +187,8 @@ public final class TesteDialogoCuradoriaNarrativaRica {
                 "estado_final", "TRANSFORMACAO_MEDIDAS", "",
                 "Nadia", "", "",
                 "", "", "", "", "", "",
-                "", "", "");
+                "", "", "",
+                "", "", "", "");
     }
 
     private static void checar(String rotulo, boolean condicao) {

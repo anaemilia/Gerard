@@ -178,7 +178,8 @@ public class TesteMontadorCuradoriaNarrativaRica {
                 "", "", "", "", "", "", "",
                 "estado_final", "TRANSFORMACAO_MEDIDAS", "",
                 "POSICAO_1_INCORRETA", "POSICAO_2_INCORRETA", "",
-                "", "", "", "", "", "", "", "", "");
+                "", "", "", "", "", "", "", "", "",
+                "", "", "", "");
     }
 
     private static void checar(String rotulo, boolean obtido, boolean esperado) {

@@ -304,7 +304,8 @@ public class TestePersistenciaCuradoriaNarrativaRica {
                 "estado_final", "TRANSFORMACAO_MEDIDAS", "",
                 personagem1, personagem2, "CAMPO_POSICIONAL_3",
                 "", "", "", "", "", "",
-                "", "", "");
+                "", "", "",
+                "", "", "", "");
     }
 
     private static void checar(String rotulo, boolean obtido, boolean esperado) {

@@ -103,7 +103,8 @@ public class TesteConversorSituacaoProblemaRica {
                 "", "", "", "", "", "",
                 operacaoTransformacoes,
                 estadoIntermediario,
-                operacaoEstadoTransformacao);
+                operacaoEstadoTransformacao,
+                "", "", "", "");
     }
 
     private static Complemento complementoNarrativo() {

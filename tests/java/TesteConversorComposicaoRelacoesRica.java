@@ -109,7 +109,8 @@ public class TesteConversorComposicaoRelacoesRica {
                 "relacao_resultante", "COMPOSICAO_RELACOES", "",
                 "não inferir A", "não inferir B", "não inferir C",
                 "", "", "", "", "", "",
-                operacao, "", "");
+                operacao, "", "",
+                "", "", "", "");
     }
 
     private static Cenario cenario(

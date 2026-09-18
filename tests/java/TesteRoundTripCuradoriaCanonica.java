@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public final class TesteRoundTripCuradoriaCanonica {
 
-    private static final int TOTAL_COLUNAS = 37;
+    private static final int TOTAL_COLUNAS = 41;
     private static final int INDICE_TIPO = 6;
     private static final int INDICE_ESTADO_FINAL = 14;
     private static final int INDICE_OPERACAO_RELACAO = 34;
@@ -50,9 +50,9 @@ public final class TesteRoundTripCuradoriaCanonica {
                 String[] camposAntes = antes.get(indice).split("\\t", -1);
                 String[] camposDepois = depois.get(indice).split("\\t", -1);
                 exigir(camposAntes.length == TOTAL_COLUNAS,
-                        "linha original " + (indice + 1) + " deve ter 37 colunas");
+                        "linha original " + (indice + 1) + " deve ter " + TOTAL_COLUNAS + " colunas");
                 exigir(camposDepois.length == TOTAL_COLUNAS,
-                        "linha regravada " + (indice + 1) + " deve ter 37 colunas");
+                        "linha regravada " + (indice + 1) + " deve ter " + TOTAL_COLUNAS + " colunas");
 
                 for (int coluna = 0; coluna < TOTAL_COLUNAS; coluna++) {
                     exigir(camposAntes[coluna].equals(camposDepois[coluna]),
@@ -80,7 +80,7 @@ public final class TesteRoundTripCuradoriaCanonica {
                     "as oito situações de TRANSFORMACAO_RELACAO devem participar do teste");
             exigir(contarCategorias(situacoes).size() == 6,
                     "o repositório deve expor exatamente as seis categorias canônicas");
-            System.out.println("APROVADO: round-trip preservou os 37 campos das 210 situações curadas.");
+            System.out.println("APROVADO: round-trip preservou os " + TOTAL_COLUNAS + " campos das 210 situações curadas.");
         } finally {
             if (homeOriginal == null) {
                 System.clearProperty("user.home");

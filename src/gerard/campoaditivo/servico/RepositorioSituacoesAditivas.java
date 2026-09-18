@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class RepositorioSituacoesAditivas {
     private static final String ARQUIVO_SITUACOES = "/gerard/campoaditivo/dados/situacoes_vergnaud.tsv";
-    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6\toperacao_relacao\testado_intermediario\toperacao_estado_transformacao";
+    public static final String CABECALHO_CURADORIA = "# id\tsituacao_grupo_id\ttipo_versao\tversao_origem_id\tvalidada\tidioma\ttipo\tcontexto\tenunciado\tfonte\tsubtipo\testado_inicial\ttransformacao\tsinal_transformacao\testado_final\tquantidade_1\tquantidade_2\tresultado\treferido\treferendo\tvalor_relativo\tsinal_valor_relativo\ttermo_desconhecido\trepresentacao_visual\tobservacoes\tpersonagem_1\tpersonagem_2\tpersonagem_3\tfragmento_texto_1\tfragmento_texto_2\tfragmento_texto_3\tfragmento_texto_4\tfragmento_texto_5\tfragmento_texto_6\toperacao_relacao\testado_intermediario\toperacao_estado_transformacao\testado_inicial_parte1\testado_inicial_parte1_personagem\testado_inicial_parte2\testado_inicial_parte2_personagem";
 
     private final Map<IdiomaInterface, Map<TipoSituacaoAditiva, List<SituacaoProblemaAditiva>>> situacoes;
     private final Random random;

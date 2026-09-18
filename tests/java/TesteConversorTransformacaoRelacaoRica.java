@@ -146,7 +146,8 @@ public class TesteConversorTransformacaoRelacaoRica {
                 termoDesconhecido, "TRANSFORMACAO_RELACAO", "",
                 "Bonecas", "Maria", "Julia",
                 "", "", "", "", "", "",
-                operacao, "", "");
+                operacao, "", "",
+                "", "", "", "");
     }
 
     private static Cenario cenarioBonecas(boolean manterOrientacaoFinal) {

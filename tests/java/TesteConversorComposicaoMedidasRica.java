@@ -165,7 +165,8 @@ public class TesteConversorComposicaoMedidasRica {
                 "COMPOSICAO_MEDIDAS", "",
                 "Rosas brancas", "Rosas amarelas", "Vovo",
                 "", "", "", "", "", "",
-                "", "", "");
+                "", "", "",
+                "", "", "", "");
     }
 
     private static Complemento complementoNarrativo() {

@@ -138,7 +138,8 @@ public class TesteConversorTransformacaoMedidasRica {
                 "TRANSFORMACAO_MEDIDAS", "",
                 "Objetos", "Objetos", "Participante",
                 "", "", "", "", "", "",
-                "", "", "");
+                "", "", "",
+                "", "", "", "");
     }
 
     private static Cenario cenarioAcrescimo() {
