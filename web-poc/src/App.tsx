@@ -359,23 +359,26 @@ export default function App() {
           : itemAjuda("TEXTO")
             ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
             : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
-        {estado.idiomas_situacao.length > 1 &&
-          <div className="help-mark-wrap language-switch-wrap">
-            <button type="button" className="help-mark" aria-expanded={menuIdiomaAberto}
-              aria-label={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
-              title={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
-              onClick={() => setMenuIdiomaAberto((aberto) => !aberto)} disabled={ocupado}>
-              <IconeIdioma />
-            </button>
-            {menuIdiomaAberto && <div className="help-menu language-switch-menu" role="dialog" aria-label="Idioma da situação-problema">
-              <div className="help-menu-opcoes">
-                {estado.idiomas_situacao.map((idioma) => <button key={idioma.codigo} type="button"
-                  disabled={idioma.atual || ocupado} onClick={() => void trocarIdioma(idioma.codigo)}>
-                  {idioma.atual ? "✓ " : ""}{idioma.nome}
-                </button>)}
-              </div>
-            </div>}
+        <div className="help-mark-wrap language-switch-wrap">
+          <button type="button" className="help-mark" aria-expanded={menuIdiomaAberto}
+            aria-label={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
+            title={descricaoBotaoIdiomaSituacao(estado.idiomas_situacao)}
+            onClick={() => setMenuIdiomaAberto((aberto) => !aberto)} disabled={ocupado}>
+            <IconeIdioma />
+          </button>
+          {menuIdiomaAberto && <div className="help-menu language-switch-menu" role="dialog" aria-label="Idioma da situação-problema">
+            {estado.idiomas_situacao.length > 1
+              ? <div className="help-menu-opcoes">
+                  {estado.idiomas_situacao.map((idioma) => <button key={idioma.codigo} type="button"
+                    disabled={idioma.atual || ocupado} onClick={() => void trocarIdioma(idioma.codigo)}>
+                    {idioma.atual ? "✓ " : ""}{idioma.nome}
+                  </button>)}
+                </div>
+              : <p className="help-tip" role="status">
+                  Esta situação-problema não possui outras versões linguísticas validadas.
+                </p>}
           </div>}
+        </div>
         {estado.cena?.elementos_texto
           ? <EnunciadoInterativo key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
               elementos={estado.cena?.elementos_texto}
