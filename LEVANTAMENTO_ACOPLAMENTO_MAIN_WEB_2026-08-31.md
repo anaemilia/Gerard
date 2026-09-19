@@ -1776,3 +1776,80 @@ apenas mousedown/mousemove/mouseup, sem os eventos `dragstart`/`dragover`/
 "correção validada" — só a causa raiz confirmada e a correção aplicada.
 Fica como pendência para quem tiver uma ferramenta de automação com suporte
 a HTML5 DnD, ou para validação manual da pesquisadora.
+
+## Correção: botão de idioma da situação some quando só há 1 versão validada, e auditoria de paridade das 3 categorias de Medidas (2026-09-19)
+
+Usuária reportou (print da situação "Marcus e Jardel colecionam carrinhos",
+Comparação de Medidas) que o botão de troca de idioma da situação-problema
+não aparecia embaixo do ícone de informação, ao contrário do padrão do
+desktop.
+
+**Causa raiz confirmada em `Main.java`:** `botaoIdiomaSituacao` é sempre
+visível quando há uma situação carregada (`setVisible(situacaoProblemaAtual
+!= null)`, linha 5399) — mesmo sem outras versões de idioma. Nesse caso o
+clique mostra um diálogo `ui.problemLanguage.unavailable` ("Esta
+situação-problema não possui outras versões linguísticas validadas.",
+`mensagens_pt.properties`), em vez de simplesmente não existir
+(`mostrarMenuIdiomaDaSituacao`, linhas 2365-2381). O `App.tsx` (portado no
+commit `26b04f2`) condicionava a renderização do botão inteiro a
+`idiomas_situacao.length > 1`, escondendo-o por completo nas situações com
+só 1 versão validada — exatamente o caso reportado (traduções en/fr da
+situação existem no `.tsv`, mas com `validada=false`).
+
+Corrigido (`516a8d8`): o botão agora é sempre exibido; o menu que abre ao
+clicar mostra a lista de idiomas quando há mais de um, ou a mensagem de
+indisponibilidade (texto literal do `mensagens_pt.properties`) quando não
+há — mesmo par de ramos que o desktop resolve com menu-com-itens vs.
+diálogo informativo. Verificado com clique real via HTTP nos dois casos:
+situação com 1 idioma validado (mensagem de indisponibilidade) e situação
+com 3 (`pt`/`en`/`fr`, grupo `SP_LEGADO_0004`, dropdown com as 3 opções,
+clique em "English" trocando o enunciado de fato).
+
+**Achado colateral: typo em dado curado, não bug de arquitetura.** Ao testar
+o rótulo do personagem na caixa do diagrama de Composição de Medidas
+("Lívia tem 7 fofoletes..."), a caixa mostrava "Lígia" (com g). Antes de
+assumir divergência entre desktop e web, segui a cadeia de leitura: os dois
+lados chamam a mesma classe de domínio compartilhada
+(`SemanticaCuradaSituacao.getParticipante()`/`aplicarRotulos`, usada por
+`Main.java` nas linhas 3930/8966/9030/10241 e por
+`ServicoSorteioAtividadeWeb.java:891` via `papel.getParticipante()`) — não
+há um "criador de cena" web paralelo reimplementando essa extração. O
+campo lido é `personagem_1` (coluna 26 do `.tsv`), digitado separadamente do
+campo `enunciado` (coluna 9) da mesma linha, e divergiu por um typo humano
+("Lígia" vs. "Lívia") nas 3 versões (pt/en/fr) do grupo `SP_LEGADO_0034`.
+Corrigido (`0d13c49`) com substituição byte a byte (mesmo tamanho de string,
+`g`→`v`; `diff` confirma que só os 3 caracteres mudaram) tanto na cópia
+canônica versionada (`src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv`)
+quanto na fonte viva de curadoria
+(`%USERPROFILE%\Gerard\curadoria\situacoes_vergnaud_curadas.tsv`, prioritária
+em `RepositorioSituacoesAditivas.abrirArquivoSituacoes()`) — as duas
+precisavam ser sincronizadas ou o desktop/dev local continuaria mostrando o
+typo mesmo com o deploy web já corrigido.
+`documentacao/curadoria/manifesto_curadoria_canonica.json` atualizado com o
+novo hash e uma entrada em `atualizacoes` documentando o motivo.
+
+**Auditoria de paridade das 3 categorias de Medidas** (pendente desde a
+sessão anterior, que só tinha coberto as 3 de Relações): Composição de
+Medidas (7+12=19), Transformação de Medidas (5+12=17, com seletor de sinal)
+e Comparação de Medidas (27+12=39, com seletor de sinal) — as três
+completaram o fluxo inteiro (classificar → posicionar valores conhecidos →
+escolher sinal quando aplicável → engatar incógnita → digitar valor →
+confirmar → `concluida=true`) por clique/HTTP real, sem nenhum bug de
+comportamento além do typo acima. Com isso as 6 categorias canônicas já
+foram auditadas via protocolo de mouse real nesta e na sessão anterior.
+
+**Nota metodológica que corrige a pendência de 2026-09-18 acima:** o
+arraste de números do enunciado NÃO usa a API HTML5 de drag-and-drop nativa
+— `EnunciadoInterativo.tsx` documenta explicitamente que essa API "se
+mostrou pouco confiável em teste manual" e foi abandonada em favor de
+`mousedown`/`mousemove`/`mouseup` simples (`iniciarArraste`, mesmo padrão
+para os valores conhecidos e para a incógnita "?"). `left_click_drag` da
+ferramenta de automação, portanto, FUNCIONA para esse arraste (confirmado
+nesta sessão para as 3 categorias de Medidas); quando não funcionou por
+imprecisão de coordenada de tela, a alternativa que funcionou de forma
+confiável foi despachar os 3 eventos diretamente via JS
+(`element.dispatchEvent(new MouseEvent(...))`) usando
+`getBoundingClientRect()` dos elementos de origem/destino, sem depender de
+coordenadas de screenshot. A pendência de "ferramenta sem suporte a HTML5
+DnD" registrada em 2026-09-18 pode ser encerrada — não era essa a limitação
+real.
