@@ -5,7 +5,7 @@
   "fonte_humana_ativa": "C:\\Users\\cecomp\\Gerard\\curadoria\\situacoes_vergnaud_curadas.tsv",
   "backup_local": "C:\\Users\\cecomp\\Gerard\\curadoria\\backups\\situacoes_vergnaud_curadas_2026-08-24_29686D1B.tsv",
   "fonte_canonica_versionada": "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
-  "sha256": "FF385403410A95C1A2E2C428A12376881B8B65FA77048E209FCEC51DBB011E73",
+  "sha256": "0B1373B0F93E04F3409CDD97E654E0CD1457E334560276EAD8472D3B8F5D68ED",
   "bytes": 71432,
   "colunas": 41,
   "linhas_de_dados": 210,
@@ -23,6 +23,10 @@
     {
       "em": "2026-09-16",
       "motivo": "commit 966a644 (2026-09-10) adicionou 4 colunas (estado_inicial_parte1, estado_inicial_parte1_personagem, estado_inicial_parte2, estado_inicial_parte2_personagem) para a decomposição Parte1+Parte2=Todo em 5 linhas da Composição de Transformações, sem atualizar este manifesto. As outras 205 linhas ficaram com largura de linha TSV inconsistente (sem as 4 tabulações finais vazias); preenchidas nesta atualização (decisão explícita da pesquisadora) sem alterar nenhum valor existente — verificado byte a byte, só tabs finais adicionadas. hash/bytes recalculados; linhas_de_dados, linhas_validadas e categorias inalterados."
+    },
+    {
+      "em": "2026-09-19",
+      "motivo": "typo corrigido em personagem_1 (coluna 26) das 3 versões (pt/en/fr) do grupo SP_LEGADO_0034 (PO/IN/FR_COMPOSICAO_MEDIDAS_bonecas): 'Lígia' -> 'Lívia', para bater com a grafia usada no próprio enunciado curado de cada versão (ex.: 'Lívia tem 7 fofoletes...'). Achado durante auditoria de paridade desktop/web do rótulo do personagem no diagrama de Composição de Medidas — SemanticaCuradaSituacao.getParticipante() é lido igualmente por Main.java e pelo web, então a divergência não era de código, e sim um typo de digitação entre o campo enunciado e o campo personagem_1 da mesma linha. Substituição byte a byte (mesmo tamanho de string, 'g'->'v'), verificada com diff: só os 3 caracteres mudaram, nenhuma outra coluna ou linha foi tocada. hash/bytes recalculados; linhas_de_dados, linhas_validadas e categorias inalterados."
     }
   ]
 }
