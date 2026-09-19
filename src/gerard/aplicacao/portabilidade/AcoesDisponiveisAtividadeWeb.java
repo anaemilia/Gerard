@@ -18,6 +18,10 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
+    public static Map<String, Object> acaoReiniciar() {
+        return acao("REINICIAR_TENTATIVA", "POST", "/api/reiniciar");
+    }
+
     public static List<Object> classificacaoCategoria() {
         List<Object> acoes = sorteios();
         for (TipoSituacaoAditiva categoria : TipoSituacaoAditiva.values()) {
@@ -103,13 +107,36 @@ public final class AcoesDisponiveisAtividadeWeb {
         List<Object> acoes = sorteios();
         acoes.add(acao("REINICIAR_TENTATIVA", "POST", "/api/reiniciar"));
         if (!concluida) {
-            Map<String, Object> corpo = new LinkedHashMap<String, Object>();
-            corpo.put("seletor", segundaEtapaHabilitada
-                    ? "ENTRE_ESTADO_E_TRANSFORMACAO" : "ENTRE_TRANSFORMACOES");
-            acoes.add(acao("ESCOLHER_OPERACAO_RELACAO", "POST",
-                    "/api/acoes/escolher-operacao", corpo));
+            acoes.add(acaoEscolherOperacaoRelacaoEntreTransformacoes(segundaEtapaHabilitada));
         }
         return acoes;
+    }
+
+    /**
+     * Só o item ESCOLHER_OPERACAO_RELACAO (sem sorteios/reiniciar) — para
+     * categorias que já montam sua própria lista base por outro caminho
+     * (ver ServicoAtividadeWebTransformacaoRelacao, cujo segundo gate de
+     * conclusão é independente da modelagem por incógnita, e
+     * ServicoAtividadeWebComposicaoTransformacoes, cujas duas etapas podem
+     * estar ativas/inativas de forma independente).
+     */
+    public static List<Object> acaoEscolherOperacaoRelacao() {
+        List<Object> acoes = new ArrayList<Object>();
+        acoes.add(acaoEscolherOperacaoRelacaoEntreTransformacoes(false));
+        return acoes;
+    }
+
+    public static Map<String, Object> acaoEscolherOperacaoRelacaoComSeletor(
+            boolean segundaEtapaHabilitada) {
+        return acaoEscolherOperacaoRelacaoEntreTransformacoes(segundaEtapaHabilitada);
+    }
+
+    private static Map<String, Object> acaoEscolherOperacaoRelacaoEntreTransformacoes(
+            boolean segundaEtapaHabilitada) {
+        Map<String, Object> corpo = new LinkedHashMap<String, Object>();
+        corpo.put("seletor", segundaEtapaHabilitada
+                ? "ENTRE_ESTADO_E_TRANSFORMACAO" : "ENTRE_TRANSFORMACOES");
+        return acao("ESCOLHER_OPERACAO_RELACAO", "POST", "/api/acoes/escolher-operacao", corpo);
     }
 
     private static Map<String, Object> acao(String id, String metodo, String href) {

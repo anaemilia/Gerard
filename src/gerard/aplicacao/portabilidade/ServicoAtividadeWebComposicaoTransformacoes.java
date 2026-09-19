@@ -5,13 +5,17 @@ import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoO
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
+import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
 import gerard.dominio.campoaditivo.FabricaPapeisComposicaoDeTransformacoes;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
+import gerard.i18n.ServicoLocalizacao;
 import gerard.semantica.numero.NumeroInteiro;
 import gerard.semantica.numero.NumeroNatural;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -33,7 +37,7 @@ import java.util.UUID;
  * {@code gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno} em 2026-09-03).
  */
 public final class ServicoAtividadeWebComposicaoTransformacoes
-        implements ServicoAtividadeWebEscolhaOperacao {
+        implements ServicoAtividadeWebEscolhaOperacao, ServicoAtividadeWebComSinal {
     public static final String SCHEMA_ESTADO = ServicoAtividadeWebComposicao.SCHEMA_ESTADO;
     public static final String SCHEMA_RESULTADO = ServicoAtividadeWebComposicao.SCHEMA_RESULTADO;
 
@@ -54,6 +58,12 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     private PapelQuantitativo estadoInicialParte2;
     private OpcaoOperacaoCuradoria escolhaEntreTransformacoes;
     private OpcaoOperacaoCuradoria escolhaEntreEstadoTransformacao;
+    // Papel conhecido que precisa de representação de sinal (ver
+    // ServicoAtividadeWebComSinal) já revelado (arrastado) mas ainda sem
+    // sinal escolhido — mesmo protocolo do desktop e mesmo padrão já usado
+    // por ServicoAtividadeWebComparacaoMedidas/TransformacaoMedidas.
+    private PapelQuantitativo papelAguardandoSinal;
+    private Integer valorCuradoAguardandoSinal;
 
     public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
             SituacaoProblemaAditiva situacao) {
@@ -88,23 +98,31 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         estado.put("estado_final", projetarPapel(estadoFinal));
         estado.put("estado_inicial_parte1", projetarPapel(estadoInicialParte1));
         estado.put("estado_inicial_parte2", projetarPapel(estadoInicialParte2));
-        boolean primeiraCorreta = respondeuCorretamente(escolhaEntreTransformacoes,
+        boolean primeiraAtiva = seletorAtivo(TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
+        boolean segundaAtiva = seletorAtivo(TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO);
+        boolean primeiraCorreta = primeiraAtiva && respondeuCorretamente(escolhaEntreTransformacoes,
                 TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
-        boolean segundaCorreta = respondeuCorretamente(escolhaEntreEstadoTransformacao,
-                TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO);
+        // A segunda etapa só depende da primeira estar correta quando a
+        // primeira de fato existe (tem operacao_relacao curada) -- se não
+        // existe, não há o que aguardar (mesmo espírito de estaAtivo() no
+        // desktop: um seletor inativo nunca bloqueia nada).
+        boolean segundaHabilitada = !primeiraAtiva || primeiraCorreta;
+        boolean segundaCorreta = segundaAtiva && segundaHabilitada
+                && respondeuCorretamente(escolhaEntreEstadoTransformacao,
+                        TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO);
         estado.put("escolha_entre_transformacoes", nomeOuNull(escolhaEntreTransformacoes));
         estado.put("escolha_entre_estado_transformacao",
                 nomeOuNull(escolhaEntreEstadoTransformacao));
         estado.put("correta_entre_transformacoes",
-                escolhaEntreTransformacoes == null
+                !primeiraAtiva || escolhaEntreTransformacoes == null
                         || escolhaEntreTransformacoes == OpcaoOperacaoCuradoria.NAO_SELECIONADO
                                 ? null : Boolean.valueOf(primeiraCorreta));
         estado.put("correta_entre_estado_transformacao",
-                escolhaEntreEstadoTransformacao == null
+                !segundaAtiva || escolhaEntreEstadoTransformacao == null
                         || escolhaEntreEstadoTransformacao == OpcaoOperacaoCuradoria.NAO_SELECIONADO
                                 ? null : Boolean.valueOf(segundaCorreta));
-        estado.put("segunda_etapa_habilitada", Boolean.valueOf(primeiraCorreta));
-        boolean concluida = primeiraCorreta && segundaCorreta;
+        estado.put("segunda_etapa_habilitada", Boolean.valueOf(segundaHabilitada));
+        boolean concluida = (!primeiraAtiva || primeiraCorreta) && (!segundaAtiva || segundaCorreta);
         estado.put("concluida", Boolean.valueOf(concluida));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
         // os papéis com valor curado não vêm pré-preenchidos; escolher a
@@ -112,13 +130,33 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         // valor curado (tipicamente os 3 de estado nesta categoria) nunca
         // bloqueiam — não têm o que posicionar.
         boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
-        List<Object> acoes = AcoesDisponiveisAtividadeWeb.escolhaOperacaoRelacao(
-                primeiraCorreta, concluida || !papeisConhecidosProntos);
-        if (!papeisConhecidosProntos) {
+        estado.put("papel_aguardando_sinal",
+                papelAguardandoSinal == null ? null : papelAguardandoSinal.getChave());
+        List<Object> acoes = AcoesDisponiveisAtividadeWeb.sorteios();
+        acoes.add(AcoesDisponiveisAtividadeWeb.acaoReiniciar());
+        if (papelAguardandoSinal != null) {
+            // Enquanto o sinal não é escolhido, nenhuma outra ação de
+            // posicionamento fica disponível para este papel — mesmo
+            // protocolo do desktop e do padrão já usado em
+            // ServicoAtividadeWebComparacaoMedidas/TransformacaoMedidas.
+            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherSinal(papelAguardandoSinal.getChave()));
+        } else if (!papeisConhecidosProntos) {
             for (PapelQuantitativo papel : todosOsPapeis()) {
                 if (temValorCurado(papel) && !papel.estaPreenchido()) {
                     acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
                 }
+            }
+        } else {
+            // Os dois gates são independentes (ver seletorAtivo/Javadoc de
+            // ServicoAtividadeWebTransformacaoRelacao, mesmo espírito) --
+            // oferece cada etapa enquanto ativa e ainda não respondida certa.
+            if (primeiraAtiva && !primeiraCorreta) {
+                acoes.add(AcoesDisponiveisAtividadeWeb
+                        .acaoEscolherOperacaoRelacaoComSeletor(false));
+            }
+            if (segundaAtiva && segundaHabilitada && !segundaCorreta) {
+                acoes.add(AcoesDisponiveisAtividadeWeb
+                        .acaoEscolherOperacaoRelacaoComSeletor(true));
             }
         }
         estado.put("acoes_disponiveis", acoes);
@@ -127,10 +165,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
     public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
         TipoOperacaoSeletor seletorConvertido = converterSeletor(seletor);
-        boolean primeiraCorreta = respondeuCorretamente(escolhaEntreTransformacoes,
-                TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
         if (seletorConvertido == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO
-                && !primeiraCorreta) {
+                && !segundaEtapaHabilitada()) {
             throw new IllegalStateException(
                     "a segunda etapa só libera depois que a primeira é respondida corretamente");
         }
@@ -187,6 +223,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
         escolhaEntreTransformacoes = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         escolhaEntreEstadoTransformacao = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
+        papelAguardandoSinal = null;
+        valorCuradoAguardandoSinal = null;
         return estadoAtual();
     }
 
@@ -199,6 +237,26 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
                 .determinarOperacaoCorreta(
                         TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, situacao, seletor);
         return AvaliacaoEscolhaOperacaoRelacao.respondeuCorretamente(escolhaAluno, escolhaCorreta);
+    }
+
+    /**
+     * Mesma guarda de SeletorOperacaoRelacaoAluno.ativar() no desktop: só
+     * ativa quando a situação curada tem uma operação válida pra ESTE
+     * seletor (getOperacaoRelacao()/getOperacaoEstadoTransformacao() resolve
+     * para SOMA ou SUBTRACAO). Cada uma das duas etapas tem sua própria
+     * curadoria independente -- auditoria de acoplamento Main/web, 2026-09-19.
+     */
+    private boolean seletorAtivo(TipoOperacaoSeletor seletor) {
+        return AvaliacaoEscolhaOperacaoRelacao.determinarOperacaoCorreta(
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, situacao, seletor)
+                != OpcaoOperacaoCuradoria.NAO_SELECIONADO;
+    }
+
+    /** Ver comentário de segunda_etapa_habilitada em estadoAtual(). */
+    private boolean segundaEtapaHabilitada() {
+        boolean primeiraAtiva = seletorAtivo(TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
+        return !primeiraAtiva || respondeuCorretamente(
+                escolhaEntreTransformacoes, TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
     }
 
     private static TipoOperacaoSeletor converterSeletor(String seletor) {
@@ -301,20 +359,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
             rejeitado.put("estado", estadoAtual());
             return rejeitado;
         }
-        if (!papel.estaPreenchido()) {
-            String limpo = valorCuradoDoPapel(papel).trim();
-            int numero;
-            try {
-                numero = Integer.parseInt(limpo);
-            } catch (NumberFormatException invalido) {
-                throw new IllegalStateException(
-                        "Valor curado inválido para " + papel.getChave() + ": " + limpo, invalido);
-            }
-            gerard.dominio.campoaditivo.ContextoAcao contexto = new gerard.dominio.campoaditivo.ContextoAcao(
-                    "sessao.web.local", "usuario.web.local", tentativaId,
-                    situacao.getId(), "diagrama.vergnaud.web");
-            papel.posicionar(ehNatural(papel) ? new NumeroNatural(numero) : new NumeroInteiro(numero),
-                    gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO, contexto);
+        if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
+            posicionarConhecido(papel);
         }
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
@@ -322,6 +368,68 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
+    }
+
+    /**
+     * Escolhe explicitamente o sinal do papel revelado por
+     * posicionarValorConhecido que precisa de representação de sinal —
+     * mesmo protocolo/padrão de
+     * ServicoAtividadeWebComparacaoMedidas.escolherSinalNumeroRelativo.
+     */
+    public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
+        if (papelAguardandoSinal == null || !papelAguardandoSinal.getChave().equals(papelId)) {
+            throw new IllegalStateException(
+                    "nenhum papel aguardando escolha de sinal com esta chave: " + papelId);
+        }
+        if (!"+".equals(sinal) && !"-".equals(sinal)) {
+            throw new IllegalArgumentException("sinal precisa ser \"+\" ou \"-\": " + sinal);
+        }
+        PapelQuantitativo papel = papelAguardandoSinal;
+        int base = Math.abs(valorCuradoAguardandoSinal.intValue());
+        int valorEscolhido = "-".equals(sinal) ? -base : base;
+        gerard.dominio.campoaditivo.ContextoAcao contexto = new gerard.dominio.campoaditivo.ContextoAcao(
+                "sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "diagrama.vergnaud.web");
+        Optional<DiagnosticoErroPapel> diagnostico = papel.posicionar(
+                new NumeroInteiro(valorEscolhido),
+                gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO, contexto);
+        boolean sinalDivergeDoCurado = Integer.signum(valorEscolhido)
+                != Integer.signum(valorCuradoAguardandoSinal.intValue());
+        papelAguardandoSinal = null;
+        valorCuradoAguardandoSinal = null;
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
+        resultado.put("mensagem_sinal_divergente", sinalDivergeDoCurado
+                ? ServicoLocalizacao.getInstancia().formatar("ui.tooltip.relativeSign.confirm", sinal)
+                : null);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
+    private void posicionarConhecido(PapelQuantitativo papel) {
+        String limpo = valorCuradoDoPapel(papel).trim();
+        int valor;
+        try {
+            valor = Integer.parseInt(limpo);
+        } catch (NumberFormatException invalido) {
+            throw new IllegalStateException(
+                    "Valor curado inválido para " + papel.getChave() + ": " + limpo, invalido);
+        }
+        if (!ehNatural(papel)
+                && CatalogoNecessidadeRepresentacaoDeSinal.necessitaRepresentacaoDeSinal(papel.getChave())) {
+            // Mesmo protocolo do desktop: a magnitude é revelada, mas o
+            // sinal só é aplicado quando o estudante escolhe explicitamente
+            // (ver escolherSinalNumeroRelativo) — nunca de imediato aqui.
+            papelAguardandoSinal = papel;
+            valorCuradoAguardandoSinal = Integer.valueOf(valor);
+            return;
+        }
+        gerard.dominio.campoaditivo.ContextoAcao contexto = new gerard.dominio.campoaditivo.ContextoAcao(
+                "sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "diagrama.vergnaud.web");
+        papel.posicionar(ehNatural(papel) ? new NumeroNatural(valor) : new NumeroInteiro(valor),
+                gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO, contexto);
     }
 
     private static Map<String, Object> projetarPapel(PapelQuantitativo papel) {

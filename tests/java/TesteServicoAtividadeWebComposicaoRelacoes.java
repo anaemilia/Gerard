@@ -1,4 +1,5 @@
 import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoRelacoes;
+import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import java.util.List;
@@ -34,6 +35,14 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
                     "papel " + chave + " aguarda posicionamento");
             String id = String.valueOf(papel.get("id"));
             servico.posicionarValorConhecido(id, id);
+            // Toda relação precisa de representação de sinal (auditoria de
+            // acoplamento Main/web, 2026-09-19) — posicionar só revela a
+            // magnitude; o sinal exige escolha explícita, mesmo protocolo já
+            // usado por ServicoAtividadeWebComparacaoMedidas.
+            if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
+                int valorCurado = SemanticaCuradaSituacao.buscar(situacao, null, id).getValorInteiro();
+                servico.escolherSinalNumeroRelativo(id, valorCurado < 0 ? "-" : "+");
+            }
             @SuppressWarnings("unchecked")
             Map<String, Object> posicionado = (Map<String, Object>) servico.estadoAtual().get(chave);
             exigir(Boolean.TRUE.equals(posicionado.get("conhecido")) && posicionado.get("valor") != null,
@@ -80,6 +89,49 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
 
         System.out.println("APROVADO: ServicoAtividadeWebComposicaoRelacoes cobre "
                 + "acerto/erro e reinício.");
+
+        testarSituacaoSemOperacaoRelacaoCurada();
+    }
+
+    /**
+     * "dinheiro" (Carlos/João/Pedro) não tem operacao_relacao curado (ver
+     * TSV) -- mesma guarda de SeletorOperacaoRelacaoAluno.ativar() no
+     * desktop: "situações antigas, sem esse campo preenchido, não mostram o
+     * seletor (nada a avaliar)". Antes da correção (auditoria de
+     * acoplamento Main/web, 2026-09-19), o web oferecia e avaliava a escolha
+     * mesmo sem resposta curada nenhuma pra comparar.
+     */
+    @SuppressWarnings("unchecked")
+    private static void testarSituacaoSemOperacaoRelacaoCurada() {
+        SituacaoProblemaAditiva situacao = localizar(
+                new RepositorioSituacoesAditivas().listarValidadas(),
+                "PO_COMPOSICAO_RELACOES_dinheiro_161113042");
+        ServicoAtividadeWebComposicaoRelacoes servico =
+                new ServicoAtividadeWebComposicaoRelacoes(
+                        "tentativa.teste.composicao_relacoes.sem_operacao", situacao);
+
+        for (String chave : new String[] {"relacao_1", "relacao_2"}) {
+            Map<String, Object> papel = (Map<String, Object>) servico.estadoAtual().get(chave);
+            servico.posicionarValorConhecido(String.valueOf(papel.get("id")),
+                    String.valueOf(papel.get("id")));
+            String id = String.valueOf(papel.get("id"));
+            if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
+                servico.escolherSinalNumeroRelativo(id, "+");
+            }
+        }
+
+        Map<String, Object> estado = servico.estadoAtual();
+        for (Object item : (List<Object>) estado.get("acoes_disponiveis")) {
+            exigir(!"ESCOLHER_OPERACAO_RELACAO".equals(((Map<String, Object>) item).get("id")),
+                    "seletor não deveria aparecer sem operacao_relacao curado");
+        }
+        exigir(estado.get("escolha_operacao") == null, "escolha_operacao deveria ficar null");
+        exigir(estado.get("correta") == null, "correta deveria ficar null sem operação curada");
+        exigir(Boolean.FALSE.equals(estado.get("concluida")),
+                "não deveria completar sem operação curada pra avaliar");
+
+        System.out.println("APROVADO: seletor de operação fica ausente quando a situação "
+                + "não tem operacao_relacao curado, mesma guarda do desktop.");
     }
 
     private static SituacaoProblemaAditiva localizar(

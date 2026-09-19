@@ -1,4 +1,5 @@
 import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoTransformacoes;
+import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import java.util.List;
@@ -39,6 +40,14 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
                     "papel " + chave + " aguarda posicionamento");
             String id = String.valueOf(papel.get("id"));
             servico.posicionarValorConhecido(id, id);
+            // Toda transformação precisa de representação de sinal
+            // (auditoria de acoplamento Main/web, 2026-09-19) — posicionar
+            // só revela a magnitude; o sinal exige escolha explícita, mesmo
+            // protocolo já usado por ServicoAtividadeWebComparacaoMedidas.
+            if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
+                int valorCurado = SemanticaCuradaSituacao.buscar(situacao, null, id).getValorInteiro();
+                servico.escolherSinalNumeroRelativo(id, valorCurado < 0 ? "-" : "+");
+            }
             @SuppressWarnings("unchecked")
             Map<String, Object> posicionado = (Map<String, Object>) servico.estadoAtual().get(chave);
             exigir(Boolean.TRUE.equals(posicionado.get("conhecido")) && posicionado.get("valor") != null,
