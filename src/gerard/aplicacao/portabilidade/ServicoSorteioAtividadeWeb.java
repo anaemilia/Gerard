@@ -214,7 +214,16 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     public synchronized boolean possuiAtividadeEscolhaOperacaoAtiva() {
-        return atividadeEscolhaOperacao != null;
+        // Mesma capacidade opcional checada em escolherOperacao/
+        // escolherSinalNumeroRelativo -- sem isso, o roteador HTTP
+        // (ServidorPrototipoWeb) bloqueava a requisição com 422 antes mesmo
+        // de chegar ao dispatcher abaixo, para qualquer atividadeModelagem
+        // que também implemente ServicoAtividadeWebEscolhaOperacao (ver
+        // ServicoAtividadeWebTransformacaoRelacao) -- só encontrado
+        // testando o clique real via HTTP, não pela chamada direta ao
+        // método Java (auditoria de acoplamento Main/web, 2026-09-19).
+        return atividadeEscolhaOperacao != null
+                || atividadeModelagem instanceof ServicoAtividadeWebEscolhaOperacao;
     }
 
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
@@ -363,11 +372,21 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
-        if (atividadeEscolhaOperacao == null) {
+        Map<String, Object> resultado;
+        // Mesma capacidade opcional já usada por escolherSinalNumeroRelativo
+        // (ver ServicoAtividadeWebComSinal): uma atividadeModelagem pode
+        // também implementar ServicoAtividadeWebEscolhaOperacao quando tem um
+        // segundo gate de conclusão independente da incógnita (ver
+        // ServicoAtividadeWebTransformacaoRelacao).
+        if (atividadeModelagem instanceof ServicoAtividadeWebEscolhaOperacao) {
+            resultado = ((ServicoAtividadeWebEscolhaOperacao) atividadeModelagem)
+                    .escolherOperacao(seletor, operacao);
+        } else if (atividadeEscolhaOperacao != null) {
+            resultado = atividadeEscolhaOperacao.escolherOperacao(seletor, operacao);
+        } else {
             throw new IllegalStateException(
                     "a situação atual não possui escolha de operação implementada");
         }
-        Map<String, Object> resultado = atividadeEscolhaOperacao.escolherOperacao(seletor, operacao);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -994,7 +1013,13 @@ public final class ServicoSorteioAtividadeWeb {
                     PosicaoSeletorOperacaoDiagrama.entreEstadoETransformacao(tr)));
             return resultado;
         }
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES
+                || tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
+            // Mesmo ponto único para as duas categorias -- PosicaoSeletorOperacaoDiagrama.relacao
+            // já documentava isso desde que foi escrita, só faltava esta
+            // ramificação para Transformação de Relação de fato usá-la
+            // (auditoria de acoplamento Main/web, 2026-09-19: o segundo gate
+            // do desktop nunca tinha sido portado pro web nesta categoria).
             if (cena.getConectores().isEmpty()) {
                 return null;
             }

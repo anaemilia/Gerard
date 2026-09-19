@@ -1,5 +1,5 @@
 import type { CenaDiagrama, EstadoEscolhaOperacaoRelacoes, EstadoEscolhaOperacaoTransformacoes,
-  FiguraCena, InteracaoPermitidaFigura } from "../contratos";
+  EstadoModelagemTernaria, FiguraCena, InteracaoPermitidaFigura } from "../contratos";
 import { ConectorCenaGerard } from "./ConectorCenaGerard";
 import { FiguraCenaGerard } from "./FiguraCenaGerard";
 import { SeletorOperacaoDiagramaGerard } from "./SeletorOperacaoDiagramaGerard";
@@ -14,7 +14,8 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
   figuraDestacadaId?: string | null;
   seletorOperacao?: {
-    modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
+    modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes
+      | EstadoModelagemTernaria;
     mensagemErro: string | null; ocupado: boolean;
     aoEscolher: (operacao: "SOMA" | "SUBTRACAO") => void;
   };

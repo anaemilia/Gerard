@@ -1,4 +1,4 @@
-import type { CentroSeletorOperacao, EscolhaOperacao,
+import type { CentroSeletorOperacao, EscolhaOperacao, EstadoModelagemTernaria,
   EstadoEscolhaOperacaoRelacoes, EstadoEscolhaOperacaoTransformacoes } from "../contratos";
 
 /**
@@ -58,16 +58,24 @@ function Explicacao({ centro, texto }: { centro: CentroSeletorOperacao; texto: s
 export function SeletorOperacaoDiagramaGerard({ pontos, modelagem, mensagemErro, ocupado, aoEscolher }: {
   pontos: Readonly<{ entre_transformacoes?: CentroSeletorOperacao;
     entre_estado_transformacao?: CentroSeletorOperacao; relacao?: CentroSeletorOperacao }>;
-  modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes;
+  modelagem: EstadoEscolhaOperacaoTransformacoes | EstadoEscolhaOperacaoRelacoes | EstadoModelagemTernaria;
   mensagemErro: string | null; ocupado: boolean;
   aoEscolher: (operacao: "SOMA" | "SUBTRACAO") => void;
 }) {
-  if (modelagem.categoria === "COMPOSICAO_RELACOES") {
+  // Um seletor único (não dois em sequência) -- Composição de Relações e
+  // Transformação de Relação compartilham exatamente o mesmo formato
+  // (escolha_operacao/correta), ver ServicoAtividadeWebComposicaoRelacoes/
+  // TransformacaoRelacao. Diferenciado por capacidade (ausência de
+  // escolha_entre_transformacoes), não por nome de categoria -- auditoria de
+  // acoplamento Main/web, 2026-09-19.
+  if (!("escolha_entre_transformacoes" in modelagem)) {
     const centro = pontos.relacao;
-    if (!centro) return null;
-    const marcouErrado = modelagem.escolha_operacao !== null && modelagem.correta === false;
+    if (!centro || !("escolha_operacao" in modelagem)) return null;
+    const escolha = modelagem.escolha_operacao ?? null;
+    const correta = modelagem.correta ?? null;
+    const marcouErrado = escolha !== null && correta === false;
     return <>
-      <GrupoBotoes centro={centro} escolha={modelagem.escolha_operacao} correta={modelagem.correta}
+      <GrupoBotoes centro={centro} escolha={escolha} correta={correta}
         ocupado={ocupado} onEscolher={modelagem.concluida ? undefined : aoEscolher} />
       {marcouErrado && mensagemErro && <Explicacao centro={centro} texto={mensagemErro} />}
     </>;

@@ -75,6 +75,15 @@ export type EstadoModelagemTernaria = Readonly<{
   // sinal (CatalogoNecessidadeRepresentacaoDeSinal) e ainda aguarda a
   // escolha explícita positivo/negativo — ver ServicoAtividadeWebComSinal.
   papel_aguardando_sinal: string | null;
+  // Segundo gate de conclusão, independente do papel_desconhecido acima --
+  // só presente em TRANSFORMACAO_RELACAO, quando a situação curada tem
+  // operacao_relacao preenchido (mesma guarda de
+  // SeletorOperacaoRelacaoAluno.ativar() no desktop). Ausente/undefined nas
+  // outras duas categorias que também usam este tipo (Transformação/
+  // Comparação de Medidas, sem esse segundo gate) -- ver
+  // ServicoAtividadeWebTransformacaoRelacao.
+  escolha_operacao?: EscolhaOperacao;
+  correta?: boolean | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EscolhaOperacao = "SOMA" | "SUBTRACAO" | null;
@@ -89,6 +98,7 @@ export type EstadoEscolhaOperacaoTransformacoes = Readonly<{
   correta_entre_transformacoes: boolean | null;
   correta_entre_estado_transformacao: boolean | null;
   segunda_etapa_habilitada: boolean; concluida: boolean;
+  papel_aguardando_sinal: string | null;
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EstadoEscolhaOperacaoRelacoes = Readonly<{
@@ -96,6 +106,7 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   categoria: "COMPOSICAO_RELACOES"; enunciado: string;
   relacao_1: PapelProjetado; relacao_2: PapelProjetado; relacao_final: PapelProjetado;
   escolha_operacao: EscolhaOperacao; correta: boolean | null;
+  papel_aguardando_sinal: string | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
