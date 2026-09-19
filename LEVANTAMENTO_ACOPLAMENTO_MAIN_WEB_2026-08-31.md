@@ -1853,3 +1853,27 @@ confiável foi despachar os 3 eventos diretamente via JS
 coordenadas de screenshot. A pendência de "ferramenta sem suporte a HTML5
 DnD" registrada em 2026-09-18 pode ser encerrada — não era essa a limitação
 real.
+
+## Encerrado: migração do log granular para objeto único (pendência de 2026-09-02)
+
+Ao retomar o desacoplamento geral de `Main` depois do corte acima, revisitei
+a pendência registrada em "Corte incremental: objeto factual do log por
+identidade semântica" (2026-09-02): "a soltura POSICIONAR ainda grava pelo
+caminho legado registrarLogUsuario. A migração para um único
+RegistroFactualAcaoInstrumental produzido pelo proprietário semântico
+permanece pendente".
+
+Antes de executar, confirmei que o log granular (ação instrumental,
+`registrarLogUsuario`/`loggerInteracaoGerard`) e o log de gestos
+(`registrarGestoItemSolto`/`publicadorGestosInteracao`/
+`ContextoRegistroGesto`) já são pipelines fisicamente separados — disparam
+juntos no mesmo evento de soltura, mas com modelos e publicadores próprios,
+sem classe compartilhada além do ponto de chamada em `Main`.
+
+**Decisão explícita da pesquisadora: não migrar.** O caráter granular do log
+de ação instrumental existe justamente porque cada ponto de chamada monta
+seus parâmetros (`tarefa`, `ce`, `objeto`, `regras` etc.) a partir do objeto
+rico correspondente, de forma descentralizada — e deve continuar assim. A
+pendência de 2026-09-02 estava enquadrada como dívida técnica a resolver;
+não é — decentralização aqui é a arquitetura pretendida, não um defeito.
+Este corte encerra essa pendência sem alteração de código.
