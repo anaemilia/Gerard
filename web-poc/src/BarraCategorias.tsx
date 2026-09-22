@@ -71,7 +71,14 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
   aoAbrirChat: () => void;
   contextoRelatoBug?: { situacaoId: string; categoria: string; enunciado: string } | null;
 }) {
-  const [dialogo, setDialogo] = useState<"bug" | "gerard" | "usuario" | null>(null);
+  const [dialogo, setDialogo] = useState<"bug" | "gerard" | "usuario" | "curadoria" | null>(null);
+  const [tokenCuradoria, setTokenCuradoria] = useState("");
+  const [arquivoCuradoriaNome, setArquivoCuradoriaNome] = useState("");
+  const [conteudoCuradoria, setConteudoCuradoria] = useState("");
+  const [enviandoCuradoria, setEnviandoCuradoria] = useState(false);
+  const [erroCuradoria, setErroCuradoria] = useState("");
+  const [resultadoCuradoria, setResultadoCuradoria] =
+    useState<{ total_situacoes: number; total_validadas: number } | null>(null);
   const [relatoBug, setRelatoBug] = useState("");
   const [erroRelatoBug, setErroRelatoBug] = useState("");
   const [enviandoRelatoBug, setEnviandoRelatoBug] = useState(false);
@@ -166,6 +173,24 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
     } catch (erro) { setErroUsuario(erro instanceof Error ? erro.message : String(erro)); }
     finally { setSalvandoUsuario(false); }
   };
+  const escolherArquivoCuradoria = (arquivo: File | undefined) => {
+    setErroCuradoria(""); setResultadoCuradoria(null);
+    if (!arquivo) { setArquivoCuradoriaNome(""); setConteudoCuradoria(""); return; }
+    setArquivoCuradoriaNome(arquivo.name);
+    const leitor = new FileReader();
+    leitor.onload = () => setConteudoCuradoria(String(leitor.result ?? ""));
+    leitor.onerror = () => setErroCuradoria("Não foi possível ler o arquivo selecionado.");
+    leitor.readAsText(arquivo, "utf-8");
+  };
+  const enviarCuradoria = async () => {
+    if (!tokenCuradoria.trim() || !conteudoCuradoria.trim()) return;
+    setEnviandoCuradoria(true); setErroCuradoria(""); setResultadoCuradoria(null);
+    try {
+      const resultado = await api.enviarCuradoria(tokenCuradoria.trim(), conteudoCuradoria);
+      setResultadoCuradoria(resultado);
+    } catch (erro) { setErroCuradoria(erro instanceof Error ? erro.message : String(erro)); }
+    finally { setEnviandoCuradoria(false); }
+  };
 
   return <header className="top-area">
     <div className="utility-row">
@@ -180,6 +205,10 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
           {usuarioAtual
             ? <span>{usuarioAtual.nome}  ▼</span>
             : <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M9 16h13m-5-5 5 5-5 5"/></svg>}
+        </button>
+        <button type="button" onClick={() => setDialogo("curadoria")}
+            aria-label="Atualizar curadoria" title="Atualizar curadoria">
+          <svg viewBox="0 0 24 24"><path d="M12 3v13m0 0-5-5m5 5 5-5"/><path d="M4 19h16"/></svg>
         </button>
       </div>
       <div className="utility-right"><button className="chat-trigger" type="button" onClick={aoAbrirChat} aria-label="Abrir o chat de ajuda" title="Abrir o chat de ajuda"><IconeChat /></button><span className="language">Português</span></div>
@@ -256,6 +285,26 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         </div>
         {erroUsuario && <p className="message message-erro" role="alert">{erroUsuario}</p>}
         <div className="utility-dialog-actions"><button type="button" onClick={() => setDialogo(null)}>Cancelar</button></div>
+      </section>
+    </div>}
+    {dialogo === "curadoria" && <div className="utility-modal-backdrop" role="presentation" onMouseDown={() => setDialogo(null)}>
+      <section className="utility-dialog usuario-dialog" role="dialog" aria-modal="true" aria-labelledby="curadoria-title" onMouseDown={e => e.stopPropagation()}>
+        <header><h2 id="curadoria-title">Atualizar curadoria</h2><button type="button" onClick={() => setDialogo(null)} aria-label="Fechar">×</button></header>
+        <p>Envia o arquivo de situações curadas (.tsv) para substituir, só em memória neste servidor, as situações usadas no sorteio. Vale até o próximo deploy/restart.</p>
+        <label>Token<input type="password" value={tokenCuradoria} onChange={e => setTokenCuradoria(e.target.value)} autoComplete="off" /></label>
+        <label>Arquivo (.tsv)<input type="file" accept=".tsv,text/tab-separated-values,text/plain"
+          onChange={e => escolherArquivoCuradoria(e.target.files?.[0])} /></label>
+        {arquivoCuradoriaNome && <p>Selecionado: {arquivoCuradoriaNome}</p>}
+        {erroCuradoria && <p className="message message-erro" role="alert">{erroCuradoria}</p>}
+        {resultadoCuradoria && <p className="message" role="status">
+          Curadoria atualizada: {resultadoCuradoria.total_situacoes} situações carregadas ({resultadoCuradoria.total_validadas} validadas).
+        </p>}
+        <div className="utility-dialog-actions">
+          <button type="button" onClick={() => setDialogo(null)}>Fechar</button>
+          <button className="usuario-acao" type="button"
+            disabled={!tokenCuradoria.trim() || !conteudoCuradoria.trim() || enviandoCuradoria}
+            onClick={() => void enviarCuradoria()}>Enviar</button>
+        </div>
       </section>
     </div>}
   </header>;

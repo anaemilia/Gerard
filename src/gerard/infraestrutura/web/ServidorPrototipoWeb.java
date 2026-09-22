@@ -70,6 +70,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/usuarios", aplicacao::usuarios);
         servidor.createContext("/api/sessao/usuario", aplicacao::entrarUsuario);
         servidor.createContext("/api/acoes/relato-bug", aplicacao::relatoBug);
+        servidor.createContext("/api/curadoria/situacoes", aplicacao::situacoesCuradoria);
         servidor.createContext("/", aplicacao::arquivoEstatico);
         servidor.setExecutor(null);
         servidor.start();
@@ -196,6 +197,50 @@ public final class ServidorPrototipoWeb {
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
+    }
+
+    /**
+     * Upload de curadoria (pesquisadora): entrega ao servidor web o conteúdo
+     * do arquivo vivo de situações curadas (RepositorioSituacoesAditivas —
+     * mesmo formato/cabeçalho do .tsv em disco), substituindo em memória o
+     * que veio empacotado no deploy. Não persiste em disco — Render tem
+     * disco efêmero; vale até o próximo restart/redeploy, quando volta ao
+     * recurso empacotado e precisa ser reenviado. Protegido por token
+     * simples (variável de ambiente CURADORIA_TOKEN) em vez de um papel de
+     * usuário — RepositorioModeloUsuario não distingue pesquisadora de
+     * aluno, e inventar esse conceito só para este endpoint seria mais
+     * acoplamento do que o problema pede.
+     */
+    private void situacoesCuradoria(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        String tokenEsperado = System.getenv("CURADORIA_TOKEN");
+        if (tokenEsperado == null || tokenEsperado.trim().length() == 0) {
+            responder(troca, 503, erro("Upload de curadoria não está configurado neste servidor"));
+            return;
+        }
+        String tokenRecebido = troca.getRequestHeaders().getFirst("X-Curadoria-Token");
+        if (tokenRecebido == null || !tokenEsperado.equals(tokenRecebido)) {
+            responder(troca, 401, erro("Token de curadoria inválido"));
+            return;
+        }
+        String conteudo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        if (conteudo.trim().length() == 0) {
+            responder(troca, 400, erro("Conteúdo vazio"));
+            return;
+        }
+        boolean aceito = sorteios.substituirSituacoesCuradas(conteudo);
+        if (!aceito) {
+            responder(troca, 422, erro("Conteúdo inválido: nenhuma situação foi carregada"));
+            return;
+        }
+        Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+        resposta.put("aceito", Boolean.TRUE);
+        resposta.put("total_situacoes", Integer.valueOf(sorteios.contarSituacoesCuradas()));
+        resposta.put("total_validadas", Integer.valueOf(sorteios.contarSituacoesValidadas()));
+        responder(troca, 200, resposta);
     }
 
     @SuppressWarnings("unchecked")

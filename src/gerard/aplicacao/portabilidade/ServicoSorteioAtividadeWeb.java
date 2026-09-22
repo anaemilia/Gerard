@@ -107,6 +107,22 @@ public final class ServicoSorteioAtividadeWeb {
         return sortear(aleatorio.nextBoolean() ? Grupo.MEDIDAS : Grupo.RELACOES);
     }
 
+    /**
+     * Upload de curadoria (POST /api/curadoria/situacoes) — ver
+     * FachadaCarregamentoAtividade.substituirSituacoesCuradas.
+     */
+    public synchronized boolean substituirSituacoesCuradas(String conteudoTsv) {
+        return carregamento.substituirSituacoesCuradas(conteudoTsv);
+    }
+
+    public synchronized int contarSituacoesCuradas() {
+        return carregamento.contarSituacoesCuradas();
+    }
+
+    public synchronized int contarSituacoesValidadas() {
+        return carregamento.contarSituacoesValidadas();
+    }
+
     public synchronized Map<String, Object> sortearMedidas() {
         return sortear(Grupo.MEDIDAS);
     }

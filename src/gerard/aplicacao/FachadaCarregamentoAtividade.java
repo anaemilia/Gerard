@@ -69,6 +69,23 @@ public final class FachadaCarregamentoAtividade {
      * usada para publicar as opções de troca de idioma no web (auditoria de
      * acoplamento de Main, 2026-09-17).
      */
+    /**
+     * Substitui em memória as situações do repositório pelo conteúdo TSV
+     * enviado via upload de curadoria — ver
+     * RepositorioSituacoesAditivas.substituirConteudo.
+     */
+    public boolean substituirSituacoesCuradas(String conteudoTsv) {
+        return repositorio.substituirConteudo(conteudoTsv);
+    }
+
+    public int contarSituacoesCuradas() {
+        return repositorio.listarTodas().size();
+    }
+
+    public int contarSituacoesValidadas() {
+        return repositorio.contarValidadas();
+    }
+
     public java.util.List<SituacaoProblemaAditiva> listarVersoesDoGrupo(
             SituacaoProblemaAditiva atual) {
         java.util.List<SituacaoProblemaAditiva> versoes =

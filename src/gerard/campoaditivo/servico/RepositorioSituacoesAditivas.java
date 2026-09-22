@@ -64,6 +64,35 @@ public class RepositorioSituacoesAditivas {
             return false;
         }
 
+        return carregarDeStream(input);
+    }
+
+    /**
+     * Substitui em memória as situações carregadas pelo conteúdo TSV
+     * informado (mesmo formato/parser do arquivo em disco) — usado pelo
+     * endpoint de upload de curadoria (POST /api/curadoria/situacoes), que
+     * entrega ao servidor web em produção o arquivo vivo de curadoria da
+     * pesquisadora sem precisar de rebuild/redeploy. Válido só em memória,
+     * pelo tempo de vida do processo; reverte para o carregamento normal
+     * (arquivo local ou fallback mínimo) se o conteúdo for inválido/vazio,
+     * nunca deixa o repositório sem nenhuma situação carregada.
+     */
+    public final synchronized boolean substituirConteudo(String conteudoTsv) {
+        if (conteudoTsv == null) {
+            return false;
+        }
+        situacoes.clear();
+        todasSituacoes.clear();
+        InputStream input = new java.io.ByteArrayInputStream(
+                conteudoTsv.getBytes(StandardCharsets.UTF_8));
+        boolean carregou = carregarDeStream(input);
+        if (!carregou) {
+            carregar();
+        }
+        return carregou;
+    }
+
+    private boolean carregarDeStream(InputStream input) {
         int carregadas = 0;
         Set<String> idsGerados = new LinkedHashSet<String>();
 

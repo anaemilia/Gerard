@@ -86,5 +86,12 @@ export const api = {
     requisitar<ResultadoRelatoBug>("/api/acoes/relato-bug", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados)
-    })
+    }),
+  enviarCuradoria: (token: string, conteudoTsv: string) =>
+    requisitar<{ aceito: boolean; total_situacoes: number; total_validadas: number }>(
+      "/api/curadoria/situacoes", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain; charset=utf-8", "X-Curadoria-Token": token },
+        body: conteudoTsv
+      })
 };
