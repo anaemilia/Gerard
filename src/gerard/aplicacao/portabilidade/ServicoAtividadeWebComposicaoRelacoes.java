@@ -110,7 +110,15 @@ public final class ServicoAtividadeWebComposicaoRelacoes
         estado.put("correta", !seletorAtivo || escolha == null
                 || escolha == OpcaoOperacaoCuradoria.NAO_SELECIONADO
                 ? null : Boolean.valueOf(correta));
-        estado.put("concluida", Boolean.valueOf(correta));
+        // "Escolher a operação só escolhe e registra em memória; o '?' é
+        // preenchido pelo ser humano via protocolo mouse-texto" (instrução
+        // explícita da pesquisadora) -- concluida não pode ligar o destaque
+        // azul só por causa da operação certa enquanto a incógnita (quando
+        // esta situação tem uma) continua sem valor. Mesmo requisito que
+        // ServicoAtividadeWebTransformacaoRelacao já aplicava (concluidaPosicionamento
+        // && operacaoCorreta) -- só faltava replicar aqui.
+        boolean incognitaOk = papelDesconhecido == null || papelDesconhecido.estaPreenchido();
+        estado.put("concluida", Boolean.valueOf(correta && incognitaOk));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
         // relação 1 e relação 2 não vêm pré-preenchidas; escolher a operação
         // só libera depois delas estarem posicionadas. A incógnita é
