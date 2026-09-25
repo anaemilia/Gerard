@@ -12,7 +12,11 @@ import gerard.agente.modelousuario.ModeloUsuario;
 import gerard.agente.modelousuario.NivelEscolaridade;
 import gerard.agente.modelousuario.RepositorioModeloUsuario;
 import gerard.pesquisador.auditoria.EscritorJsonSimples;
+import gerard.pesquisador.log.AgendadorEnvioLogPesquisa;
+import gerard.pesquisador.log.EventoLogGerard;
+import gerard.pesquisador.log.RepositorioEventosLogPesquisa;
 import gerard.suporte.PreparadorEmailRelatoBug;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -26,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Servidor local da prova funcional; HTTP e arquivos ficam na infraestrutura. */
@@ -37,9 +42,54 @@ public final class ServidorPrototipoWeb {
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
     private final SessaoAdaptativaUsuario sessaoUsuario = new SessaoAdaptativaUsuario(
             usuarios, new RepositorioRegrasAdaptativasPublicadas());
+    private final RepositorioEventosLogPesquisa logPesquisa = new RepositorioEventosLogPesquisa(
+            new File(diretorioGerard(), "pesquisa_log.db").getAbsolutePath());
+    private final AgendadorEnvioLogPesquisa agendadorLogPesquisa =
+            new AgendadorEnvioLogPesquisa(logPesquisa, "gerard-web");
+    /**
+     * Marca a última requisição de interação (ver responder()) — base dos
+     * dois gatilhos de fim de sessão pedidos pela pesquisadora, além do
+     * envio periódico: inatividade prolongada (verificarInatividade) e
+     * fechamento de aba (POST /api/pesquisa/log/sincronizar via
+     * navigator.sendBeacon no cliente, ver web-poc/src/main.tsx). Mesma
+     * limitação de AgendadorEnvioLogPesquisa continua valendo: o log é um
+     * arquivo único por processo, não por visitante — os dois gatilhos só
+     * antecipam o mesmo ciclo que já roda no relógio.
+     */
+    private final AtomicLong ultimaAtividadeEmMs = new AtomicLong(System.currentTimeMillis());
 
     private ServidorPrototipoWeb(Path raizWeb) {
         this.raizWeb = raizWeb.toAbsolutePath().normalize();
+        long intervaloMinutos = Long.parseLong(
+                System.getenv().getOrDefault("PESQUISA_LOG_INTERVALO_MINUTOS", "5"));
+        agendadorLogPesquisa.iniciar(intervaloMinutos);
+        iniciarVerificacaoInatividade();
+    }
+
+    private void iniciarVerificacaoInatividade() {
+        long limiarMinutos = Long.parseLong(
+                System.getenv().getOrDefault("PESQUISA_LOG_LIMIAR_INATIVIDADE_MINUTOS", "10"));
+        final long limiarMs = limiarMinutos * 60_000L;
+        new java.util.Timer("verificacao-inatividade-log-pesquisa", true).scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    public void run() {
+                        if (System.currentTimeMillis() - ultimaAtividadeEmMs.get() >= limiarMs) {
+                            try {
+                                agendadorLogPesquisa.executarCiclo();
+                            } catch (Exception ex) {
+                                System.err.println(
+                                        "Falha na sincronizacao do log de pesquisa por inatividade: "
+                                                + ex.getMessage());
+                            }
+                        }
+                    }
+                }, 60_000L, 60_000L);
+    }
+
+    private static File diretorioGerard() {
+        File diretorio = new File(System.getProperty("user.home"), "Gerard");
+        diretorio.mkdirs();
+        return diretorio;
     }
 
     public static void main(String[] args) throws Exception {
@@ -71,10 +121,14 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/sessao/usuario", aplicacao::entrarUsuario);
         servidor.createContext("/api/acoes/relato-bug", aplicacao::relatoBug);
         servidor.createContext("/api/curadoria/situacoes", aplicacao::situacoesCuradoria);
+        servidor.createContext("/api/pesquisa/log", aplicacao::logPesquisa);
+        servidor.createContext("/api/pesquisa/log/sincronizar", aplicacao::sincronizarLogSessao);
         servidor.createContext("/", aplicacao::arquivoEstatico);
-        servidor.setExecutor(null);
+        int threadsHttp = Integer.parseInt(System.getenv().getOrDefault("HTTP_THREADS", "64"));
+        servidor.setExecutor(Executors.newFixedThreadPool(threadsHttp));
         servidor.start();
-        System.out.println("Gérard web funcional em http://localhost:" + porta);
+        System.out.println("Gérard web funcional em http://localhost:" + porta
+                + " (" + threadsHttp + " threads HTTP)");
     }
 
     private void situacao(HttpExchange troca) throws IOException {
@@ -241,6 +295,116 @@ public final class ServidorPrototipoWeb {
         resposta.put("total_situacoes", Integer.valueOf(sorteios.contarSituacoesCuradas()));
         resposta.put("total_validadas", Integer.valueOf(sorteios.contarSituacoesValidadas()));
         responder(troca, 200, resposta);
+    }
+
+    /**
+     * Backend central do log de pesquisa (POST recebe TSV/JSON de qualquer
+     * instância do Gérard e traduz para o banco; GET consulta o banco e
+     * devolve JSON) — ver RepositorioEventosLogPesquisa. O lado que envia
+     * nunca fala com o banco diretamente, só TSV ou JSON, como pedido
+     * explicitamente pela pesquisadora. Mesmo token de curadoria (é a mesma
+     * pessoa administrando as duas coisas; inventar um segundo segredo só
+     * para isso seria mais acoplamento do que o problema pede).
+     */
+    @SuppressWarnings("unchecked")
+    private void logPesquisa(HttpExchange troca) throws IOException {
+        String tokenEsperado = System.getenv("CURADORIA_TOKEN");
+        if (tokenEsperado == null || tokenEsperado.trim().length() == 0) {
+            responder(troca, 503, erro("Log de pesquisa não está configurado neste servidor"));
+            return;
+        }
+        String tokenRecebido = troca.getRequestHeaders().getFirst("X-Curadoria-Token");
+        if (tokenRecebido == null || !tokenEsperado.equals(tokenRecebido)) {
+            responder(troca, 401, erro("Token inválido"));
+            return;
+        }
+
+        if ("GET".equals(troca.getRequestMethod())) {
+            Map<String, String> parametros = analisarQuery(troca.getRequestURI().getQuery());
+            int limite = 500;
+            try { limite = Integer.parseInt(parametros.getOrDefault("limite", "500")); } catch (NumberFormatException ignorado) { }
+            List<Map<String, Object>> linhas = logPesquisa.consultar(
+                    parametros.get("origem"), parametros.get("sessao"), parametros.get("usuario"), limite);
+            Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+            resposta.put("eventos", linhas);
+            resposta.put("total_no_banco", Integer.valueOf(logPesquisa.contar()));
+            responder(troca, 200, resposta);
+            return;
+        }
+
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        String origemInstancia = troca.getRequestHeaders().getFirst("X-Origem-Instancia");
+        if (origemInstancia == null || origemInstancia.trim().length() == 0) {
+            origemInstancia = "desconhecida";
+        }
+        String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        if (corpo.trim().length() == 0) {
+            responder(troca, 400, erro("Conteúdo vazio"));
+            return;
+        }
+        List<EventoLogGerard> eventos = new ArrayList<EventoLogGerard>();
+        String corpoAparado = corpo.trim();
+        if (corpoAparado.startsWith("[")) {
+            Object analisado = AnalisadorJsonSimples.analisar(corpoAparado);
+            if (analisado instanceof List) {
+                for (Object item : (List<Object>) analisado) {
+                    if (item instanceof Map) {
+                        EventoLogGerard evento =
+                                EventoLogGerard.deMapa((Map<String, Object>) item);
+                        if (evento != null) eventos.add(evento);
+                    }
+                }
+            }
+        } else {
+            for (String linha : corpo.split("\n", -1)) {
+                EventoLogGerard evento = EventoLogGerard.deTsv(linha.trim());
+                if (evento != null) eventos.add(evento);
+            }
+        }
+        int gravados = logPesquisa.inserirTodos(origemInstancia, eventos);
+        Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+        resposta.put("aceito", Boolean.TRUE);
+        resposta.put("eventos_gravados", Integer.valueOf(gravados));
+        responder(troca, 200, resposta);
+    }
+
+    /**
+     * Gatilho best-effort de fechamento de aba (navigator.sendBeacon no
+     * cliente, ver web-poc/src/main.tsx). Sem token: não expõe nem aceita
+     * dados do log, só antecipa o mesmo ciclo que o AgendadorEnvioLogPesquisa
+     * já roda periodicamente.
+     */
+    private void sincronizarLogSessao(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            agendadorLogPesquisa.executarCiclo();
+        } catch (Exception ex) {
+            System.err.println("Falha ao sincronizar log de pesquisa no fechamento da aba: " + ex.getMessage());
+        }
+        Map<String, Object> resposta = new LinkedHashMap<String, Object>();
+        resposta.put("aceito", Boolean.TRUE);
+        responder(troca, 200, resposta);
+    }
+
+    private static Map<String, String> analisarQuery(String query) {
+        Map<String, String> parametros = new LinkedHashMap<String, String>();
+        if (query == null || query.trim().length() == 0) return parametros;
+        for (String par : query.split("&")) {
+            int igual = par.indexOf('=');
+            if (igual < 0) continue;
+            try {
+                String chave = java.net.URLDecoder.decode(par.substring(0, igual), "UTF-8");
+                String valor = java.net.URLDecoder.decode(par.substring(igual + 1), "UTF-8");
+                parametros.put(chave, valor);
+            } catch (java.io.UnsupportedEncodingException ignorado) { }
+        }
+        return parametros;
     }
 
     @SuppressWarnings("unchecked")
@@ -572,8 +736,20 @@ public final class ServidorPrototipoWeb {
         }
     }
 
-    private static void responder(HttpExchange troca, int status,
+    private void responder(HttpExchange troca, int status,
             Map<String, Object> corpo) throws IOException {
+        ultimaAtividadeEmMs.set(System.currentTimeMillis());
+        // Handlers que rejeitam cedo (token inválido, método não permitido)
+        // respondem sem ter lido o corpo da requisição. Sem drenar o que
+        // sobrou, o HttpServer embutido não consegue reaproveitar a conexão
+        // keep-alive de forma limpa e derruba conexões concorrentes sob
+        // carga — achado no teste de macaco contra /api/pesquisa/log com
+        // muitos clientes simultâneos. Ler de novo depois que um handler já
+        // consumiu o corpo é inofensivo (stream já em EOF).
+        try {
+            troca.getRequestBody().readAllBytes();
+        } catch (IOException ignorado) {
+        }
         byte[] bytes = EscritorJsonSimples.escrever(corpo).getBytes(StandardCharsets.UTF_8);
         troca.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         // Sem isso, GET /api/situacao pode ser servido do cache HTTP do

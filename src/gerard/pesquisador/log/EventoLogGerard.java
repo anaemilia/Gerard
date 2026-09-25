@@ -237,6 +237,56 @@ public class EventoLogGerard {
         return indice >= 0 && indice < campos.length ? campos[indice] : "";
     }
 
+    /**
+     * Contraparte de deTsv para o corpo JSON de POST /api/pesquisa/log
+     * (ServidorPrototipoWeb) — mesmos nomes de campo de CABECALHO, um objeto
+     * por evento. Ausência de chave vira string vazia, mesmo comportamento
+     * de deTsv para colunas faltantes.
+     */
+    public static EventoLogGerard deMapa(java.util.Map<String, Object> mapa) {
+        if (mapa == null) return null;
+        EventoLogGerard evento = new EventoLogGerard();
+        evento.timestamp = texto(mapa, "timestamp");
+        evento.sessao = texto(mapa, "sessao");
+        evento.usuario = texto(mapa, "usuario");
+        evento.agenteDaAcao = normalizarAgente(texto(mapa, "agente_da_acao"));
+        evento.problema = texto(mapa, "problema");
+        evento.situacaoVersaoId = texto(mapa, "situacao_versao_id");
+        evento.situacaoGrupoId = texto(mapa, "situacao_grupo_id");
+        evento.idiomaSituacao = texto(mapa, "idioma_situacao");
+        evento.tentativa = texto(mapa, "tentativa");
+        evento.tarefa = texto(mapa, "tarefa");
+        evento.ce = "C".equals(evento.agenteDaAcao) ? "" : normalizarCe(texto(mapa, "ce"));
+        evento.instrumentoOrganizacao = texto(mapa, "instrumento_organizacao");
+        evento.instrumentoArtefato = texto(mapa, "instrumento_artefato");
+        evento.funcaoDoArtefato = texto(mapa, "funcao_do_artefato");
+        evento.objeto = texto(mapa, "objeto");
+        evento.regras = texto(mapa, "regras");
+        evento.categoria = texto(mapa, "categoria");
+        evento.enunciado = texto(mapa, "enunciado");
+        evento.origemEvento = texto(mapa, "origem_evento");
+        evento.detalhes = texto(mapa, "detalhes");
+        evento.tipoAcaoInteracao = texto(mapa, "tipo_acao_interacao");
+        evento.propriedadeAcao = texto(mapa, "propriedade_acao");
+        evento.mudancaObservavel = texto(mapa, "mudanca_observavel");
+        evento.tentativaNumeroSituacao = texto(mapa, "tentativa_numero_situacao");
+        evento.invarianteOrigem = texto(mapa, "invariante_origem");
+        evento.invarianteCodigo = texto(mapa, "invariante_codigo");
+        evento.invarianteSimbolico = texto(mapa, "invariante_simbolico");
+        evento.invarianteObservacao = texto(mapa, "invariante_observacao");
+        evento.naturezaAcao = texto(mapa, "natureza_acao");
+        evento.efeitoAcao = texto(mapa, "efeito_acao");
+        evento.invarianteSugestaoAdotada = texto(mapa, "invariante_sugestao_adotada");
+        evento.actionId = texto(mapa, "action_id");
+        evento.rejectionSequenceId = texto(mapa, "rejection_sequence_id");
+        return evento;
+    }
+
+    private static String texto(java.util.Map<String, Object> mapa, String chave) {
+        Object valor = mapa.get(chave);
+        return valor == null ? "" : String.valueOf(valor);
+    }
+
 
     public static String normalizarAgente(String texto) {
         String v = valor(texto).trim();
