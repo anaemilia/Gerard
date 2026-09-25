@@ -71,6 +71,17 @@ export function SeletorOperacaoDiagramaGerard({ pontos, modelagem, mensagemErro,
   if (!("escolha_entre_transformacoes" in modelagem)) {
     const centro = pontos.relacao;
     if (!centro || !("escolha_operacao" in modelagem)) return null;
+    // Mesma guarda de SeletorOperacaoRelacaoAluno.ativar() no desktop:
+    // situações sem operacao_relacao curado não têm o seletor disponível
+    // (ver seletorAtivo em ServicoAtividadeWebComposicaoRelacoes/
+    // TransformacaoRelacao) -- sem checar isso aqui, os botões apareciam
+    // sempre clicáveis mas o clique não fazia nada. operacao_disponivel é
+    // o sinal certo pra isso -- não dá pra inferir de acoes_disponiveis
+    // conter ESCOLHER_OPERACAO_RELACAO, porque essa ação também some
+    // (sem significar "indisponível") assim que a escolha já foi
+    // respondida corretamente, e nesse caso os botões devem continuar
+    // visíveis (só não clicáveis mais, ver onEscolher abaixo).
+    if (!modelagem.operacao_disponivel) return null;
     const escolha = modelagem.escolha_operacao ?? null;
     const correta = modelagem.correta ?? null;
     const marcouErrado = escolha !== null && correta === false;

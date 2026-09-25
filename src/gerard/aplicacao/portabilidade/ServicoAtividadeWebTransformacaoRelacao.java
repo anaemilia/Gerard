@@ -117,6 +117,16 @@ public final class ServicoAtividadeWebTransformacaoRelacao
         boolean concluida = concluidaPosicionamento && (!seletorAtivo || operacaoCorreta);
         estado.put("concluida", Boolean.valueOf(concluida));
         estado.put("escolha_operacao", nomeOuNull(escolhaOperacao));
+        // Sinal explícito e estável pro cliente saber se este seletor se
+        // aplica a esta situação -- distinto de "a ação está em
+        // acoes_disponiveis agora" (que também fica ausente só porque já foi
+        // respondida corretamente). Sem isso, SeletorOperacaoDiagramaGerard
+        // não tinha como distinguir "nunca teve operacao_relacao curado, não
+        // mostrar" de "curado e já respondido certo, mostrar sem interação"
+        // -- os dois casos deixam a ação fora de acoes_disponiveis do mesmo
+        // jeito (achado ao corrigir o mesmo problema em
+        // ServicoAtividadeWebComposicaoRelacoes).
+        estado.put("operacao_disponivel", Boolean.valueOf(seletorAtivo));
         // Mesmo nome de campo de ServicoAtividadeWebComposicaoRelacoes
         // ("correta", não "correta_operacao") -- os dois compartilham o
         // mesmo componente React de seletor único (SeletorOperacaoDiagramaGerard).

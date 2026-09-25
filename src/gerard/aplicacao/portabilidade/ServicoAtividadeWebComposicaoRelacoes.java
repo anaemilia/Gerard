@@ -101,6 +101,12 @@ public final class ServicoAtividadeWebComposicaoRelacoes
                 TipoOperacaoSeletor.ENTRE_TRANSFORMACOES) != OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         boolean correta = seletorAtivo && respondeuCorretamente(escolha);
         estado.put("escolha_operacao", nomeOuNull(escolha));
+        // Sinal explícito pro cliente saber se o seletor se aplica a esta
+        // situação, distinto de "a ação ESCOLHER_OPERACAO_RELACAO está em
+        // acoes_disponiveis agora" (que também some quando já respondida
+        // corretamente) -- ver mesmo campo em
+        // ServicoAtividadeWebTransformacaoRelacao (mesmo componente React).
+        estado.put("operacao_disponivel", Boolean.valueOf(seletorAtivo));
         estado.put("correta", !seletorAtivo || escolha == null
                 || escolha == OpcaoOperacaoCuradoria.NAO_SELECIONADO
                 ? null : Boolean.valueOf(correta));

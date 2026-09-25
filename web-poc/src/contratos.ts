@@ -84,6 +84,10 @@ export type EstadoModelagemTernaria = Readonly<{
   // ServicoAtividadeWebTransformacaoRelacao.
   escolha_operacao?: EscolhaOperacao;
   correta?: boolean | null;
+  // Distinto de "escolha_operacao"/"correta" estarem presentes (que hoje
+  // sempre estão) -- diz se a situação curada tem operacao_relacao, ver
+  // ServicoAtividadeWebTransformacaoRelacao.
+  operacao_disponivel?: boolean;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EscolhaOperacao = "SOMA" | "SUBTRACAO" | null;
@@ -106,6 +110,7 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   categoria: "COMPOSICAO_RELACOES"; enunciado: string;
   relacao_1: PapelProjetado; relacao_2: PapelProjetado; relacao_final: PapelProjetado;
   escolha_operacao: EscolhaOperacao; correta: boolean | null;
+  operacao_disponivel: boolean;
   papel_aguardando_sinal: string | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
