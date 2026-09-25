@@ -243,10 +243,14 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
-        if (atividadeModelagem == null) {
+        Map<String, Object> resultado;
+        if (atividadeModelagem != null) {
+            resultado = atividadeModelagem.proporValor(papelId, valor);
+        } else if (atividadeEscolhaOperacao instanceof ServicoAtividadeWeb) {
+            resultado = ((ServicoAtividadeWeb) atividadeEscolhaOperacao).proporValor(papelId, valor);
+        } else {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
         }
-        Map<String, Object> resultado = atividadeModelagem.proporValor(papelId, valor);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -334,15 +338,21 @@ public final class ServicoSorteioAtividadeWeb {
 
     /**
      * Engata o "?" da incógnita na sua caixa (protocolo mouse-texto,
-     * Main.java) — só existe onde há incógnita a digitar (ServicoAtividadeWeb);
-     * categorias de escolha de operação não têm esse conceito.
+     * Main.java) — arrastável em toda categoria, nas duas versões (desktop e
+     * web), independente de a categoria também ter escolha de operação (ver
+     * ServicoAtividadeWebComposicaoRelacoes). Só falha quando a situação
+     * atual não tem incógnita curada nenhuma.
      */
     public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
-        if (atividadeModelagem == null) {
+        Map<String, Object> resultado;
+        if (atividadeModelagem != null) {
+            resultado = atividadeModelagem.engatarIncognita(papelId, origemPapelId);
+        } else if (atividadeEscolhaOperacao instanceof ServicoAtividadeWeb) {
+            resultado = ((ServicoAtividadeWeb) atividadeEscolhaOperacao).engatarIncognita(papelId, origemPapelId);
+        } else {
             throw new IllegalStateException(
                     "a situação atual não possui incógnita a engatar");
         }
-        Map<String, Object> resultado = atividadeModelagem.engatarIncognita(papelId, origemPapelId);
         resultado.put("estado", projetarEstado());
         return resultado;
     }
