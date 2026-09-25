@@ -73,6 +73,23 @@ public final class AcoesDisponiveisAtividadeWeb {
         return acoes;
     }
 
+    /**
+     * Vira a interação EDITAR_VALOR na figura (ver
+     * ServicoSorteioAtividadeWeb.projetarInteracoesPermitidas) — sem essa
+     * ação em acoes_disponiveis, a caixa da incógnita fica engatada (o "?"
+     * aparece) mas o duplo-clique nunca abre a digitação: achado ao
+     * comparar ServicoAtividadeWebComposicaoRelacoes (só chamava
+     * acaoEngatarIncognita) com ServicoAtividadeWebComparacaoMedidas (usa
+     * modelagemPapel, que já inclui isso).
+     */
+    public static List<Object> acaoProporValorPapel(String papelAlvo) {
+        List<Object> acoes = new ArrayList<Object>();
+        Map<String, Object> corpo = new LinkedHashMap<String, Object>();
+        corpo.put("papel_id", papelAlvo);
+        acoes.add(acao("PROPOR_VALOR_PAPEL", "POST", "/api/acoes/posicionar", corpo));
+        return acoes;
+    }
+
     public static List<Object> acaoAjustarQuadradinho(String papelAlvo) {
         List<Object> acoes = new ArrayList<Object>();
         Map<String, Object> corpo = new LinkedHashMap<String, Object>();

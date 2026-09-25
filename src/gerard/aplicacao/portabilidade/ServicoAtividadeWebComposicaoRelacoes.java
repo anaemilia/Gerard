@@ -133,7 +133,14 @@ public final class ServicoAtividadeWebComposicaoRelacoes
                 acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherOperacaoRelacao());
             }
             if (papelDesconhecido != null && !papelDesconhecido.estaPreenchido()) {
+                // As duas juntas: ENGATAR_INCOGNITA vira a interação que o
+                // arraste do "?" dispara (App.aoSoltarElementoNoDiagrama);
+                // PROPOR_VALOR_PAPEL vira EDITAR_VALOR, que o cliente só
+                // habilita depois de engatada=true (FiguraCenaGerard) — sem
+                // essa segunda, o "?" engata mas o duplo-clique nunca abre a
+                // digitação (mesmo padrão de ComparacaoMedidas.modelagemPapel).
                 acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
+                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoProporValorPapel(papelDesconhecido.getChave()));
             }
         }
         estado.put("acoes_disponiveis", acoes);
