@@ -125,9 +125,12 @@ export type InteracaoPermitidaFigura = Readonly<{
 export type ResultadoPosicionarConhecido = Readonly<{
   schema: typeof SCHEMA_RESULTADO; aceita: boolean; chave_mensagem: string | null; estado: EstadoWeb;
 }>;
+export type EixoFigura = Readonly<{ escala: number; valor: number | null;
+  titulo: string; rotulo_negativos: string; rotulo_positivos: string;
+  rotulo_eixo: string; instrucao: string; rotulo_ocultar: string }>;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO" | "GRUPO_QUADRADINHOS"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
-  valor: number | null; conhecido: boolean; engatada: boolean;
+  valor: number | null; conhecido: boolean; engatada: boolean; eixo?: EixoFigura;
   interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;

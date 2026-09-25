@@ -5,6 +5,7 @@ import type { AcaoDisponivel, EstadoWeb, FiguraCena,
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
+import { EixoNumericoFigura } from "./EixoNumericoFigura";
 import { AvisoPosicionamentoFigura } from "./AvisoPosicionamentoFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual";
@@ -140,6 +141,20 @@ export default function App() {
     const valorInicial = papel?.conhecido && papel.valor !== null ? String(papel.valor) : undefined;
     enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
       elementoId: figura.id, actionId: interacao.acao_id, valorInicial });
+  }
+
+  // Arrastar/clicar no eixo dos inteiros propõe o valor direto, sem passar
+  // pela digitação — mas cai na mesma confirmação (EdicaoValorFigura em modo
+  // "confirmando") que a digitação por duplo-clique já usa, mesmo protocolo
+  // que o desktop também exige ao soltar o ponto de controle
+  // (sincronizarPainelEixoRelacaoSeNecessario, Main.java).
+  function propoRoValorPorEixo(figura: FiguraCena, valor: number) {
+    const interacao = figura.interacoes_permitidas.find((item) => item.tipo === "EDITAR_VALOR");
+    if (!interacao) return;
+    enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
+      elementoId: figura.id, actionId: interacao.acao_id, valorInicial: String(valor) });
+    enviarEventoRepresentacional({ tipo: "VALOR_PROPOSTO_PARA_CONFIRMACAO",
+      elementoId: figura.id });
   }
 
   function aoConfirmarDigitacao() {
@@ -424,6 +439,12 @@ export default function App() {
               figuraAguardandoSinal.chave_papel_semantico, figuraAguardandoSinal.id, sinal)} />}
           {avisoPosicionamento && <AvisoPosicionamentoFigura
             figuraId={avisoPosicionamento.figuraId} mensagem={avisoPosicionamento.mensagem} />}
+          {estado.cena?.figuras.filter((figura) => figura.lupa_habilitada && figura.eixo)
+            .map((figura) => <EixoNumericoFigura key={figura.id} figuraId={figura.id}
+              papelNome={figura.rotulo} eixo={figura.eixo!} ocupado={ocupado}
+              interativo={figura.interacoes_permitidas.some((item) => item.tipo === "EDITAR_VALOR")}
+              aoProporValor={(valor) => propoRoValorPorEixo(figura, valor)}
+              aoFechar={() => void alternarEixo(figura)} />)}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />

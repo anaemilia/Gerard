@@ -928,9 +928,35 @@ public final class ServicoSorteioAtividadeWeb {
             // vivo: o valor era gravado no servidor, mas a caixa continuava
             // vazia porque a cena nunca carregava esse dado).
             Object papelProjetado = valoresPorChave.get(figura.getChavePapelSemantico());
-            item.put("valor", extrairCampo(papelProjetado, "valor"));
+            Object valorAtual = extrairCampo(papelProjetado, "valor");
+            item.put("valor", valorAtual);
             item.put("conhecido", extrairCampo(papelProjetado, "conhecido"));
             item.put("engatada", extrairCampo(papelProjetado, "engatada"));
+            // Geometria do eixo dos inteiros (PaineisEixosRelacoes/
+            // ScaffoldingGraficoInteiros no desktop) -- só a escala e o valor
+            // atual; o cliente decide se o ponto é arrastável checando se
+            // EDITAR_VALOR está em interacoes_permitidas (mesmo sinal que já
+            // habilita a caixa de digitação por duplo-clique), sem precisar
+            // de um campo novo pra isso.
+            if (figura.isExibirLupa()) {
+                Map<String, Object> eixo = mapa();
+                int magnitude = valorAtual instanceof Number
+                        ? Math.abs(((Number) valorAtual).intValue()) : 0;
+                eixo.put("escala", Integer.valueOf(Math.max(5, magnitude)));
+                eixo.put("valor", valorAtual);
+                // Mesmos textos do desktop (ScaffoldingGraficoInteiros) —
+                // resolvidos aqui, nunca hardcoded no cliente (o contrato
+                // web não expõe chaves i18n cruas nem texto inventado).
+                gerard.i18n.ServicoLocalizacao localizacao =
+                        gerard.i18n.ServicoLocalizacao.getInstancia();
+                eixo.put("titulo", localizacao.texto("ui.integerAxis.title"));
+                eixo.put("rotulo_negativos", localizacao.texto("ui.integerAxis.negativeIntegers"));
+                eixo.put("rotulo_positivos", localizacao.texto("ui.integerAxis.positiveIntegers"));
+                eixo.put("rotulo_eixo", localizacao.texto("ui.integerAxis.axisLabel"));
+                eixo.put("instrucao", localizacao.texto("ui.integerAxis.instruction"));
+                eixo.put("rotulo_ocultar", localizacao.texto("ui.tooltip.integerAxis.hide"));
+                item.put("eixo", eixo);
+            }
             List<Object> interacoes = projetarInteracoesPermitidas(
                     acoes, figura.getChavePapelSemantico());
             // Revelar/ocultar eixo — decidida aqui (não via acoes_disponiveis

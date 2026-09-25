@@ -39,6 +39,9 @@ public final class TesteRevelarOcultarEixoWeb {
             String chave = String.valueOf(figura.get("chave_papel_semantico"));
             if (exibirLupa && papelComLupa == null) papelComLupa = chave;
             if (!exibirLupa && papelSemLupa == null) papelSemLupa = chave;
+            if (exibirLupa) exigirEixoPublicado(figura, chave);
+            else exigir(!figura.containsKey("eixo"),
+                    "papel sem lupa não deveria publicar geometria de eixo: " + chave);
             exigir(Boolean.FALSE.equals(figura.get("lupa_habilitada")),
                     "nenhum papel começa com o eixo revelado: " + chave);
         }
@@ -119,6 +122,24 @@ public final class TesteRevelarOcultarEixoWeb {
             }
         }
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void exigirEixoPublicado(Map<String, Object> figura, String papel) {
+        Object objeto = figura.get("eixo");
+        exigir(objeto instanceof Map, "papel com lupa deveria publicar eixo: " + papel);
+        Map<String, Object> eixo = (Map<String, Object>) objeto;
+        exigir(eixo.get("escala") instanceof Number
+                        && ((Number) eixo.get("escala")).intValue() >= 5,
+                "eixo deveria publicar escala inteira mínima 5: " + papel);
+        exigir(eixo.containsKey("valor"), "eixo deveria publicar o valor atual: " + papel);
+        String[] textos = {"titulo", "rotulo_negativos", "rotulo_positivos",
+                "rotulo_eixo", "instrucao", "rotulo_ocultar"};
+        for (String campo : textos) {
+            exigir(eixo.get(campo) instanceof String
+                            && !((String) eixo.get(campo)).trim().isEmpty(),
+                    "eixo deveria publicar texto localizado em " + campo + ": " + papel);
+        }
     }
 
     /**

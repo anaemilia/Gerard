@@ -153,6 +153,34 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .op-botao-erro .op-miolo { fill:#c82828; }
 .op-seletor text { fill:var(--texto-secundario); font-size:13px; font-weight:700; text-anchor:middle; }
 .op-explicacao div { box-sizing:border-box; width:100%; padding:8px 10px; border:1.1px solid #c82828; border-radius:10px; background:#fde8e8; color:#8c1b1b; font-size:12px; line-height:1.4; text-align:center; }
+/* Réplica web de ScaffoldingGraficoInteiros/PaineisEixosRelacoes (Main.java)
+   — mesmo azul (#4a82c9) já usado em .op-miolo pro ponto de controle. */
+.eixo-numerico-tip { position:fixed; z-index:60; display:flex; flex-direction:column; gap:4px;
+  padding:8px 10px; background:var(--superficie); border:1px solid var(--borda);
+  border-radius:8px; box-shadow:0 6px 18px rgba(54,51,45,.18); }
+.eixo-numerico-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:10px;
+  cursor:move; user-select:none; touch-action:none; }
+.eixo-numerico-titulo { margin:0; font-weight:700; font-size:.78rem; }
+.eixo-numerico-fechar { width:28px; height:24px; flex:none; display:grid; place-items:center;
+  padding:0; border:1px solid var(--borda); border-radius:7px; background:var(--superficie-suave);
+  color:var(--texto-secundario); }
+.eixo-numerico-fechar:hover,.eixo-numerico-fechar:focus-visible { border-color:var(--texto-secundario); }
+.eixo-numerico-fechar svg { width:18px; height:13px; fill:none; stroke:currentColor;
+  stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.eixo-numerico-fechar circle { fill:currentColor; stroke:none; }
+.eixo-numerico-instrucao { margin:0; font-size:.72rem; color:var(--texto-secundario); text-align:center; }
+.eixo-numerico-svg { display:block; }
+.eixo-linha { stroke:var(--texto-secundario); stroke-width:1.4; }
+.eixo-seta { stroke:var(--texto-secundario); stroke-width:1.4; fill:none; }
+.eixo-marca line { stroke:var(--texto-secundario); stroke-width:1; }
+.eixo-marca text { fill:var(--texto-secundario); font-size:9px; text-anchor:middle; }
+.eixo-rotulo-lado { fill:var(--texto-secundario); font-size:10px; font-weight:700; }
+.eixo-rotulo-eixo { fill:var(--texto-secundario); font-size:10px; font-weight:700; }
+.eixo-area-clicavel { fill:transparent; cursor:pointer; }
+.eixo-ponto-controle circle:first-child { fill:#4a82c9; stroke:#4a82c9; stroke-width:1.6; }
+.eixo-ponto-controle-miolo { fill:var(--superficie); }
+.eixo-ponto-controle-interativo { cursor:grab; }
+.eixo-valor-escolhido { fill:#4a82c9; font-size:11px; font-weight:700; text-anchor:middle; }
 .scene-figure rect,.scene-figure ellipse { fill:var(--superficie); stroke:var(--texto-secundario); stroke-width:2; stroke-linejoin:round; }
 .scene-figure-editable { cursor:pointer; }
 .scene-figure-editable:hover rect,.scene-figure-editable:hover ellipse,.scene-figure-editable:focus rect,.scene-figure-editable:focus ellipse { stroke:var(--texto); stroke-width:3; }
