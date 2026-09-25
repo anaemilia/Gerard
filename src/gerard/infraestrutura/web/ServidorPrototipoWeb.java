@@ -109,6 +109,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/acoes/escolher-sinal", aplicacao::escolherSinal);
         servidor.createContext("/api/acoes/revelar-eixo", aplicacao::revelarEixo);
         servidor.createContext("/api/acoes/ocultar-eixo", aplicacao::ocultarEixo);
+        servidor.createContext("/api/acoes/ajustar-valor-eixo", aplicacao::ajustarValorEixo);
         servidor.createContext("/api/acoes/ajuda-contextual", aplicacao::ajudaContextual);
         servidor.createContext("/api/gestos", aplicacao::registrarGesto);
         servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
@@ -579,6 +580,23 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             responder(troca, 200, sorteios.revelarEixo(papelId));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void ajustarValorEixo(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String papelId = String.valueOf(analisado.get("papel_id"));
+            int valor = ((Number) analisado.get("valor")).intValue();
+            responder(troca, 200, sorteios.ajustarValorPeloEixo(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

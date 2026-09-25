@@ -4,18 +4,11 @@ import type { EixoFigura } from "./contratos";
 /**
  * Réplica web de PaineisEixosRelacoes/ScaffoldingGraficoInteiros (Main.java):
  * reta dos inteiros com setas, marcas e rótulos -escala..+escala, e — quando
- * o papel já tem um valor navegável — um ponto de controle azul arrastável
- * (ou clicável em qualquer ponto do eixo) que propõe esse valor pro papel.
- * A confirmação depois de soltar reaproveita o mesmo fluxo de
- * EdicaoValorFigura (aoIniciarProposta chama os mesmos eventos do reducer
- * que a digitação por duplo-clique já usa) — não duplica o protocolo de
- * confirmação, só oferece um jeito concreto/manipulável a mais de chegar
- * até ele (mesmo espírito de "material concreto" do desktop).
- *
- * Papéis já conhecidos (valor definido sem serem a incógnita corrente) só
- * mostram o ponto, sem arraste — reforça a leitura do sinal já escolhido,
- * mas redefinir um valor já posicionado não é um protocolo que a web
- * (nem o desktop, fora deste widget) oferece hoje.
+ * o papel tem um valor — um ponto azul que espelha esse valor. Decisão mais
+ * recente da usuária em 2026-09-25: depois que o ponto está azul, círculo e
+ * reta são bidirecionais; mover o ponto envia uma revisão semântica ao
+ * servidor, que devolve texto, diagrama e reta sincronizados. A lupa mostra
+ * o painel e o olhinho o esconde, em qualquer fase da atividade.
  */
 
 const LARGURA = 280;
@@ -29,28 +22,21 @@ function limitar(valor: number, minimo: number, maximo: number) {
   return Math.min(maximo, Math.max(minimo, valor));
 }
 
-export function EixoNumericoFigura({ figuraId, papelNome, eixo, interativo, ocupado,
-  aoProporValor, aoFechar }: {
+export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupado,
+  aoAlterarValor, aoFechar }: {
   figuraId: string;
   papelNome: string;
   eixo: EixoFigura;
-  interativo: boolean;
+  editavel: boolean;
   ocupado: boolean;
-  aoProporValor: (valor: number) => void;
+  aoAlterarValor: (valor: number) => void;
   aoFechar: () => void;
 }) {
   const [posicao, setPosicao] = useState<{ left: number; top: number } | null>(null);
   const [valorArrastando, setValorArrastando] = useState<number | null>(null);
-  // A escala do servidor (eixo.escala) reflete só o valor atual (max(5,
-  // abs(valor))) -- pra uma incógnita ainda vazia, isso deixa a reta curta
-  // demais pra alcançar a resposta por arraste. Em vez de o servidor
-  // adivinhar um alcance (revelaria magnitude da resposta), a régua cresce
-  // localmente enquanto o mouse segue além da borda -- mesmo gesto de
-  // "arrastar pra rolar", sem limite artificial.
-  const [escalaEfetiva, setEscalaEfetiva] = useState(eixo.escala);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const arrastandoValorRef = useRef(false);
   const painelRef = useRef<HTMLDivElement | null>(null);
-  const arrastandoRef = useRef(false);
   const posicaoRef = useRef<{ left: number; top: number } | null>(null);
   const posicaoManualRef = useRef(false);
   const arrastePainelRef = useRef<{ deslocamentoX: number; deslocamentoY: number } | null>(null);
@@ -152,10 +138,7 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, interativo, ocup
     };
   }
 
-  useEffect(() => {
-    setEscalaEfetiva(eixo.escala);
-  }, [eixo.escala]);
-
+  const escalaEfetiva = eixo.escala;
   const valorMostrado = valorArrastando ?? eixo.valor;
   const temValor = valorMostrado !== null;
   const altura = temValor ? ALTURA_COM_VALOR : ALTURA_SEM_VALOR;
@@ -170,52 +153,35 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, interativo, ocup
     return origemX + limitado * espacamento;
   }
 
-  function valorDoX(x: number) {
-    const limitado = limitar(x, xEsquerda, xDireita);
-    const relativo = Math.round((limitado - origemX) / espacamento);
-    return limitar(relativo, -escalaEfetiva, escalaEfetiva);
-  }
-
-  function coordenadaSvgX(clienteX: number) {
-    if (!svgRef.current) return origemX;
+  function valorDoClienteX(clienteX: number) {
+    if (!svgRef.current) return eixo.valor ?? 0;
     const caixa = svgRef.current.getBoundingClientRect();
-    return ((clienteX - caixa.left) / caixa.width) * LARGURA;
+    const x = ((clienteX - caixa.left) / caixa.width) * LARGURA;
+    return limitar(Math.round((limitar(x, xEsquerda, xDireita) - origemX) / espacamento),
+      -escalaEfetiva, escalaEfetiva);
   }
 
   useEffect(() => {
-    if (!interativo) return;
-    function aoMoverMouse(evento: MouseEvent) {
-      if (!arrastandoRef.current) return;
-      const x = coordenadaSvgX(evento.clientX);
-      // Mouse além da borda visível (fora do viewBox, não só do eixo
-      // desenhado): cresce a escala em vez de travar o valor na borda.
-      if (x < -20 || x > LARGURA + 20) {
-        setEscalaEfetiva((atual) => Math.min(999, atual + 1));
-      }
-      setValorArrastando(valorDoX(x));
+    function mover(evento: MouseEvent) {
+      if (arrastandoValorRef.current) setValorArrastando(valorDoClienteX(evento.clientX));
     }
-    function aoSoltarMouse() {
-      if (!arrastandoRef.current) return;
-      arrastandoRef.current = false;
-      setValorArrastando((valorAtual) => {
-        if (valorAtual !== null) aoProporValor(valorAtual);
-        return null;
-      });
+    function soltar(evento: MouseEvent) {
+      if (!arrastandoValorRef.current) return;
+      arrastandoValorRef.current = false;
+      const valor = valorDoClienteX(evento.clientX);
+      setValorArrastando(null);
+      aoAlterarValor(valor);
     }
-    window.addEventListener("mousemove", aoMoverMouse);
-    window.addEventListener("mouseup", aoSoltarMouse);
-    return () => {
-      window.removeEventListener("mousemove", aoMoverMouse);
-      window.removeEventListener("mouseup", aoSoltarMouse);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [interativo, espacamento]);
+    window.addEventListener("mousemove", mover);
+    window.addEventListener("mouseup", soltar);
+    return () => { window.removeEventListener("mousemove", mover); window.removeEventListener("mouseup", soltar); };
+  });
 
-  function iniciarArraste(evento: React.MouseEvent) {
-    if (!interativo || ocupado) return;
+  function iniciarAlteracao(evento: React.MouseEvent) {
+    if (!editavel || ocupado) return;
     evento.preventDefault();
-    arrastandoRef.current = true;
-    setValorArrastando(valorDoX(coordenadaSvgX(evento.clientX)));
+    arrastandoValorRef.current = true;
+    setValorArrastando(valorDoClienteX(evento.clientX));
   }
 
   if (!posicao) return null;
@@ -254,16 +220,15 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, interativo, ocup
       <text x={xEsquerda} y={origemY - 14} className="eixo-rotulo-lado">{eixo.rotulo_negativos}</text>
       <text x={xDireita} y={origemY - 14} textAnchor="end" className="eixo-rotulo-lado">{eixo.rotulo_positivos}</text>
       <text x={xDireita - 4} y={origemY - 24} textAnchor="end" className="eixo-rotulo-eixo">{eixo.rotulo_eixo}</text>
-      {interativo && <rect x={xEsquerda} y={origemY - 12} width={xDireita - xEsquerda} height={24}
-        className="eixo-area-clicavel" onMouseDown={iniciarArraste} />}
-      {temValor && <g className={`eixo-ponto-controle${interativo ? " eixo-ponto-controle-interativo" : ""}`}
+      {editavel && <rect x={xEsquerda} y={origemY - 12} width={xDireita - xEsquerda} height={24}
+        className="eixo-area-clicavel" onMouseDown={iniciarAlteracao} />}
+      {temValor && <g className={`eixo-ponto-controle${editavel ? " eixo-ponto-controle-interativo" : ""}`}
           transform={`translate(${xDoValor(valorMostrado!)} ${origemY})`}
-          onMouseDown={interativo ? iniciarArraste : undefined}>
+          onMouseDown={editavel ? iniciarAlteracao : undefined}>
         <circle r={7} />
         <circle r={3} className="eixo-ponto-controle-miolo" />
         <text y={20} textAnchor="middle" className="eixo-valor-escolhido">{valorMostrado}</text>
       </g>}
     </svg>
-    {interativo && <p className="eixo-numerico-instrucao">{eixo.instrucao}</p>}
   </div>;
 }

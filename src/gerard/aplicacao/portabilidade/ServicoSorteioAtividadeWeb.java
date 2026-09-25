@@ -297,6 +297,15 @@ public final class ServicoSorteioAtividadeWeb {
         return aplicarTransicaoEixo(papelId, false);
     }
 
+    public synchronized Map<String, Object> ajustarValorPeloEixo(String papelId, int valor) {
+        if (atividadeModelagem == null) {
+            throw new IllegalStateException("a situação atual não possui modelagem por papéis");
+        }
+        Map<String, Object> resultado = atividadeModelagem.ajustarValorPeloEixo(papelId, valor);
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
     private Map<String, Object> aplicarTransicaoEixo(String papelId, boolean revelar) {
         if (!exibeLupa(papelId)) {
             throw new IllegalArgumentException(
@@ -742,12 +751,18 @@ public final class ServicoSorteioAtividadeWeb {
      * tokenizador usa \S+, então isso corresponde exatamente ao texto
      * original.
      */
-    private static List<Object> projetarElementosTexto(CenaDiagramaAditivo cena) {
+    private static List<Object> projetarElementosTexto(CenaDiagramaAditivo cena,
+            Map<String, Object> valoresPorChave) {
         List<gerard.interpretacao.modelo.SegmentoTextoSemantico> segmentos = cena.getElementosTexto();
         List<Object> resultado = new ArrayList<Object>();
         for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento : segmentos) {
+            Object papelProjetado = segmento.possuiVinculoSemantico()
+                    ? valoresPorChave.get(segmento.getChavePapelSemantico()) : null;
+            Object valorAtual = extrairCampo(papelProjetado, "valor");
+            String valorExibido = valorAtual instanceof Number
+                    ? String.valueOf(valorAtual) : segmento.getValor();
             Map<String, Object> item = projetarDescritorPalavra(
-                    "texto." + resultado.size(), segmento.getValor(),
+                    "texto." + resultado.size(), valorExibido,
                     segmento.getTipoNarrativo(), segmento.isManipulavelNaNarrativa(),
                     destinoSaco(segmento));
             item.put("papel_id", segmento.possuiVinculoSemantico()
@@ -819,7 +834,7 @@ public final class ServicoSorteioAtividadeWeb {
                 contexto.getEnunciadoExibido(), contexto.getInterpretacao(), concluida);
         Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();
-        resultado.put("elementos_texto", projetarElementosTexto(cena));
+        resultado.put("elementos_texto", projetarElementosTexto(cena, valoresPorChave));
         resultado.put("vocabulario_texto", projetarVocabularioTexto(cena));
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("titulo", cena.getTitulo());

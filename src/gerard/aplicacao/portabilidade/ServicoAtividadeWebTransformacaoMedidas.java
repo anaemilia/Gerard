@@ -234,6 +234,30 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         return resultado;
     }
 
+    /** Revisão bidirecional após o ponto do eixo já representar um valor. */
+    public synchronized Map<String, Object> ajustarValorPeloEixo(String papelId, int valor) {
+        PapelQuantitativo alterado = papelPorChave(papelId);
+        if (!alterado.estaPreenchido()) {
+            throw new IllegalStateException("o eixo só pode revisar um valor já confirmado");
+        }
+        ContextoAcao contexto = new ContextoAcao(
+                "sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "eixo.inteiros.web");
+        Optional<DiagnosticoErroPapel> diagnostico = alterado.posicionar(
+                new NumeroInteiro(valor), OrigemAcao.ORIGEM_USUARIO, contexto);
+        if (!diagnostico.isPresent()) {
+            gerard.dominio.campoaditivo.ResultadoCalculo recalculo = relacao
+                    .recalcularParaConsistencia(estadoInicial, transformacao, estadoFinal, alterado);
+            if (recalculo.temValorCalculavel()) relacao.aplicar(recalculo, contexto);
+        }
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
+        resultado.put("chave_mensagem", null);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> reiniciar() {
         estadoInicial = FabricaPapeisTransformacaoMedidas
                 .estadoInicial(PublicadorEventoDominio.NENHUM);

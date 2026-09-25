@@ -76,6 +76,11 @@ export const api = {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ papel_id: papelId })
     }),
+  ajustarValorEixo: (papelId: string, valor: number) =>
+    requisitar<ResultadoPosicionarConhecido>("/api/acoes/ajustar-valor-eixo", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ papel_id: papelId, valor })
+    }),
   ajudaContextual: (area: AreaAjudaContextual, intencao: IntencaoAjuda) =>
     requisitar<ResultadoAjudaContextual>("/api/acoes/ajuda-contextual", {
       method: "POST", headers: { "Content-Type": "application/json" },

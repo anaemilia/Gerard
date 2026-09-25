@@ -168,7 +168,6 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .eixo-numerico-fechar svg { width:18px; height:13px; fill:none; stroke:currentColor;
   stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 .eixo-numerico-fechar circle { fill:currentColor; stroke:none; }
-.eixo-numerico-instrucao { margin:0; font-size:.72rem; color:var(--texto-secundario); text-align:center; }
 .eixo-numerico-svg { display:block; }
 .eixo-linha { stroke:var(--texto-secundario); stroke-width:1.4; }
 .eixo-seta { stroke:var(--texto-secundario); stroke-width:1.4; fill:none; }

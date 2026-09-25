@@ -96,9 +96,114 @@ public final class TesteRevelarOcultarEixoWeb {
                     "novo sorteio deveria começar com todos os eixos fechados, mesmo reaproveitando chaves de papel.");
         }
 
+        verificarEixoAposConfirmarTransformacao(servico);
+
         System.out.println("APROVADO: protocolo REVELAR_EIXO/OCULTAR_EIXO aceita/rejeita "
                 + "corretamente por papel, publica lupa_habilitada e interacoes_permitidas reais, "
-                + "e reinicia a cada sorteio.");
+                + "reinicia a cada sorteio e permanece consistente após confirmar a incógnita.");
+    }
+
+    /**
+     * Decisão explícita da usuária em 2026-09-25: a lupa pode ser aberta a
+     * qualquer momento. O eixo é somente uma projeção do valor corrente do
+     * círculo e deve permanecer consistente depois que a incógnita é
+     * engatada e confirmada.
+     */
+    @SuppressWarnings("unchecked")
+    private static void verificarEixoAposConfirmarTransformacao(
+            ServicoSorteioAtividadeWeb servico) {
+        Map<String, Object> estado = acertarTransformacaoComIncognitaNaTransformacao(servico);
+        Map<String, Object> modelagem = (Map<String, Object>) estado.get("modelagem");
+        String alvo = "papel.transformacao";
+
+        for (Object objeto : (List<Object>) modelagem.get("papeis")) {
+            Map<String, Object> papel = (Map<String, Object>) objeto;
+            String id = String.valueOf(papel.get("id"));
+            if (!alvo.equals(id)) servico.posicionarValorConhecido(id, id);
+        }
+        Map<String, Object> engatado = servico.engatarIncognita(alvo, alvo);
+        Map<String, Object> antesDaConfirmacao = (Map<String, Object>) engatado.get("estado");
+        int inicial = valorPapel(antesDaConfirmacao, "papel.estadoInicial");
+        int finalAtual = valorPapel(antesDaConfirmacao, "papel.estadoFinal");
+        int valorConfirmado = finalAtual - inicial;
+        Map<String, Object> confirmado = servico.proporValor(alvo, valorConfirmado);
+        exigir(Boolean.TRUE.equals(confirmado.get("aceita")),
+                "pré-condição: transformação curada deveria ser confirmada");
+
+        Map<String, Object> revelado = servico.revelarEixo(alvo);
+        Map<String, Object> estadoRevelado = (Map<String, Object>) revelado.get("estado");
+        exigir(Boolean.TRUE.equals(revelado.get("aceita")),
+                "lupa deveria abrir mesmo depois da confirmação");
+        Map<String, Object> figura = figuraDoPapel(estadoRevelado, alvo);
+        exigir(Boolean.TRUE.equals(figura.get("lupa_habilitada")),
+                "eixo deveria permanecer revelado depois da confirmação");
+        exigir(Integer.valueOf(valorConfirmado).equals(
+                        ((Map<String, Object>) figura.get("eixo")).get("valor")),
+                "valor do eixo deveria ser o mesmo valor confirmado no círculo");
+
+        int valorRevisado = valorConfirmado > 0 ? valorConfirmado + 1 : valorConfirmado - 1;
+        Map<String, Object> revisao = servico.ajustarValorPeloEixo(alvo, valorRevisado);
+        Map<String, Object> estadoRevisado = (Map<String, Object>) revisao.get("estado");
+        exigir(Boolean.TRUE.equals(revisao.get("aceita")), "revisão pelo eixo deveria ser aceita");
+        exigir(valorPapel(estadoRevisado, alvo) == valorRevisado,
+                "círculo deveria refletir o valor revisado no eixo");
+        exigir(valorPapel(estadoRevisado, "papel.estadoFinal") == inicial + valorRevisado,
+                "relação deveria recalcular o estado final após revisar a transformação");
+        figura = figuraDoPapel(estadoRevisado, alvo);
+        exigir(Integer.valueOf(valorRevisado).equals(
+                        ((Map<String, Object>) figura.get("eixo")).get("valor")),
+                "reta deveria refletir o valor revisado");
+        exigir(textoDoPapel(estadoRevisado, alvo).equals(String.valueOf(valorRevisado)),
+                "texto deveria refletir o valor revisado");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int valorPapel(Map<String, Object> estado, String papelId) {
+        Map<String, Object> modelagem = (Map<String, Object>) estado.get("modelagem");
+        for (Object objeto : (List<Object>) modelagem.get("papeis")) {
+            Map<String, Object> papel = (Map<String, Object>) objeto;
+            if (papelId.equals(papel.get("id"))) return ((Number) papel.get("valor")).intValue();
+        }
+        throw new AssertionError("papel sem valor na modelagem: " + papelId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String textoDoPapel(Map<String, Object> estado, String papelId) {
+        Map<String, Object> cena = (Map<String, Object>) estado.get("cena");
+        for (Object objeto : (List<Object>) cena.get("elementos_texto")) {
+            Map<String, Object> elemento = (Map<String, Object>) objeto;
+            if (papelId.equals(elemento.get("papel_id"))) return String.valueOf(elemento.get("valor"));
+        }
+        throw new AssertionError("papel não encontrado no texto: " + papelId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> acertarTransformacaoComIncognitaNaTransformacao(
+            ServicoSorteioAtividadeWeb servico) {
+        for (int tentativa = 0; tentativa < 60; tentativa++) {
+            servico.sortearMedidas();
+            Map<String, Object> resultado = servico.escolherCategoria("TRANSFORMACAO_MEDIDAS");
+            if (Boolean.TRUE.equals(resultado.get("correta"))) {
+                Map<String, Object> estado = (Map<String, Object>) resultado.get("estado");
+                Map<String, Object> modelagem = (Map<String, Object>) estado.get("modelagem");
+                if ("papel.transformacao".equals(modelagem.get("papel_desconhecido_original"))) {
+                    return estado;
+                }
+            } else {
+                servico.confirmarCategoria(false);
+            }
+        }
+        throw new AssertionError(
+                "não caiu em Transformação de Medidas com a transformação incógnita em 60 sorteios");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> figuraDoPapel(Map<String, Object> estado, String papel) {
+        for (Object objeto : (List<Object>) ((Map<String, Object>) estado.get("cena")).get("figuras")) {
+            Map<String, Object> figura = (Map<String, Object>) objeto;
+            if (papel.equals(figura.get("chave_papel_semantico"))) return figura;
+        }
+        throw new AssertionError("papel não encontrado na cena: " + papel);
     }
 
     @SuppressWarnings("unchecked")

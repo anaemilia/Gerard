@@ -26,5 +26,8 @@ public interface ServicoAtividadeWeb {
      * o mesmo contrato de posicionarValorConhecido.
      */
     Map<String, Object> engatarIncognita(String papelId, String origemPapelId);
+    default Map<String, Object> ajustarValorPeloEixo(String papelId, int valor) {
+        throw new IllegalStateException("ajuste pelo eixo ainda não implementado para esta categoria");
+    }
     Map<String, Object> reiniciar();
 }
