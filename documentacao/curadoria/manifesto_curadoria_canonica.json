@@ -5,11 +5,11 @@
   "fonte_humana_ativa": "C:\\Users\\cecomp\\Gerard\\curadoria\\situacoes_vergnaud_curadas.tsv",
   "backup_local": "C:\\Users\\cecomp\\Gerard\\curadoria\\backups\\situacoes_vergnaud_curadas_2026-08-24_29686D1B.tsv",
   "fonte_canonica_versionada": "src/gerard/campoaditivo/dados/situacoes_vergnaud.tsv",
-  "sha256": "82ABBF84F1E2A5E11E8A19006266C3A4250E3E2E9CE43EE2A5F31636F4BADBA3",
-  "bytes": 71430,
+  "sha256": "751CD865928E196888C2BFA118385A10D8AC0E0F40EE1ED9BDF1BA3FBC5404EA",
+  "bytes": 71428,
   "colunas": 41,
   "linhas_de_dados": 210,
-  "linhas_validadas": 42,
+  "linhas_validadas": 44,
   "categorias": {
     "COMPOSICAO_MEDIDAS": 56,
     "TRANSFORMACAO_MEDIDAS": 86,
@@ -31,6 +31,10 @@
     {
       "em": "2026-09-22",
       "motivo": "validada=true nas linhas 206 (IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048) e 207 (FR_TRANSFORMACAO_RELACAO_figurinhas_491362201), grupo SP_LEGADO_0064 ('Ana tem 5 figurinhas a mais que Bia...'). Traduções auto_i18n já existiam prontas e fiéis ao original, só não validadas — revisadas nesta atualização (fidelidade ao pt-BR e aos campos estruturais +5/4/positivo/+9/relacao_final, que não mudam com o idioma) e aprovadas a pedido da pesquisadora, que reportou o botão de troca de idioma indisponível para esta situação. Nenhum texto foi reescrito, só o campo validada alterado (mesmo tamanho de string, sem impacto em bytes fora do delta esperado de 'false'->'true'). hash/bytes/linhas_validadas recalculados; linhas_de_dados e categorias inalterados."
+    },
+    {
+      "em": "2026-09-22",
+      "motivo": "validada=true nas linhas 180 (IN_COMPARACAO_MEDIDAS_carrinhos_680661635) e 181 (FR_COMPARACAO_MEDIDAS_carrinhos_2108625552), grupo SP_LEGADO_0051 ('Marcus e Jardel colecionam carrinhos em miniatura...'). Mesmo padrão do grupo SP_LEGADO_0064: traduções auto_i18n já existiam prontas e fiéis ao original, só não validadas — reportado pela pesquisadora via captura de tela mostrando o seletor de idioma da situação exibindo só 'Português (Brasil)'. Revisada fidelidade ao pt-BR e aos campos estruturais referido=23/referendo=11/valor_relativo=-12/sinal=negativo/termo_desconhecido=valor_relativo e personagens Marcus/Jardel/Carrinhos, que não mudam com o idioma. Nenhum texto foi reescrito, só o campo validada alterado. hash/bytes/linhas_validadas recalculados; linhas_de_dados e categorias inalterados."
     }
   ]
 }
