@@ -54,6 +54,7 @@ export default function App() {
   const [chatAberto, setChatAberto] = useState(false);
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
   const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
+  const [atividadeIniciada, setAtividadeIniciada] = useState(false);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
@@ -85,6 +86,7 @@ export default function App() {
     setOcupado(true);
     try {
       receberSnapshot(await api.executar(controle));
+      setAtividadeIniciada(true);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -350,12 +352,12 @@ export default function App() {
       aoSortearMedidas={() => sortear("SORTEAR_MEDIDAS")}
       aoSortearRelacoes={() => sortear("SORTEAR_RELACOES")}
       categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
-      categoriaSelecionada={estado ? estado.categoria_selecionada : null}
+      categoriaSelecionada={atividadeIniciada && estado ? estado.categoria_selecionada : null}
       aoEscolherCategoria={escolherCategoria}
-      contextoRelatoBug={estado ? { situacaoId: estado.situacao_id,
+      contextoRelatoBug={atividadeIniciada && estado ? { situacaoId: estado.situacao_id,
         categoria: estado.categoria, enunciado: estado.enunciado } : null} />
     <ChatbotGerard aberto={chatAberto} aoFechar={() => setChatAberto(false)} />
-    {estado && <div className="activity-area">
+    {atividadeIniciada && estado && <div className="activity-area">
       <section className="statement-panel" aria-labelledby="enunciado">
         {estado.dica_proximo_passo
           ? <div className="help-mark-wrap" onMouseEnter={() => setDicaVisivel(true)}
