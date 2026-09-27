@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { IconeChat } from "./ChatbotGerard";
-import { IconeAjudaContextual } from "./MenuAjudaContextual";
 import { api } from "./api";
 import type { PerfilUsuarioWeb } from "./contratos";
 
@@ -11,6 +10,13 @@ const VALORES_MIDIA: Record<string, string> = { "Som": "SOM", "Gráfico": "GRAFI
 const ROTULOS_SEXO: Record<string, string> = { MASCULINO: "Masculino", FEMININO: "Feminino", OUTRO: "Outro" };
 
 type IconeProps = { tipo: "composicao" | "transformacao" | "comparacao" | "relacoes" | "transformacaoRelacao" | "composicaoTransformacoes" };
+
+function IconeInterrogacaoDelicada() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M8.8 9a3.2 3.2 0 1 1 4.7 2.8c-1 .5-1.5 1.1-1.5 2.2" />
+    <path d="M12 17h.01" />
+  </svg>;
+}
 
 function IconeCategoria({ tipo }: IconeProps) {
   if (tipo === "composicao") return <svg viewBox="0 0 72 64" aria-hidden="true"><rect x="7" y="8" width="18" height="18"/><rect x="7" y="38" width="18" height="18"/><path d="M30 12c14 7 14 33 0 40"/><rect x="47" y="23" width="18" height="18"/></svg>;
@@ -225,7 +231,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <button type="button" className="help-mark draw-help-button"
           aria-label="Ajuda sobre como sortear uma situação-problema"
           aria-describedby="draw-help-tip"
-          title="clique no dado para sortear a situação problema."><IconeAjudaContextual /></button>
+          title="clique no dado para sortear a situação problema."><IconeInterrogacaoDelicada /></button>
         <p id="draw-help-tip" className="help-tip draw-help-tip" role="tooltip">
           clique no dado para sortear a situação problema.
         </p>
