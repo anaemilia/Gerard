@@ -220,7 +220,15 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <BotaoCategoria rotulo="Comparação de medidas" tipo="comparacao" habilitado={categoriasHabilitadas.includes("COMPARACAO_MEDIDAS") && !ocupado} selecionado={categoriaSelecionada === "COMPARACAO_MEDIDAS"} aoEscolher={() => aoEscolherCategoria("COMPARACAO_MEDIDAS")} />
       </div></div>
       <BotaoSortear grupo="Medidas" habilitado={podeSortearMedidas} ocupado={ocupado} aoSortear={aoSortearMedidas} />
-      <span className="category-divider" aria-hidden="true" />
+      <span className="draw-help-wrap">
+        <button type="button" className="help-mark draw-help-button"
+          aria-label="Ajuda sobre como sortear uma situação-problema"
+          aria-describedby="draw-help-tip"
+          title="clique no dado para sortear a situação problema.">?</button>
+        <p id="draw-help-tip" className="help-tip draw-help-tip" role="tooltip">
+          clique no dado para sortear a situação problema.
+        </p>
+      </span>
       <BotaoSortear grupo="Relações" habilitado={podeSortearRelacoes} ocupado={ocupado} aoSortear={aoSortearRelacoes} />
       <div className="category-group"><strong>Relações</strong><div className="category-buttons">
         <BotaoCategoria rotulo="Composição de transformações" tipo="composicaoTransformacoes" habilitado={categoriasHabilitadas.includes("COMPOSICAO_TRANSFORMACOES") && !ocupado} selecionado={categoriaSelecionada === "COMPOSICAO_TRANSFORMACOES"} aoEscolher={() => aoEscolherCategoria("COMPOSICAO_TRANSFORMACOES")} />
