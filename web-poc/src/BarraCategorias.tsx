@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { IconeChat } from "./ChatbotGerard";
+import { IconeAjudaContextual } from "./MenuAjudaContextual";
 import { api } from "./api";
 import type { PerfilUsuarioWeb } from "./contratos";
 
@@ -224,7 +225,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
         <button type="button" className="help-mark draw-help-button"
           aria-label="Ajuda sobre como sortear uma situação-problema"
           aria-describedby="draw-help-tip"
-          title="clique no dado para sortear a situação problema.">?</button>
+          title="clique no dado para sortear a situação problema."><IconeAjudaContextual /></button>
         <p id="draw-help-tip" className="help-tip draw-help-tip" role="tooltip">
           clique no dado para sortear a situação problema.
         </p>
