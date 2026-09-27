@@ -9,6 +9,13 @@ import { EditorNarrativa } from "./EditorNarrativa";
 const DISTANCIA_REALCE_ALVO_PX = 48;
 const FATOR_ATRACAO = 0.35;
 
+type IndicacaoAtracao = {
+  origemX: number;
+  origemY: number;
+  destinoX: number;
+  destinoY: number;
+};
+
 /**
  * Enunciado com os elementos vinculados a um papel semântico marcados e
  * arrastáveis — mesmo recurso do desktop (Main.java: elementosTexto +
@@ -31,9 +38,10 @@ const FATOR_ATRACAO = 0.35;
  * Main.java): enquanto o centro da cópia flutuante está a até 48px da caixa
  * cuja chave_papel_semantico bate com o papel arrastado, a cópia é puxada
  * 35% da distância restante a cada movimento (não salta direto) e a caixa
- * ganha o realce SNAP (ver .scene-figure-destacada). Ao soltar dentro dessa
- * distância, a soltura conta para essa caixa mesmo que o ponto exato do
- * cursor não esteja sobre ela (deveCentralizarAoSoltar do desktop).
+ * ganha o realce SNAP (ver .scene-figure-destacada) e uma seta direcional
+ * transitória liga os centros reais do item e do alvo. Ao soltar dentro dessa
+ * distância, a soltura conta para essa caixa mesmo que o ponto exato do cursor
+ * não esteja sobre ela (deveCentralizarAoSoltar do desktop).
  */
 export function EnunciadoInterativo({ elementos, figuras, organizadores = [], modeloPalavraComum = null,
   permiteEditarNarrativa, aoSoltar, aoAtualizarAlvo }: {
@@ -47,6 +55,7 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
 }) {
   const [arrastando, setArrastando] = useState<string | null>(null);
   const [editandoNarrativa, setEditandoNarrativa] = useState(false);
+  const [indicacaoAtracao, setIndicacaoAtracao] = useState<IndicacaoAtracao | null>(null);
   const ghostRef = useRef<HTMLDivElement>(null);
   const posicaoGhostRef = useRef({ x: 0, y: 0 });
   const alvoAtualRef = useRef<string | null>(null);
@@ -89,10 +98,17 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
           x: posicaoGhostRef.current.x + (destinoX - posicaoGhostRef.current.x) * FATOR_ATRACAO,
           y: posicaoGhostRef.current.y + (destinoY - posicaoGhostRef.current.y) * FATOR_ATRACAO
         };
+        setIndicacaoAtracao({
+          origemX: posicaoGhostRef.current.x + larguraGhost / 2,
+          origemY: posicaoGhostRef.current.y + alturaGhost / 2,
+          destinoX: retanguloAlvo.left + retanguloAlvo.width / 2,
+          destinoY: retanguloAlvo.top + retanguloAlvo.height / 2
+        });
       }
     }
     if (!proximo) {
       posicaoGhostRef.current = posicaoCursor;
+      setIndicacaoAtracao(null);
     }
     if (ghostRef.current) {
       ghostRef.current.style.transform =
@@ -122,6 +138,7 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
       window.removeEventListener("mousemove", aoMover);
       window.removeEventListener("mouseup", aoSoltarMouse);
       setArrastando(null);
+      setIndicacaoAtracao(null);
       const alvoNoMomento = alvoAtualRef.current;
       definirAlvo(null);
       aoSoltar(papelId, e.clientX, e.clientY, alvoNoMomento);
@@ -173,5 +190,14 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
     {arrastando && <div ref={ghostRef} className="enunciado-ghost-arraste" aria-hidden="true">
       {valorArrastando}
     </div>}
+    {indicacaoAtracao && <svg className="indicacao-atracao-magnetica" aria-hidden="true">
+      <defs><marker id="ponta-atracao-magnetica" viewBox="0 0 10 10" refX="9" refY="5"
+        markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+      </marker></defs>
+      <line x1={indicacaoAtracao.origemX} y1={indicacaoAtracao.origemY}
+        x2={indicacaoAtracao.destinoX} y2={indicacaoAtracao.destinoY}
+        markerEnd="url(#ponta-atracao-magnetica)" />
+    </svg>}
   </>;
 }

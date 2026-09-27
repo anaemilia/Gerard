@@ -230,6 +230,13 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .enunciado-ghost-arraste { position:fixed; top:0; left:0; z-index:50; pointer-events:none;
   padding:2px 8px; border:1px solid var(--texto); border-radius:6px; background:var(--superficie);
   font-weight:700; box-shadow:0 4px 10px rgba(54,51,45,.18); }
+/* Pista transitória do estilo de interação por atração magnética.
+   As coordenadas vêm da geometria real do fantasma e do alvo; a seta não
+   integra nem altera a representação formal do diagrama. */
+.indicacao-atracao-magnetica { position:fixed; inset:0; z-index:49; width:100vw; height:100vh;
+  pointer-events:none; overflow:visible; }
+.indicacao-atracao-magnetica line { stroke:#332e28; stroke-width:2; }
+.indicacao-atracao-magnetica marker path { fill:#332e28; }
 /* Botão contextual de 26px do Swing; símbolo T fornecido pela usuária. */
 .botao-editar-narrativa { grid-column:1; grid-row:2; justify-self:center; width:26px; height:26px; padding:0; display:grid; place-items:center; border:1px solid var(--borda); border-radius:0; background:var(--superficie); color:var(--texto-secundario); }
 .botao-editar-narrativa svg { width:16px; height:16px; fill:none; stroke:#b88430; stroke-width:1; stroke-linecap:round; stroke-linejoin:round; }
