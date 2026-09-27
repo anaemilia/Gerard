@@ -139,6 +139,10 @@ button:disabled { cursor:not-allowed; opacity:.5; }
   padding:10px 12px; min-width:170px; background:var(--superficie); border:1px solid var(--borda);
   border-radius:8px; box-shadow:0 6px 18px rgba(54,51,45,.18); }
 .valor-figura-tip label:not(.valor-figura-opcao) { font-weight:700; font-size:.85rem; }
+.valor-figura-entrada { display:flex; align-items:stretch; gap:10px; }
+.valor-figura-sinal { display:flex; flex-direction:column; justify-content:center; gap:4px; margin:0; padding:5px 8px;
+  border:1px solid var(--borda); border-radius:6px; }
+.valor-figura-sinal legend { padding:0 3px; color:var(--texto-secundario); font-size:.72rem; }
 .valor-figura-tip input[type="number"] { min-height:36px; padding:6px 8px; border:1px solid var(--borda);
   border-radius:6px; font:inherit; }
 .valor-figura-tip p { margin:0; font-size:.85rem; line-height:1.4; }

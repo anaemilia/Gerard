@@ -422,6 +422,7 @@ export default function App() {
           {figuraEmEdicao && <EdicaoValorFigura figuraId={figuraEmEdicao.id}
             papelNome={figuraEmEdicao.rotulo} pergunta={estado.confirmacao_valor_papel}
             modo={representacoes.confirmando ? "confirmando" : "digitando"}
+            requerSinal={figuraEmEdicao.requer_representacao_de_sinal}
             valor={representacoes.valoresEmEdicao[figuraEmEdicao.id] ?? ""} ocupado={ocupado}
             aoAlterarValor={(valor) => enviarEventoRepresentacional({
               tipo: "VALOR_EM_EDICAO_ALTERADO", elementoId: figuraEmEdicao.id, valor })}

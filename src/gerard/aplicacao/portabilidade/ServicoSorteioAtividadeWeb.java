@@ -26,6 +26,7 @@ import gerard.idioma.IdiomaSituacao;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
 import gerard.interpretacao.modelo.ResultadoInterpretacao;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
+import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
 import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
@@ -926,6 +927,9 @@ public final class ServicoSorteioAtividadeWeb {
             item.put("posicao_rotulo", figura.getPosicaoRotulo().name());
             item.put("exibir_lupa", Boolean.valueOf(figura.isExibirLupa()));
             item.put("chave_papel_semantico", figura.getChavePapelSemantico());
+            item.put("requer_representacao_de_sinal", Boolean.valueOf(
+                    CatalogoNecessidadeRepresentacaoDeSinal.necessitaRepresentacaoDeSinal(
+                            figura.getChavePapelSemantico())));
             SemanticaCuradaSituacao.PapelCurado papel =
                     SemanticaCuradaSituacao.buscar(contexto.getSituacao(), null,
                             figura.getChavePapelSemantico());

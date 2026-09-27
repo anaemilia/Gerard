@@ -11,19 +11,21 @@ import { useEffect, useState } from "react";
  * propagar uma resposta que o próprio usuário disse não ter certeza.
  */
 export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, ocupado,
-  aoAlterarValor, aoConfirmarDigitacao, aoConfirmarValor, aoNegarValor }: {
+  requerSinal, aoAlterarValor, aoConfirmarDigitacao, aoConfirmarValor, aoNegarValor }: {
   figuraId: string;
   papelNome: string;
   pergunta: string | null | undefined;
   modo: "digitando" | "confirmando";
   valor: string;
   ocupado: boolean;
+  requerSinal: boolean;
   aoAlterarValor: (valor: string) => void;
   aoConfirmarDigitacao: () => void;
   aoConfirmarValor: () => void;
   aoNegarValor: () => void;
 }) {
   const [retangulo, setRetangulo] = useState<DOMRect | null>(null);
+  const [sinal, setSinal] = useState<"+" | "-">(valor.startsWith("-") ? "-" : "+");
 
   useEffect(() => {
     const elemento = document.querySelector(`[data-figura-id="${figuraId}"]`);
@@ -36,10 +38,31 @@ export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, 
   if (modo === "digitando") {
     return <div className="valor-figura-tip" style={estilo} role="dialog" aria-label={papelNome}>
       <label htmlFor={`valor-${figuraId}`}>{papelNome}</label>
-      <input id={`valor-${figuraId}`} type="number" step="1" inputMode="numeric" autoFocus
-        value={valor} disabled={ocupado}
-        onChange={(evento) => aoAlterarValor(evento.target.value)}
-        onKeyDown={(evento) => { if (evento.key === "Enter") aoConfirmarDigitacao(); }} />
+      <div className="valor-figura-entrada">
+        {requerSinal && <fieldset className="valor-figura-sinal">
+          <legend>Sinal</legend>
+          <label className="valor-figura-opcao">
+            <input type="radio" name={`sinal-edicao-${figuraId}`} value="+" checked={sinal === "+"}
+              disabled={ocupado} onChange={() => {
+                setSinal("+");
+                if (valor !== "") aoAlterarValor(String(Math.abs(Number(valor))));
+              }} /> positivo&nbsp;(+)
+          </label>
+          <label className="valor-figura-opcao">
+            <input type="radio" name={`sinal-edicao-${figuraId}`} value="-" checked={sinal === "-"}
+              disabled={ocupado} onChange={() => {
+                setSinal("-");
+                if (valor !== "") aoAlterarValor(`-${Math.abs(Number(valor))}`);
+              }} /> negativo&nbsp;(-)
+          </label>
+        </fieldset>}
+        <input id={`valor-${figuraId}`} type="number" min={requerSinal ? 0 : undefined}
+          step="1" inputMode="numeric" autoFocus value={requerSinal ? valor.replace(/^-/, "") : valor}
+          disabled={ocupado} onChange={(evento) => {
+            const magnitude = evento.target.value;
+            aoAlterarValor(requerSinal && sinal === "-" && magnitude !== "" ? `-${magnitude}` : magnitude);
+          }} onKeyDown={(evento) => { if (evento.key === "Enter") aoConfirmarDigitacao(); }} />
+      </div>
     </div>;
   }
 
