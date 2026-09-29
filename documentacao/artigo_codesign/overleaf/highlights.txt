@@ -1,0 +1,7 @@
+Highlights
+
+- Skills are decomposed according to knowledge locality and authority.
+- A typed dependency graph composes normative and operational knowledge.
+- Psychological theory informs boundaries without prescribing software design.
+- Semantic propagation illustrates a narrowly scoped protocol skill.
+- Human authority resolves conflicts that agents must not decide silently.
