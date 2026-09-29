@@ -1,0 +1,2 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/usr/local/lib/node_modules_global/lib/node_modules/@anthropic-ai/sandbox-runtime/vendor/java-proxy-agent/srt-proxy-agent.jar
+RESUMO: 36 verificacoes, 0 falhas -> /sessions/rcw-01klzaarty5lqwytadknddee/ev/robot_fase_7_8_20260929_002834

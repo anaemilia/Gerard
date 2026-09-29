@@ -1,0 +1,7 @@
+situacao=PO_COMPARACAO_MEDIDAS_dinheiro_1527166754
+[OK] barra de Comparação com ponto de controle visível (java.awt.Rectangle[x=1082,y=623,width=24,height=24])
+[OK] bloqueio grava exatamente um registro granular (11->12)
+[OK] bloqueio mostra o aviso na tela
+[OK] bloqueio não inicia o gesto
+[OK] bloqueio não altera a proporção do controle
+posicionando papel.diferenca

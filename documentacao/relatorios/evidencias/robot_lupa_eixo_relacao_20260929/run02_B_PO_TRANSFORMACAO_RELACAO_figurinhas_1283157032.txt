@@ -1,0 +1,10 @@
+situacao=PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032
+[OK] painéis de eixo de Relações ativos (3)
+[OK] existe papel com lupa ainda fechada
+lupa de papel.relacaoInicial em java.awt.Rectangle[x=103,y=515,width=22,height=22]
+[OK] clique na lupa revela o painel do papel
+[OK] só esse painel foi revelado (0->1)
+[OK] grava exatamente um log LUPA_EIXO_RELACAO (2->3)
+[OK] segundo clique no mesmo ponto não grava outro log da lupa
+[OK] segundo clique não revela outro painel
+RESUMO falhas=0

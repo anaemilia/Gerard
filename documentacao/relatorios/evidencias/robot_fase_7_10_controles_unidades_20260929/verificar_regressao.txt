@@ -1,0 +1,328 @@
+== Compilação ==
+[ERRO] ant clean jar (Ant não encontrado no PATH, ANT_HOME ou IDE)
+[OK] JAR gerado
+== Localidade arquitetural sem deslocamento de concentração ==
+APROVADO: bloqueios mínimos de localidade arquitetural.
+
+[OK] checker distingue mini-Main de caso de uso por portas
+[PENDENTE] src/gerard/aplicacao/portabilidade/AjudaContextualWeb.java: aplicação importa UI, persistência ou scaffolding concreto
+[PENDENTE] src/gerard/aplicacao/portabilidade/AvaliadorOrigemDestinoWeb.java: aplicação importa UI, persistência ou scaffolding concreto
+[PENDENTE] src/gerard/aplicacao/portabilidade/ServicoSorteioAtividadeWeb.java: aplicação importa UI, persistência ou scaffolding concreto
+APROVADO: bloqueios mínimos de localidade arquitetural.
+
+[OK] checker bloqueia novas violações e controla a dívida conhecida
+== Internacionalização ==
+[OK] mapa português localizado
+[OK] mesmas chaves explícitas em pt/en/fr
+[OK] mapa espanhol herda todas as chaves e está registrado
+[OK] chave localizada em pt/en/fr: ui.tooltip.restore.elements
+[OK] chave localizada em pt/en/fr: ui.tooltip.correctCuration
+[OK] chave localizada em pt/en/fr: ui.integerAxis.hide
+== Estrutura atual ==
+== P4.1: fluxo TEXTO distribuído da incógnita ==
+[OK] fluxo TEXTO distribuído localizado na Main
+[OK] proprietário semântico avalia a ação TEXTO
+[OK] serviço de aplicação delega a avaliação factual à incógnita sem depender de Swing/AWT
+[OK] uma ação TEXTO produz um único registro factual no log
+[OK] o mesmo registro chega uma única vez ao Modelador
+[OK] a interface materializa a decisão local de ajuda
+[OK] o fluxo TEXTO encaminha o registro factual sem adaptador de veredito
+[OK] fotografia do Modelo do Usuário é carregada no login e projetada à incógnita
+[OK] troca de perfil encerra a fotografia anterior antes do novo login
+[OK] incógnita concentra avaliação, diagnóstico e seleção no repertório local
+[OK] proprietário semântico permanece independente de Swing e AWT
+== P5.1: classificação local de categoria ==
+[OK] fluxo de seleção/confirmação de categoria localizado na Main
+[OK] tentativa semântica avalia escolha e confirmação de categoria
+[OK] cada um dos dois atos de categoria entrega um único registro ao log
+[OK] os mesmos registros de categoria chegam uma vez ao Modelador
+[OK] o fluxo de categoria encaminha o registro factual sem adaptador de veredito
+[OK] tentativa usa a categoria curada da situação e possui a sequência de rejeições
+[OK] proprietário da classificação independe de Swing e AWT
+== P5.2: escolha de sinal no proprietário semântico ==
+[OK] avaliação e os dois callbacks de sinal foram localizados
+[OK] a Main encaminha a opção ao proprietário do papel
+[OK] o mesmo registro de sinal chega uma vez ao log e ao Modelador
+[OK] os dois caminhos de seleção usam o mesmo ponto de encaminhamento
+[OK] adaptador de veredito e comparação semântica na Main não participam do fluxo
+[OK] segurança, feedback, confirmação e sincronização foram preservados
+[OK] papel e número avaliam o sinal sem introduzir limite de três erros
+[OK] NumeroInteiro possui a regra binária de representação do sinal
+[OK] curadoria cria proprietários somente para papéis inteiros com critério
+[OK] registro factual tipa o diagnóstico e o protocolo de seleção
+[OK] proprietário e número permanecem independentes da UI
+== Main compositora e roteadora: ratchet dos protocolos de interação ==
+[OK] protocolo localizado para o ratchet: public void mousePressed(MouseEvent e)
+[INFO] public void mousePressed(MouseEvent e): 245 linha(s); limite atual: 245
+[OK] public void mousePressed(MouseEvent e) não volta a concentrar mecânica particular (245/245 linhas)
+[OK] limite de public void mousePressed(MouseEvent e) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 245 para 245
+[OK] protocolo localizado para o ratchet: public void mouseDragged(MouseEvent e)
+[INFO] public void mouseDragged(MouseEvent e): 28 linha(s); limite atual: 28
+[OK] public void mouseDragged(MouseEvent e) não volta a concentrar mecânica particular (28/28 linhas)
+[OK] limite de public void mouseDragged(MouseEvent e) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 28 para 28
+[OK] protocolo localizado para o ratchet: private void processarMovimentoArraste(int x, int y)
+[INFO] private void processarMovimentoArraste(int x, int y): 60 linha(s); limite atual: 60
+[OK] private void processarMovimentoArraste(int x, int y) não volta a concentrar mecânica particular (60/60 linhas)
+[OK] limite de private void processarMovimentoArraste(int x, int y) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 60 para 60
+[OK] protocolo localizado para o ratchet: public void mouseReleased(MouseEvent e)
+[INFO] public void mouseReleased(MouseEvent e): 108 linha(s); limite atual: 108
+[OK] public void mouseReleased(MouseEvent e) não volta a concentrar mecânica particular (108/108 linhas)
+[OK] limite de public void mouseReleased(MouseEvent e) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 108 para 108
+[OK] protocolo localizado para o ratchet: public void mouseClicked(MouseEvent e)
+[INFO] public void mouseClicked(MouseEvent e): 38 linha(s); limite atual: 38
+[OK] public void mouseClicked(MouseEvent e) não volta a concentrar mecânica particular (38/38 linhas)
+[OK] limite de public void mouseClicked(MouseEvent e) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 38 para 38
+[OK] protocolo localizado para o ratchet: public void mouseMoved(MouseEvent e)
+[INFO] public void mouseMoved(MouseEvent e): 205 linha(s); limite atual: 205
+[OK] public void mouseMoved(MouseEvent e) não volta a concentrar mecânica particular (205/205 linhas)
+[OK] limite de public void mouseMoved(MouseEvent e) acompanha toda redução já obtida; se o método foi extraído, reduza o limite de 205 para 205
+[OK] Main preserva ControladorContextoSituacao
+[OK] Main preserva sincronizarDiagramaVennComRepresentacoes
+[OK] Main preserva ScaffoldingProximidade
+[OK] curadoria/vínculo preserva situacao_grupo_id
+[OK] curadoria/vínculo preserva tipo_versao
+[OK] curadoria/vínculo preserva versao_origem_id
+[OK] curadoria/vínculo preserva ValidadorVinculosTraducoes.validarOuFalhar
+[OK] log contém situacao_versao_id
+[OK] log contém situacao_grupo_id
+[OK] log contém idioma_situacao
+[OK] visão do pesquisador expõe getSituacaoGrupoId()
+[OK] visão do pesquisador expõe situacaoGrupoId
+[OK] id de grupo protegido contra edição livre
+[OK] origem escolhida apenas entre versões originais
+[OK] botão pequeno de tradução preservado
+[OK] criação de tradução recupera a curadoria original
+[OK] duplicidade de idioma no grupo é evitada
+== Qualidade da interface ==
+[OK] rótulo de categoria claro em pt
+[OK] rótulo de categoria claro em en
+[OK] rótulo de categoria claro em fr
+[OK] rótulo de categoria claro em es
+[OK] tooltip objetivo da categoria em pt
+[OK] tooltip objetivo da categoria em en
+[OK] tooltip objetivo da categoria em fr
+[OK] tooltip objetivo da categoria em es
+[OK] categoria documentada e renderizada acima do enunciado
+[OK] fonte principal do enunciado preservada
+[OK] fonte secundária compacta preservada
+[OK] contraste do texto principal sobre o fundo
+[OK] contraste do texto secundário sobre o fundo
+[OK] fluxo de nova atividade preservado
+[OK] fluxo de preservação do estado preservado
+[OK] seleção de categoria inicia nova atividade
+[OK] ausência de tradução não limpa a modelagem
+[OK] troca textual atualiza rótulos sem reposicionar a modelagem
+[OK] inicialização e restauração explícitas do diagrama preservadas
+[OK] regra de diagrama inicialmente vazio documentada no código
+== Padrões de projeto ==
+[OK] política de estado distingue reinício e preservação
+[OK] controlador de estado integrado ao fluxo principal
+[OK] fachada de carregamento integrada
+[OK] contexto imutável de carregamento preservado
+[OK] Strategy centraliza estilos de interação
+[OK] scaffolding delega comportamento à estratégia
+[OK] Factory de representações preservada
+[OK] representações com unidades expõem contrato-base
+[OK] contratos de adição e remoção herdam do contrato-base
+[OK] herança centraliza o estado comum das representações com unidades
+[OK] implementação concreta aplica herança e múltiplos contratos
+[OK] tela usa polimorfismo em vez de depender da implementação concreta
+[OK] ordem visual e ordem semântica são separadas por contrato
+[OK] herança centraliza a validação dos mapeamentos
+[OK] comparação mapeia referido, referendo e valor relativo corretamente
+[OK] seleção do mapeamento ocorre polimorficamente por fábrica
+== Política semântica de valores ==
+[OK] catálogo centraliza índices e papéis semânticos
+[OK] natureza diferencia quantidades de valores assinados
+[OK] política única impede quantidade negativa sem bloquear relações
+[OK] questionamento não reimplementa nem envolve o mapeamento índice/papel — quem precisa consulta CatalogoPapeisSemanticosAditivos diretamente; questionamento só usa o catálogo para comparar descritores de compatibilidade entre papéis (2026-09-02: removidos os dois métodos wrapper que só delegavam, sem uso próprio)
+[OK] estado compartilhado delega validade à política semântica via conversor
+[OK] duração do tip é controlada fora da tela principal
+== Affordance de pickup ==
+[OK] pickup é exposto por contrato
+[OK] herança centraliza escala, elevação e sombra do pickup
+[OK] pickup usa escala discreta de 106%
+[OK] pickup usa mão nativa no mouseover e cursor de movimentação no arraste
+[OK] elemento segurado é retirado da passagem normal e redesenhado em primeiro plano
+[OK] cursor diferencia disponibilidade e arraste ativo
+== Arraste físico ==
+[OK] seguimento elástico é exposto por contrato
+[OK] herança centraliza mola, amortecimento e temporização
+[OK] mola com momento limita o atraso e preserva resposta discreta
+[OK] buraco de origem usa contrato e implementação herdada
+[OK] tela integra fantasma, seguimento elástico e soltura exata
+== Handler local do item textual arrastável ==
+[OK] handler encapsula estado e mecânica local do gesto do item textual
+[OK] tela encaminha início, movimento e conclusão ao handler local
+[OK] tela não duplica o estado mecânico pertencente ao handler
+== Separação factual entre gesto e ação instrumental ==
+[OK] handler portátil produz somente observações físicas do arraste
+[OK] objeto representacional participante produz o registro factual do próprio gesto
+[OK] porta separada persiste gestos sem possuir sua interpretação
+[OK] esquema TSV de gestos não contém avaliação nem correlação de ação
+[OK] ItemTextoArrastavel não alimenta mais o rastreador legado do log de ações
+[OK] ação POSICIONAR só é registrada uma vez quando o comando semântico foi constituído
+== Identidade da ação e da sequência de rejeições (P3.1) ==
+[OK] papel distingue a ação individual da sequência de rejeições
+[OK] resultado e eventos transportam as duas identidades sem fundi-las
+[OK] log de ações acrescenta identidades ao final e lê linhas antigas
+[OK] protocolo TEXTO persiste a identidade produzida pelo papel semântico
+[OK] auditoria não define gesture_id e action_id como a mesma identidade
+== Restauração como ação própria da tentativa (P3.2) ==
+[OK] agregado da tentativa constitui uma ação e coordena a restauração local dos participantes
+[OK] os dois comandos Restaurar permanecem semanticamente distintos
+[OK] a restauração encerra sequências anteriores sem se tornar parte delas
+[OK] domínio da restauração permanece independente da tecnologia de interface
+[OK] tela solicita a ação tipada e persiste a identidade produzida pelo agregado
+[OK] tela não restaura diretamente o estado local pertencente ao domínio
+== Handler local do elemento textual ==
+[OK] handler textual recebe a restrição geométrica sem conhecer o layout
+[OK] tela roteia o protocolo textual pelo handler local
+[OK] tela não duplica seleção nem limites do enunciado
+[OK] geometria do enunciado deriva de árvore enraizada com apontador para o pai
+[OK] handler permanece independente da tela e da árvore de layout
+[OK] representação produz limites portáteis para o protocolo textual
+== P4.2: protocolo portátil de arraste incremental do conector de Vergnaud ==
+[OK] handler portátil recebe alvo e restrição geométrica sem conhecer a representação concreta
+[OK] tela compõe e roteia pickup, movimento e soltura do conector pelo protocolo portátil
+[OK] tela não duplica seleção do diagrama de Vergnaud nem o limiar de arraste estrutural
+[OK] handler permanece independente de tela, hit-testing, Swing/AWT e classes visuais concretas
+[OK] adaptador da representação desktop possui a tradução Rectangle/LimitesMovimento
+[OK] tela continua responsável por decidir qual conector foi alvo do pickup — o hit-test de elemento (x, y) para pickup foi removido junto com o arraste (2026-08-18); encontrarElementoVergnaud continua existindo só para a edição de texto por duplo clique e para achar o elemento sob um item
+== Fase 7.5: handler do quadradinho do diagrama de Venn ==
+[OK] handler do quadradinho do Venn expõe pickup, movimento e soltura com resultado próprio
+[OK] handler do quadradinho permanece independente da tela e do hit-testing
+[OK] tela roteia pickup, movimento e soltura do quadradinho do Venn pelo handler local
+[OK] tela não duplica seleção, deslocamento nem índice de origem do quadradinho do Venn
+[OK] hover/foco do quadradinho (fora de um arraste) continua na tela, fora do handler
+[OK] tela continua responsável por decidir qual quadradinho foi alvo do pickup
+== Fase 7.6 (retirada em 2026-09-01): eixo único antigo removido, não unificado ==
+[OK] protocolo portátil da Fase 7.6 (Alvo/Handler/Adaptador/FonteGeometria + teste) removido por inteiro
+[OK] Main não retém nenhum campo, chamada ou import do mecanismo antigo removido
+[OK] as duas classes concretas reaproveitadas pelo mecanismo antigo (ApresentadorGraficoInteiros, ScaffoldingGraficoInteiros) continuam vivas — só a instância única de Main e o protocolo dedicado a ela foram removidos, não as classes, que os painéis de Relações continuam usando por instância
+== Fase 7.7: protocolo portátil dos painéis de eixo das Relações ==
+[OK] porta portátil separa o protocolo dos painéis da representação desktop
+[OK] handler dos painéis expõe pressionamento, movimento, conclusão e cancelamento
+[OK] protocolo dos painéis permanece independente de Swing/AWT, tela, layout e representação concreta
+[OK] adaptador desktop concentra representação, hit-testing e geometria Rectangle
+[OK] Main compõe e roteia os painéis pelo handler portátil
+[OK] Main não duplica classificação, pressionamento, arraste, conclusão nem ocultação dos painéis
+[OK] sincronização e confirmação permanecem fora do handler e preservam a ordem anterior à conclusão visual
+[OK] teste do handler cobre bloqueio contextual, ciclo portátil e adaptação desktop dos painéis
+== Fase 7.8: protocolo portátil dos seletores de operação das Relações ==
+[OK] porta e handler separam a sequência dos dois seletores da representação desktop
+[OK] protocolo dos seletores permanece independente de Swing, feedback e persistência
+[OK] adaptador desktop traduz os widgets para a porta portátil
+[OK] proprietário da escolha produz resultado factual tipado
+[OK] caso de uso coordena portas estreitas sem se tornar uma mini-Main
+[OK] escolha de operação encaminha o mesmo registro uma única vez ao Modelador
+[OK] feedback e persistência permanecem em adaptadores concretos independentes
+[OK] proprietário decide o feedback abstrato e a interface somente o materializa
+[OK] Main apenas compõe e roteia o protocolo dos seletores
+[OK] teste cobre ordem, registro no proprietário e sequenciamento das portas
+== Fase 7.10: protocolo portátil dos controles +/- do material concreto ==
+[OK] porta e handler separam a sequência dos controles de unidades, com remover prioritário
+[OK] protocolo dos controles de unidades independe de Swing, representação concreta, texto e log
+[OK] mousePressed apenas roteia os controles de unidades; hit-test fica no adaptador
+[OK] teste cobre prioridade, bloqueio, limite e repasse do fato do proprietário
+== Fase 7.9: porta de registro da atividade web ==
+[OK] porta estreita representa somente o registro factual da atividade web
+[OK] serviço web depende da porta e mantém composição sem efeito para testes
+[OK] adaptador concreto concentra somente a integração com o log factual
+[OK] raiz de composição web liga explicitamente a porta ao adaptador concreto
+[OK] teste executável protege publicação única, argumentos factuais e porta nula
+== Item 4: material concreto próprio de Relações (painéis de eixo por papel) ==
+[OK] coordenador de painéis de eixo das Relações expõe ciclo de vida (ativar/desativar) e a lista de painéis
+[OK] coordenador expõe pressionamento, arraste, desenho e detecção de ponto de controle agregados
+[OK] painel reaproveita a classe já existente (instâncias novas, não uma reimplementação)
+[OK] tela preserva ciclo de vida e desenho, roteando a interação dos painéis pelo handler
+[OK] visibilidade dos painéis de eixo depende só de existir um elemento cujo descritor semântico solicita lupa no diagrama atual (regra generalizada 2026-08-18: "todo número relativo ou transformação carrega uma lupa. Essa é a regra") — não infere pela forma geométrica nem usa uma lista fixa de categorias — não espera nenhuma tentativa rejeitada, diferente de quadradinhos/barras/processo; a redução booleana foi extraída para DecisaoExibicaoPaineisEixo (2026-09-01), compartilhada com a API web. Atualizado 2026-09-16: a assinatura evoluiu de um array booleano paralelo (flagsExibirLupa) para List<? extends ElementoComLupa>, aplicada direto sobre elementosVergnaud — ElementoVergnaud implementa ElementoComLupa — eliminando a reconstrução de flags paralelas sem perder o desacoplamento de Swing/AWT
+[OK] DecisaoExibicaoPaineisEixo é redução pura, sem depender de Swing/AWT
+[OK] ElementoVergnaud implementa ElementoComLupa, permitindo que devemExibirPaineisEixosRelacoes use a lista real sem reconstruir flags paralelas
+[OK] PaineisEixosRelacoes.ativar cria painel somente quando o descritor semântico solicita lupa — filtra fora âncoras de medida sem inferir significado de quadrado/elipse
+[OK] a decisão de disponibilidade dos painéis permanece — usada pela ativação/desativação e nenhum outro chamador residual do mecanismo antigo restou (dois usos: a definição do método e a leitura em atualizarPaineisEixosRelacoesConformeVisibilidade)
+[OK] painéis de Relações se atualizam quando o valor do papel muda por qualquer outro caminho (bug relatado 2026-08-17: "eixos não mudam com a mudança dos elementos no diagrama"), sem sobrescrever o painel que estiver sendo arrastado no momento
+[OK] bloqueio de quantidade negativa ganhou versão com âncora explícita, reaproveitada pelos painéis de Relações sem alterar os chamadores já existentes do overload sem parâmetros
+[OK] teste do coordenador cobre ciclo de vida, idempotência e isolamento entre painéis simultâneos
+[OK] teste do coordenador também cobre visibilidade individual por lupa (revelação independente por papel, bloqueio de interação antes de revelar) — correção 2026-08-17
+== Contrato de posicionamento incorreto manipulável ==
+[OK] proxy incorreto sobre o diagrama possui política explícita de permanência
+[OK] descarte do proxy fica restrito à soltura fora do diagrama
+[OK] item semanticamente incorreto é promovido a elemento manipulável do diagrama
+[OK] erro reutiliza tip persistente consolidado
+[OK] som e tremor permanecem ligados ao item sem removê-lo
+[OK] ramo de erro semântico não remove o item do diagrama
+[OK] matriz explícita de regressão funcional existe no projeto
+[OK] matriz registra contrato: som sutil
+[OK] matriz registra contrato: tremor leve
+[OK] matriz registra contrato: tip contextual
+[OK] matriz registra contrato: item incorreto permanece no diagrama
+[OK] matriz registra contrato: texto original permanece no enunciado
+== Conclusão da modelagem ==
+[OK] tip de conclusão é controlado para não repetir continuamente
+[OK] conclusão depende de todos os papéis matemáticos semanticamente corretos
+[OK] conclusão aceita somente valores numéricos naturais, assinados ou decimais
+[OK] estado de conclusão registra e valida o conteúdo numérico
+[OK] conclusão exige posicionar a incógnita e preenchê-la pelo protocolo mouse/texto
+[OK] preenchimento automático da incógnita fica bloqueado até o protocolo
+[OK] conclusão inspeciona cada elemento do diagrama por mouse ou teclado
+[OK] destaque azul abrange valores e não colore conectores do Vergnaud
+[OK] tip de conclusão usa radio buttons Sim e Não
+[OK] escolha Sim aciona o item consolidado de nova situação
+[OK] item Nova situação preserva o fluxo consolidado de sorteio
+[OK] tela verifica conclusão após soltura e a suspende durante nova manipulação
+[OK] matriz registra contrato de conclusão: destaque azul Gérard
+[OK] matriz registra contrato de conclusão: radio buttons Sim e Não
+[OK] matriz registra contrato de conclusão: Não mantém a situação atual
+[OK] matriz registra contrato de conclusão: Sim inicia uma nova situação-problema
+[OK] matriz registra contrato de conclusão: todos os elementos semânticos do diagrama
+[OK] matriz registra contrato de conclusão: interrogação, mesmo corretamente posicionada
+[OK] matriz registra contrato de conclusão: protocolo de mouse/texto
+== Aba Construir situação-problema ==
+[OK] nova aba de construção integrada ao Main
+[OK] alternância da aba preserva contextos de tentativa
+[OK] escopo inicial cobre composição, transformação e comparação de medidas
+[OK] diagramas incompletos não entram na construção
+[OK] frases contextuais são agrupadas para evitar pistas superficiais
+[OK] blocos não compatíveis são gerados e deduplicados
+[OK] metadados semânticos permanecem internos ao modelo do bloco
+[OK] renderizador não expõe visualmente blocos corretos e não compatíveis
+[OK] logger oferece fotografia restaurável do contexto
+[OK] diagrama preenchido reutiliza o renderizador oficial
+[OK] definição da categoria não fica permanentemente desenhada na construção
+[OK] definição aparece somente no onmouseover do nome da categoria
+[OK] nomenclatura portuguesa usa Construir e Construa
+[OK] catálogo de referência garante variedade mínima em três categorias
+[OK] botão Novo diagrama evita repetição imediata e alterna categoria quando possível
+[OK] chave da construção localizada em pt/en/fr: ui.tab.assembly
+[OK] chave da construção localizada em pt/en/fr: montagem.title
+[OK] chave da construção localizada em pt/en/fr: montagem.instruction
+[OK] chave da construção localizada em pt/en/fr: montagem.diagram.title
+[OK] chave da construção localizada em pt/en/fr: montagem.available
+[OK] chave da construção localizada em pt/en/fr: montagem.assembly
+[OK] chave da construção localizada em pt/en/fr: montagem.button.validate
+[OK] chave da construção localizada em pt/en/fr: montagem.feedback.correct
+== Controles de unidades no diagrama complementar ==
+[OK] controle de adição integrado ao diagrama complementar
+[OK] clique cria uma nova unidade no agrupamento
+[OK] adição continua vinculada ao estado semântico compartilhado
+[OK] sinal de adição é desenhado sem dependência de fonte
+[OK] tooltip de adição localizado em pt/en/fr
+[OK] edição de unidades depende apenas de o diagrama de Vergnaud não estar vazio
+[OK] clique antecipado no + é bloqueado sem criar unidade
+[OK] adição e remoção respeitam zero, limites curados e consistência aditiva
+[OK] controles + e - comunicam visualmente estados bloqueados
+[OK] orientação para iniciar a modelagem localizada em pt/en/fr
+[OK] limite inferior zero localizado em pt/en/fr
+== Vínculos e metadados ==
+OK: 210 versões, 72 grupos conceituais, vínculos e metadados coerentes.
+
+[OK] teste de vínculos entre traduções
+APROVADO: fonte canônica íntegra, 210 situações, 41 colunas e 6 categorias.
+SHA256=751CD865928E196888C2BFA118385A10D8AC0E0F40EE1ED9BDF1BA3FBC5404EA
+
+[OK] integridade da fonte canônica das situações curadas
+== Compatibilidade do log ==
+[OK] leitura compatível com logs antigos e novos
+[OK] normalização C/E respeita o esquema novo e o legado
+REPROVADO: 1 falha(s).
