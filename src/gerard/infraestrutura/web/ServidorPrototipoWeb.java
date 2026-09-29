@@ -15,6 +15,7 @@ import gerard.pesquisador.auditoria.EscritorJsonSimples;
 import gerard.pesquisador.log.AgendadorEnvioLogPesquisa;
 import gerard.pesquisador.log.EventoLogGerard;
 import gerard.pesquisador.log.RepositorioEventosLogPesquisa;
+import gerard.pesquisador.log.RegistradorAtividadeWebLogGerard;
 import gerard.suporte.PreparadorEmailRelatoBug;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /** Servidor local da prova funcional; HTTP e arquivos ficam na infraestrutura. */
 public final class ServidorPrototipoWeb {
     private final ServicoSorteioAtividadeWeb sorteios =
-            new ServicoSorteioAtividadeWeb();
+            new ServicoSorteioAtividadeWeb(new RegistradorAtividadeWebLogGerard());
     private final Path raizWeb;
     private final AtomicLong gestosRecebidos = new AtomicLong();
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
@@ -102,6 +103,7 @@ public final class ServidorPrototipoWeb {
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
         servidor.createContext("/api/situacao", aplicacao::situacao);
         servidor.createContext("/api/acoes/posicionar", aplicacao::posicionar);
+        servidor.createContext("/api/acoes/responder-confirmacao-valor", aplicacao::responderConfirmacaoValor);
         servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
         servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
         servidor.createContext("/api/acoes/posicionar-conhecido", aplicacao::posicionarConhecido);
@@ -109,7 +111,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/acoes/escolher-sinal", aplicacao::escolherSinal);
         servidor.createContext("/api/acoes/revelar-eixo", aplicacao::revelarEixo);
         servidor.createContext("/api/acoes/ocultar-eixo", aplicacao::ocultarEixo);
-        servidor.createContext("/api/acoes/ajustar-valor-eixo", aplicacao::ajustarValorEixo);
+        servidor.createContext("/api/acoes/projetar-eixo", aplicacao::projetarEixo);
         servidor.createContext("/api/acoes/ajuda-contextual", aplicacao::ajudaContextual);
         servidor.createContext("/api/gestos", aplicacao::registrarGesto);
         servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
@@ -461,6 +463,24 @@ public final class ServidorPrototipoWeb {
     }
 
     @SuppressWarnings("unchecked")
+    private void responderConfirmacaoValor(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            String papelId = String.valueOf(analisado.get("papel_id"));
+            boolean confirmou = Boolean.TRUE.equals(analisado.get("confirmou"));
+            int valor = ((Number) analisado.get("valor")).intValue();
+            responder(troca, 200, sorteios.responderConfirmacaoValor(papelId, confirmou, valor));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private void posicionar(HttpExchange troca) throws IOException {
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
@@ -586,7 +606,7 @@ public final class ServidorPrototipoWeb {
     }
 
     @SuppressWarnings("unchecked")
-    private void ajustarValorEixo(HttpExchange troca) throws IOException {
+    private void projetarEixo(HttpExchange troca) throws IOException {
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
             return;
@@ -596,7 +616,7 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             int valor = ((Number) analisado.get("valor")).intValue();
-            responder(troca, 200, sorteios.ajustarValorPeloEixo(papelId, valor));
+            responder(troca, 200, sorteios.projetarAlteracaoEixo(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

@@ -35,5 +35,9 @@ public enum TipoErroPapel {
      * Distinto dos outros três tipos, que sempre avaliam o valor proposto
      * contra o domínio/relação correta.
      */
-    BLOQUEADO_AGUARDANDO_RESTAURACAO
+    BLOQUEADO_AGUARDANDO_RESTAURACAO,
+    /** Resposta "Sim" à confirmação de um valor já rejeitado (2026-09-28). */
+    CONFIRMOU_VALOR_REJEITADO,
+    /** Resposta "Não" à confirmação de um valor já rejeitado (2026-09-28). */
+    RETIROU_VALOR_REJEITADO
 }

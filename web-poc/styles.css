@@ -140,14 +140,16 @@ button:disabled { cursor:not-allowed; opacity:.5; }
   border-radius:8px; box-shadow:0 6px 18px rgba(54,51,45,.18); }
 .valor-figura-tip label:not(.valor-figura-opcao) { font-weight:700; font-size:.85rem; }
 .valor-figura-entrada { display:flex; align-items:stretch; gap:10px; }
-.valor-figura-sinal { display:flex; flex-direction:column; justify-content:center; gap:4px; margin:0; padding:5px 8px;
+.valor-figura-sinal { display:flex; flex-direction:column; justify-content:center; gap:1px; margin:0; padding:3px 6px;
   border:1px solid var(--borda); border-radius:6px; }
 .valor-figura-sinal legend { padding:0 3px; color:var(--texto-secundario); font-size:.72rem; }
 .valor-figura-tip input[type="number"] { min-height:36px; padding:6px 8px; border:1px solid var(--borda);
   border-radius:6px; font:inherit; }
 .valor-figura-tip p { margin:0; font-size:.85rem; line-height:1.4; }
+.valor-figura-confirmacao { width:min(230px,calc(100vw - 24px)); min-width:0; gap:4px; padding:8px 10px; }
+.valor-figura-sinal-tip { width:max-content; min-width:0; gap:3px; padding:6px 8px; }
 .valor-figura-opcao { display:flex; align-items:center; gap:6px; font-weight:400; font-size:.85rem; }
-.valor-figura-opcao input[type="radio"] { width:15px; height:15px; margin:0; flex-shrink:0; accent-color:var(--texto-secundario); }
+.valor-figura-opcao input[type="radio"] { width:15px; height:15px; min-height:0; margin:0; flex-shrink:0; accent-color:var(--texto-secundario); }
 /* max-width:100%;height:auto (nunca width/height:100%) — o SVG já vem com
    width/height intrínsecos iguais ao viewport real da cena (ver
    GeradorCenaGerard.tsx); isso só permite encolher em telas estreitas,

@@ -1,5 +1,7 @@
 package gerard.dominio.campoaditivo.situacao;
 
+import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.campoaditivo.OperacaoAditiva;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,5 +47,13 @@ public final class CriterioOperacaoModelagem {
 
     public boolean correspondeA(OperacaoAditiva tentativa) {
         return tentativa != null && tentativa == operacaoEsperada;
+    }
+
+    public ResultadoEscolhaOperacaoModelagem avaliar(
+            OperacaoAditiva tentativa,
+            TipoSituacaoAditiva categoria,
+            ContextoAcaoInstrumental contexto) {
+        return new ResultadoEscolhaOperacaoModelagem(
+                this, categoria, tentativa, contexto);
     }
 }

@@ -123,10 +123,13 @@ public final class IncognitaQuantitativa
         DiagnosticoErroPapel diagnostico = null;
         String regra;
 
-        Boolean corresponde = correspondeAoEsperado(valorProposto, valorEsperado);
+        Boolean corresponde = fluxoTentativas.estaEncerradoPorConclusao()
+                ? null : correspondeAoEsperado(valorProposto, valorEsperado);
         if (corresponde == null) {
             resultado = ResultadoAvaliacaoAcaoInstrumental.NAO_APLICAVEL;
-            regra = "regra.incognita.semCriterioDisponivel";
+            regra = fluxoTentativas.estaEncerradoPorConclusao()
+                    ? "regra.incognita.exploracaoAposConclusao"
+                    : "regra.incognita.semCriterioDisponivel";
         } else if (!fluxoTentativas.aceita(valorProposto)) {
             resultado = ResultadoAvaliacaoAcaoInstrumental.ERRADA;
             diagnostico = diagnosticoValorForaDoDominio();
@@ -163,6 +166,48 @@ public final class IncognitaQuantitativa
                 valorProposto,
                 valorEsperado,
                 regra,
+                contextoInstrumental,
+                resultadoTentativa);
+    }
+
+    /**
+     * Resposta Sim/Não à pergunta ui.question.valueMismatch sobre um valor
+     * já rejeitado (decisão da usuária, 2026-09-28): uma tentativa própria,
+     * com action_id novo, na mesma sequência de rejeições, contando para o
+     * limite. É ERRADA no código C/E porque só assim permanece na sequência
+     * que a usuária definiu como a ação original (encerrada no acerto); o
+     * diagnóstico distingue a confirmação da retirada. A interface só
+     * entrega a resposta observada.
+     */
+    public RegistroAcaoInstrumental avaliarRespostaConfirmacao(
+            IdentidadeAcaoInstrumentalPapel identidade,
+            boolean confirmou,
+            ValorNumerico valorProposto,
+            ValorNumerico valorEsperado,
+            ContextoAcaoInstrumental contextoInstrumental) {
+        ResultadoRegistroTentativaPapel resultadoTentativa =
+                fluxoTentativas.registrarRespostaConfirmacaoValorRejeitado(
+                        identidade, confirmou, ContextoAcao.NAO_INFORMADO, valorProposto);
+        if (!resultadoTentativa.isAcaoRegistrada()) {
+            return null;
+        }
+        DiagnosticoErroPapel diagnostico = new DiagnosticoErroPapel(
+                confirmou ? TipoErroPapel.CONFIRMOU_VALOR_REJEITADO
+                        : TipoErroPapel.RETIROU_VALOR_REJEITADO,
+                confirmou ? "erro.papel.confirmouValorRejeitado"
+                        : "erro.papel.retirouValorRejeitado",
+                null, null);
+        return new RegistroAcaoInstrumental(
+                identidade,
+                TarefaInteracao.SELECIONAR,
+                categoria,
+                CHAVE_PROPRIETARIO,
+                chavePapelDesignado,
+                ResultadoAvaliacaoAcaoInstrumental.ERRADA,
+                diagnostico,
+                valorProposto,
+                valorEsperado,
+                "regra.incognita.respostaConfirmacaoValorRejeitado",
                 contextoInstrumental,
                 resultadoTentativa);
     }

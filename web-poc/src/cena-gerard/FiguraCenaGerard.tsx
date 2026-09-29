@@ -1,4 +1,5 @@
 import type { FiguraCena, InteracaoPermitidaFigura } from "../contratos";
+import { EscolhaSinalFigura } from "../EscolhaSinalFigura";
 import { coordenadaYDoRotulo, coordenadaYDoSubtitulo, coordenadaYDoValor } from "./geometriaSvg";
 
 function LupaCenaGerard({ figura, aoAlternarEixo }: { figura: FiguraCena;
@@ -62,7 +63,7 @@ function GrupoQuadradinhosCenaGerard({ figura, ehAlvo, ocupado, aoAjustar, texto
 }
 
 export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, aoAjustarQuadradinho,
-    textoAdicionarQuadradinho, textoRemoverQuadradinho, aoAlternarEixo }: {
+    textoAdicionarQuadradinho, textoRemoverQuadradinho, aoAlternarEixo, seletorSinal }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
   destacada?: boolean;
@@ -71,6 +72,10 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
   textoAdicionarQuadradinho?: string;
   textoRemoverQuadradinho?: string;
   aoAlternarEixo?: (figura: FiguraCena) => void;
+  seletorSinal?: {
+    papelId: string; mensagemDivergente: string | null;
+    aoEscolher: (papelId: string, figuraId: string, sinal: "+" | "-") => void;
+  };
 }) {
   if (figura.tipo === "GRUPO_QUADRADINHOS") {
     const interacaoAjustar = figura.interacoes_permitidas.find(
@@ -92,9 +97,12 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
     if (interacao && aoEditarValor) aoEditarValor(figura, interacao);
   };
   const conhecida = figura.conhecido && figura.valor !== null;
+  const deveMostrarSeletorSinal = figura.tipo === "ELIPSE"
+    && figura.requer_representacao_de_sinal
+    && seletorSinal?.papelId === figura.chave_papel_semantico;
   // data-figura-id também é o alvo do arraste customizado do enunciado
   // (App.aoSoltarNoDiagrama usa elementFromPoint + closest('[data-figura-id]')).
-  return <g className={`scene-figure${editavel ? " scene-figure-editable" : ""}${destacada ? " scene-figure-destacada" : ""}`}
+  return <><g className={`scene-figure${editavel ? " scene-figure-editable" : ""}${destacada ? " scene-figure-destacada" : ""}`}
       data-figura-id={figura.id} data-editavel={editavel || undefined}
       role={editavel ? "button" : undefined} tabIndex={editavel ? 0 : undefined}
       aria-label={editavel ? `Digitar valor de ${figura.rotulo}` : undefined}
@@ -124,5 +132,9 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
     {(conhecida || engatada) && <text className="scene-figure-role"
       x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>}
     <LupaCenaGerard figura={figura} aoAlternarEixo={aoAlternarEixo} />
-  </g>;
+  </g>{deveMostrarSeletorSinal && seletorSinal && <EscolhaSinalFigura
+      figuraId={figura.id} papelNome={figura.rotulo} ocupado={Boolean(ocupado)}
+      mensagemDivergente={seletorSinal.mensagemDivergente}
+      aoEscolherSinal={(sinal) => seletorSinal.aoEscolher(
+        figura.chave_papel_semantico, figura.id, sinal)} />}</>;
 }

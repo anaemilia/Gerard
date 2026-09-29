@@ -2,6 +2,11 @@ package gerard.campoaditivo.curadoria.sinal;
 
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.dominio.atividade.ContextoAcaoInstrumental;
+import gerard.dominio.campoaditivo.OperacaoAditiva;
+import gerard.dominio.campoaditivo.situacao.CriterioOperacaoModelagem;
+import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
+import java.util.Arrays;
 
 /**
  * Avalia a escolha de operação (soma/subtração) que o aluno faz entre dois
@@ -12,7 +17,7 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
  *
  * Extraído de {@code gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno} em
  * 2026-09-03: a derivação da operação correta a partir da situação curada,
- * a comparação com a escolha do aluno e a seleção da chave de explicação não
+ * e a comparação com a escolha do aluno não
  * dependiam de Swing, geometria nem estado do widget — apenas não tinham,
  * até então, um proprietário fora da tela. O widget preserva a mesma API
  * pública e passa a delegar aqui; hit-testing, posicionamento e desenho
@@ -77,42 +82,48 @@ public final class AvaliacaoEscolhaOperacaoRelacao {
                 && escolhaAluno == escolhaCorreta;
     }
 
-    /** Chave i18n da explicação exibida quando o aluno erra a operação — {@code null} se não houver. */
-    public static String chaveExplicacao(TipoSituacaoAditiva tipo,
-            TipoOperacaoSeletor papel, OpcaoOperacaoCuradoria operacao) {
-        boolean soma = operacao == OpcaoOperacaoCuradoria.SOMA;
-        if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {
-            // Só existe para Composição de Transformações (ver determinarOperacaoCorreta()).
-            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"
-                    : "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
-            return soma ? "operacao.explicacao.transformacaoRelacao.soma"
-                    : "operacao.explicacao.transformacaoRelacao.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
-            return soma ? "operacao.explicacao.composicaoRelacoes.soma"
-                    : "operacao.explicacao.composicaoRelacoes.subtracao";
-        }
-        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            return soma ? "operacao.explicacao.composicaoTransformacoes.soma"
-                    : "operacao.explicacao.composicaoTransformacoes.subtracao";
-        }
-        return null;
+    public static ResultadoEscolhaOperacaoModelagem registrarEscolha(
+            TipoSituacaoAditiva categoria,
+            TipoOperacaoSeletor tipo,
+            OpcaoOperacaoCuradoria escolha,
+            OpcaoOperacaoCuradoria esperada) {
+        boolean estadoTransformacao =
+                tipo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
+        String proprietario = estadoTransformacao
+                ? "relacao.operacao.estadoTransformacao"
+                : "relacao.operacao.entrePapeis";
+        ContextoAcaoInstrumental contexto = new ContextoAcaoInstrumental(
+                estadoTransformacao
+                        ? "Escolher a operação (soma/subtração) entre estado inicial e transformação"
+                        : "Escolher a operação (soma/subtração) da situação de Relações",
+                estadoTransformacao
+                        ? "Seletor de operação à esquerda do círculo inferior do diagrama"
+                        : "Seletor de operação perto da seta do diagrama",
+                estadoTransformacao
+                        ? "Operação entre estado inicial e transformação resultante"
+                        : "Operação entre os papéis de Relações",
+                escolha.name(),
+                "OBJ4",
+                estadoTransformacao
+                        ? "OPERACAO_ESTADO_TRANSFORMACAO_ALUNO"
+                        : "OPERACAO_RELACAO_ALUNO",
+                "",
+                "Escolha de operação registrada",
+                Arrays.asList(proprietario, proprietario + ".escolha"));
+        CriterioOperacaoModelagem criterio = new CriterioOperacaoModelagem(
+                proprietario, converter(esperada),
+                Arrays.asList(proprietario, proprietario + ".escolha"));
+        return criterio.avaliar(converter(escolha), categoria, contexto);
     }
 
-    /** Substitui {@code {Personagem_1/2/3}} pelos campos curados homônimos — não associa por posição. */
-    public static String preencherPersonagensCurados(String modelo, SituacaoProblemaAditiva situacao) {
-        String personagem1 = textoOu(situacao.getPersonagem1());
-        String personagem2 = textoOu(situacao.getPersonagem2());
-        String personagem3 = textoOu(situacao.getPersonagem3());
-        return textoOu(modelo)
-                .replace("{Personagem_1}", personagem1)
-                .replace("{Personagem_2}", personagem2)
-                .replace("{Personagem_3}", personagem3);
+    private static OperacaoAditiva converter(OpcaoOperacaoCuradoria opcao) {
+        if (opcao == OpcaoOperacaoCuradoria.SOMA) {
+            return OperacaoAditiva.SOMA;
+        }
+        if (opcao == OpcaoOperacaoCuradoria.SUBTRACAO) {
+            return OperacaoAditiva.SUBTRACAO;
+        }
+        throw new IllegalArgumentException("operação curada válida é obrigatória");
     }
 
-    private static String textoOu(String valor) {
-        return valor == null ? "" : valor;
-    }
 }

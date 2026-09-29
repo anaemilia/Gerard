@@ -21,6 +21,7 @@ import gerard.campoaditivo.diagrama.servico.GeradorCenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.servico.PosicaoSeletorOperacaoDiagrama;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.campoaditivo.sincronizacao.CatalogoRelacoesEstruturaisAditivas;
 import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
 import gerard.interpretacao.modelo.PapelElementoInterpretado;
@@ -30,9 +31,7 @@ import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
 import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
-import gerard.campoaditivo.servico.ControladorContextoSituacao;
 import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
-import gerard.pesquisador.log.LoggerInteracaoGerard;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,12 +47,18 @@ public final class ServicoSorteioAtividadeWeb {
     private final FachadaCarregamentoAtividade carregamento;
     private final Random aleatorio;
     private final IdiomaInterface idioma;
+    private final PortaRegistroAtividadeWeb registroAtividade;
     private ContextoCarregamentoAtividade contextoAtual;
     private Grupo grupoAtual;
     private TentativaClassificacaoCategoriaAditiva tentativaClassificacao;
     private TipoSituacaoAditiva categoriaSelecionada;
     private String questionamento;
     private ServicoAtividadeWeb atividadeModelagem;
+    // Escopo da tentativa da situação sorteada (decisão da usuária,
+    // 2026-09-29): a TentativaModelagemAditiva constitui cada registro das
+    // ações da modelagem até a persistência; após a conclusão (azul) nada
+    // mais é constituído. Só um novo sorteio cria outra tentativa.
+    private EscopoTentativaWeb escopoTentativa;
     private ServicoAtividadeWebEscolhaOperacao atividadeEscolhaOperacao;
     // Estado revelado/fechado do eixo dos inteiros por papel (protocolo
     // REVELAR_EIXO/OCULTAR_EIXO — ver LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_
@@ -68,21 +73,29 @@ public final class ServicoSorteioAtividadeWeb {
     private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
     private final gerard.idioma.CadastroIdiomasSituacao cadastroIdiomasSituacao =
             new gerard.idioma.CadastroIdiomasSituacao();
-    private final ControladorContextoSituacao controladorContextoSituacao =
-            new ControladorContextoSituacao(LoggerInteracaoGerard.getInstancia());
-
     public ServicoSorteioAtividadeWeb() {
+        this(PortaRegistroAtividadeWeb.NENHUMA);
+    }
+
+    public ServicoSorteioAtividadeWeb(PortaRegistroAtividadeWeb registroAtividade) {
         this(new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(
                         new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(),
                         new ConstrutorResultadoCurado()),
-                new Random(), IdiomaInterface.PORTUGUES);
+                new Random(), IdiomaInterface.PORTUGUES, registroAtividade);
     }
 
     public ServicoSorteioAtividadeWeb(PoliticaSorteioSituacoesAditivas politica,
             FachadaCarregamentoAtividade carregamento, Random aleatorio,
             IdiomaInterface idioma) {
+        this(politica, carregamento, aleatorio, idioma,
+                PortaRegistroAtividadeWeb.NENHUMA);
+    }
+
+    public ServicoSorteioAtividadeWeb(PoliticaSorteioSituacoesAditivas politica,
+            FachadaCarregamentoAtividade carregamento, Random aleatorio,
+            IdiomaInterface idioma, PortaRegistroAtividadeWeb registroAtividade) {
         if (politica == null || carregamento == null || aleatorio == null || idioma == null) {
             throw new IllegalArgumentException("dependências do sorteio são obrigatórias");
         }
@@ -90,6 +103,8 @@ public final class ServicoSorteioAtividadeWeb {
         this.carregamento = carregamento;
         this.aleatorio = aleatorio;
         this.idioma = idioma;
+        this.registroAtividade = registroAtividade == null
+                ? PortaRegistroAtividadeWeb.NENHUMA : registroAtividade;
     }
 
     /**
@@ -140,6 +155,10 @@ public final class ServicoSorteioAtividadeWeb {
         }
         contextoAtual = contexto;
         grupoAtual = grupo;
+        escopoTentativa = new EscopoTentativaWeb(
+                new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
+                        "tentativa.web." + contexto.getSituacao().getId()),
+                registroAtividade);
         tentativaClassificacao = new TentativaClassificacaoCategoriaAditiva(
                 contexto.getSituacao());
         categoriaSelecionada = null;
@@ -161,14 +180,14 @@ public final class ServicoSorteioAtividadeWeb {
             // Main.java): o contexto do log granular só é atualizado quando
             // a categoria é confirmada, não a cada tentativa de
             // classificação — comportamento existente, não uma escolha nova.
-            controladorContextoSituacao.registrarNovaSituacao(
+            registroAtividade.registrarNovaSituacao(
                     contextoAtual.getSituacao(), escolhida.name(),
                     contextoAtual.getEnunciadoExibido());
             construirAtividadeParaCategoria(escolhida);
         }
         questionamento = tentativaClassificacao.aguardaConfirmacao()
-                ? "A definição da categoria " + escolhida.name()
-                        + " se aplica a esta situação?"
+                ? ServicoLocalizacao.getInstancia().texto(
+                        "ui.question.category." + escolhida.name().toLowerCase())
                 : null;
         return resultadoClassificacao(registro);
     }
@@ -187,15 +206,15 @@ public final class ServicoSorteioAtividadeWeb {
         if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebComposicao(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao());
+                    contextoAtual.getSituacao(), escopoTentativa);
         } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebTransformacaoMedidas(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao());
+                    contextoAtual.getSituacao(), escopoTentativa);
         } else if (escolhida == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao());
+                    contextoAtual.getSituacao(), escopoTentativa);
         } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             // RelacaoEstruturalTransformacaoDeRelacao (básica, só dado
             // tabular) é o caminho CANÔNICO real — confirmado em
@@ -212,17 +231,17 @@ public final class ServicoSorteioAtividadeWeb {
             // achado: fonte de verdade divergente da canônica).
             atividadeModelagem = new ServicoAtividadeWebTransformacaoRelacao(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao());
+                    contextoAtual.getSituacao(), escopoTentativa);
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             atividadeEscolhaOperacao =
                     new ServicoAtividadeWebComposicaoTransformacoes(
                             "tentativa.web." + contextoAtual.getSituacao().getId(),
-                            contextoAtual.getSituacao());
+                            contextoAtual.getSituacao(), escopoTentativa);
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             atividadeEscolhaOperacao =
                     new ServicoAtividadeWebComposicaoRelacoes(
                             "tentativa.web." + contextoAtual.getSituacao().getId(),
-                            contextoAtual.getSituacao());
+                            contextoAtual.getSituacao(), escopoTentativa);
         }
     }
 
@@ -243,6 +262,22 @@ public final class ServicoSorteioAtividadeWeb {
                 || atividadeModelagem instanceof ServicoAtividadeWebEscolhaOperacao;
     }
 
+    public synchronized Map<String, Object> responderConfirmacaoValor(
+            String papelId, boolean confirmou, int valor) {
+        Map<String, Object> resultado;
+        if (atividadeModelagem != null) {
+            resultado = atividadeModelagem.responderConfirmacaoValor(papelId, confirmou, valor);
+        } else if (atividadeEscolhaOperacao instanceof ServicoAtividadeWeb) {
+            resultado = ((ServicoAtividadeWeb) atividadeEscolhaOperacao)
+                    .responderConfirmacaoValor(papelId, confirmou, valor);
+        } else {
+            throw new IllegalStateException("a situação atual não possui modelagem web implementada");
+        }
+        encerrarTentativaSeConcluida();
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
@@ -252,6 +287,7 @@ public final class ServicoSorteioAtividadeWeb {
         } else {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
         }
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -275,6 +311,7 @@ public final class ServicoSorteioAtividadeWeb {
             throw new IllegalStateException(
                     "a situação atual não possui posicionamento de papel conhecido implementado");
         }
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -298,12 +335,66 @@ public final class ServicoSorteioAtividadeWeb {
         return aplicarTransicaoEixo(papelId, false);
     }
 
-    public synchronized Map<String, Object> ajustarValorPeloEixo(String papelId, int valor) {
-        if (atividadeModelagem == null) {
-            throw new IllegalStateException("a situação atual não possui modelagem por papéis");
+    /**
+     * Projeção exploratória da reta dos inteiros (mesma semântica da
+     * "propagação exploratória em memória" já adotada na web): o papel
+     * publica o novo valor e a relação estrutural do domínio
+     * (CatalogoRelacoesEstruturaisAditivas) calcula o dependente. Nada é
+     * gravado na tentativa. Substitui a soma/diferença que o cliente
+     * calculava sozinho (estadoSemanticoExploratorio.ts), para que a regra
+     * matemática tenha uma única fonte (Regra 3 do CLAUDE.md).
+     */
+    @SuppressWarnings("unchecked")
+    public synchronized Map<String, Object> projetarAlteracaoEixo(String papelId, int valor) {
+        TipoSituacaoAditiva tipo = contextoAtual.getSituacao().getTipo();
+        CatalogoRelacoesEstruturaisAditivas catalogo = new CatalogoRelacoesEstruturaisAditivas();
+        CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada descritor =
+                catalogo.criar(tipo, null);
+        Map<String, Object> valores = mapa();
+        valores.put(papelId, Integer.valueOf(valor));
+        Map<String, Object> resultado = mapa();
+        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("valores", valores);
+        if (descritor == null || tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            return resultado;
         }
-        Map<String, Object> resultado = atividadeModelagem.ajustarValorPeloEixo(papelId, valor);
-        resultado.put("estado", projetarEstado());
+        String[] chaves = descritor.chavesDosPapeis();
+        int indiceAlterado = -1;
+        Map<String, Object> atuais = mapa();
+        Object cena = projetarEstado().get("cena");
+        if (cena instanceof Map) {
+            for (Object objeto : (List<Object>) ((Map<String, Object>) cena).get("figuras")) {
+                Map<String, Object> figura = (Map<String, Object>) objeto;
+                atuais.put(String.valueOf(figura.get("chave_papel_semantico")), figura.get("valor"));
+            }
+        }
+        gerard.semantica.numero.ValorNumerico[] numeros =
+                new gerard.semantica.numero.ValorNumerico[chaves.length];
+        for (int i = 0; i < chaves.length; i++) {
+            Object atual = chaves[i].equals(papelId) ? Integer.valueOf(valor) : atuais.get(chaves[i]);
+            if (chaves[i].equals(papelId)) indiceAlterado = i;
+            if (atual instanceof Number) {
+                numeros[i] = new gerard.semantica.numero.NumeroInteiro(((Number) atual).intValue());
+            }
+        }
+        if (indiceAlterado < 0) {
+            return resultado;
+        }
+        gerard.dominio.campoaditivo.ResultadoCalculo calculo = catalogo.criar(tipo, numeros)
+                .recalcularParaConsistencia(indiceAlterado);
+        if (calculo != null && calculo.temValorCalculavel()
+                && calculo.getValorCalculado().valorOuNull() != null) {
+            // O domínio do papel dependente decide (ex.: não negatividade das
+            // medidas): uma posição da reta que o violaria não é projetada.
+            if (!calculo.getPapelCalculado().aceita(calculo.getValorCalculado())) {
+                resultado.put("aceita", Boolean.FALSE);
+                valores.clear();
+                return resultado;
+            }
+            valores.put(calculo.getPapelCalculado().getChave(),
+                    Integer.valueOf(((Number) calculo.getValorCalculado().valorOuNull()).intValue()));
+        }
+        resultado.put("aceita", Boolean.TRUE);
         return resultado;
     }
 
@@ -325,6 +416,7 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("chave_mensagem", null);
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -363,6 +455,7 @@ public final class ServicoSorteioAtividadeWeb {
             throw new IllegalStateException(
                     "a situação atual não possui incógnita a engatar");
         }
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -379,6 +472,7 @@ public final class ServicoSorteioAtividadeWeb {
         }
         Map<String, Object> resultado = ((ServicoAtividadeWebComposicao) atividadeModelagem)
                 .ajustarQuadradinho(papelId, delta);
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -403,6 +497,7 @@ public final class ServicoSorteioAtividadeWeb {
             throw new IllegalStateException(
                     "a situação atual não possui escolha de sinal de número relativo implementada");
         }
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -423,6 +518,7 @@ public final class ServicoSorteioAtividadeWeb {
             throw new IllegalStateException(
                     "a situação atual não possui escolha de operação implementada");
         }
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
     }
@@ -430,6 +526,15 @@ public final class ServicoSorteioAtividadeWeb {
     public synchronized Map<String, Object> reiniciarAtividadeAtual() {
         if (atividadeModelagem == null && atividadeEscolhaOperacao == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
+        }
+        // Restauração: a tentativa constitui a ação (não encerra o modo
+        // exploratório; após o azul nada é constituído nem registrado).
+        gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem restauracao =
+                escopoTentativa.restaurar(
+                        gerard.dominio.campoaditivo.TipoRestauracaoModelagem.DIAGRAMA_COMPLETO,
+                        gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+        if (escopoTentativa.getTentativa().constituir(restauracao).isPresent()) {
+            registroAtividade.registrarRestauracaoModelagem(restauracao);
         }
         if (atividadeModelagem != null) {
             atividadeModelagem.reiniciar();
@@ -477,7 +582,7 @@ public final class ServicoSorteioAtividadeWeb {
             tentativaClassificacao = new TentativaClassificacaoCategoriaAditiva(versaoNova);
             questionamento = null;
         }
-        LoggerInteracaoGerard.getInstancia().registrarAcaoGranularUsuario(
+        registroAtividade.registrarAcaoGranularUsuario(
                 "SELECIONAR", "Alterar idioma da situação-problema",
                 "Escolha de versão linguística", "BOTAO_IDIOMA_SITUACAO",
                 "trocar_idioma_situacao", "OBJ_INTERACAO", "ACAO_GRANULAR_SELECIONAR",
@@ -498,6 +603,7 @@ public final class ServicoSorteioAtividadeWeb {
 
     private Map<String, Object> resultadoClassificacao(
             RegistroAcaoClassificacaoCategoria registro) {
+        escopoTentativa.persistir(registro);
         Map<String, Object> resultado = mapa();
         resultado.put("schema", "gerard.atividade-web.resultado-classificacao.v1");
         resultado.put("action_id", registro.getActionId());
@@ -507,8 +613,24 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("desfecho", registro.getDesfecho().name());
         resultado.put("rejeicoes_consecutivas",
                 Integer.valueOf(registro.getRejeicoesConsecutivas()));
+        encerrarTentativaSeConcluida();
         resultado.put("estado", projetarEstado());
         return resultado;
+    }
+
+    /**
+     * A conclusão (azul) é decidida pela atividade da categoria; a tentativa
+     * da situação sorteada é quem passa a tratar tudo como exploratório.
+     */
+    private void encerrarTentativaSeConcluida() {
+        Map<String, Object> estado = atividadeModelagem != null
+                ? atividadeModelagem.estadoAtual()
+                : atividadeEscolhaOperacao != null
+                        ? atividadeEscolhaOperacao.estadoAtual() : null;
+        if (estado != null && Boolean.TRUE.equals(estado.get("concluida"))
+                && !escopoTentativa.getTentativa().estaEncerradaPorConclusao()) {
+            escopoTentativa.getTentativa().encerrarPorConclusao();
+        }
     }
 
     private void exigirClassificacaoAtiva() {
@@ -572,6 +694,11 @@ public final class ServicoSorteioAtividadeWeb {
         if (tentativaClassificacao.aguardaConfirmacao()) {
             estado.put("modo", "AGUARDANDO_CONFIRMACAO_CATEGORIA");
             estado.put("questionamento", questionamento);
+            // Mesmas chaves do diálogo desktop (mostrarDialogoConfirmacaoSimNao).
+            ServicoLocalizacao localizacaoQuestionamento = ServicoLocalizacao.getInstancia();
+            estado.put("questionamento_titulo", localizacaoQuestionamento.texto("ui.dialog.confirm"));
+            estado.put("questionamento_sim", localizacaoQuestionamento.texto("ui.completion.yes"));
+            estado.put("questionamento_nao", localizacaoQuestionamento.texto("ui.completion.no"));
             estado.put("acoes_disponiveis",
                     AcoesDisponiveisAtividadeWeb.confirmacaoCategoria());
         } else if (categoriaSelecionada != null) {
@@ -704,9 +831,9 @@ public final class ServicoSorteioAtividadeWeb {
      * Ação de clicar numa opção do menu "E agora?" — resolve a mensagem real
      * (ui.help.<area>.<intencao>, mensagens_pt.properties) e grava o mesmo
      * fato granular do desktop (registrarAcaoGranular, Main.java:2874-2892),
-     * agora via LoggerInteracaoGerard.getInstancia() — primeira vez que o
-     * pacote portabilidade grava nesse log. O contexto (categoria/enunciado)
-     * já foi carregado em escolherCategoria via controladorContextoSituacao.
+     * por meio da porta de registro da atividade. O adaptador de infraestrutura
+     * preserva no log o contexto (categoria/enunciado) carregado durante a
+     * escolha da categoria, sem expor essa persistência ao caso de uso.
      */
     public synchronized Map<String, Object> ajudaContextual(String areaTexto, String intencaoTexto) {
         ScaffoldingAjudaContextual.Area area;
@@ -726,7 +853,7 @@ public final class ServicoSorteioAtividadeWeb {
         // criarOpcaoAjudaContextual passa — "OBJ_INTERACAO" e
         // "ACAO_GRANULAR_SELECIONAR" são os dois fixos que o wrapper
         // acrescenta antes de chamar registrarAcaoGranularUsuario.
-        LoggerInteracaoGerard.getInstancia().registrarAcaoGranularUsuario(
+        registroAtividade.registrarAcaoGranularUsuario(
                 "SELECIONAR",
                 "Solicitar ajuda contextual",
                 nomeArea,
@@ -840,6 +967,19 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
+        CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada relacaoExploratoria =
+                new CatalogoRelacoesEstruturaisAditivas().criar(
+                        contexto.getSituacao().getTipo(), null);
+        if (relacaoExploratoria != null
+                && contexto.getSituacao().getTipo() != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
+            Map<String, Object> descritorRelacao = mapa();
+            List<Object> papeisRelacao = new ArrayList<Object>();
+            for (String chave : relacaoExploratoria.chavesDosPapeis()) {
+                papeisRelacao.add(chave);
+            }
+            descritorRelacao.put("papeis", papeisRelacao);
+            resultado.put("relacao_exploratoria", descritorRelacao);
+        }
         resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
                 visibilidadeEixoPorPapel));
         resultado.put("conectores", serializarConectores(cena.getConectores()));
@@ -891,7 +1031,8 @@ public final class ServicoSorteioAtividadeWeb {
         if (!disponivel) {
             return null;
         }
-        Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
+        Map<String, Object> valoresPorChave =
+                comRascunhoMaterialConcreto(extrairValoresDePapeisProjetados(modelagem));
         Object chaveAlvo = ((Map<?, ?>) modelagem).get("papel_desconhecido_original");
         CenaDiagramaAditivo cena = new GeradorCenaDiagramaAditivo().gerarMaterialConcreto(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 420, 340),
@@ -1024,6 +1165,28 @@ public final class ServicoSorteioAtividadeWeb {
      * qual, já que todos os projetarPapel* das 6 categorias produzem o
      * mesmo formato de item.
      */
+    /**
+     * Só o material concreto enxerga a contagem-rascunho da incógnita; a cena
+     * principal e o enunciado continuam mostrando "?" (ver
+     * ServicoAtividadeWebComposicao.projetarPapelParaEstado).
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> comRascunhoMaterialConcreto(Map<String, Object> valores) {
+        Map<String, Object> resultado = new LinkedHashMap<String, Object>();
+        for (Map.Entry<String, Object> entrada : valores.entrySet()) {
+            Object papel = entrada.getValue();
+            if (papel instanceof Map && ((Map<String, Object>) papel).get("rascunho_material_concreto") != null) {
+                Map<String, Object> copia = new LinkedHashMap<String, Object>((Map<String, Object>) papel);
+                copia.put("valor", copia.get("rascunho_material_concreto"));
+                copia.put("conhecido", Boolean.TRUE);
+                copia.put("engatada", Boolean.FALSE);
+                papel = copia;
+            }
+            resultado.put(entrada.getKey(), papel);
+        }
+        return resultado;
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Object> extrairValoresDePapeisProjetados(Object modelagem) {
         Map<String, Object> valores = new LinkedHashMap<String, Object>();

@@ -1,7 +1,12 @@
 import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoTransformacoes;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
+import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor;
+import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
+import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.i18n.ServicoLocalizacao;
 import java.util.List;
 import java.util.Map;
 
@@ -82,11 +87,13 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
                 servico.escolherOperacao("ENTRE_TRANSFORMACOES", "SUBTRACAO");
         exigir(Boolean.FALSE.equals(resultadoErrado.get("aceita")),
                 "SUBTRACAO deveria ser rejeitada (correta é SOMA, conforme Fase 1).");
-        exigir(gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
-                        .preencherPersonagensCurados(gerard.i18n.ServicoLocalizacao.getInstancia()
-                                .texto("operacao.explicacao.composicaoTransformacoes.soma"), situacao)
+        exigir(RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                        TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                        OpcaoOperacaoCuradoria.SOMA, situacao,
+                        ServicoLocalizacao.getInstancia())
                         .equals(resultadoErrado.get("chave_mensagem")),
-                "chave de explicação errada para a primeira etapa incorreta.");
+                "explicação errada para a primeira etapa incorreta.");
         @SuppressWarnings("unchecked")
         Map<String, Object> estadoAposErro =
                 (Map<String, Object>) resultadoErrado.get("estado");

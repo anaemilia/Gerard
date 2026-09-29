@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Tip ancorada na própria figura do diagrama (mesmo padrão de
@@ -7,8 +8,9 @@ import { useEffect, useState } from "react";
  * catalogado por CatalogoNecessidadeRepresentacaoDeSinal) é revelado
  * (arrastado até o diagrama) mas ainda não teve o sinal escolhido — mesmo
  * mecanismo do desktop (ScaffoldingNumeroRelativo.mostrarMenuEscolhaSinal /
- * MenuSinalNumeroRelativo, Main.java): duas opções em radiobutton, com os
- * mesmos rótulos literais do desktop ("positivo (+)" / "negativo (-)").
+ * MenuSinalNumeroRelativo, Main.java): duas opções em radiobutton. A forma
+ * compacta mostra apenas +/−; positivo/negativo permanecem como nomes
+ * acessíveis.
  *
  * A escolha do estudante é sempre aplicada (nunca bloqueada por divergir do
  * sinal curado, ver ServicoAtividadeWebComSinal) — o servidor só devolve um
@@ -35,20 +37,20 @@ export function EscolhaSinalFigura({ figuraId, papelNome, ocupado, mensagemDiver
   const estilo = { left: retangulo.right + 10, top: retangulo.top };
 
   if (mensagemDivergente) {
-    return <div className="valor-figura-tip" style={estilo} role="status" aria-label={papelNome}>
+    return createPortal(<div className="valor-figura-tip" style={estilo} role="status" aria-label={papelNome}>
       <p>{mensagemDivergente}</p>
-    </div>;
+    </div>, document.body);
   }
 
-  return <div className="valor-figura-tip" style={estilo} role="dialog" aria-label={papelNome}>
-    <p>{papelNome}</p>
+  return createPortal(<div className="valor-figura-tip valor-figura-sinal-tip" style={estilo}
+      role="dialog" aria-label={papelNome}>
     <label className="valor-figura-opcao">
       <input type="radio" name={`sinal-${figuraId}`} disabled={ocupado}
-        onChange={() => aoEscolherSinal("+")} /> positivo&nbsp;&nbsp;(+)
+        aria-label="positivo" onChange={() => aoEscolherSinal("+")} /> +
     </label>
     <label className="valor-figura-opcao">
       <input type="radio" name={`sinal-${figuraId}`} disabled={ocupado}
-        onChange={() => aoEscolherSinal("-")} /> negativo&nbsp;&nbsp;(-)
+        aria-label="negativo" onChange={() => aoEscolherSinal("-")} /> −
     </label>
-  </div>;
+  </div>, document.body);
 }

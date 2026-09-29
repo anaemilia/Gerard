@@ -1,7 +1,13 @@
 import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoRelacoes;
+import gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
+import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor;
+import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
+import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.i18n.ServicoLocalizacao;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +30,7 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
         ServicoAtividadeWebComposicaoRelacoes servico =
                 new ServicoAtividadeWebComposicaoRelacoes(
                         "tentativa.teste.composicao_relacoes", situacao);
+        String alvo = new ResolvedorIncognitaCurada().resolver(situacao).getChaveEfetiva();
 
         Map<String, Object> estadoInicial = servico.estadoAtual();
         exigir("COMPOSICAO_RELACOES".equals(estadoInicial.get("categoria")),
@@ -34,6 +41,9 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
             exigir(Boolean.FALSE.equals(papel.get("conhecido")) && papel.get("valor") == null,
                     "papel " + chave + " aguarda posicionamento");
             String id = String.valueOf(papel.get("id"));
+            if (id.equals(alvo)) {
+                continue;
+            }
             servico.posicionarValorConhecido(id, id);
             // Toda relação precisa de representação de sinal (auditoria de
             // acoplamento Main/web, 2026-09-19) — posicionar só revela a
@@ -48,6 +58,11 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
             exigir(Boolean.TRUE.equals(posicionado.get("conhecido")) && posicionado.get("valor") != null,
                     "posicionamento revela o valor curado");
         }
+        servico.engatarIncognita(alvo, alvo);
+        int valorIncognita = SemanticaCuradaSituacao.buscar(situacao, null, alvo).getValorInteiro();
+        Map<String, Object> resultadoIncognita = servico.proporValor(alvo, valorIncognita);
+        exigir(Boolean.TRUE.equals(resultadoIncognita.get("aceita")),
+                "a proposta curada deveria preencher a incógnita.");
         exigir(Boolean.FALSE.equals(estadoInicial.get("concluida")),
                 "atividade não deveria estar concluída no estado inicial.");
         exigir(estadoInicial.get("correta") == null,
@@ -58,11 +73,13 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
                 "ENTRE_TRANSFORMACOES", "SUBTRACAO");
         exigir(Boolean.FALSE.equals(resultadoErrado.get("aceita")),
                 "SUBTRACAO deveria ser rejeitada (correta é SOMA, conforme Fase 1).");
-        exigir(gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
-                        .preencherPersonagensCurados(gerard.i18n.ServicoLocalizacao.getInstancia()
-                                .texto("operacao.explicacao.composicaoRelacoes.soma"), situacao)
+        exigir(RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                        TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
+                        OpcaoOperacaoCuradoria.SOMA, situacao,
+                        ServicoLocalizacao.getInstancia())
                         .equals(resultadoErrado.get("chave_mensagem")),
-                "chave de explicação errada para a resposta incorreta.");
+                "explicação errada para a resposta incorreta.");
         @SuppressWarnings("unchecked")
         Map<String, Object> estadoAposErro =
                 (Map<String, Object>) resultadoErrado.get("estado");

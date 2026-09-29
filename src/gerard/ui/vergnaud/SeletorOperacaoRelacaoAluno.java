@@ -2,10 +2,12 @@ package gerard.ui.vergnaud;
 
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
+import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
 import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
 import gerard.i18n.ServicoLocalizacao;
 
 import java.awt.BasicStroke;
@@ -103,6 +105,9 @@ public final class SeletorOperacaoRelacaoAluno {
     private OpcaoOperacaoCuradoria escolhaAluno = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
     private String textoExplicacaoCorreta = "";
     private boolean mostrarExplicacao;
+    private AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor tipoOperacao =
+            AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES;
+    private TipoSituacaoAditiva categoriaAtiva;
 
     public boolean estaAtivo() {
         return ativo;
@@ -125,6 +130,8 @@ public final class SeletorOperacaoRelacaoAluno {
         escolhaAluno = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         textoExplicacaoCorreta = "";
         mostrarExplicacao = false;
+        tipoOperacao = AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES;
+        categoriaAtiva = null;
     }
 
     public static boolean aplicavel(TipoSituacaoAditiva tipo) {
@@ -161,6 +168,8 @@ public final class SeletorOperacaoRelacaoAluno {
         }
         AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papelEfetivo = papel == null
                 ? AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES : papel;
+        tipoOperacao = papelEfetivo;
+        categoriaAtiva = tipo;
         boolean papelEstadoTransformacao = papelEfetivo
                 == AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
         ServicoLocalizacao loc = localizacao == null ? ServicoLocalizacao.getInstancia() : localizacao;
@@ -173,11 +182,8 @@ public final class SeletorOperacaoRelacaoAluno {
             return;
         }
 
-        String chaveExplicacao = AvaliacaoEscolhaOperacaoRelacao
-                .chaveExplicacao(tipo, papelEfetivo, escolhaCorreta);
-        textoExplicacaoCorreta = chaveExplicacao == null ? ""
-                : AvaliacaoEscolhaOperacaoRelacao
-                        .preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao);
+        textoExplicacaoCorreta = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                tipo, papelEfetivo, escolhaCorreta, situacao, loc);
 
         ElementoVergnaud e0 = elementos.get(0);
         ElementoVergnaud e1 = elementos.get(1);
@@ -280,18 +286,32 @@ public final class SeletorOperacaoRelacaoAluno {
      * retorno indicar escolha errada — ver {@link #respondeuCorretamente()}.
      */
     public boolean processarPressionamento(int mouseX, int mouseY) {
+        return processarEscolha(mouseX, mouseY) != null;
+    }
+
+    /**
+     * Produz o fato tipado da escolha; efeitos de apresentacao e persistencia
+     * sao responsabilidade dos adaptadores consumidores.
+     */
+    public ResultadoEscolhaOperacaoModelagem processarEscolha(
+            int mouseX, int mouseY) {
         if (!ativo) {
-            return false;
+            return null;
         }
         if (areaSoma != null && areaSoma.contains(mouseX, mouseY)) {
             registrarEscolha(OpcaoOperacaoCuradoria.SOMA);
-            return true;
+            return resultadoAtual();
         }
         if (areaSubtracao != null && areaSubtracao.contains(mouseX, mouseY)) {
             registrarEscolha(OpcaoOperacaoCuradoria.SUBTRACAO);
-            return true;
+            return resultadoAtual();
         }
-        return false;
+        return null;
+    }
+
+    private ResultadoEscolhaOperacaoModelagem resultadoAtual() {
+        return AvaliacaoEscolhaOperacaoRelacao.registrarEscolha(
+                categoriaAtiva, tipoOperacao, escolhaAluno, escolhaCorreta);
     }
 
     private void registrarEscolha(OpcaoOperacaoCuradoria escolha) {

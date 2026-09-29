@@ -184,6 +184,8 @@ import gerard.ui.vergnaud.PaineisEixosRelacoes;
 import gerard.ui.vergnaud.SeletorOperacaoRelacaoAluno;
 import gerard.ui.vergnaud.AdaptadorMovimentoConectorVergnaud;
 import gerard.ui.vergnaud.AdaptadorInteracaoPaineisEixosRelacoes;
+import gerard.ui.vergnaud.AdaptadorSeletoresOperacaoRelacoes;
+import gerard.ui.swing.adaptacao.ApresentadorFeedbackEscolhaOperacaoSwing;
 import gerard.ui.vergnaud.FonteGeometriaInteracaoPaineisEixosRelacoes;
 import gerard.ui.enunciado.GeometriaAreaEnunciado;
 import gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria;
@@ -200,9 +202,23 @@ import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
 import gerard.interacao.arraste.HandlerInteracaoArrasteIncremental;
 import gerard.interacao.arraste.HandlerInteracaoItemTextoArrastavel;
 import gerard.interacao.arraste.HandlerInteracaoQuadradinhoVenn;
+import gerard.interacao.arraste.AlvoControleComparacao;
 import gerard.interacao.arraste.HandlerInteracaoControleComparacao;
+import gerard.interacao.arraste.ResultadoPressionamentoControleComparacao;
 import gerard.interacao.arraste.AlvoInteracaoPaineisEixosRelacoes;
 import gerard.interacao.arraste.HandlerInteracaoPaineisEixosRelacoes;
+import gerard.interacao.selecao.HandlerInteracaoSeletoresOperacaoRelacoes;
+import gerard.interacao.unidades.AlvoControlesUnidades;
+import gerard.interacao.unidades.HandlerInteracaoControlesUnidades;
+import gerard.interacao.unidades.OperacaoControleUnidade;
+import gerard.interacao.unidades.ResultadoAplicacaoControleUnidade;
+import gerard.interacao.unidades.ResultadoControleUnidades;
+import gerard.campoaditivo.venn.interacao.RepresentacaoComUnidades;
+import gerard.aplicacao.interacao.CasoDeUsoSelecaoOperacoesRelacoes;
+import gerard.aplicacao.interacao.PortaEncaminhamentoAcaoInstrumental;
+import gerard.aplicacao.interacao.PortaLimpezaFocoAposEscolhaOperacao;
+import gerard.aplicacao.interacao.PortaReavaliacaoConclusaoAposEscolhaOperacao;
+import gerard.pesquisador.log.PersistidorAcaoInstrumentalLogGerard;
 import gerard.interacao.arraste.PoliticaGestoEstrutural;
 import gerard.interacao.ContextoRegistroGesto;
 import gerard.interacao.DestinoGeometricoGesto;
@@ -211,6 +227,8 @@ import gerard.interacao.geometria.LimitesMovimento;
 import gerard.interacao.texto.PoliticaElementoMatematicoTexto;
 import gerard.interacao.texto.PoliticaUnicidadeElementoMatematicoTexto;
 import gerard.interacao.texto.ResolvedorPickupElementoMatematicoTexto;
+import gerard.interacao.texto.HandlerInteracaoSelecaoMarcadorTexto;
+import gerard.interacao.texto.ResultadoSelecaoMarcadorTexto;
 import gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
 import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
@@ -707,6 +725,13 @@ public class Main extends JFrame {
         // além de OrigemAcao (ver javadoc de registrarLogPorOrigem, que
         // precisa ser atualizado para não dizer mais "único ponto").
         private gerard.dominio.campoaditivo.PapelQuantitativo tentativasIncognitaAtual;
+        /**
+         * Agregado de escopo da tentativa da situação atual (uma por situação
+         * sorteada). Proprietário do encerramento pela conclusão: depois do
+         * azul, toda modificação é exploratória (decisão de 2026-09-29).
+         */
+        private gerard.dominio.campoaditivo.TentativaModelagemAditiva tentativaModelagemAtual =
+                new gerard.dominio.campoaditivo.TentativaModelagemAditiva("");
         private String papelDaTentativaAtual;
         // O Modelador escreve o Modelo do Usuário e publica regras; a sessão
         // congela uma fotografia no login e entrega apenas a projeção pedida
@@ -796,6 +821,10 @@ public class Main extends JFrame {
                 new ResolvedorPickupElementoMatematicoTexto(politicaElementoMatematicoTexto);
         final PoliticaUnicidadeElementoMatematicoTexto politicaUnicidadeElementoMatematicoTexto =
                 new PoliticaUnicidadeElementoMatematicoTexto();
+        final HandlerInteracaoSelecaoMarcadorTexto handlerSelecaoMarcadorTexto =
+                new HandlerInteracaoSelecaoMarcadorTexto(
+                        politicaUnicidadeElementoMatematicoTexto,
+                        sessaoArrasteTextoParaDiagrama);
         final PoliticaGestoEstrutural politicaGestoEstrutural =
                 new PoliticaGestoEstrutural();
         final ControladorConclusaoModelagem controladorConclusaoModelagem =
@@ -1002,9 +1031,144 @@ public class Main extends JFrame {
                 new HandlerInteracaoQuadradinhoVenn();
         final HandlerInteracaoControleComparacao handlerControleComparacao =
                 new HandlerInteracaoControleComparacao();
+        // Fase 7.12: hit-test do ponto de controle e da escala da barra de
+        // Comparação. A geometria concreta permanece nesta tela.
+        final AlvoControleComparacao adaptadorControleComparacao =
+                new AlvoControleComparacao() {
+            @Override
+            public boolean contemControleOuEscala(int posicaoX, int posicaoY) {
+                return ehGraficoBarrasComparacao()
+                        && (contemPontoControleComparacao(posicaoX, posicaoY)
+                                || contemEscalaComparacao(posicaoX, posicaoY));
+            }
+        };
         final HandlerInteracaoPaineisEixosRelacoes
                 handlerPaineisEixosRelacoes =
                 new HandlerInteracaoPaineisEixosRelacoes();
+        /**
+         * Fase 7.10 (2026-09-28): protocolo portátil dos controles +/− do
+         * material concreto. O handler só sequencia prioridade, liberação,
+         * limite e aplicação; este adaptador desktop traduz hit-test,
+         * representação editável e valor assinado da transformação para a
+         * porta; apresentarResultadoControleUnidades materializa o desfecho.
+         */
+        final HandlerInteracaoControlesUnidades handlerControlesUnidades =
+                new HandlerInteracaoControlesUnidades();
+        final AlvoControlesUnidades<RepresentacaoComUnidades> adaptadorControlesUnidades =
+                new AlvoControlesUnidades<RepresentacaoComUnidades>() {
+            @Override
+            public RepresentacaoComUnidades localizarControle(
+                    OperacaoControleUnidade operacao, int posicaoX, int posicaoY) {
+                return operacao == OperacaoControleUnidade.REMOVER
+                        ? encontrarRepresentacaoPeloControleRemoverQuadradinho(posicaoX, posicaoY)
+                        : encontrarRepresentacaoPeloControleAdicionarQuadradinho(posicaoX, posicaoY);
+            }
+
+            @Override
+            public boolean alteracaoLiberadaPelaModelagem() {
+                return adicaoDeUnidadesLiberadaPelaModelagem();
+            }
+
+            @Override
+            public boolean podeAplicar(RepresentacaoComUnidades representacao,
+                    OperacaoControleUnidade operacao) {
+                CirculoVenn agrupamento = representacao.obterAgrupamento();
+                if (ehAgrupamentoTransformacaoComSinal(agrupamento)) {
+                    return operacao == OperacaoControleUnidade.ADICIONAR
+                            ? podeIncrementarValorAssinadoTransformacao(agrupamento)
+                            : podeDecrementarValorAssinadoTransformacao(agrupamento);
+                }
+                return operacao == OperacaoControleUnidade.ADICIONAR
+                        ? ((RepresentacaoComUnidadesAdicionaveis) representacao).podeAdicionarUnidade()
+                        : ((RepresentacaoComUnidadesRemoviveis) representacao).podeRemoverUnidade();
+            }
+
+            @Override
+            public ResultadoAplicacaoControleUnidade aplicar(
+                    RepresentacaoComUnidades representacao, OperacaoControleUnidade operacao) {
+                CirculoVenn agrupamento = representacao.obterAgrupamento();
+                if (ehAgrupamentoTransformacaoComSinal(agrupamento)) {
+                    if (operacao == OperacaoControleUnidade.ADICIONAR) {
+                        alterarValorAssinadoTransformacao(agrupamento, 1,
+                                "Incrementar transformação no tabuleiro",
+                                "A transformação foi aumentada em uma unidade com consistência entre as representações.");
+                        return new ResultadoAplicacaoControleUnidade(false, true);
+                    }
+                    alterarValorAssinadoTransformacao(agrupamento, -1,
+                            "Decrementar transformação no tabuleiro",
+                            "A transformação foi reduzida em uma unidade com consistência entre as representações.");
+                    return new ResultadoAplicacaoControleUnidade(false,
+                            podeDecrementarValorAssinadoTransformacao(agrupamento));
+                }
+                if (operacao == OperacaoControleUnidade.ADICIONAR) {
+                    RepresentacaoComUnidadesAdicionaveis representacaoAdicionar =
+                            (RepresentacaoComUnidadesAdicionaveis) representacao;
+                    ResultadoOperacaoUnidade resultado = representacaoAdicionar.adicionarUnidade();
+                    return new ResultadoAplicacaoControleUnidade(
+                            resultado.isLimiteAtingido(), true);
+                }
+                RepresentacaoComUnidadesRemoviveis representacaoRemover =
+                        (RepresentacaoComUnidadesRemoviveis) representacao;
+                representacaoRemover.removerUnidade();
+                return new ResultadoAplicacaoControleUnidade(false,
+                        representacaoRemover.podeRemoverUnidade());
+            }
+        };
+        final HandlerInteracaoSeletoresOperacaoRelacoes
+                handlerSeletoresOperacaoRelacoes =
+                new HandlerInteracaoSeletoresOperacaoRelacoes();
+        final AdaptadorSeletoresOperacaoRelacoes
+                adaptadorSeletoresOperacaoRelacoes =
+                new AdaptadorSeletoresOperacaoRelacoes(
+                        seletorOperacaoRelacaoAluno,
+                        seletorOperacaoEstadoTransformacaoAluno);
+        final CasoDeUsoSelecaoOperacoesRelacoes casoDeUsoSelecaoOperacoesRelacoes =
+                new CasoDeUsoSelecaoOperacoesRelacoes(
+                        handlerSeletoresOperacaoRelacoes,
+                        adaptadorSeletoresOperacaoRelacoes,
+                        new ApresentadorFeedbackEscolhaOperacaoSwing(
+                                scaffoldingFeedbackMultissensorialErro),
+                        new gerard.aplicacao.interacao.PortaPersistenciaAcaoInstrumental() {
+                            private final PersistidorAcaoInstrumentalLogGerard persistidor =
+                                    new PersistidorAcaoInstrumentalLogGerard(loggerInteracaoGerard);
+                            @Override
+                            public void persistir(
+                                    gerard.dominio.atividade.RegistroFactualAcaoInstrumental registro) {
+                                // A tentativa decide se o fato constitui ação.
+                                if (tentativaModelagemAtual.constituir(registro).isPresent()) {
+                                    persistidor.persistir(registro);
+                                }
+                            }
+                        },
+                        new PortaEncaminhamentoAcaoInstrumental() {
+                            @Override
+                            public void encaminhar(
+                                    gerard.dominio.atividade.RegistroFactualAcaoInstrumental registro) {
+                                if (!tentativaModelagemAtual.constituir(registro).isPresent()) return;
+                                conectorVereditoModelador.registrarAcaoInstrumental(
+                                        loggerInteracaoGerard.getUsuarioAtual(),
+                                        registro,
+                                        gerard.agente.modelousuario.NivelSuporte.NENHUM,
+                                        registro.getActionId());
+                            }
+                        },
+                        new PortaLimpezaFocoAposEscolhaOperacao() {
+                            @Override
+                            public void limparFoco() {
+                                limparFocoAposSelecaoOperacao();
+                            }
+                        },
+                        new PortaReavaliacaoConclusaoAposEscolhaOperacao() {
+                            @Override
+                            public void reavaliarConclusao() {
+                                verificarConclusaoModelagem();
+                            }
+                        });
+
+        private void limparFocoAposSelecaoOperacao() {
+            itemFocado = null;
+            quadradinhoVennFocado = null;
+        }
         final GeometriaAreaEnunciado geometriaAreaEnunciado;
         // Posicao do item no instante do pickup (rodada 4, 2026-07-31) —
         // ver mouseReleased: um release na MESMA posicao do pickup nao e
@@ -1034,6 +1198,7 @@ public class Main extends JFrame {
         // passo do arrasto.
         EstadoSemanticoCompartilhado.Snapshot logConsistenciaAutomaticaPendenteArrasteComparacao;
         EstadoSemanticoCompartilhado.Origem origemLogConsistenciaAutomaticaPendenteArrasteComparacao;
+        boolean suprimirPersistenciaExploracaoEixoConcluida;
 
         boolean rastreamentoCaminhoAtivo = false;
         int rastreamentoInicioX;
@@ -3893,6 +4058,7 @@ public class Main extends JFrame {
                 RegistroAcaoClassificacaoCategoria registro =
                         tentativaClassificacaoCategoriaAtual.avaliarEscolha(
                                 tipo, contextoInstrumental);
+                // Classificação da situação sorteada não pertence à tentativa de modelagem.
                 loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
                 conectorVereditoModelador.registrarAcaoInstrumental(
                         loggerInteracaoGerard.getUsuarioAtual(), registro,
@@ -4972,6 +5138,8 @@ public class Main extends JFrame {
          * foram atribuídos pelo chamador.
          */
         private void finalizarCarregamentoSituacao() {
+            tentativaModelagemAtual = new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
+                    loggerInteracaoGerard.getTentativaAtualId());
             reiniciarTentativasEscolhaSinalAtual();
             atualizarContextoAdaptativoIncognitaAtual();
 
@@ -6304,11 +6472,7 @@ public class Main extends JFrame {
                             OpcaoSinalNumeroInteiro.doSimbolo(sinalEscolhido),
                             contextoInstrumental);
 
-            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
-            conectorVereditoModelador.registrarAcaoInstrumental(
-                    loggerInteracaoGerard.getUsuarioAtual(), registro,
-                    gerard.agente.modelousuario.NivelSuporte.NENHUM,
-                    registro.getActionId());
+            persistirAcaoDaTentativa(registro, gerard.agente.modelousuario.NivelSuporte.NENHUM);
             return registro;
         }
 
@@ -6372,22 +6536,16 @@ public class Main extends JFrame {
                 String objeto,
                 String regras,
                 String origemEvento) {
-            gerard.dominio.campoaditivo.TentativaModelagemAditiva tentativa =
-                    new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
-                            loggerInteracaoGerard.getTentativaAtualId());
             gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem registro =
-                    tentativa.restaurar(tipo, OrigemAcao.ORIGEM_USUARIO,
+                    tentativaModelagemAtual.restaurar(tipo, OrigemAcao.ORIGEM_USUARIO,
                             tentativasIncognitaAtual);
-            String detalhes = "tipo_restauracao=" + registro.getTipo().name()
-                    + "; tentativa_id=" + registro.getTentativaId()
-                    + "; papeis_participantes=" + registro.getPapeisParticipantes()
-                    + "; sequencias_rejeicao_encerradas="
-                    + registro.getSequenciasRejeicaoEncerradas();
-            registrarLogUsuarioComIdentidade(
-                    "SELECIONAR", tarefa, "-", instrumentoOrganizacao,
-                    instrumentoArtefato, funcaoDoArtefato, objeto, regras,
-                    origemEvento, detalhes, registro.getActionId(),
-                    registro.getRejectionSequenceId());
+            if (!tentativaModelagemAtual.constituir(registro).isPresent()) {
+                return;
+            }
+            new gerard.pesquisador.log.PersistidorRestauracaoModelagemLogGerard(loggerInteracaoGerard)
+                    .persistir(registro, tarefa, instrumentoOrganizacao,
+                            instrumentoArtefato, funcaoDoArtefato, objeto, regras,
+                            origemEvento);
         }
 
         /**
@@ -6426,6 +6584,71 @@ public class Main extends JFrame {
                                 "rotulo.papel.incognitaAtual"),
                         gerard.dominio.campoaditivo.evento.PublicadorEventoDominio.NENHUM);
                 papelDaTentativaAtual = chave;
+                tentativaModelagemAtual.incorporar(tentativasIncognitaAtual);
+            }
+        }
+
+        /**
+         * Roteamento: a tentativa atual decide se o fato constitui ação
+         * (após a conclusão não constitui); a infraestrutura só persiste e
+         * encaminha ao Modelador o que ela constituiu.
+         */
+        private void persistirAcaoDaTentativa(
+                gerard.dominio.atividade.RegistroFactualAcaoInstrumental registro,
+                gerard.agente.modelousuario.NivelSuporte suporte) {
+            if (!tentativaModelagemAtual.constituir(registro).isPresent()) {
+                return;
+            }
+            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
+            conectorVereditoModelador.registrarAcaoInstrumental(
+                    loggerInteracaoGerard.getUsuarioAtual(), registro, suporte,
+                    registro.getActionId());
+        }
+
+        /**
+         * Decisão da usuária (2026-09-28): a resposta Sim/Não à pergunta
+         * ui.question.valueMismatch é uma tentativa própria, registrada e
+         * contada no limite de rejeições da mesma sequência. O proprietário
+         * semântico (IncognitaQuantitativa/PapelQuantitativo) constitui o
+         * registro; esta tela só entrega a resposta observada. Fechar o
+         * diálogo sem responder não é resposta e não é registrado.
+         */
+        private void registrarRespostaConfirmacaoValorIncognita(
+                IncognitaQuantitativa incognita, int opcao,
+                String papelAlvo, String valorProposto) {
+            if (incognita == null || tentativasIncognitaAtual == null
+                    || (opcao != JOptionPane.YES_OPTION && opcao != JOptionPane.NO_OPTION)) {
+                return;
+            }
+            boolean confirmou = opcao == JOptionPane.YES_OPTION;
+            gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidade =
+                    tentativasIncognitaAtual.iniciarAcaoInstrumental(
+                            gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
+            ContextoAcaoInstrumental contexto = new ContextoAcaoInstrumental(
+                    "Responder à confirmação do valor da incógnita",
+                    "Diálogo de confirmação",
+                    "Botões Sim/Não",
+                    "Confirmar ou retirar o valor já rejeitado",
+                    papelAlvo,
+                    "CONFIRMACAO_VALOR_INCOGNITA",
+                    "resposta=" + (confirmou ? "SIM" : "NAO")
+                            + "; valor=" + (valorProposto == null ? "" : valorProposto),
+                    "Resposta à pergunta de confirmação do valor",
+                    participantesSemanticosDaSituacaoAtual());
+            RegistroAcaoInstrumental registro =
+                    servicoAvaliacaoAcaoIncognita.avaliarRespostaConfirmacao(
+                            incognita, identidade, confirmou,
+                            situacaoProblemaAtual, localizacao, papelAlvo,
+                            estadoSemanticoCompartilhado.snapshot(),
+                            obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
+                            valorProposto, contexto);
+            if (registro == null) {
+                return;
+            }
+            persistirAcaoDaTentativa(registro, null);
+            if (registro.getResultadoTentativa().isPresent()
+                    && registro.getResultadoTentativa().get().isLimiteAtingidoAgora()) {
+                processarLimiteTentativasAtingido(registro.getResultadoTentativa().get());
             }
         }
 
@@ -6594,10 +6817,7 @@ public class Main extends JFrame {
                     estadoSemanticoCompartilhado.snapshot(),
                     obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
                     item.valor, contextoInstrumental);
-            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
-            conectorVereditoModelador.registrarAcaoInstrumental(
-                    loggerInteracaoGerard.getUsuarioAtual(), registro, null,
-                    registro.getActionId());
+            persistirAcaoDaTentativa(registro, null);
 
             gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
                     registro.getResultadoTentativa().isPresent()
@@ -6638,6 +6858,8 @@ public class Main extends JFrame {
             registrarFeedbackExibido("AG_EMLQ",
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
                     "pergunta de confirmação de valor divergente");
+            registrarRespostaConfirmacaoValorIncognita(
+                    incognita, opcao, papelAlvo, item.valor);
             return false;
         }
 
@@ -6693,10 +6915,7 @@ public class Main extends JFrame {
                     registro.getResultadoTentativa().isPresent()
                             ? registro.getResultadoTentativa().get() : null;
 
-            loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
-            conectorVereditoModelador.registrarAcaoInstrumental(
-                    loggerInteracaoGerard.getUsuarioAtual(), registro, null,
-                    registro.getActionId());
+            persistirAcaoDaTentativa(registro, null);
 
             if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
                 aplicarFeedbackVisualErroDiagrama();
@@ -6735,8 +6954,11 @@ public class Main extends JFrame {
                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
                     "pergunta de confirmação de valor divergente",
                     registro.getActionId(), registro.getRejectionSequenceId());
+            registrarRespostaConfirmacaoValorIncognita(
+                    incognita, opcao, papelAlvo, item.valor);
             return false;
         }
+
 
         /**
          * Lista referências semânticas da situação, nunca novos registros de
@@ -6882,15 +7104,30 @@ public class Main extends JFrame {
             boolean concluida = controladorConclusaoModelagem.isConcluida();
             boolean acabouDeConcluirPlenamente = atualizacaoConclusao
                     == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA;
+            // A tentativa (proprietária) já foi encerrada por uma conclusão
+            // anterior: voltar a concluir é exploração, não nova conclusão.
+            boolean tentativaJaEncerrada = tentativaModelagemAtual.estaEncerradaPorConclusao();
+            if (acabouDeConcluirPlenamente && !tentativaJaEncerrada) {
+                tentativaModelagemAtual.encerrarPorConclusao(tentativasIncognitaAtual);
+            }
             if (!concluida) {
                 aplicadorDestaqueConclusaoDiagrama.aplicar(
                         false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                         quadradinhosVenn);
             }
 
+            if (concluida && ((acabouDeConcluirPlenamente && tentativaJaEncerrada)
+                    || destaqueConclusaoSuspensoPorExploracao)) {
+                // Exploração após a conclusão: o destaque volta em silêncio,
+                // sem nova sinalização, tip ou registro.
+                destaqueConclusaoSuspensoPorExploracao = false;
+                aplicadorDestaqueConclusaoDiagrama.aplicar(
+                        true, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
+                        quadradinhosVenn);
+            }
             if (!concluida) {
                 sequenciadorFeedbackConclusao.cancelar();
-            } else if (acabouDeConcluirPlenamente
+            } else if (acabouDeConcluirPlenamente && !tentativaJaEncerrada
                     && controladorConclusaoModelagem.deveApresentarTip()) {
                 // A conclusão primeiro restaura a cena neutra. O azul só é
                 // aplicado depois pelo sequenciador de feedback de sucesso.
@@ -6934,9 +7171,16 @@ public class Main extends JFrame {
             repaint();
         }
 
+        /**
+         * Após a conclusão toda modificação é exploratória (decisão da
+         * usuária, 2026-09-29): o destaque azul sai durante a manipulação,
+         * mas a conclusão atingida não é desfeita no controlador.
+         */
+        private boolean destaqueConclusaoSuspensoPorExploracao;
+
         private void suspenderConclusaoDuranteManipulacao() {
             if (!controladorConclusaoModelagem.isConcluida()) return;
-            controladorConclusaoModelagem.reiniciar();
+            destaqueConclusaoSuspensoPorExploracao = true;
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                     quadradinhosVenn);
@@ -6944,6 +7188,7 @@ public class Main extends JFrame {
         }
 
         private void reiniciarConclusaoModelagem() {
+            destaqueConclusaoSuspensoPorExploracao = false;
             controladorConclusaoModelagem.reiniciar();
             aplicadorDestaqueConclusaoDiagrama.aplicar(
                     false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
@@ -7473,6 +7718,31 @@ public class Main extends JFrame {
                     ? Math.max(50, elemento.y - 110)
                     : Math.min(elemento.y + elemento.altura + 12, alturaTela - 108);
             painel.grafico.definirPosicaoInicial(x, y);
+        }
+
+        /**
+         * Fase 7.13: materializa a revelação já decidida por
+         * PaineisEixosRelacoes.processarPressionamentoLupa (teste de clique)
+         * e ControleVisibilidadeEixoPapel (transição fechado -> revelado).
+         * Mesma ordem e mesmos efeitos de antes em mousePressed.
+         */
+        private void apresentarRevelacaoEixoRelacaoPelaLupa(
+                PaineisEixosRelacoes.Painel painelRecemRevelado) {
+            prepararPainelEixoRelacao(painelRecemRevelado, getWidth(), getHeight());
+            registrarLogUsuario(
+                    "Revelar o eixo de um papel de Relações pela lupa",
+                    "-",
+                    "Lupa perto do elemento",
+                    "Papel do diagrama de Relações",
+                    "Ampliar a visão do número relativo e do sinal daquele papel, sob demanda",
+                    "OBJ4",
+                    "O eixo de cada papel fica escondido até a lupa ser clicada, para reduzir poluição visual.",
+                    "LUPA_EIXO_RELACAO",
+                    ""
+            );
+            itemFocado = null;
+            quadradinhoVennFocado = null;
+            repaint();
         }
 
         /**
@@ -8322,6 +8592,9 @@ public class Main extends JFrame {
         private void registrarLogConsistenciaAutomaticaSeHouve(
                 EstadoSemanticoCompartilhado.Snapshot snapshot,
                 EstadoSemanticoCompartilhado.Origem origem) {
+            if (suprimirPersistenciaExploracaoEixoConcluida) {
+                return;
+            }
             if (snapshot == null) {
                 return;
             }
@@ -10396,6 +10669,24 @@ public class Main extends JFrame {
             return new Rectangle(xEixo - 12, yControle - 12, 24, 24);
         }
 
+        /**
+         * Materializa o desfecho decidido por HandlerInteracaoControleComparacao
+         * (Fase 7.12), na mesma ordem e com os mesmos efeitos de antes.
+         */
+        private void apresentarPressionamentoControleComparacao(
+                ResultadoPressionamentoControleComparacao resultado, int x, int y) {
+            if (resultado == ResultadoPressionamentoControleComparacao.BLOQUEADO) {
+                informarBloqueioInteracaoRepresentacao(x, y, "Controle do gráfico de barras");
+                return;
+            }
+            Rectangle origemControleComparacao = obterRetanguloPontoControleComparacao();
+            iniciarFantasmaRetangular(origemControleComparacao, 18, true);
+            definirCursorMaoFechada();
+            aplicarControleComparacaoPeloMouse(y);
+            iniciarArrasteElastico(x, y);
+            repaint();
+        }
+
         private boolean contemPontoControleComparacao(int x, int y) {
             return obterRetanguloPontoControleComparacao().contains(x, y);
         }
@@ -10844,6 +11135,132 @@ public class Main extends JFrame {
             });
         }
 
+        /**
+         * Materialização Swing do desfecho dos controles +/− (Fase 7.10).
+         * Não decide liberação, limite nem aplicação — apenas traduz o
+         * desfecho já produzido pelo protocolo em anotação, cursor, foco,
+         * feedback de limite e reavaliação da conclusão, preservando as
+         * assimetrias existentes entre adicionar e remover.
+         */
+        private void apresentarResultadoControleUnidades(
+                ResultadoControleUnidades<RepresentacaoComUnidades> resultado,
+                int x, int y) {
+            CirculoVenn agrupamento = resultado.getControle().obterAgrupamento();
+            boolean remover = resultado.getOperacao() == OperacaoControleUnidade.REMOVER;
+            switch (resultado.getDesfecho()) {
+                case BLOQUEADO_PELA_MODELAGEM:
+                    if (remover) {
+                        agrupamentoRemoverQuadradinhoFocado = null;
+                    } else {
+                        agrupamentoAdicionarQuadradinhoFocado = null;
+                    }
+                    mostrarAnotacaoMouseOver = true;
+                    textoAnotacaoMouseOver = obterMensagemBloqueioAdicaoUnidades();
+                    mouseOverX = x;
+                    mouseOverY = y;
+                    setCursor(Cursor.getDefaultCursor());
+                    if (!remover) {
+                        registrarAcaoGranular(
+                                "SELECIONAR",
+                                "Tentar adicionar unidade antes da modelagem",
+                                "Diagrama complementar",
+                                "Controle de adição do agrupamento",
+                                "Aguardar posicionamento no diagrama de Vergnaud",
+                                "bloqueio=modelagem_vergnaud_incompleta",
+                                "Nenhuma unidade foi criada.");
+                    }
+                    repaint();
+                    return;
+                case LIMITE_ATINGIDO:
+                    if (remover) {
+                        agrupamentoRemoverQuadradinhoFocado = null;
+                        mostrarAnotacaoMouseOver = true;
+                        textoAnotacaoMouseOver = localizacao.texto(
+                                ehAgrupamentoTransformacaoComSinal(agrupamento)
+                                        ? "ui.tooltip.venn.integerLimitReached"
+                                        : "ui.tooltip.venn.minimumReached");
+                        mouseOverX = x;
+                        mouseOverY = y;
+                        setCursor(Cursor.getDefaultCursor());
+                        repaint();
+                    } else {
+                        agrupamentoAdicionarQuadradinhoFocado = null;
+                        registrarLimiteQuantidadeAtingido(agrupamento,
+                                obterQuadradinhosDoAgrupamento(agrupamento));
+                        setCursor(Cursor.getDefaultCursor());
+                    }
+                    return;
+                case APLICADO:
+                default:
+                    ResultadoAplicacaoControleUnidade aplicacao = resultado.getAplicacao();
+                    if (remover) {
+                        agrupamentoRemoverQuadradinhoFocado =
+                                aplicacao.podeRepetir() ? agrupamento : null;
+                    } else {
+                        if (aplicacao.isLimiteAtingidoAposAplicar()) {
+                            registrarLimiteQuantidadeAtingido(agrupamento,
+                                    obterQuadradinhosDoAgrupamento(agrupamento));
+                        }
+                        agrupamentoAdicionarQuadradinhoFocado = agrupamento;
+                    }
+                    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    verificarConclusaoModelagem();
+            }
+        }
+
+        private boolean processarSelecaoMarcadorTexto(int x, int y) {
+            ResultadoSelecaoMarcadorTexto resultado =
+                    handlerSelecaoMarcadorTexto.processar(
+                            encontrarMarcadorFixoTexto(x, y), itensArrastaveis);
+            if (resultado == null) {
+                return false;
+            }
+            if (resultado.getDesfecho()
+                    == ResultadoSelecaoMarcadorTexto.Desfecho.JA_POSICIONADO) {
+                textoAnotacaoMouseOver = localizacao.texto("ui.tooltip.alreadyPositioned");
+                mostrarAnotacaoMouseOver = true;
+                mouseOverX = x;
+                mouseOverY = y;
+                repaint();
+                return true;
+            }
+
+            ItemTextoArrastavel novo = resultado.getItem();
+            if (novo == null) {
+                repaint();
+                return true;
+            }
+            MarcadorTexto marcador = resultado.getMarcador();
+            registrarLogUsuario(
+                    "Selecionar valor do enunciado", "-", "Texto do problema",
+                    "Marcador textual",
+                    "Identificar dado numérico ou incógnita no enunciado",
+                    "OBJ8",
+                    "A seleção organiza os dados do problema antes do posicionamento no modelo.",
+                    "SELECAO_TEXTO",
+                    "valor=" + marcador.valor + "; papel="
+                            + (marcador.chavePapel != null ? marcador.chavePapel : ""));
+            // Selecionar não tem certo/errado porque ainda não há papel-alvo.
+            conectorVereditoModelador.registrarAcaoNeutra(
+                    loggerInteracaoGerard.getUsuarioAtual(),
+                    tipoSituacaoSelecionada, "SELECIONAR");
+            handlerItemTextoArrastavel.iniciar(novo, x, y);
+            itemFocado = novo;
+            registrarAcaoGranular(
+                    "SELECIONAR", "Selecionar elemento semântico do enunciado",
+                    "Texto do problema", "Marcador textual",
+                    "Escolher o elemento para conduzi-lo ao diagrama",
+                    "valor=" + marcador.valor + "; papel="
+                            + (marcador.chavePapel != null ? marcador.chavePapel : ""),
+                    "Elemento semântico selecionado para manipulação.");
+            atualizarRealceAlvoProximidade(novo);
+            iniciarFantasmaItem(novo);
+            iniciarArrasteElastico(x, y);
+            definirCursorMaoFechada();
+            repaint();
+            return true;
+        }
+
         public void mousePressed(MouseEvent e) {
             requestFocusInWindow();
 
@@ -10864,214 +11281,30 @@ public class Main extends JFrame {
             flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
             handlerControleComparacao.concluir();
 
-            RepresentacaoComUnidadesRemoviveis representacaoRemover =
-                    encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);
-            if (representacaoRemover != null) {
-                if (!adicaoDeUnidadesLiberadaPelaModelagem()) {
-                    agrupamentoRemoverQuadradinhoFocado = null;
-                    mostrarAnotacaoMouseOver = true;
-                    textoAnotacaoMouseOver = obterMensagemBloqueioAdicaoUnidades();
-                    mouseOverX = x;
-                    mouseOverY = y;
-                    setCursor(Cursor.getDefaultCursor());
-                    repaint();
-                    return;
-                }
-                boolean remocaoLiberada = ehAgrupamentoTransformacaoComSinal(
-                        representacaoRemover.obterAgrupamento())
-                        ? podeDecrementarValorAssinadoTransformacao(
-                                representacaoRemover.obterAgrupamento())
-                        : representacaoRemover.podeRemoverUnidade();
-                if (!remocaoLiberada) {
-                    agrupamentoRemoverQuadradinhoFocado = null;
-                    mostrarAnotacaoMouseOver = true;
-                    textoAnotacaoMouseOver = localizacao.texto(
-                            ehAgrupamentoTransformacaoComSinal(
-                                    representacaoRemover.obterAgrupamento())
-                                    ? "ui.tooltip.venn.integerLimitReached"
-                                    : "ui.tooltip.venn.minimumReached");
-                    mouseOverX = x;
-                    mouseOverY = y;
-                    setCursor(Cursor.getDefaultCursor());
-                    repaint();
-                    return;
-                }
-                if (ehAgrupamentoTransformacaoComSinal(
-                        representacaoRemover.obterAgrupamento())) {
-                    alterarValorAssinadoTransformacao(
-                            representacaoRemover.obterAgrupamento(),
-                            -1,
-                            "Decrementar transformação no tabuleiro",
-                            "A transformação foi reduzida em uma unidade com consistência entre as representações.");
-                } else {
-                    representacaoRemover.removerUnidade();
-                }
-                agrupamentoRemoverQuadradinhoFocado =
-                        (ehAgrupamentoTransformacaoComSinal(
-                                representacaoRemover.obterAgrupamento())
-                                ? podeDecrementarValorAssinadoTransformacao(
-                                        representacaoRemover.obterAgrupamento())
-                                : representacaoRemover.podeRemoverUnidade())
-                                ? representacaoRemover.obterAgrupamento() : null;
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                verificarConclusaoModelagem();
+            ResultadoControleUnidades<RepresentacaoComUnidades> resultadoControleUnidades =
+                    handlerControlesUnidades.processar(adaptadorControlesUnidades, x, y);
+            if (resultadoControleUnidades != null) {
+                apresentarResultadoControleUnidades(resultadoControleUnidades, x, y);
                 return;
             }
 
-            RepresentacaoComUnidadesAdicionaveis representacaoAdicionar =
-                    encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y);
-            if (representacaoAdicionar != null) {
-                if (!adicaoDeUnidadesLiberadaPelaModelagem()) {
-                    agrupamentoAdicionarQuadradinhoFocado = null;
-                    mostrarAnotacaoMouseOver = true;
-                    textoAnotacaoMouseOver = obterMensagemBloqueioAdicaoUnidades();
-                    mouseOverX = x;
-                    mouseOverY = y;
-                    setCursor(Cursor.getDefaultCursor());
-                    registrarAcaoGranular(
-                            "SELECIONAR",
-                            "Tentar adicionar unidade antes da modelagem",
-                            "Diagrama complementar",
-                            "Controle de adição do agrupamento",
-                            "Aguardar posicionamento no diagrama de Vergnaud",
-                            "bloqueio=modelagem_vergnaud_incompleta",
-                            "Nenhuma unidade foi criada.");
-                    repaint();
-                    return;
-                }
-                boolean adicaoLiberada = ehAgrupamentoTransformacaoComSinal(
-                        representacaoAdicionar.obterAgrupamento())
-                        ? podeIncrementarValorAssinadoTransformacao(
-                                representacaoAdicionar.obterAgrupamento())
-                        : representacaoAdicionar.podeAdicionarUnidade();
-                if (!adicaoLiberada) {
-                    agrupamentoAdicionarQuadradinhoFocado = null;
-                    registrarLimiteQuantidadeAtingido(
-                            representacaoAdicionar.obterAgrupamento(),
-                            obterQuadradinhosDoAgrupamento(
-                                    representacaoAdicionar.obterAgrupamento()));
-                    setCursor(Cursor.getDefaultCursor());
-                    return;
-                }
-                if (ehAgrupamentoTransformacaoComSinal(
-                        representacaoAdicionar.obterAgrupamento())) {
-                    alterarValorAssinadoTransformacao(
-                            representacaoAdicionar.obterAgrupamento(),
-                            1,
-                            "Incrementar transformação no tabuleiro",
-                            "A transformação foi aumentada em uma unidade com consistência entre as representações.");
-                } else {
-                    ResultadoOperacaoUnidade resultado = representacaoAdicionar.adicionarUnidade();
-                    if (resultado.isLimiteAtingido()) {
-                        registrarLimiteQuantidadeAtingido(
-                                representacaoAdicionar.obterAgrupamento(),
-                                obterQuadradinhosDoAgrupamento(
-                                        representacaoAdicionar.obterAgrupamento()));
-                    }
-                }
-                agrupamentoAdicionarQuadradinhoFocado =
-                        representacaoAdicionar.obterAgrupamento();
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                verificarConclusaoModelagem();
-                return;
-            }
-
-            if (ehGraficoBarrasComparacao()
-                    && (contemPontoControleComparacao(x, y) || contemEscalaComparacao(x, y))
-                    && !interacaoRepresentacoesLiberadaPelaModelagem()) {
-                informarBloqueioInteracaoRepresentacao(x, y, "Controle do gráfico de barras");
-                return;
-            }
-
-            if (ehGraficoBarrasComparacao() && (contemPontoControleComparacao(x, y) || contemEscalaComparacao(x, y))) {
-                Rectangle origemControleComparacao = obterRetanguloPontoControleComparacao();
-                iniciarFantasmaRetangular(origemControleComparacao, 18, true);
-                handlerControleComparacao.iniciar();
-                definirCursorMaoFechada();
-                aplicarControleComparacaoPeloMouse(y);
-                iniciarArrasteElastico(x, y);
-                repaint();
+            ResultadoPressionamentoControleComparacao resultadoControleComparacao =
+                    handlerControleComparacao.pressionar(adaptadorControleComparacao,
+                            x, y, interacaoRepresentacoesLiberadaPelaModelagem());
+            if (resultadoControleComparacao
+                    != ResultadoPressionamentoControleComparacao.NAO_CONSUMIDO) {
+                apresentarPressionamentoControleComparacao(resultadoControleComparacao, x, y);
                 return;
             }
 
             PaineisEixosRelacoes.Painel painelRecemRevelado =
                     paineisEixosRelacoes.processarPressionamentoLupa(x, y);
             if (painelRecemRevelado != null) {
-                prepararPainelEixoRelacao(painelRecemRevelado, getWidth(), getHeight());
-                registrarLogUsuario(
-                        "Revelar o eixo de um papel de Relações pela lupa",
-                        "-",
-                        "Lupa perto do elemento",
-                        "Papel do diagrama de Relações",
-                        "Ampliar a visão do número relativo e do sinal daquele papel, sob demanda",
-                        "OBJ4",
-                        "O eixo de cada papel fica escondido até a lupa ser clicada, para reduzir poluição visual.",
-                        "LUPA_EIXO_RELACAO",
-                        ""
-                );
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                repaint();
+                apresentarRevelacaoEixoRelacaoPelaLupa(painelRecemRevelado);
                 return;
             }
 
-            if (seletorOperacaoRelacaoAluno.processarPressionamento(x, y)) {
-                boolean correta = seletorOperacaoRelacaoAluno.respondeuCorretamente();
-                if (!correta) {
-                    scaffoldingFeedbackMultissensorialErro.emitirApenasSom();
-                }
-                registrarLogUsuario(
-                        "Escolher a operação (soma/subtração) da situação de Relações",
-                        "-",
-                        "Seletor de operação perto da seta do diagrama",
-                        "Operação entre os papéis de Relações",
-                        seletorOperacaoRelacaoAluno.obterEscolhaAluno().name(),
-                        "OBJ4",
-                        correta
-                                ? "O aluno escolheu a operação (soma/subtração) que combina os dois papéis curados."
-                                : "O aluno escolheu uma operação diferente da curada — explicação exibida perto do seletor.",
-                        "OPERACAO_RELACAO_ALUNO",
-                        correta ? "CORRETO" : "INCORRETO"
-                );
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                // Reavalia a conclusão: "só deixe azulzinho depois que for
-                // escolhida as operações corretamente" — a escolha da
-                // operação pode ser o último requisito pendente (papéis já
-                // posicionados antes). verificarConclusaoModelagem() já
-                // chama repaint() ao final.
-                verificarConclusaoModelagem();
-                return;
-            }
-
-            // Mesma ordem pedagógica do desenho (ver comentário em
-            // paintComponent): o clique no segundo seletor só é processado
-            // depois do primeiro estar correto — evita registrar clique numa
-            // área que, àquela altura, nem está sendo desenhada.
-            if (seletorOperacaoRelacaoAluno.respondeuCorretamente()
-                    && seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {
-                boolean correta = seletorOperacaoEstadoTransformacaoAluno.respondeuCorretamente();
-                if (!correta) {
-                    scaffoldingFeedbackMultissensorialErro.emitirApenasSom();
-                }
-                registrarLogUsuario(
-                        "Escolher a operação (soma/subtração) entre estado inicial e transformação",
-                        "-",
-                        "Seletor de operação à esquerda do círculo inferior do diagrama",
-                        "Operação entre estado inicial e transformação resultante",
-                        seletorOperacaoEstadoTransformacaoAluno.obterEscolhaAluno().name(),
-                        "OBJ4",
-                        correta
-                                ? "O aluno escolheu a operação (soma/subtração) que combina estado inicial e transformação resultante."
-                                : "O aluno escolheu uma operação diferente da curada — explicação exibida perto do seletor.",
-                        "OPERACAO_ESTADO_TRANSFORMACAO_ALUNO",
-                        correta ? "CORRETO" : "INCORRETO"
-                );
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                // Ver comentário equivalente no bloco de
-                // seletorOperacaoRelacaoAluno acima.
-                verificarConclusaoModelagem();
+            if (casoDeUsoSelecaoOperacoesRelacoes.processar(x, y)) {
                 return;
             }
 
@@ -11111,55 +11344,7 @@ public class Main extends JFrame {
                 return;
             }
 
-            MarcadorTexto marcador = encontrarMarcadorFixoTexto(x, y);
-
-            if (marcador != null) {
-                if (politicaUnicidadeElementoMatematicoTexto.jaEstaNoDiagrama(
-                        marcador, itensArrastaveis)) {
-                    textoAnotacaoMouseOver = localizacao.texto("ui.tooltip.alreadyPositioned");
-                    mostrarAnotacaoMouseOver = true;
-                    mouseOverX = x;
-                    mouseOverY = y;
-                    repaint();
-                    return;
-                }
-
-                ItemTextoArrastavel novo = sessaoArrasteTextoParaDiagrama.iniciarPorMarcador(marcador);
-                if (novo == null) {
-                    repaint();
-                    return;
-                }
-
-                registrarLogUsuario(
-                        "Selecionar valor do enunciado",
-                        "-",
-                        "Texto do problema",
-                        "Marcador textual",
-                        "Identificar dado numérico ou incógnita no enunciado",
-                        "OBJ8",
-                        "A seleção organiza os dados do problema antes do posicionamento no modelo.",
-                        "SELECAO_TEXTO",
-                        "valor=" + marcador.valor + "; papel=" + (marcador.chavePapel != null ? marcador.chavePapel : "")
-                );
-                // Selecionar não tem certo/errado porque ainda não há
-                // papel-alvo. O fato neutro é encaminhado ao Modelador.
-                conectorVereditoModelador.registrarAcaoNeutra(
-                        loggerInteracaoGerard.getUsuarioAtual(), tipoSituacaoSelecionada, "SELECIONAR");
-                handlerItemTextoArrastavel.iniciar(novo, x, y);
-                itemFocado = novo;
-                registrarAcaoGranular("SELECIONAR", "Selecionar elemento semântico do enunciado",
-                        "Texto do problema", "Marcador textual",
-                        "Escolher o elemento para conduzi-lo ao diagrama",
-                        "valor=" + marcador.valor + "; papel="
-                                + (marcador.chavePapel != null ? marcador.chavePapel : ""),
-                        "Elemento semântico selecionado para manipulação.");
-
-                atualizarRealceAlvoProximidade(novo);
-                iniciarFantasmaItem(novo);
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
-
-                repaint();
+            if (processarSelecaoMarcadorTexto(x, y)) {
                 return;
             }
 
@@ -11863,12 +12048,7 @@ public class Main extends JFrame {
                                                 .obterDescritor(chavePapelAlvo),
                                         tipoSituacaoSelecionada,
                                         contextoInstrumental);
-                loggerInteracaoGerard.registrarAcaoInstrumentalUsuario(registro);
-                conectorVereditoModelador.registrarAcaoInstrumental(
-                        loggerInteracaoGerard.getUsuarioAtual(),
-                        registro,
-                        gerard.agente.modelousuario.NivelSuporte.NENHUM,
-                        registro.getActionId());
+                persistirAcaoDaTentativa(registro, gerard.agente.modelousuario.NivelSuporte.NENHUM);
             }
             return resultado;
         }
@@ -11963,6 +12143,7 @@ public class Main extends JFrame {
             ElementoVergnaud numeroRelativo = painel.elemento;
             int valor = painel.grafico.getValorNavegavel();
             Integer valorAnterior = obterValorNumericoDoElemento(numeroRelativo);
+            boolean exploracaoAposConclusao = controladorConclusaoModelagem.isConcluida();
             if (!valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valor)) {
                 int seguro = politicaRestauracaoValorRelativo
                         .escolherValorSeguro(valorAnterior, valor);
@@ -11977,26 +12158,33 @@ public class Main extends JFrame {
                 repaint();
                 return;
             }
-            registrarLogUsuario(
-                    "Navegar no eixo x das Relações (painel próprio do papel)",
-                    "-",
-                    "Eixo x navegável",
-                    "Ponto de controle do eixo",
-                    "Quantificar o papel da relação e manter consistência entre representações",
-                    "OBJ4",
-                    "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
-                    "EIXO_X_RELACOES",
-                    "valorRelativo=" + valor
-            );
+            if (!exploracaoAposConclusao) {
+                registrarLogUsuario(
+                        "Navegar no eixo x das Relações (painel próprio do papel)",
+                        "-",
+                        "Eixo x navegável",
+                        "Ponto de controle do eixo",
+                        "Quantificar o papel da relação e manter consistência entre representações",
+                        "OBJ4",
+                        "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
+                        "EIXO_X_RELACOES",
+                        "valorRelativo=" + valor
+                );
+            }
             aplicarValorRelativoNoDiagrama(numeroRelativo, null, valor);
             ItemTextoArrastavel itemIncognita = encontrarItemSobreElemento(numeroRelativo);
             boolean liberadoParaPropagar = confirmarAoFinalizar
                     ? confirmarValorIncognitaAceito(itemIncognita)
                     : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
             if (liberadoParaPropagar) {
-                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                        numeroRelativo,
-                        EstadoSemanticoCompartilhado.Origem.EIXO_X);
+                suprimirPersistenciaExploracaoEixoConcluida = exploracaoAposConclusao;
+                try {
+                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                            numeroRelativo,
+                            EstadoSemanticoCompartilhado.Origem.EIXO_X);
+                } finally {
+                    suprimirPersistenciaExploracaoEixoConcluida = false;
+                }
             }
             if (confirmarAoFinalizar) {
                 verificarConclusaoModelagem();

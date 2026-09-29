@@ -1,8 +1,14 @@
 package gerard.aplicacao.portabilidade;
 
+import gerard.dominio.campoaditivo.IncognitaQuantitativa;
+import gerard.semantica.numero.ValorNumerico;
+import java.util.Arrays;
+import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
+
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
+import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
@@ -43,6 +49,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
+    private final EscopoTentativaWeb escopo;
+    private SinalNumeroRelativoWeb sinais;
     private PapelQuantitativo estadoInicial;
     private PapelQuantitativo transformacao1;
     private PapelQuantitativo estadoIntermediario;
@@ -67,6 +75,11 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
     public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
             SituacaoProblemaAditiva situacao) {
+        this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
+    }
+
+    public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
         if (situacao == null
                 || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             throw new IllegalArgumentException(
@@ -74,6 +87,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
+        this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
         reiniciar();
     }
 
@@ -132,6 +146,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
         estado.put("papel_aguardando_sinal",
                 papelAguardandoSinal == null ? null : papelAguardandoSinal.getChave());
+        estado.put("magnitude_aguardando_sinal", valorCuradoAguardandoSinal == null
+                ? null : Integer.valueOf(Math.abs(valorCuradoAguardandoSinal.intValue())));
         List<Object> acoes = AcoesDisponiveisAtividadeWeb.sorteios();
         acoes.add(AcoesDisponiveisAtividadeWeb.acaoReiniciar());
         if (papelAguardandoSinal != null) {
@@ -174,8 +190,9 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         OpcaoOperacaoCuradoria escolhaCorreta = AvaliacaoEscolhaOperacaoRelacao
                 .determinarOperacaoCorreta(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                         situacao, seletorConvertido);
-        boolean aceita = AvaliacaoEscolhaOperacaoRelacao
-                .respondeuCorretamente(escolhaAluno, escolhaCorreta);
+        ResultadoEscolhaOperacaoModelagem registroOperacao = EscolhaOperacaoWeb.registrar(
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, seletorConvertido, escolhaAluno, escolhaCorreta, escopo);
+        boolean aceita = registroOperacao != null && registroOperacao.foiCorreta();
         if (seletorConvertido == TipoOperacaoSeletor.ENTRE_TRANSFORMACOES) {
             escolhaEntreTransformacoes = escolhaAluno;
         } else {
@@ -184,7 +201,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
-        resultado.put("action_id", UUID.randomUUID().toString());
+        resultado.put("action_id", registroOperacao != null
+                ? registroOperacao.getActionId() : UUID.randomUUID().toString());
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("diagnostico", aceita ? null : escolhaAluno.name());
         resultado.put("chave_mensagem", aceita ? null : resolverExplicacao(
@@ -225,6 +243,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         escolhaEntreEstadoTransformacao = OpcaoOperacaoCuradoria.NAO_SELECIONADO;
         papelAguardandoSinal = null;
         valorCuradoAguardandoSinal = null;
+        escopo.incorporar(estadoInicial, transformacao1, estadoIntermediario, transformacao2, transformacaoFinal, estadoFinal, estadoInicialParte1, estadoInicialParte2);
+        sinais = new SinalNumeroRelativoWeb(situacao);
         return estadoAtual();
     }
 
@@ -277,12 +297,9 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
      */
     private String resolverExplicacao(TipoSituacaoAditiva tipo,
             TipoOperacaoSeletor papel, OpcaoOperacaoCuradoria operacao) {
-        String chave = AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(tipo, papel, operacao);
-        if (chave == null) {
-            return null;
-        }
-        String modelo = gerard.i18n.ServicoLocalizacao.getInstancia().texto(chave);
-        return AvaliacaoEscolhaOperacaoRelacao.preencherPersonagensCurados(modelo, situacao);
+        return RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                tipo, papel, operacao, situacao,
+                gerard.i18n.ServicoLocalizacao.getInstancia());
     }
 
     private static String nomeOuNull(OpcaoOperacaoCuradoria opcao) {
@@ -350,7 +367,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
                     "papel sem valor curado para posicionar: " + papelId);
         }
         gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo());
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
+                        participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();
             rejeitado.put("schema", SCHEMA_RESULTADO);
@@ -393,8 +411,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         Optional<DiagnosticoErroPapel> diagnostico = papel.posicionar(
                 new NumeroInteiro(valorEscolhido),
                 gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO, contexto);
-        boolean sinalDivergeDoCurado = Integer.signum(valorEscolhido)
-                != Integer.signum(valorCuradoAguardandoSinal.intValue());
+        boolean sinalDivergeDoCurado = sinais.avaliarDivergencia(
+                papel.getChave(), sinal, base, participantes(), escopo);
         papelAguardandoSinal = null;
         valorCuradoAguardandoSinal = null;
         Map<String, Object> resultado = mapa();
@@ -450,4 +468,9 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     private static Map<String, Object> mapa() {
         return new LinkedHashMap<String, Object>();
     }
+
+    private List<String> participantes() {
+        return Arrays.asList(estadoInicial.getChave(), transformacao1.getChave(), estadoIntermediario.getChave(), transformacao2.getChave(), transformacaoFinal.getChave(), estadoFinal.getChave(), estadoInicialParte1.getChave(), estadoInicialParte2.getChave());
+    }
+
 }

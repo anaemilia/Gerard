@@ -3,7 +3,9 @@ import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoO
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.i18n.ServicoLocalizacao;
 import java.util.List;
 
 /**
@@ -100,37 +102,41 @@ public final class TesteAvaliacaoEscolhaOperacaoRelacao {
                 OpcaoOperacaoCuradoria.NAO_SELECIONADO, OpcaoOperacaoCuradoria.NAO_SELECIONADO),
                 "Duas escolhas NAO_SELECIONADO não deveriam contar como resposta correta.");
 
-        // --- chaveExplicacao: uma chave exata por categoria/papel ---
-        exigir("operacao.explicacao.transformacaoRelacao.subtracao".equals(
-                AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(
-                        TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
-                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SUBTRACAO)),
-                "Chave de explicação errada para Transformação de Relação/subtração.");
-        exigir("operacao.explicacao.composicaoRelacoes.soma".equals(
-                AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(
-                        TipoSituacaoAditiva.COMPOSICAO_RELACOES,
-                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA)),
-                "Chave de explicação errada para Composição de Relações/soma.");
-        exigir("operacao.explicacao.composicaoTransformacoes.soma".equals(
-                AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(
-                        TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
-                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA)),
-                "Chave de explicação errada para Composição de Transformações/soma (primeira operação).");
-        exigir("operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma".equals(
-                AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(
-                        TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
-                        TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO, OpcaoOperacaoCuradoria.SOMA)),
-                "Chave de explicação errada para Composição de Transformações/soma (segunda operação).");
-        exigir(AvaliacaoEscolhaOperacaoRelacao.chaveExplicacao(
+        // A avaliação mantém somente a decisão semântica. A realização da
+        // explicação e a substituição dos personagens pertencem ao componente
+        // textual público, sem reabrir seus detalhes internos neste teste.
+        ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
+        String explicacaoTransformacaoRelacao = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
+                TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SUBTRACAO,
+                transformacaoRelacao, localizacao);
+        String explicacaoComposicaoRelacoes = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                TipoSituacaoAditiva.COMPOSICAO_RELACOES,
+                TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA,
+                composicaoRelacoes, localizacao);
+        String explicacaoPrimeiraTransformacao = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA,
+                composicaoTransformacoes, localizacao);
+        String explicacaoSegundaTransformacao = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
+                TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO, OpcaoOperacaoCuradoria.SOMA,
+                composicaoTransformacoes, localizacao);
+        for (String explicacao : new String[] {explicacaoTransformacaoRelacao,
+                explicacaoComposicaoRelacoes, explicacaoPrimeiraTransformacao,
+                explicacaoSegundaTransformacao}) {
+            exigir(explicacao != null && !explicacao.trim().isEmpty(),
+                    "A explicação aplicável deveria ser realizada.");
+            exigir(!explicacao.contains("{Personagem_1}")
+                            && !explicacao.contains("{Personagem_2}")
+                            && !explicacao.contains("{Personagem_3}"),
+                    "Marcadores de personagem deveriam ter sido substituídos.");
+        }
+        exigir(RealizadorTextoExplicacaoOperacaoRelacao.realizar(
                         TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
-                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA) == null,
+                        TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, OpcaoOperacaoCuradoria.SOMA,
+                        composicaoMedidas, localizacao) == null,
                 "Categoria sem explicação definida deveria devolver null.");
-
-        // --- preencherPersonagensCurados ---
-        String preenchido = AvaliacaoEscolhaOperacaoRelacao.preencherPersonagensCurados(
-                "{Personagem_1} e {Personagem_2}", composicaoRelacoes);
-        exigir(!preenchido.contains("{Personagem_1}") && !preenchido.contains("{Personagem_2}"),
-                "Marcadores de personagem deveriam ter sido substituídos.");
 
         System.out.println("APROVADO: AvaliacaoEscolhaOperacaoRelacao cobre as 3 categorias "
                 + "(Transformação de Relação, Composição de Relações, Composição de Transformações) "

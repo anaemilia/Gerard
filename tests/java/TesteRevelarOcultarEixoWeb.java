@@ -23,7 +23,7 @@ public final class TesteRevelarOcultarEixoWeb {
     public static void main(String[] args) {
         ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
                 new PoliticaSorteioSituacoesAditivas(),
-                new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
+                new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(new Random(11)),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
                 new Random(11), IdiomaInterface.PORTUGUES);
 
@@ -141,20 +141,18 @@ public final class TesteRevelarOcultarEixoWeb {
                         ((Map<String, Object>) figura.get("eixo")).get("valor")),
                 "valor do eixo deveria ser o mesmo valor confirmado no círculo");
 
-        int valorRevisado = valorConfirmado > 0 ? valorConfirmado + 1 : valorConfirmado - 1;
-        Map<String, Object> revisao = servico.ajustarValorPeloEixo(alvo, valorRevisado);
-        Map<String, Object> estadoRevisado = (Map<String, Object>) revisao.get("estado");
-        exigir(Boolean.TRUE.equals(revisao.get("aceita")), "revisão pelo eixo deveria ser aceita");
-        exigir(valorPapel(estadoRevisado, alvo) == valorRevisado,
-                "círculo deveria refletir o valor revisado no eixo");
-        exigir(valorPapel(estadoRevisado, "papel.estadoFinal") == inicial + valorRevisado,
-                "relação deveria recalcular o estado final após revisar a transformação");
-        figura = figuraDoPapel(estadoRevisado, alvo);
-        exigir(Integer.valueOf(valorRevisado).equals(
-                        ((Map<String, Object>) figura.get("eixo")).get("valor")),
-                "reta deveria refletir o valor revisado");
-        exigir(textoDoPapel(estadoRevisado, alvo).equals(String.valueOf(valorRevisado)),
-                "texto deveria refletir o valor revisado");
+        int valorExplorado = valorConfirmado > 0 ? valorConfirmado + 1 : valorConfirmado - 1;
+        Map<String, Object> projecao = servico.projetarAlteracaoEixo(alvo, valorExplorado);
+        Map<String, Object> valores = (Map<String, Object>) projecao.get("valores");
+        if (Boolean.TRUE.equals(projecao.get("aceita"))) {
+            exigir(Integer.valueOf(valorExplorado).equals(valores.get(alvo)),
+                    "projeção deveria conter o valor explorado no eixo");
+            exigir(Integer.valueOf(inicial + valorExplorado).equals(valores.get("papel.estadoFinal")),
+                    "relação do domínio deveria projetar o estado final");
+        }
+        Map<String, Object> depois = (Map<String, Object>) servico.ocultarEixo(alvo).get("estado");
+        exigir(valorPapel(depois, alvo) == valorConfirmado,
+                "exploração pelo eixo não pode gravar na tentativa (decisão de 2026-09-29)");
     }
 
     @SuppressWarnings("unchecked")

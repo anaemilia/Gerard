@@ -1,10 +1,9 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { api } from "./api";
 import type { AcaoDisponivel, EstadoWeb, FiguraCena,
   IdiomaSituacaoWeb, InteracaoPermitidaFigura } from "./contratos";
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
-import { EscolhaSinalFigura } from "./EscolhaSinalFigura";
 import { EixoNumericoFigura } from "./EixoNumericoFigura";
 import { AvisoPosicionamentoFigura } from "./AvisoPosicionamentoFigura";
 import { EnunciadoInterativo } from "./EnunciadoInterativo";
@@ -55,10 +54,32 @@ export default function App() {
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
   const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
   const [atividadeIniciada, setAtividadeIniciada] = useState(false);
+  // Projeção exploratória da reta: o servidor (relação estrutural do
+  // domínio) calcula o dependente; o cliente só exibe. Nada é gravado.
+  const [estadoExploratorio, setEstadoExploratorio] = useState<{
+    papelId: string; novoValor: number; valores: Readonly<Record<string, number>>;
+  } | null>(null);
+  const sequenciaProjecaoEixo = useRef(0);
+  const ultimaProjecaoAceita = useRef<{
+    papelId: string; novoValor: number; valores: Readonly<Record<string, number>>;
+  } | null>(null);
+  const [snapshotPropostaRejeitada, setSnapshotPropostaRejeitada] = useState<EstadoWeb | null>(null);
+  // Valor rejeitado aguardando a resposta Sim/Não: a resposta é uma
+  // tentativa própria registrada pelo servidor (decisão de 2026-09-28).
+  const [propostaRejeitada, setPropostaRejeitada] =
+    useState<{ papelId: string; valor: number } | null>(null);
+  const [sinalPendenteIncognita, setSinalPendenteIncognita] =
+    useState<{ figuraId: string; papelId: string } | null>(null);
 
   useEffect(() => {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
   }, []);
+
+  const tentativaAtualId = estado?.modelagem?.tentativa_id ?? estado?.situacao_id;
+  useEffect(() => {
+    setEstadoExploratorio(null);
+    ultimaProjecaoAceita.current = null;
+  }, [tentativaAtualId]);
 
   useEffect(() => {
     if (!avisoSinal) return;
@@ -124,6 +145,7 @@ export default function App() {
   }
 
   function escolherCategoria(categoria: string) {
+    if (!atividadeIniciada) return;
     const controle = acoesCategoria().find((item) => item.corpo?.categoria === categoria);
     if (controle) void executarClassificacao(controle);
   }
@@ -135,29 +157,23 @@ export default function App() {
   }
 
   function iniciarEdicaoValor(figura: FiguraCena, interacao: InteracaoPermitidaFigura) {
+    setSnapshotPropostaRejeitada(null);
+    setPropostaRejeitada(null);
+    setSinalPendenteIncognita(null);
     const modelagem = estado?.modelagem;
     const papeis = modelagem && "parte1" in modelagem
       ? [modelagem.parte1, modelagem.parte2, modelagem.todo]
       : modelagem && "papeis" in modelagem ? modelagem.papeis : undefined;
     const papel = papeis?.find((item) => item.id === interacao.papel_id);
-    const valorInicial = papel?.conhecido && papel.valor !== null ? String(papel.valor) : undefined;
+    const rascunho = papel && "rascunho_material_concreto" in papel
+      ? (papel as { rascunho_material_concreto?: number }).rascunho_material_concreto : undefined;
+    const valorInicial = papel?.conhecido && papel.valor !== null ? String(papel.valor)
+      : rascunho !== undefined && rascunho !== null ? String(rascunho) : undefined;
     enviarEventoRepresentacional({ tipo: "EDICAO_VALOR_INICIADA",
       elementoId: figura.id, actionId: interacao.acao_id, valorInicial });
   }
 
-  function aoConfirmarDigitacao() {
-    if (!representacoes.elementoEmEdicao) return;
-    const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
-    if (!Number.isInteger(Number(texto))) return;
-    enviarEventoRepresentacional({ tipo: "VALOR_PROPOSTO_PARA_CONFIRMACAO",
-      elementoId: representacoes.elementoEmEdicao });
-  }
-
-  function aoNegarValor() {
-    enviarEventoRepresentacional({ tipo: "CONFIRMACAO_NEGADA" });
-  }
-
-  async function aoConfirmarValor() {
+  async function enviarPropostaValor(valor: number) {
     if (!estado || !representacoes.elementoEmEdicao) return;
     const figura = estado.cena?.figuras.find(
       (item) => item.id === representacoes.elementoEmEdicao);
@@ -165,18 +181,95 @@ export default function App() {
       (item) => item.tipo === "EDITAR_VALOR");
     const controle = estado.acoes_disponiveis.find((item) =>
       item.id === interacao?.acao_id && item.corpo?.papel_id === interacao.papel_id);
-    const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
-    const valor = Number(texto);
-    if (!figura || !interacao || !controle || !Number.isInteger(valor)) {
-      return;
-    }
+    if (!figura || !interacao || !controle || !Number.isInteger(valor)) return;
     setOcupado(true);
     try {
       const resultado = await api.posicionar(controle, valor);
-      receberSnapshot(resultado.estado);
-      enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
+      if (resultado.aceita) {
+        receberSnapshot(resultado.estado);
+        setSinalPendenteIncognita(null);
+        enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
+      } else if (resultado.limite_atingido) {
+        // Limite de rejeições atingido: como no desktop
+        // (processarLimiteTentativasAtingido), não há nova pergunta; o
+        // snapshot do servidor traz a escalada (material concreto).
+        setSinalPendenteIncognita(null);
+        receberSnapshot(resultado.estado);
+        enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
+      } else if (!resultado.chave_mensagem) {
+        // Após a conclusão (azul) a modificação é exploratória: a
+        // IncognitaQuantitativa não constitui tentativa e o servidor não
+        // devolve pergunta. Só volta a pedir o valor, sem Sim/Não.
+        setSinalPendenteIncognita(null);
+      } else {
+        setSinalPendenteIncognita(null);
+        setSnapshotPropostaRejeitada(resultado.estado);
+        setPropostaRejeitada({ papelId: interacao.papel_id, valor });
+        enviarEventoRepresentacional({ tipo: "VALOR_PROPOSTO_PARA_CONFIRMACAO",
+          elementoId: representacoes.elementoEmEdicao });
+      }
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
+  }
+
+  function aoConfirmarDigitacao() {
+    if (!estado || !representacoes.elementoEmEdicao) return;
+    const figura = estado.cena?.figuras.find(
+      (item) => item.id === representacoes.elementoEmEdicao);
+    const texto = representacoes.valoresEmEdicao[representacoes.elementoEmEdicao] ?? "";
+    const magnitude = Number(texto);
+    if (!figura || !Number.isInteger(magnitude)) return;
+    if (figura.requer_representacao_de_sinal) {
+      setSinalPendenteIncognita({
+        figuraId: figura.id,
+        papelId: figura.chave_papel_semantico,
+      });
+      return;
+    }
+    void enviarPropostaValor(magnitude);
+  }
+
+  function escolherSinalIncognita(sinal: "+" | "-") {
+    if (!sinalPendenteIncognita) return;
+    const texto = representacoes.valoresEmEdicao[sinalPendenteIncognita.figuraId] ?? "";
+    const magnitude = Math.abs(Number(texto));
+    if (!Number.isInteger(magnitude)) return;
+    void enviarPropostaValor(sinal === "-" ? -magnitude : magnitude);
+  }
+
+  async function responderConfirmacao(confirmou: boolean) {
+    const proposta = propostaRejeitada;
+    const snapshotRejeitado = snapshotPropostaRejeitada;
+    setPropostaRejeitada(null);
+    setSnapshotPropostaRejeitada(null);
+    setSinalPendenteIncognita(null);
+    let limiteAtingido = false;
+    let estadoServidor: EstadoWeb | null = null;
+    if (proposta) {
+      setOcupado(true);
+      try {
+        const resultado = await api.responderConfirmacaoValor(
+          proposta.papelId, confirmou, proposta.valor);
+        limiteAtingido = Boolean(resultado.limite_atingido);
+        estadoServidor = resultado.estado;
+      } catch (erro) { console.error(erro); }
+      finally { setOcupado(false); }
+    }
+    if (confirmou || limiteAtingido) {
+      const snapshot = estadoServidor ?? snapshotRejeitado;
+      if (snapshot) receberSnapshot(snapshot);
+      enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
+    } else {
+      enviarEventoRepresentacional({ tipo: "CONFIRMACAO_NEGADA" });
+    }
+  }
+
+  function aoNegarValor() {
+    void responderConfirmacao(false);
+  }
+
+  function aoConfirmarValor() {
+    void responderConfirmacao(true);
   }
 
   async function ajustarQuadradinho(delta: 1 | -1) {
@@ -226,6 +319,13 @@ export default function App() {
           href: "/api/acoes/engatar-incognita", corpo: { papel_id: engatar.papel_id }
         }, papelId);
         receberSnapshot(resultado.estado);
+        if (resultado.aceita) {
+          const figuraEngatada = resultado.estado.cena?.figuras.find(
+            (item) => item.id === figura.id);
+          const editar = figuraEngatada?.interacoes_permitidas.find(
+            (item) => item.tipo === "EDITAR_VALOR");
+          if (figuraEngatada && editar) iniciarEdicaoValor(figuraEngatada, editar);
+        }
         setAvisoPosicionamento(resultado.aceita ? null
           : { figuraId: figura.id, mensagem: resultado.chave_mensagem ?? "" });
       } catch (erro) { console.error(erro); }
@@ -262,7 +362,9 @@ export default function App() {
     try {
       const resultado = await api.escolherOperacao(controle, operacao);
       receberSnapshot(resultado.estado);
-      setMensagemOperacao(resultado.aceita ? null : (resultado.chave_mensagem ?? "Operação incorreta."));
+      // Regra 1: nenhum texto inventado. Sem explicação curada vinda do
+      // servidor, nada é exibido (o desktop só emite o som de erro).
+      setMensagemOperacao(resultado.aceita ? null : resultado.chave_mensagem);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -282,6 +384,23 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
+  async function projetarEixo(papelId: string, valor: number) {
+    const sequencia = ++sequenciaProjecaoEixo.current;
+    try {
+      const resultado = await api.projetarEixo(papelId, valor);
+      if (sequencia === sequenciaProjecaoEixo.current) {
+        if (resultado.aceita === false) {
+          // Domínio recusou (ex.: medida negativa): volta à última projeção aceita.
+          setEstadoExploratorio(ultimaProjecaoAceita.current);
+        } else {
+          const aceita = { papelId, novoValor: valor, valores: resultado.valores };
+          ultimaProjecaoAceita.current = aceita;
+          setEstadoExploratorio(aceita);
+        }
+      }
+    } catch (erro) { console.error(erro); }
+  }
+
   async function alternarEixo(figura: FiguraCena) {
     const interacao = figura.interacoes_permitidas.find(
       (item) => item.tipo === (figura.lupa_habilitada ? "OCULTAR_EIXO" : "REVELAR_EIXO"));
@@ -296,28 +415,54 @@ export default function App() {
     finally { setOcupado(false); }
   }
 
-  async function ajustarValorPeloEixo(figura: FiguraCena, valor: number) {
-    setOcupado(true);
-    try {
-      const resultado = await api.ajustarValorEixo(figura.chave_papel_semantico, valor);
-      receberSnapshot(resultado.estado);
-    } catch (erro) { console.error(erro); }
-    finally { setOcupado(false); }
-  }
-
-  const figuraEmEdicao = estado && representacoes.elementoEmEdicao
-    ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
-    : undefined;
-  // Presente só nas categorias com modelagem ternária (Comparação/
-  // Transformação de Medidas, Transformação de Relação) — ver
-  // EstadoModelagemTernaria.papel_aguardando_sinal.
+  // Generalizado por capacidade: as cinco categorias que possuem número
+  // relativo ou transformação expõem papel_aguardando_sinal; Composição de
+  // Medidas é a única das seis sem papel que necessite representação de sinal.
   const modelagemComSinal = estado && estado.modelagem
     && "papel_aguardando_sinal" in estado.modelagem
     ? estado.modelagem
     : undefined;
-  const figuraAguardandoSinal = modelagemComSinal?.papel_aguardando_sinal
-    ? estado?.cena?.figuras.find(
-        (item) => item.chave_papel_semantico === modelagemComSinal.papel_aguardando_sinal)
+
+  const cenaExibida = (() => {
+    if (!estado?.cena) return estado?.cena;
+    const papelPendente = sinalPendenteIncognita?.papelId
+      ?? modelagemComSinal?.papel_aguardando_sinal;
+    const magnitudeDigitada = sinalPendenteIncognita
+      ? Number(representacoes.valoresEmEdicao[sinalPendenteIncognita.figuraId] ?? "")
+      : null;
+    const magnitudePendente = Number.isInteger(magnitudeDigitada)
+      ? Math.abs(magnitudeDigitada!)
+      : modelagemComSinal?.magnitude_aguardando_sinal;
+    const cenaComMagnitude = papelPendente && magnitudePendente !== null
+        && magnitudePendente !== undefined
+      ? { ...estado.cena, figuras: estado.cena.figuras.map((figura) =>
+          figura.chave_papel_semantico === papelPendente
+            ? { ...figura, valor: magnitudePendente, conhecido: true, engatada: false }
+            : figura) }
+      : estado.cena;
+    if (!estadoExploratorio) return cenaComMagnitude;
+    const origem = cenaComMagnitude.figuras.find(
+      (figura) => figura.chave_papel_semantico === estadoExploratorio.papelId);
+    if (!origem || origem.valor === null) return cenaComMagnitude;
+    // O papel publica a alteração; a relação estrutural do domínio (servidor)
+    // a resolve uma vez e todas as representações consomem os mesmos valores.
+    const valoresExplorados = new Map<string, number>(
+      Object.entries(estadoExploratorio.valores));
+    return {
+      ...cenaComMagnitude,
+      figuras: cenaComMagnitude.figuras.map((figura) => {
+        const valor = valoresExplorados.get(figura.chave_papel_semantico);
+        return valor === undefined ? figura : { ...figura, valor };
+      }),
+      elementos_texto: cenaComMagnitude.elementos_texto?.map((elemento) => {
+        const valor = elemento.papel_id ? valoresExplorados.get(elemento.papel_id) : undefined;
+        return valor === undefined ? elemento : { ...elemento, valor: String(valor) };
+      }),
+    };
+  })();
+
+  const figuraEmEdicao = estado && representacoes.elementoEmEdicao
+    ? estado.cena?.figuras.find((item) => item.id === representacoes.elementoEmEdicao)
     : undefined;
   // Generalizado por capacidade, não por categoria: qualquer modelagem que
   // exponha um dos dois campos de escolha de operação (formatos distintos
@@ -351,7 +496,10 @@ export default function App() {
       podeSortearRelacoes={Boolean(acao("SORTEAR_RELACOES"))}
       aoSortearMedidas={() => sortear("SORTEAR_MEDIDAS")}
       aoSortearRelacoes={() => sortear("SORTEAR_RELACOES")}
-      categoriasHabilitadas={acoesCategoria().map((item) => String(item.corpo?.categoria))}
+      // O snapshot inicial só habilita os sorteios (dfef18a): sem situação
+      // exibida, escolher categoria classificaria um enunciado invisível.
+      categoriasHabilitadas={atividadeIniciada
+        ? acoesCategoria().map((item) => String(item.corpo?.categoria)) : []}
       categoriaSelecionada={atividadeIniciada && estado ? estado.categoria_selecionada : null}
       aoEscolherCategoria={escolherCategoria}
       contextoRelatoBug={atividadeIniciada && estado ? { situacaoId: estado.situacao_id,
@@ -391,13 +539,13 @@ export default function App() {
                 </p>}
           </div>}
         </div>
-        {estado.cena?.elementos_texto
+        {cenaExibida?.elementos_texto
           ? <EnunciadoInterativo key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
-              elementos={estado.cena?.elementos_texto}
-              permiteEditarNarrativa={estado.cena?.permite_editar_narrativa === true}
-              figuras={estado.cena?.figuras ?? []}
-              organizadores={estado.cena?.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
-              modeloPalavraComum={estado.cena?.vocabulario_texto?.modelo_palavra_comum ?? null}
+              elementos={cenaExibida.elementos_texto}
+              permiteEditarNarrativa={cenaExibida.permite_editar_narrativa === true}
+              figuras={cenaExibida.figuras}
+              organizadores={cenaExibida.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
+              modeloPalavraComum={cenaExibida.vocabulario_texto?.modelo_palavra_comum ?? null}
               aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
@@ -412,37 +560,45 @@ export default function App() {
               <IconeRestaurar />
             </button>
           </span>}
-          {estado.cena && <GeradorCenaGerard cena={estado.cena}
+          {cenaExibida && <GeradorCenaGerard cena={cenaExibida}
             posicoesEmEdicao={representacoes.posicoesEmEdicao}
             aoEditarValor={iniciarEdicaoValor}
             figuraDestacadaId={figuraDestacadaId}
             aoAlternarEixo={(figura) => void alternarEixo(figura)}
+            seletorSinal={sinalPendenteIncognita || modelagemComSinal?.papel_aguardando_sinal ? {
+              papelId: sinalPendenteIncognita?.papelId
+                ?? modelagemComSinal!.papel_aguardando_sinal!,
+              mensagemDivergente: avisoSinal?.mensagem ?? null,
+              aoEscolher: (papelId, figuraId, sinal) => sinalPendenteIncognita
+                ? escolherSinalIncognita(sinal)
+                : void escolherSinal(papelId, figuraId, sinal),
+            } : undefined}
             seletorOperacao={modelagemEscolhaOperacao ? { modelagem: modelagemEscolhaOperacao,
               mensagemErro: mensagemOperacao, ocupado, aoEscolher: escolherOperacao } : undefined} />}
-          {figuraEmEdicao && <EdicaoValorFigura figuraId={figuraEmEdicao.id}
+          {figuraEmEdicao && !sinalPendenteIncognita && <EdicaoValorFigura figuraId={figuraEmEdicao.id}
             papelNome={figuraEmEdicao.rotulo} pergunta={estado.confirmacao_valor_papel}
             modo={representacoes.confirmando ? "confirmando" : "digitando"}
             requerSinal={figuraEmEdicao.requer_representacao_de_sinal}
             valor={representacoes.valoresEmEdicao[figuraEmEdicao.id] ?? ""} ocupado={ocupado}
             aoAlterarValor={(valor) => enviarEventoRepresentacional({
               tipo: "VALOR_EM_EDICAO_ALTERADO", elementoId: figuraEmEdicao.id, valor })}
-            aoConfirmarDigitacao={aoConfirmarDigitacao}
-            aoConfirmarValor={() => void aoConfirmarValor()}
+            aoConfirmarDigitacao={() => void aoConfirmarDigitacao()}
+            aoConfirmarValor={aoConfirmarValor}
             aoNegarValor={aoNegarValor} />}
-          {figuraAguardandoSinal && <EscolhaSinalFigura figuraId={figuraAguardandoSinal.id}
-            papelNome={figuraAguardandoSinal.rotulo} ocupado={ocupado}
-            mensagemDivergente={avisoSinal?.figuraId === figuraAguardandoSinal.id
-              ? avisoSinal.mensagem : null}
-            aoEscolherSinal={(sinal) => void escolherSinal(
-              figuraAguardandoSinal.chave_papel_semantico, figuraAguardandoSinal.id, sinal)} />}
           {avisoPosicionamento && <AvisoPosicionamentoFigura
             figuraId={avisoPosicionamento.figuraId} mensagem={avisoPosicionamento.mensagem} />}
           {estado.cena?.figuras.filter((figura) => figura.lupa_habilitada && figura.eixo)
-            .map((figura) => <EixoNumericoFigura key={figura.id} figuraId={figura.id}
-              papelNome={figura.rotulo} eixo={figura.eixo!} ocupado={ocupado}
-              editavel={figura.eixo!.valor !== null}
-              aoAlterarValor={(valor) => void ajustarValorPeloEixo(figura, valor)}
-              aoFechar={() => void alternarEixo(figura)} />)}
+            .map((figura) => {
+              const valorExibido = cenaExibida?.figuras
+                .find((figuraExibida) => figuraExibida.id === figura.id)?.valor
+                ?? figura.eixo!.valor;
+              return <EixoNumericoFigura key={figura.id} figuraId={figura.id}
+                papelNome={figura.rotulo} eixo={{ ...figura.eixo!, valor: valorExibido }}
+                ocupado={ocupado} editavel={figura.eixo!.valor !== null}
+                aoPrevisualizarValor={(valor) =>
+                  projetarEixo(figura.chave_papel_semantico, valor)}
+                aoFechar={() => void alternarEixo(figura)} />;
+            })}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
@@ -458,9 +614,9 @@ export default function App() {
       </div>
       {estado.modo === "AGUARDANDO_CONFIRMACAO_CATEGORIA" &&
         <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="pergunta-categoria">
-          <h2 id="pergunta-categoria">Confirme sua escolha</h2><p>{estado.questionamento}</p>
-          <div className="dialog-actions"><button type="button" onClick={() => confirmarCategoria(true)} disabled={ocupado}>Sim</button>
-            <button type="button" onClick={() => confirmarCategoria(false)} disabled={ocupado}>Não</button></div>
+          <h2 id="pergunta-categoria">{estado.questionamento_titulo}</h2><p>{estado.questionamento}</p>
+          <div className="dialog-actions"><button type="button" onClick={() => confirmarCategoria(true)} disabled={ocupado}>{estado.questionamento_sim}</button>
+            <button type="button" onClick={() => confirmarCategoria(false)} disabled={ocupado}>{estado.questionamento_nao}</button></div>
         </section></div>}
       {estado.modo === "REEXPLICACAO_CATEGORIA" && explicacaoCategoriaVista !== estado.situacao_id &&
         <div className="modal-backdrop" role="presentation"><section className="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="titulo-reexplicacao-categoria">

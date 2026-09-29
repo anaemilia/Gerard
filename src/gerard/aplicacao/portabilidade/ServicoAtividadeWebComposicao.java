@@ -6,18 +6,17 @@ import gerard.campoaditivo.curadoria.MaterializadorEnunciadoCurado;
 import gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.dominio.campoaditivo.ContextoAcao;
-import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
-import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
+import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComposicao;
-import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.semantica.numero.NumeroNatural;
+import gerard.semantica.numero.ValorNumerico;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Fachada de aplicação portátil para uma tentativa mínima de Composição de
@@ -36,7 +35,9 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
     private RelacaoEstruturalComposicao relacao;
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
+    private final EscopoTentativaWeb escopo;
     private PapelQuantitativo papelDesconhecido;
+    private IncognitaQuantitativa incognita;
     // Rascunho da contagem de quadradinhos — NUNCA grava em papelDesconhecido
     // (PapelQuantitativo.posicionar marcaria o papel como preenchido, tirando-o
     // de ehIncognita() e quebrando a precondição de "exatamente um incógnito"
@@ -63,11 +64,17 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
 
     public ServicoAtividadeWebComposicao(String tentativaId,
             SituacaoProblemaAditiva situacao) {
+        this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
+    }
+
+    public ServicoAtividadeWebComposicao(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
         if (situacao == null || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             throw new IllegalArgumentException("situação de Composição de Medidas é obrigatória");
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
+        this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
         reiniciar();
     }
 
@@ -153,7 +160,8 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
         }
         gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo());
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
+                        participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();
             rejeitado.put("schema", SCHEMA_RESULTADO);
@@ -189,7 +197,8 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
                     "papel não é a incógnita desta situação: " + papelId);
         }
         gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo());
+                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
+                        participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();
             rejeitado.put("schema", SCHEMA_RESULTADO);
@@ -213,48 +222,51 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         return proporValor(papelDesconhecido.getChave(), valor);
     }
 
+    /** Resposta Sim/Não à confirmação do valor rejeitado da incógnita. */
+    public synchronized Map<String, Object> responderConfirmacaoValor(
+            String papelId, boolean confirmou, int valor) {
+        if (papelDesconhecido == null || !papelDesconhecido.getChave().equals(papelId)) {
+            throw new IllegalArgumentException(
+                    "papel não é a incógnita desta situação: " + papelId);
+        }
+        Map<String, Object> resultado = RespostaConfirmacaoValorWeb.responder(
+                incognita, confirmou, new NumeroNatural(valor), valorEsperado(),
+                ContextosAcaoInstrumentalWeb.respostaConfirmacao(
+                        papelId, confirmou, valor, participantes()),
+                escopo);
+        resultado.put("estado", estadoAtual());
+        return resultado;
+    }
+
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
         if (!papelDesconhecido.getChave().equals(papelId)) {
             throw new IllegalArgumentException("papel não é a incógnita desta situação: " + papelId);
         }
         NumeroNatural proposta = new NumeroNatural(valor);
-        ContextoAcao contexto = new ContextoAcao(
-                "sessao.web.local", "usuario.web.local", tentativaId,
-                situacao.getId(), "diagrama.vergnaud.web");
-        IdentidadeAcaoInstrumentalPapel identidade =
-                papelDesconhecido.iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO);
-        Optional<DiagnosticoErroPapel> diagnostico =
-                relacao.diagnosticarValorProposto(
-                        parte1, parte2, todo, papelDesconhecido, proposta);
-        ResultadoRegistroTentativaPapel registro =
-                papelDesconhecido.registrarTentativaComIdentidade(
-                        identidade, diagnostico, contexto, proposta);
-
-        if (!diagnostico.isPresent()) {
+        ValorIncognitaWeb.Resultado avaliacao = ValorIncognitaWeb.propor(
+                incognita, proposta, valorEsperado(),
+                ContextosAcaoInstrumentalWeb.valorIncognita(papelId, valor, participantes()),
+                escopo);
+        if (avaliacao.isAceita()) {
+            ContextoAcao contexto = new ContextoAcao(
+                    "sessao.web.local", "usuario.web.local", tentativaId,
+                    situacao.getId(), "diagrama.vergnaud.web");
             papelDesconhecido.posicionar(proposta, OrigemAcao.ORIGEM_USUARIO, contexto);
         }
-
-        Map<String, Object> resultado = mapa();
-        resultado.put("schema", SCHEMA_RESULTADO);
-        resultado.put("action_id", registro.getActionId());
-        resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
-        resultado.put("diagnostico", diagnostico.isPresent()
-                ? diagnostico.get().getTipo().name() : null);
-        // getChaveMensagem() não é texto exibível — são chaves do piloto
-        // DiagnosticoErroPapel, deliberadamente não adicionadas a
-        // mensagens_*.properties (ver Javadoc da classe). O texto real que o
-        // desktop mostra ao aluno (confirmarValorIncognitaAceito em
-        // Main.java, sem ajuda adaptativa materializada) é o aviso de limite
-        // de tentativas ou a pergunta genérica de confirmação — replicado em
-        // MensagemFeedbackIncognitaWeb.
-        resultado.put("chave_mensagem", diagnostico.isPresent()
-                ? MensagemFeedbackIncognitaWeb.resolver(papelDesconhecido, registro) : null);
-        resultado.put("limite_atingido", Boolean.valueOf(
-                diagnostico.isPresent() && MensagemFeedbackIncognitaWeb.limiteAtingido(registro)));
-        resultado.put("rejeicoes_consecutivas",
-                Integer.valueOf(registro.getRejeicoesConsecutivas()));
+        Map<String, Object> resultado = avaliacao.getProjecao();
         resultado.put("estado", estadoAtual());
         return resultado;
+    }
+
+    /** O valor esperado da incógnita é calculado pela relação estrutural. */
+    private ValorNumerico valorEsperado() {
+        gerard.dominio.campoaditivo.ResultadoCalculo calculo =
+                relacao.calcularValorAusente(parte1, parte2, todo);
+        return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
+    }
+
+    private List<String> participantes() {
+        return Arrays.asList(parte1.getChave(), parte2.getChave(), todo.getChave());
     }
 
     /**
@@ -328,9 +340,14 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
             Map<String, Object> item = mapa();
             item.put("id", papel.getChave());
             item.put("nome", papel.getNomeConceitual());
-            item.put("conhecido", Boolean.TRUE);
-            item.put("valor", Integer.valueOf(contagemMaterialConcreto));
-            item.put("engatada", Boolean.FALSE);
+            // A contagem do material concreto é rascunho: a incógnita continua
+            // "?" no enunciado e no Vergnaud até a confirmação pelo editor
+            // (preservação da incógnita; termo_desconhecido como fonte única).
+            // O rascunho só alimenta o material concreto e o pré-preenchimento.
+            item.put("conhecido", Boolean.FALSE);
+            item.put("valor", null);
+            item.put("engatada", Boolean.TRUE);
+            item.put("rascunho_material_concreto", Integer.valueOf(contagemMaterialConcreto));
             return item;
         }
         return projetarPapel(papel);
@@ -369,6 +386,9 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         // arrasta cada papel (conhecido ou incógnita) do enunciado até o
         // diagrama (ver posicionarValorConhecido / proporValor).
         relacao = RelacaoEstruturalComposicao.composicaoDeMedidas();
+        escopo.incorporar(parte1, parte2, todo);
+        this.incognita = new IncognitaQuantitativa(
+                papelDesconhecido.getChave(), situacao.getTipo(), papelDesconhecido);
         contagemMaterialConcreto = 0;
         incognitaEngatada = false;
         return estadoAtual();

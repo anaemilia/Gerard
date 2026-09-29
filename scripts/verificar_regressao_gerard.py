@@ -14,6 +14,7 @@ correto. Para isso, veja a recomendação de testes JUnit no relatório de
 análise de código.
 """
 from pathlib import Path
+import re
 import os, re, shutil, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]
@@ -127,6 +128,16 @@ else:
     check(False,'ant clean jar (Ant não encontrado no PATH, ANT_HOME ou IDE)')
 check((ROOT/'dist/GerardNetBeans_D3_Leitura_Redes_Transicoes.jar').exists(),'JAR gerado')
 
+print('== Localidade arquitetural sem deslocamento de concentração ==')
+for argumentos, descricao in (
+        (['--autoteste'], 'checker distingue mini-Main de caso de uso por portas'),
+        ([], 'checker bloqueia novas violações e controla a dívida conhecida')):
+    r=subprocess.run(
+        [sys.executable,
+         str(ROOT/'scripts/verificar_localidade_arquitetural.py')]+argumentos,
+        cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    print(r.stdout); check(r.returncode==0,descricao)
+
 print('== Internacionalização ==')
 # Desde a Fase 6 da refatoração (ver PLANO_REFATORACAO_ARQUITETURA_GERARD.md),
 # as mensagens vêm de src/gerard/i18n/mensagens_xx.properties; ServicoLocalizacao.java
@@ -158,9 +169,21 @@ servico_avaliacao_incognita=text('src/gerard/aplicacao/ServicoAvaliacaoAcaoIncog
 check('incognita.avaliarAcao(' in servico_avaliacao_incognita
       and all(token not in servico_avaliacao_incognita for token in ('javax.swing', 'java.awt')),
       'serviço de aplicação delega a avaliação factual à incógnita sem depender de Swing/AWT')
-check(fluxo_texto.count('registrarAcaoInstrumentalUsuario(registro)') == 1,
+# Decisão 2026-09-29: o registro passa pela tentativa (dono do modo
+# exploratório após o azul) antes de chegar ao log e ao Modelador.
+inicio_persistir=main.find('private void persistirAcaoDaTentativa(')
+fim_persistir=main.find('\n        }', inicio_persistir)
+persistir=(main[inicio_persistir:fim_persistir]
+           if inicio_persistir >= 0 and fim_persistir > inicio_persistir else '')
+persistir_ok=(persistir.count('tentativaModelagemAtual.constituir(registro)') == 1
+              and persistir.count('registrarAcaoInstrumentalUsuario(registro)') == 1
+              and persistir.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 1)
+check(persistir_ok, 'a tentativa constitui o registro antes do log e do Modelador')
+check(fluxo_texto.count('persistirAcaoDaTentativa(registro') == 1
+      and 'registrarAcaoInstrumentalUsuario(' not in fluxo_texto,
       'uma ação TEXTO produz um único registro factual no log')
-check(fluxo_texto.count('conectorVereditoModelador.registrarAcaoInstrumental(') == 1,
+check(fluxo_texto.count('persistirAcaoDaTentativa(registro') == 1
+      and 'conectorVereditoModelador.registrarAcaoInstrumental(' not in fluxo_texto,
       'o mesmo registro chega uma única vez ao Modelador')
 check('executorAjudaIncognita.executar(' in fluxo_texto,
       'a interface materializa a decisão local de ajuda')
@@ -226,9 +249,8 @@ check(bool(avaliacao_sinal) and bool(callbacks_sinal),
       'avaliação e os dois callbacks de sinal foram localizados')
 check('tentativa.avaliarEscolha(' in avaliacao_sinal,
       'a Main encaminha a opção ao proprietário do papel')
-check(avaliacao_sinal.count('registrarAcaoInstrumentalUsuario(registro)') == 1
-      and avaliacao_sinal.count(
-          'conectorVereditoModelador.registrarAcaoInstrumental(') == 1,
+check(persistir_ok and avaliacao_sinal.count('persistirAcaoDaTentativa(registro') == 1
+      and 'registrarAcaoInstrumentalUsuario(' not in avaliacao_sinal,
       'o mesmo registro de sinal chega uma vez ao log e ao Modelador')
 check(callbacks_sinal.count('avaliarEscolhaSinalNumeroRelativo(') == 2,
       'os dois caminhos de seleção usam o mesmo ponto de encaminhamento')
@@ -283,7 +305,10 @@ print('== Main compositora e roteadora: ratchet dos protocolos de interação ==
 # particular solta em Main — mas o commit não ajustou este limite junto,
 # deixando o ratchet quebrado sem detecção até esta auditoria.
 LIMITES_PROTOCOLOS_MAIN = {
-    'public void mousePressed(MouseEvent e)': 406,
+    # Fase 7.12 (2026-09-29): pressionamento da barra de Comparação -> handler, 197 -> 188.
+    # Fase 7.13 (2026-09-29): apresentação da lupa de Relações -> apresentador, 188 -> 174
+    # (organização do roteamento; a mecânica da lupa já estava em PaineisEixosRelacoes).
+    'public void mousePressed(MouseEvent e)': 174,
     'public void mouseDragged(MouseEvent e)': 28,
     'private void processarMovimentoArraste(int x, int y)': 60,
     'public void mouseReleased(MouseEvent e)': 108,
@@ -604,7 +629,9 @@ check(all(token not in tentativa_modelagem + registro_restauracao + tipo_restaur
 check('registrarAcaoRestauracao(' in main
       and 'TipoRestauracaoModelagem.ELEMENTOS_FORA_DO_DIAGRAMA' in main
       and 'TipoRestauracaoModelagem.DIAGRAMA_COMPLETO' in main
-      and 'registrarLogUsuarioComIdentidade(\n                    "SELECIONAR"' in main,
+      and 'PersistidorRestauracaoModelagemLogGerard(loggerInteracaoGerard)' in main
+      and 'registrarUsuarioComIdentidade(\n                "SELECIONAR"' in text(
+          'src/gerard/pesquisador/log/PersistidorRestauracaoModelagemLogGerard.java'),
       'tela solicita a ação tipada e persiste a identidade produzida pelo agregado')
 check('restaurarTentativasIncognitaAtual' not in main,
       'tela não restaura diretamente o estado local pertencente ao domínio')
@@ -811,6 +838,316 @@ check('class TesteHandlerInteracaoPaineisEixosRelacoes'
       and 'testarAdaptadorDesktopDosPaineis'
           in teste_handler_paineis_relacoes,
       'teste do handler cobre bloqueio contextual, ciclo portátil e adaptação desktop dos painéis')
+
+print('== Fase 7.8: protocolo portátil dos seletores de operação das Relações ==')
+alvo_seletores_operacao=text(
+    'src/gerard/interacao/selecao/AlvoSeletoresOperacaoRelacoes.java')
+handler_seletores_operacao=text(
+    'src/gerard/interacao/selecao/HandlerInteracaoSeletoresOperacaoRelacoes.java')
+adaptador_seletores_operacao=text(
+    'src/gerard/ui/vergnaud/AdaptadorSeletoresOperacaoRelacoes.java')
+caso_uso_seletores_operacao=text(
+    'src/gerard/aplicacao/interacao/CasoDeUsoSelecaoOperacoesRelacoes.java')
+porta_encaminhamento_seletores_operacao=text(
+    'src/gerard/aplicacao/interacao/PortaEncaminhamentoAcaoInstrumental.java')
+feedback_seletores_operacao=text(
+    'src/gerard/ui/swing/adaptacao/ApresentadorFeedbackEscolhaOperacaoSwing.java')
+persistidor_seletores_operacao=text(
+    'src/gerard/pesquisador/log/PersistidorAcaoInstrumentalLogGerard.java')
+resultado_seletores_operacao=text(
+    'src/gerard/dominio/campoaditivo/situacao/ResultadoEscolhaOperacaoModelagem.java')
+criterio_seletores_operacao=text(
+    'src/gerard/dominio/campoaditivo/situacao/CriterioOperacaoModelagem.java')
+teste_seletores_operacao=text(
+    'tests/java/TesteHandlerInteracaoSeletoresOperacaoRelacoes.java')
+check('interface AlvoSeletoresOperacaoRelacoes' in alvo_seletores_operacao
+      and 'class HandlerInteracaoSeletoresOperacaoRelacoes'
+          in handler_seletores_operacao
+      and 'ResultadoEscolhaOperacaoModelagem processar' in handler_seletores_operacao,
+      'porta e handler separam a sequência dos dois seletores da representação desktop')
+check(all(token not in alvo_seletores_operacao + handler_seletores_operacao
+          for token in ('java.awt', 'javax.swing', 'MouseEvent', 'Main.',
+                        'LoggerInteracaoGerard', 'ScaffoldingFeedback')),
+      'protocolo dos seletores permanece independente de Swing, feedback e persistência')
+check('implements AlvoSeletoresOperacaoRelacoes' in adaptador_seletores_operacao
+      and 'SeletorOperacaoRelacaoAluno' in adaptador_seletores_operacao,
+      'adaptador desktop traduz os widgets para a porta portátil')
+check('class ResultadoEscolhaOperacaoModelagem' in resultado_seletores_operacao
+      and 'implements RegistroFactualAcaoInstrumental'
+          in resultado_seletores_operacao
+      and 'UUID.randomUUID()' in resultado_seletores_operacao
+      and 'OpcaoOperacaoCuradoria' not in resultado_seletores_operacao
+      and 'boolean correta' in resultado_seletores_operacao
+      and 'ResultadoEscolhaOperacaoModelagem avaliar('
+          in criterio_seletores_operacao,
+      'proprietário da escolha produz resultado factual tipado')
+check('class CasoDeUsoSelecaoOperacoesRelacoes' in caso_uso_seletores_operacao
+      and all(token not in caso_uso_seletores_operacao
+              for token in ('javax.swing', 'java.awt',
+                            'ScaffoldingFeedbackMultissensorialErro',
+                            'LoggerInteracaoGerard'))
+      and 'PortaFeedbackEscolhaOperacaoRelacao' in caso_uso_seletores_operacao
+      and 'PortaPersistenciaAcaoInstrumental' in caso_uso_seletores_operacao
+      and 'PortaEncaminhamentoAcaoInstrumental' in caso_uso_seletores_operacao
+      and 'PortaLimpezaFocoAposEscolhaOperacao'
+          in caso_uso_seletores_operacao
+      and 'PortaReavaliacaoConclusaoAposEscolhaOperacao'
+          in caso_uso_seletores_operacao,
+      'caso de uso coordena portas estreitas sem se tornar uma mini-Main')
+check('void encaminhar(RegistroFactualAcaoInstrumental registro)'
+          in porta_encaminhamento_seletores_operacao
+      and caso_uso_seletores_operacao.count(
+          'encaminhamento.encaminhar(resultado)') == 1
+      and 'registroModelador == alvo.resultadoPrimeiro'
+          in teste_seletores_operacao,
+      'escolha de operação encaminha o mesmo registro uma única vez ao Modelador')
+check('ScaffoldingFeedbackMultissensorialErro' in feedback_seletores_operacao
+      and 'LoggerInteracaoGerard' not in feedback_seletores_operacao
+      and 'foiCorreta()' not in feedback_seletores_operacao
+      and 'Feedback.SOM_ERRO' in feedback_seletores_operacao
+      and 'LoggerInteracaoGerard' in persistidor_seletores_operacao
+      and 'ScaffoldingFeedbackMultissensorialErro'
+          not in persistidor_seletores_operacao,
+      'feedback e persistência permanecem em adaptadores concretos independentes')
+check('feedback.materializar(resultado.getFeedback());'
+          in caso_uso_seletores_operacao
+      and 'public Feedback getFeedback()' in resultado_seletores_operacao,
+      'proprietário decide o feedback abstrato e a interface somente o materializa')
+check('casoDeUsoSelecaoOperacoesRelacoes.processar(x, y)' in main
+      and 'seletorOperacaoRelacaoAluno.processarPressionamento(x, y)' not in main
+      and 'OPERACAO_RELACAO_ALUNO' not in main
+      and 'OPERACAO_ESTADO_TRANSFORMACAO_ALUNO' not in main,
+      'Main apenas compõe e roteia o protocolo dos seletores')
+check('class TesteHandlerInteracaoSeletoresOperacaoRelacoes'
+          in teste_seletores_operacao
+      and 'testarPrimeiraEscolhaTemPrioridade' in teste_seletores_operacao
+      and 'testarSegundaEscolhaBloqueadaAtePrimeiraCorreta'
+          in teste_seletores_operacao
+      and 'testarSegundaEscolhaDepoisDaPrimeiraCorreta'
+          in teste_seletores_operacao
+      and 'testarRegistroFactualProduzidoPeloProprietario'
+          in teste_seletores_operacao
+      and 'testarCasoDeUsoSomenteSequenciaPortas'
+          in teste_seletores_operacao,
+      'teste cobre ordem, registro no proprietário e sequenciamento das portas')
+
+print('== Fase 7.10: protocolo portátil dos controles +/- do material concreto ==')
+alvo_controles_unidades=text('src/gerard/interacao/unidades/AlvoControlesUnidades.java')
+handler_controles_unidades=text(
+    'src/gerard/interacao/unidades/HandlerInteracaoControlesUnidades.java')
+teste_controles_unidades=text('tests/java/TesteHandlerInteracaoControlesUnidades.java')
+check('interface AlvoControlesUnidades<C>' in alvo_controles_unidades
+      and 'class HandlerInteracaoControlesUnidades' in handler_controles_unidades
+      and 'OperacaoControleUnidade.REMOVER, OperacaoControleUnidade.ADICIONAR'
+          in handler_controles_unidades,
+      'porta e handler separam a sequência dos controles de unidades, com remover prioritário')
+check(all(token not in alvo_controles_unidades + handler_controles_unidades
+          for token in ('java.awt', 'javax.swing', 'MouseEvent', 'Main.', 'CirculoVenn',
+                        'LoggerInteracaoGerard', 'ScaffoldingFeedback', 'localizacao',
+                        'registrarAcaoGranular')),
+      'protocolo dos controles de unidades independe de Swing, representação concreta, texto e log')
+check('handlerControlesUnidades.processar(adaptadorControlesUnidades, x, y)' in main
+      and 'new AlvoControlesUnidades<RepresentacaoComUnidades>()' in main
+      and 'private void apresentarResultadoControleUnidades(' in main
+      and 'encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);' not in main
+      and 'encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y);' not in main,
+      'mousePressed apenas roteia os controles de unidades; hit-test fica no adaptador')
+check('class TesteHandlerInteracaoControlesUnidades' in teste_controles_unidades
+      and 'testarRemoverTemPrioridadeSobreAdicionar' in teste_controles_unidades
+      and 'testarBloqueioPelaModelagemAntesDoLimite' in teste_controles_unidades
+      and 'testarLimiteImpedeAplicacao' in teste_controles_unidades
+      and 'testarAplicacaoDevolveFatoDoProprietario' in teste_controles_unidades,
+      'teste cobre prioridade, bloqueio, limite e repasse do fato do proprietário')
+
+print('== Fase 7.11: seleção portátil do marcador do enunciado ==')
+handler_selecao_marcador=text(
+    'src/gerard/interacao/texto/HandlerInteracaoSelecaoMarcadorTexto.java')
+resultado_selecao_marcador=text(
+    'src/gerard/interacao/texto/ResultadoSelecaoMarcadorTexto.java')
+teste_selecao_marcador=text(
+    'tests/java/TesteHandlerInteracaoSelecaoMarcadorTexto.java')
+robot_selecao_marcador=text(
+    'tests/graphical/TesteRobotSelecaoMarcadorTexto.java')
+check('class HandlerInteracaoSelecaoMarcadorTexto' in handler_selecao_marcador
+      and 'politicaUnicidade.jaEstaNoDiagrama' in handler_selecao_marcador
+      and 'sessaoArraste.iniciarPorMarcador' in handler_selecao_marcador
+      and all(token in resultado_selecao_marcador for token in
+              ('JA_POSICIONADO', 'SEM_PROXY', 'INICIADO')),
+      'handler preserva ausência, unicidade e criação da cópia representacional')
+check(all(token not in handler_selecao_marcador for token in
+          ('MouseEvent', 'javax.swing', 'java.awt', 'LoggerInteracaoGerard',
+           'ConectorVereditoModelador', 'Scaffolding', 'Cursor')),
+      'handler do marcador independe de Swing, apresentação, log, Modelador e scaffolding')
+check('handlerSelecaoMarcadorTexto.processar' in main
+      and 'private boolean processarSelecaoMarcadorTexto(int x, int y)' in main
+      and 'sessaoArrasteTextoParaDiagrama.iniciarPorMarcador(marcador)' not in main,
+      'mousePressed roteia a seleção e não duplica a sequência pertencente ao handler')
+check('class TesteHandlerInteracaoSelecaoMarcadorTexto' in teste_selecao_marcador
+      and 'testarCliqueSemMarcadorNaoConsome' in teste_selecao_marcador
+      and 'testarOcorrenciaJaPosicionadaNaoCriaProxy' in teste_selecao_marcador
+      and 'testarSelecaoCriaCopiaSemRemoverOrigem' in teste_selecao_marcador,
+      'teste cobre clique ausente, unicidade e cópia não destrutiva do enunciado')
+check('class TesteRobotSelecaoMarcadorTexto' in robot_selecao_marcador
+      and 'new Robot()' in robot_selecao_marcador
+      and 'possuiMarcadorEquivalente' in robot_selecao_marcador
+      and 'mostrarAnotacaoMouseOver' in robot_selecao_marcador,
+      'Robot da Fase 7.11 cobre seleção real, origem textual e duplicação bloqueada')
+
+print('== Fase 7.12: pressionamento portátil da barra de Comparação ==')
+handler_controle_comparacao=text(
+    'src/gerard/interacao/arraste/HandlerInteracaoControleComparacao.java')
+alvo_controle_comparacao=text(
+    'src/gerard/interacao/arraste/AlvoControleComparacao.java')
+resultado_controle_comparacao=text(
+    'src/gerard/interacao/arraste/ResultadoPressionamentoControleComparacao.java')
+teste_pressionamento_comparacao=text(
+    'tests/java/TesteHandlerInteracaoPressionamentoControleComparacao.java')
+robot_controle_comparacao=text(
+    'tests/graphical/TesteRobotControleComparacao.java')
+check('public ResultadoPressionamentoControleComparacao pressionar(' in handler_controle_comparacao
+      and 'alvo.contemControleOuEscala(posicaoX, posicaoY)' in handler_controle_comparacao
+      and all(token in resultado_controle_comparacao for token in
+              ('NAO_CONSUMIDO', 'BLOQUEADO', 'INICIADO'))
+      and 'boolean contemControleOuEscala(int posicaoX, int posicaoY)' in alvo_controle_comparacao,
+      'handler sequencia alvo, liberação e início do controle da barra')
+codigo_controle_comparacao=re.sub(r'/\*.*?\*/|//[^\n]*', '',
+    handler_controle_comparacao + alvo_controle_comparacao
+    + resultado_controle_comparacao, flags=re.S)
+check(all(token not in codigo_controle_comparacao for token in
+          ('MouseEvent', 'javax.swing', 'java.awt', 'Rectangle', 'LoggerInteracaoGerard',
+           'registrarAcaoGranular', 'Scaffolding', 'Cursor')),
+      'handler da barra independe de Swing, geometria concreta, log e scaffolding')
+check('handlerControleComparacao.pressionar(adaptadorControleComparacao' in main
+      and 'private void apresentarPressionamentoControleComparacao(' in main
+      and 'handlerControleComparacao.iniciar();' not in main
+      and main.count('contemPontoControleComparacao(posicaoX, posicaoY)') == 1,
+      'mousePressed roteia o pressionamento; hit-test fica no adaptador e o início no handler')
+check('informarBloqueioInteracaoRepresentacao(x, y, "Controle do gráfico de barras")' in main,
+      'bloqueio da barra preserva o mesmo artefato no registro granular')
+check('class TesteHandlerInteracaoPressionamentoControleComparacao' in teste_pressionamento_comparacao
+      and 'BLOQUEADO' in teste_pressionamento_comparacao
+      and 'consultas == 1' in teste_pressionamento_comparacao,
+      'teste cobre os três desfechos, a ordem e o hit-test único')
+check('class TesteRobotControleComparacao' in robot_controle_comparacao,
+      'existe validação Robot própria do pressionamento da barra')
+
+print('== Fase 7.13: revelação da lupa de Relações só roteada em mousePressed ==')
+robot_lupa_relacao=text('tests/graphical/TesteRobotLupaEixoRelacao.java')
+inicio_mouse_pressed=main.find('public void mousePressed(MouseEvent e)')
+trecho_mouse_pressed=main[inicio_mouse_pressed:main.find('public void mouseReleased(MouseEvent e)', inicio_mouse_pressed)]
+check('apresentarRevelacaoEixoRelacaoPelaLupa(painelRecemRevelado);' in trecho_mouse_pressed
+      and '"LUPA_EIXO_RELACAO"' not in trecho_mouse_pressed
+      and 'private void apresentarRevelacaoEixoRelacaoPelaLupa(' in main
+      and main.count('"LUPA_EIXO_RELACAO"') == 1,
+      'mousePressed só roteia a lupa; o apresentador materializa preparação, log e foco')
+check('paineisEixosRelacoes.processarPressionamentoLupa(x, y)' in trecho_mouse_pressed,
+      'teste de clique e transição da lupa continuam em PaineisEixosRelacoes/ControleVisibilidadeEixoPapel')
+check('class TesteRobotLupaEixoRelacao' in robot_lupa_relacao,
+      'existe validação Robot própria da revelação pela lupa')
+
+print('== Decisão 2026-09-29: modelagem web persiste pela tentativa ==')
+port_dir='src/gerard/aplicacao/portabilidade/'
+escopo_web=text(port_dir+'EscopoTentativaWeb.java')
+valor_web=text(port_dir+'ValorIncognitaWeb.java')
+sorteio_web=text(port_dir+'ServicoSorteioAtividadeWeb.java')
+servicos_web=''.join(text(port_dir+n) for n in (
+    'ServicoAtividadeWebComposicao.java','ServicoAtividadeWebTransformacaoMedidas.java',
+    'ServicoAtividadeWebComparacaoMedidas.java','ServicoAtividadeWebTransformacaoRelacao.java',
+    'ServicoAtividadeWebComposicaoRelacoes.java','ServicoAtividadeWebComposicaoTransformacoes.java'))
+check('tentativa.constituir(registro).isPresent()' in escopo_web
+      and 'persistencia.persistir(registro)' in escopo_web,
+      'web entrega à persistência só o que a tentativa constitui')
+check('incognita.avaliarAcao(' in valor_web and 'escopo.persistir(registro)' in valor_web,
+      'web avalia a incógnita pela mesma IncognitaQuantitativa do desktop')
+check('diagnosticarValorProposto(' not in servicos_web
+      and 'Integer.signum(valorEscolhido)' not in servicos_web
+      and 'boolean aceita = AvaliacaoEscolhaOperacaoRelacao' not in servicos_web,
+      'web não mantém avaliação paralela de incógnita, sinal ou operação')
+check(sorteio_web.count('new gerard.dominio.campoaditivo.TentativaModelagemAditiva(') == 1
+      and 'private Map<String, Object> sortear(' in sorteio_web,
+      'só um novo sorteio cria outra tentativa web (fim do modo exploratório)')
+check('escopoTentativa.persistir(registro)' in sorteio_web
+      and 'registrarRestauracaoModelagem(restauracao)' in sorteio_web,
+      'classificação e restauração web seguem pela tentativa')
+escopo_tentativa_web = text(
+    'src/gerard/aplicacao/portabilidade/EscopoTentativaWeb.java')
+teste_restauracao_web = text(
+    'tests/java/TesteRestauracaoWebEncerraSequencia.java')
+check('participantesAtuais.clear()' in escopo_tentativa_web
+      and 'participantesAtuais.add(papel)' in escopo_tentativa_web
+      and 'tentativa.restaurar(tipo, origem,' in escopo_tentativa_web,
+      'escopo web entrega à tentativa somente os participantes atuais da atividade')
+check('getSequenciasRejeicaoEncerradas().contains(sequencia)'
+          in teste_restauracao_web
+      and 'servico.reiniciarAtividadeAtual()' in teste_restauracao_web,
+      'teste web cobre rejeição, reinício e sequência encerrada no registro')
+
+print('== Regra 1: seletor de operação web sem texto inventado ==')
+app_web=text('web-poc/src/App.tsx')
+check('Operação incorreta.' not in app_web
+      and 'setMensagemOperacao(resultado.aceita ? null : resultado.chave_mensagem);' in app_web,
+      'explicação da operação errada vem só do servidor (texto curado)')
+barra_categorias_web=text('web-poc/src/BarraCategorias.tsx')
+check('Foto escolhida' not in barra_categorias_web
+      and 'Escolher foto…' not in barra_categorias_web
+      and 'alt="Foto"' in barra_categorias_web
+      and 'Escolher foto...' in barra_categorias_web,
+      'diálogo de usuário reutiliza literalmente os textos de ui.userDialog.photo')
+
+print('== Decisão 2026-09-28: resposta Sim/Não à confirmação do valor rejeitado ==')
+papel_q=text('src/gerard/dominio/campoaditivo/PapelQuantitativo.java')
+incog_q=text('src/gerard/dominio/campoaditivo/IncognitaQuantitativa.java')
+resposta_web=text('src/gerard/aplicacao/portabilidade/RespostaConfirmacaoValorWeb.java')
+check('registrarRespostaConfirmacaoValorRejeitado' in papel_q
+      and 'CONFIRMOU_VALOR_REJEITADO' in papel_q and 'RETIROU_VALOR_REJEITADO' in papel_q
+      and 'avaliarRespostaConfirmacao(' in incog_q,
+      'proprietário semântico constitui a resposta Sim/Não como tentativa da sequência')
+check(main.count('registrarRespostaConfirmacaoValorIncognita(') == 3
+      and 'JOptionPane.YES_OPTION' in main,
+      'desktop registra a resposta das duas perguntas ui.question.valueMismatch')
+check('incognita.avaliarRespostaConfirmacao(' in resposta_web
+      and 'escopo.persistir(registro)' in resposta_web
+      and '/api/acoes/responder-confirmacao-valor' in text('src/gerard/infraestrutura/web/ServidorPrototipoWeb.java'),
+      'web registra a resposta pela mesma operação do papel')
+check('class TesteRespostaConfirmacaoValorRejeitado'
+          in text('tests/java/TesteRespostaConfirmacaoValorRejeitado.java'),
+      'teste cobre contagem no limite e sequência única')
+
+print('== Fase 7.9: porta de registro da atividade web ==')
+porta_registro_web=text(
+    'src/gerard/aplicacao/portabilidade/PortaRegistroAtividadeWeb.java')
+servico_sorteio_web=text(
+    'src/gerard/aplicacao/portabilidade/ServicoSorteioAtividadeWeb.java')
+adaptador_registro_web=text(
+    'src/gerard/pesquisador/log/RegistradorAtividadeWebLogGerard.java')
+servidor_web=text('src/gerard/infraestrutura/web/ServidorPrototipoWeb.java')
+teste_porta_registro_web=text(
+    'tests/java/TestePortaRegistroAtividadeWeb.java')
+check('interface PortaRegistroAtividadeWeb' in porta_registro_web
+      and 'PortaRegistroAtividadeWeb NENHUMA' in porta_registro_web
+      and 'registrarNovaSituacao(' in porta_registro_web
+      and 'registrarAcaoGranularUsuario(' in porta_registro_web,
+      'porta estreita representa somente o registro factual da atividade web')
+check('PortaRegistroAtividadeWeb registroAtividade' in servico_sorteio_web
+      and 'LoggerInteracaoGerard' not in servico_sorteio_web
+      and 'ControladorContextoSituacao' not in servico_sorteio_web
+      and 'PortaRegistroAtividadeWeb.NENHUMA' in servico_sorteio_web,
+      'serviço web depende da porta e mantém composição sem efeito para testes')
+check('implements PortaRegistroAtividadeWeb' in adaptador_registro_web
+      and 'LoggerInteracaoGerard' in adaptador_registro_web
+      and 'ControladorContextoSituacao' in adaptador_registro_web
+      and 'Scaffolding' not in adaptador_registro_web,
+      'adaptador concreto concentra somente a integração com o log factual')
+check('new RegistradorAtividadeWebLogGerard()' in servidor_web
+      and 'new ServicoSorteioAtividadeWeb(' in servidor_web,
+      'raiz de composição web liga explicitamente a porta ao adaptador concreto')
+check('class PortaFalsa implements PortaRegistroAtividadeWeb'
+          in teste_porta_registro_web
+      and 'porta.situacoes == 1' in teste_porta_registro_web
+      and 'porta.acoes == 1' in teste_porta_registro_web
+      and 'area=TEXTO; intencao=DUVIDA' in teste_porta_registro_web
+      and 'novoServico(null)' in teste_porta_registro_web,
+      'teste executável protege publicação única, argumentos factuais e porta nula')
 
 print('== Item 4: material concreto próprio de Relações (painéis de eixo por papel) ==')
 paineis_relacoes=text('src/gerard/ui/vergnaud/PaineisEixosRelacoes.java')
@@ -1459,6 +1796,8 @@ for lang in ('pt', 'en', 'es', 'fr'):
 print('== Item 22 (2026-08-18): seletor soma/subtração no diagrama do aluno ==')
 seletor_op = text('src/gerard/ui/vergnaud/SeletorOperacaoRelacaoAluno.java')
 avaliacao_op = text('src/gerard/campoaditivo/curadoria/sinal/AvaliacaoEscolhaOperacaoRelacao.java')
+realizador_texto_op = text(
+    'src/gerard/campoaditivo/representacao/texto/RealizadorTextoExplicacaoOperacaoRelacao.java')
 check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao' in seletor_op
       and 'public boolean processarPressionamento(int mouseX, int mouseY)' in seletor_op
       and 'public boolean respondeuCorretamente()' in seletor_op
@@ -1479,14 +1818,17 @@ check('static boolean aplicavel(TipoSituacaoAditiva tipo)' in seletor_op
       'presente nas 3 categorias — decisão da usuária: "coloque nas três, pois essa base bruta de '
       'situações curadas pode aumentar" (extraído para AvaliacaoEscolhaOperacaoRelacao em 2026-09-03; '
       'SeletorOperacaoRelacaoAluno.aplicavel delega)')
-check('preencherPersonagensCurados(loc.texto(chaveExplicacao), situacao)' in seletor_op
-      and '.replace("{Personagem_1}", personagem1)' in avaliacao_op
-      and '.replace("{Personagem_2}", personagem2)' in avaliacao_op
-      and '.replace("{Personagem_3}", personagem3)' in avaliacao_op
-      and 'loc.formatar(chaveExplicacao' not in seletor_op,
+check('RealizadorTextoExplicacaoOperacaoRelacao.realizar(' in seletor_op
+      and '.replace("{Personagem_1}", textoOu(situacao.getPersonagem1()))'
+          in realizador_texto_op
+      and '.replace("{Personagem_2}", textoOu(situacao.getPersonagem2()))'
+          in realizador_texto_op
+      and '.replace("{Personagem_3}", textoOu(situacao.getPersonagem3()))'
+          in realizador_texto_op
+      and 'operacao.explicacao.' not in avaliacao_op
+      and 'ServicoLocalizacao' not in avaliacao_op,
       'a explicação substitui cada marcador nomeado pelo campo curado homônimo, sem associar personagens '
-      'pela posição no diagrama nem inferir seus papéis (preencherPersonagensCurados extraído para '
-      'AvaliacaoEscolhaOperacaoRelacao em 2026-09-03)')
+      'pela posição no diagrama nem inferir seus papéis; i18n permanece na representação textual')
 chaves_explicacao_operacao = (
     'operacao.explicacao.transformacaoRelacao.soma',
     'operacao.explicacao.transformacaoRelacao.subtracao',
@@ -1526,11 +1868,10 @@ check('seletorOperacaoRelacaoAluno.ativar(\n'
       'posicionados/centralizados na tela — mesma fonte de coordenadas do resto do diagrama')
 check('seletorOperacaoRelacaoAluno.desenhar(g2, localizacao);' in main,
       'seletor é desenhado a cada repaint, junto com os painéis de eixo e lupas — mesmo ponto de pintura')
-check('if (seletorOperacaoRelacaoAluno.processarPressionamento(x, y)) {' in main
-      and 'scaffoldingFeedbackMultissensorialErro.emitirApenasSom();' in main
-      and 'OPERACAO_RELACAO_ALUNO' in main,
-      'clique nos botões é tratado no mousePressed, com som de erro quando a escolha diverge da curada '
-      'e registro de log de pesquisa (C/E) da tentativa')
+check('public ResultadoEscolhaOperacaoModelagem processarEscolha(' in seletor_op
+      and 'feedbackErro.emitirApenasSom();' in feedback_seletores_operacao
+      and 'OPERACAO_RELACAO_ALUNO' in avaliacao_op,
+      'escolha produz fato tipado; adaptadores independentes materializam som e registro C/E')
 for chave in (
         'operacao.explicacao.transformacaoRelacao.soma',
         'operacao.explicacao.transformacaoRelacao.subtracao',
@@ -1820,9 +2161,10 @@ check('centroX = (centroX(e0) + centroX(e1)) / 2;\n'
       '"radiobutton de soma e subtração entre tranformação a cima dos dois círculos superiores" — primeira '
       'operação (entre transformação_1 e transformação_2) fica acima de e0/e1 (t1/t2), não mais no vão '
       'abaixo deles como antes do Item 30')
-check('if (papel == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {\n'
-      '            // Só existe para Composição de Transformações (ver determinarOperacaoCorreta()).\n'
-      '            return soma ? "operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma"' in avaliacao_op,
+check('if (tipo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {'
+      in realizador_texto_op
+      and 'operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma'
+          in realizador_texto_op,
       'chaveExplicacao() ganha um ramo próprio para a segunda operação, com chaves de i18n distintas das '
       'da primeira operação')
 
@@ -1843,8 +2185,9 @@ check('seletorOperacaoEstadoTransformacaoAluno.desenhar(g2, localizacao);' in ma
       'a segunda instância é desenhada a cada repaint, junto com a primeira')
 check('seletorOperacaoEstadoTransformacaoAluno.reposicionar(dx, dy);' in main,
       'a segunda instância também acompanha o redimensionamento da janela')
-check('seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {' in main
-      and 'OPERACAO_ESTADO_TRANSFORMACAO_ALUNO' in main,
+check('processarSegundaEscolha' in adaptador_seletores_operacao
+      and 'OPERACAO_ESTADO_TRANSFORMACAO_ALUNO'
+          in avaliacao_op,
       'clique na segunda instância é tratado no mousePressed, com seu próprio marcador de log de '
       'pesquisa — distinto de OPERACAO_RELACAO_ALUNO (primeira operação); desde o Item 32, só é '
       'processado depois do primeiro seletor estar correto (ver seção própria)')
@@ -1963,20 +2306,9 @@ check('SituacaoProblemaAditiva situacao' in seletor_papeis_conclusao
       'SeletorPapeisConclusaoModelagem substitui o antigo papelValidoParaConclusao inline em Main — '
       'filtra os papéis da cena delegando a SemanticaCuradaSituacao.papelExigidoNaModelagem, mesma '
       'regra "a curadoria decide quais papéis a conclusão cobra", agora em objeto portátil testável')
-check(main.count('verificarConclusaoModelagem();') >= 2
-      and 'seletorOperacaoRelacaoAluno.obterEscolhaAluno().name(),\n'
-      '                        "OBJ4",\n'
-      '                        correta\n'
-      '                                ? "O aluno escolheu a operação (soma/subtração) que combina os dois '
-      'papéis curados."\n'
-      '                                : "O aluno escolheu uma operação diferente da curada — explicação '
-      'exibida perto do seletor.",\n'
-      '                        "OPERACAO_RELACAO_ALUNO",\n'
-      '                        correta ? "CORRETO" : "INCORRETO"\n'
-      '                );\n'
-      '                itemFocado = null;\n'
-      '                quadradinhoVennFocado = null;\n'
-      '                // Reavalia a conclusão' in main,
+check('reavaliacaoConclusao.reavaliarConclusao();'
+          in caso_uso_seletores_operacao
+      and 'verificarConclusaoModelagem();' in main,
       'clicar em qualquer um dos dois seletores de operação reavalia a conclusão da modelagem '
       '(antes só reavaliava ao posicionar/mover um item do diagrama) — sem isso, escolher a '
       'operação certa depois de todos os papéis já corretos nunca disparava o azul')
@@ -1990,8 +2322,9 @@ check('if (seletorOperacaoRelacaoAluno.respondeuCorretamente()) {\n'
       '(transformação_1 x transformação_2) estiver respondido corretamente; nas outras duas '
       'categorias (uma operação só) isso não muda nada, pois o segundo seletor nunca fica ativo '
       'nelas')
-check('if (seletorOperacaoRelacaoAluno.respondeuCorretamente()\n'
-      '                    && seletorOperacaoEstadoTransformacaoAluno.processarPressionamento(x, y)) {' in main,
+check('if (!alvo.primeiraEscolhaEstaCorreta()) {' in handler_seletores_operacao
+      and 'return alvo.processarSegundaEscolha(posicaoX, posicaoY);'
+          in handler_seletores_operacao,
       'o clique no segundo seletor só é processado depois do primeiro estar correto — mesma ordem '
       'do desenho, evita reagir a um clique numa área que não está sendo mostrada')
 
@@ -2216,6 +2549,12 @@ skill_objetos_ricos = text(
     '.agents/skills/gerard-knowledge-oriented-domain-objects/SKILL.md')
 modelo_semantico = text(
     '.agents/skills/gerard-semantic-model/REFERENCE.md')
+skill_situacao_rica = text(
+    '.agents/skills/gerard-situacao-problema-agregado/SKILL.md')
+regras_categorias_situacao_rica = text(
+    '.agents/skills/gerard-situacao-problema-agregado/references/regras-categorias.md')
+curadoria_persistencia_situacao_rica = text(
+    '.agents/skills/gerard-situacao-problema-agregado/references/curadoria-persistencia.md')
 trecho_composicao_relacoes_rica = conversor_rico.split(
     'converterComposicaoRelacoes(\n'
     '                    SituacaoProblemaAditiva registro,', 1)[1].split(
@@ -2245,8 +2584,10 @@ check('composição encadeada por soma é consistente' in teste_composicao_relac
       and 'composição com referência comum usa subtração curada' in teste_composicao_relacoes_rica
       and 'relações opostas podem totalizar zero' in teste_composicao_relacoes_rica,
       'o harness cobre soma encadeada, subtração com referência comum e resultante zero')
-check('Na ponte rica de `COMPOSICAO_RELACOES`' in skill_objetos_ricos
-      and '##### Composição de relações' in modelo_semantico,
+check('Na ponte rica de `COMPOSICAO_RELACOES`'
+          in regras_categorias_situacao_rica
+      and 'três papéis referencia uma\ndiferença orientada'
+          in regras_categorias_situacao_rica,
       'as fontes normativas registram a localidade, as orientações e o domínio relativo da sexta ponte')
 
 print('== Item 39 (2026-08-29): sidecar explícito da narrativa rica ==')
@@ -2275,8 +2616,10 @@ check('campos personagem antigos não substituem identidade curada' in teste_per
       and 'referência nominal desconhecida bloqueia leitura' in teste_persistencia_narrativa
       and 'DOCTYPE e entidades externas são bloqueados' in teste_persistencia_narrativa,
       'o harness cobre ausência de inferência posicional, referência inválida e leitura XML segura')
-check('##### Persistência da narrativa rica' in modelo_semantico
-      and 'sidecar\nXML versionado' in skill_objetos_ricos,
+check('sidecar\nXML versionado' in curadoria_persistencia_situacao_rica
+      and 'A serialização é responsabilidade de infraestrutura'
+          in curadoria_persistencia_situacao_rica
+      and 'curadoria-persistencia.md' in skill_situacao_rica,
       'as fontes normativas registram o sidecar como infraestrutura complementar, não como nova teoria')
 
 print('== Item 40 (2026-08-29): editor humano nominal da narrativa rica ==')
@@ -2315,8 +2658,10 @@ check('POSICAO_1_INCORRETA' in teste_montador_narrativa
       and 'id nominal desconhecido é rejeitado' in teste_montador_narrativa
       and 'id duplicado não é resolvido por posição' in teste_montador_narrativa,
       'o harness protege identidades nominais contra inferência, referência desconhecida e duplicidade')
-check('##### Edição humana da narrativa rica' in modelo_semantico
-      and 'O editor Swing é somente um adaptador de entrada' in skill_objetos_ricos,
+check('O editor Swing é somente um adaptador de entrada'
+          in curadoria_persistencia_situacao_rica
+      and 'delega a montagem a um\ncomponente independente da interface'
+          in curadoria_persistencia_situacao_rica,
       'as fontes normativas registram a localidade do editor e da montagem do agregado')
 
 print('== Item 41 (2026-08-30): promoção editorial humana da narrativa rica ==')
@@ -2351,10 +2696,10 @@ check('construtor compatível persiste candidata por padrão' in teste_persisten
       'o harness cobre candidatura padrão, promoção, consumo e compatibilidade retroativa')
 check('Informe o id da situação antes de editar a narrativa rica.' in cur,
       'a tela impede abrir um sidecar sem identidade nominal da situação')
-check('A promoção para `VALIDADA_PELO_PESQUISADOR` é outro ato humano explícito'
-          in modelo_semantico
-      and 'Somente um ato explícito do pesquisador no editor pode registrar'
-          in skill_objetos_ricos,
+check('Somente um ato explícito do pesquisador no editor pode registrar'
+          in curadoria_persistencia_situacao_rica
+      and 'essa promoção é bloqueada enquanto a conversão\nproduzir qualquer diagnóstico'
+          in curadoria_persistencia_situacao_rica,
       'as fontes normativas registram a autoridade humana sobre a promoção')
 
 print('== Item 42 (2026-08-30): contrato gráfico da curadoria narrativa rica ==')
@@ -2363,6 +2708,8 @@ teste_dialogo_narrativa_rica = text(
 linha_base_windows = text('scripts/verificar_linha_base_windows.py')
 skill_identidade_visual = text(
     '.agents/skills/gerard-identidade-visual/SKILL.md')
+estado_identidade_visual = text(
+    '.agents/skills/gerard-identidade-visual/references/estado-verificado.md')
 check('"TesteDialogoCuradoriaNarrativaRica",' in linha_base_windows,
       'o teste do editor rico integra explicitamente o conjunto gráfico da linha de base')
 check('"Participantes", "Famílias", "Objetos", "Estado inicial"'
@@ -2385,8 +2732,9 @@ check('getAccessibleContext().getAccessibleName()'
       and 'getAccessibleDescription()' in teste_dialogo_narrativa_rica
       and 'tooltip explica a autoridade humana' in teste_dialogo_narrativa_rica,
       'o teste protege texto, tooltip, nome e descrição acessíveis')
-check('TesteDialogoCuradoriaNarrativaRica' in skill_identidade_visual
-      and 'não substitui a validação semântica' in skill_identidade_visual,
+check('TesteDialogoCuradoriaNarrativaRica' in estado_identidade_visual
+      and 'não substitui a validação semântica' in estado_identidade_visual
+      and 'estado-verificado.md' in skill_identidade_visual,
       'a skill visual registra o alcance e o limite epistemológico do teste')
 
 if errors:

@@ -3,7 +3,10 @@ package gerard.aplicacao.portabilidade;
 import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.i18n.ServicoLocalizacao;
+
+import java.util.List;
 
 /**
  * Compatibilidade semântica entre o elemento arrastado do enunciado (origem)
@@ -16,16 +19,32 @@ import gerard.i18n.ServicoLocalizacao;
  */
 final class AvaliadorOrigemDestinoWeb {
     private static final ScaffoldingQuestionamento SCAFFOLDING = new ScaffoldingQuestionamento();
+    private static final CatalogoPapeisSemanticosAditivos CATALOGO =
+            new CatalogoPapeisSemanticosAditivos();
 
     private AvaliadorOrigemDestinoWeb() {
     }
 
+    /**
+     * Avalia a soltura e, quando o questionamento é aplicável, entrega à
+     * tentativa o registro de posicionamento constituído pelo descritor do
+     * papel de origem (mesmo proprietário usado pelo desktop em
+     * avaliarQuestionamentoPosicionamento).
+     */
     static ResultadoQuestionamento avaliar(
-            String origemPapelId, String chavePapelAlvo, TipoSituacaoAditiva categoria) {
+            String origemPapelId, String chavePapelAlvo, TipoSituacaoAditiva categoria,
+            List<String> participantes, EscopoTentativaWeb escopo) {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
         String categoriaEscolhida = localizacao.descricaoTipo(categoria);
-        return SCAFFOLDING.avaliarPosicionamento(
+        ResultadoQuestionamento resultado = SCAFFOLDING.avaliarPosicionamento(
                 origemPapelId, chavePapelAlvo, papelDoElementoNoDiagrama, categoriaEscolhida);
+        if (resultado != null && resultado.isAplicavel() && categoria != null && escopo != null) {
+            escopo.persistir(CATALOGO.obterDescritor(origemPapelId).avaliarPosicionamento(
+                    CATALOGO.obterDescritor(chavePapelAlvo), categoria,
+                    ContextosAcaoInstrumentalWeb.posicionamento(
+                            origemPapelId, chavePapelAlvo, participantes)));
+        }
+        return resultado;
     }
 }

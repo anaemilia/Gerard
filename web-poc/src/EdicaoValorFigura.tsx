@@ -25,7 +25,6 @@ export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, 
   aoNegarValor: () => void;
 }) {
   const [retangulo, setRetangulo] = useState<DOMRect | null>(null);
-  const [sinal, setSinal] = useState<"+" | "-">(valor.startsWith("-") ? "-" : "+");
 
   useEffect(() => {
     const elemento = document.querySelector(`[data-figura-id="${figuraId}"]`);
@@ -39,34 +38,16 @@ export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, 
     return <div className="valor-figura-tip" style={estilo} role="dialog" aria-label={papelNome}>
       <label htmlFor={`valor-${figuraId}`}>{papelNome}</label>
       <div className="valor-figura-entrada">
-        {requerSinal && <fieldset className="valor-figura-sinal">
-          <legend>Sinal</legend>
-          <label className="valor-figura-opcao">
-            <input type="radio" name={`sinal-edicao-${figuraId}`} value="+" checked={sinal === "+"}
-              disabled={ocupado} onChange={() => {
-                setSinal("+");
-                if (valor !== "") aoAlterarValor(String(Math.abs(Number(valor))));
-              }} /> positivo&nbsp;(+)
-          </label>
-          <label className="valor-figura-opcao">
-            <input type="radio" name={`sinal-edicao-${figuraId}`} value="-" checked={sinal === "-"}
-              disabled={ocupado} onChange={() => {
-                setSinal("-");
-                if (valor !== "") aoAlterarValor(`-${Math.abs(Number(valor))}`);
-              }} /> negativo&nbsp;(-)
-          </label>
-        </fieldset>}
         <input id={`valor-${figuraId}`} type="number" min={requerSinal ? 0 : undefined}
-          step="1" inputMode="numeric" autoFocus value={requerSinal ? valor.replace(/^-/, "") : valor}
-          disabled={ocupado} onChange={(evento) => {
-            const magnitude = evento.target.value;
-            aoAlterarValor(requerSinal && sinal === "-" && magnitude !== "" ? `-${magnitude}` : magnitude);
-          }} onKeyDown={(evento) => { if (evento.key === "Enter") aoConfirmarDigitacao(); }} />
+          step="1" inputMode="numeric" autoFocus value={valor.replace(/^-/, "")}
+          disabled={ocupado} onChange={(evento) => aoAlterarValor(evento.target.value)}
+          onKeyDown={(evento) => { if (evento.key === "Enter") aoConfirmarDigitacao(); }} />
       </div>
     </div>;
   }
 
-  return <div className="valor-figura-tip" style={estilo} role="dialog" aria-label={papelNome}>
+  return <div className="valor-figura-tip valor-figura-confirmacao" style={estilo}
+      role="dialog" aria-label={papelNome}>
     <p>{pergunta}</p>
     <label className="valor-figura-opcao">
       <input type="radio" name={`confirmar-valor-${figuraId}`} disabled={ocupado}

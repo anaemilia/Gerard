@@ -6,9 +6,9 @@ import type { EixoFigura } from "./contratos";
  * reta dos inteiros com setas, marcas e rótulos -escala..+escala, e — quando
  * o papel tem um valor — um ponto azul que espelha esse valor. Decisão mais
  * recente da usuária em 2026-09-25: depois que o ponto está azul, círculo e
- * reta são bidirecionais; mover o ponto envia uma revisão semântica ao
- * servidor, que devolve texto, diagrama e reta sincronizados. A lupa mostra
- * o painel e o olhinho o esconde, em qualquer fase da atividade.
+ * reta são bidirecionais durante a exploração local; mover o ponto propaga o
+ * valor entre as representações sem chamar a API nem persistir a exploração.
+ * A lupa mostra o painel e o olhinho o esconde, em qualquer fase da atividade.
  */
 
 const LARGURA = 280;
@@ -23,13 +23,13 @@ function limitar(valor: number, minimo: number, maximo: number) {
 }
 
 export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupado,
-  aoAlterarValor, aoFechar }: {
+  aoPrevisualizarValor, aoFechar }: {
   figuraId: string;
   papelNome: string;
   eixo: EixoFigura;
   editavel: boolean;
   ocupado: boolean;
-  aoAlterarValor: (valor: number) => void;
+  aoPrevisualizarValor: (valor: number) => void;
   aoFechar: () => void;
 }) {
   const [posicao, setPosicao] = useState<{ left: number; top: number } | null>(null);
@@ -163,14 +163,17 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupad
 
   useEffect(() => {
     function mover(evento: MouseEvent) {
-      if (arrastandoValorRef.current) setValorArrastando(valorDoClienteX(evento.clientX));
+      if (!arrastandoValorRef.current) return;
+      const valor = valorDoClienteX(evento.clientX);
+      setValorArrastando(valor);
+      aoPrevisualizarValor(valor);
     }
     function soltar(evento: MouseEvent) {
       if (!arrastandoValorRef.current) return;
       arrastandoValorRef.current = false;
       const valor = valorDoClienteX(evento.clientX);
       setValorArrastando(null);
-      aoAlterarValor(valor);
+      aoPrevisualizarValor(valor);
     }
     window.addEventListener("mousemove", mover);
     window.addEventListener("mouseup", soltar);
@@ -181,7 +184,8 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupad
     if (!editavel || ocupado) return;
     evento.preventDefault();
     arrastandoValorRef.current = true;
-    setValorArrastando(valorDoClienteX(evento.clientX));
+    const valor = valorDoClienteX(evento.clientX);
+    setValorArrastando(valor);
   }
 
   if (!posicao) return null;

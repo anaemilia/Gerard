@@ -110,6 +110,17 @@ public final class CatalogoRelacoesEstruturaisAditivas {
                     papeis[0], papeis[1], papeis[2], papeis[indiceAlterado]);
         }
 
+        /**
+         * Identidades semânticas dos três participantes, na mesma ordem em
+         * que a relação estrutural os recebe. Adaptadores podem publicar o
+         * vínculo sem duplicar o catálogo por categoria.
+         */
+        public String[] chavesDosPapeis() {
+            return new String[] {
+                papeis[0].getChave(), papeis[1].getChave(), papeis[2].getChave()
+            };
+        }
+
         public int indiceDoPapel(PapelQuantitativo papel) {
             for (int i = 0; i < papeis.length; i++) {
                 if (papeis[i] == papel) {

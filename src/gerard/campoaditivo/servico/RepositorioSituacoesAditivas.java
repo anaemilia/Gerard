@@ -37,8 +37,16 @@ public class RepositorioSituacoesAditivas {
     private final List<SituacaoProblemaAditiva> todasSituacoes;
 
     public RepositorioSituacoesAditivas() {
+        this(new Random());
+    }
+
+    /** Fonte de sorteio injetável: testes usam semente fixa para serem determinísticos. */
+    public RepositorioSituacoesAditivas(Random fonteSorteio) {
+        if (fonteSorteio == null) {
+            throw new IllegalArgumentException("fonte de sorteio obrigatória");
+        }
         situacoes = new EnumMap<IdiomaInterface, Map<TipoSituacaoAditiva, List<SituacaoProblemaAditiva>>>(IdiomaInterface.class);
-        random = new Random();
+        random = fonteSorteio;
         todasSituacoes = new ArrayList<SituacaoProblemaAditiva>();
         carregar();
     }

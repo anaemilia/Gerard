@@ -76,6 +76,8 @@ public final class PapelQuantitativo {
     // domínio, não correção).
     private String ultimoActionId;
     private String rejectionSequenceIdAtual;
+    /** Ver TentativaModelagemAditiva.encerrarPorConclusao (2026-09-29). */
+    private boolean encerradoPorConclusao;
     private int tentativasRejeitadasConsecutivas;
     private boolean bloqueadoPorLimiteTentativas;
 
@@ -259,6 +261,19 @@ public final class PapelQuantitativo {
     }
 
     /**
+     * Após a conclusão toda submissão é exploratória: não é avaliada como
+     * tentativa, não conta rejeição e não constitui ação. A restauração não
+     * desfaz este estado; só uma nova situação (novo papel) o faz.
+     */
+    public void encerrarPorConclusao() {
+        encerradoPorConclusao = true;
+    }
+
+    public boolean estaEncerradoPorConclusao() {
+        return encerradoPorConclusao;
+    }
+
+    /**
      * Participação local do papel numa restauração da tentativa: encerra o
      * bloqueio, se houver, e zera a contagem. A próxima rejeição abre outra
      * sequência. Não altera {@code valorAtual}.
@@ -340,6 +355,9 @@ public final class PapelQuantitativo {
         if (!chave.equals(identidade.getPapelSemantico())) {
             throw new IllegalArgumentException("A ação pertence a outro papel semântico");
         }
+        if (encerradoPorConclusao) {
+            return ResultadoRegistroTentativaPapel.ignorada(tentativasRejeitadasConsecutivas);
+        }
         ultimoActionId = identidade.getActionId();
         String estado = descreverEstadoAtual();
         if (bloqueadoPorLimiteTentativas) {
@@ -382,6 +400,34 @@ public final class PapelQuantitativo {
         return new ResultadoRegistroTentativaPapel(true, false, false,
                 atingiuLimiteAgora, tentativasRejeitadasConsecutivas,
                 ultimoActionId, rejectionSequenceIdAtual);
+    }
+
+    /**
+     * Decisão da usuária (2026-09-28): a resposta Sim ou Não à pergunta de
+     * confirmação de um valor já rejeitado é uma tentativa própria, com
+     * action_id novo, pertence à mesma sequência de rejeições (a ação
+     * original, encerrada só no acerto) e conta para o limite de
+     * LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS. Sem sequência aberta não há
+     * pergunta a responder e nada é registrado. Com o papel bloqueado, segue
+     * o mesmo caminho de registrarTentativaComIdentidade (registro sem
+     * contagem).
+     */
+    public ResultadoRegistroTentativaPapel registrarRespostaConfirmacaoValorRejeitado(
+            IdentidadeAcaoInstrumentalPapel identidade, boolean confirmou,
+            ContextoAcao contexto, ValorNumerico valorProposto) {
+        if (encerradoPorConclusao) {
+            return ResultadoRegistroTentativaPapel.ignorada(tentativasRejeitadasConsecutivas);
+        }
+        if (rejectionSequenceIdAtual == null && !bloqueadoPorLimiteTentativas) {
+            return ResultadoRegistroTentativaPapel.ignorada(tentativasRejeitadasConsecutivas);
+        }
+        DiagnosticoErroPapel resposta = confirmou
+                ? new DiagnosticoErroPapel(TipoErroPapel.CONFIRMOU_VALOR_REJEITADO,
+                        "erro.papel.confirmouValorRejeitado", null, null)
+                : new DiagnosticoErroPapel(TipoErroPapel.RETIROU_VALOR_REJEITADO,
+                        "erro.papel.retirouValorRejeitado", null, null);
+        return registrarTentativaComIdentidade(identidade,
+                Optional.of(resposta), contexto, valorProposto);
     }
 
     private String descreverEstadoAtual() {

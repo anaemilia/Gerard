@@ -48,6 +48,27 @@ public final class ServicoAvaliacaoAcaoIncognita {
                 identidade, tarefa, valores.proposto, valores.esperado, contexto);
     }
 
+    /** Resposta Sim/Não à confirmação de valor rejeitado; ver IncognitaQuantitativa. */
+    public RegistroAcaoInstrumental avaliarRespostaConfirmacao(
+            IncognitaQuantitativa incognita,
+            IdentidadeAcaoInstrumentalPapel identidade,
+            boolean confirmou,
+            SituacaoProblemaAditiva situacao,
+            ServicoLocalizacao localizacao,
+            String papelSolicitado,
+            EstadoSemanticoCompartilhado.Snapshot estado,
+            int indiceIncognita,
+            String valorProposto,
+            ContextoAcaoInstrumental contexto) {
+        if (incognita == null) {
+            throw new IllegalArgumentException("incógnita é obrigatória");
+        }
+        Valores valores = preparar(incognita, situacao, localizacao,
+                papelSolicitado, estado, indiceIncognita, valorProposto);
+        return incognita.avaliarRespostaConfirmacao(
+                identidade, confirmou, valores.proposto, valores.esperado, contexto);
+    }
+
     private Valores preparar(IncognitaQuantitativa incognita,
             SituacaoProblemaAditiva situacao, ServicoLocalizacao localizacao,
             String papelSolicitado, EstadoSemanticoCompartilhado.Snapshot estado,

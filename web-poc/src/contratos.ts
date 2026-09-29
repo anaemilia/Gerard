@@ -48,7 +48,8 @@ export type EstadoClassificacao = Readonly<{
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   idiomas_situacao: readonly IdiomaSituacaoWeb[];
-  questionamento?: string; categoria_revelada?: string;
+  questionamento?: string; questionamento_titulo?: string;
+  questionamento_sim?: string; questionamento_nao?: string; categoria_revelada?: string;
   explicacao_categoria_titulo?: string; explicacao_categoria_intro?: string;
   explicacao_categoria_rotulo?: string; explicacao_categoria_definicao?: string;
   explicacao_categoria_fechar?: string;
@@ -75,6 +76,7 @@ export type EstadoModelagemTernaria = Readonly<{
   // sinal (CatalogoNecessidadeRepresentacaoDeSinal) e ainda aguarda a
   // escolha explícita positivo/negativo — ver ServicoAtividadeWebComSinal.
   papel_aguardando_sinal: string | null;
+  magnitude_aguardando_sinal: number | null;
   // Segundo gate de conclusão, independente do papel_desconhecido acima --
   // só presente em TRANSFORMACAO_RELACAO, quando a situação curada tem
   // operacao_relacao preenchido (mesma guarda de
@@ -103,6 +105,7 @@ export type EstadoEscolhaOperacaoTransformacoes = Readonly<{
   correta_entre_estado_transformacao: boolean | null;
   segunda_etapa_habilitada: boolean; concluida: boolean;
   papel_aguardando_sinal: string | null;
+  magnitude_aguardando_sinal: number | null;
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type EstadoEscolhaOperacaoRelacoes = Readonly<{
@@ -112,6 +115,7 @@ export type EstadoEscolhaOperacaoRelacoes = Readonly<{
   escolha_operacao: EscolhaOperacao; correta: boolean | null;
   operacao_disponivel: boolean;
   papel_aguardando_sinal: string | null;
+  magnitude_aguardando_sinal: number | null;
   concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type InteracaoPermitidaFigura = Readonly<{
@@ -139,6 +143,7 @@ export type CenaDiagrama = Readonly<{
   vocabulario_texto?: VocabularioTexto;
   permite_editar_narrativa?: boolean;
   titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
+  relacao_exploratoria?: Readonly<{ papeis: readonly [string, string, string] }>;
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;
   seletor_operacao?: Readonly<{ entre_transformacoes?: CentroSeletorOperacao;
     entre_estado_transformacao?: CentroSeletorOperacao; relacao?: CentroSeletorOperacao }> }>;

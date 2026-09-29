@@ -41,6 +41,11 @@ export const api = {
     method: acao.metodo, headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...(acao.corpo ?? {}), valor })
   }),
+  responderConfirmacaoValor: (papelId: string, confirmou: boolean, valor: number) =>
+    requisitar<ResultadoAcao>("/api/acoes/responder-confirmacao-valor", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ papel_id: papelId, confirmou, valor })
+    }),
   escolherOperacao: (acao: AcaoDisponivel, operacao: "SOMA" | "SUBTRACAO") =>
     requisitar<ResultadoAcao>(acao.href, {
       method: acao.metodo, headers: { "Content-Type": "application/json" },
@@ -76,8 +81,8 @@ export const api = {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ papel_id: papelId })
     }),
-  ajustarValorEixo: (papelId: string, valor: number) =>
-    requisitar<ResultadoPosicionarConhecido>("/api/acoes/ajustar-valor-eixo", {
+  projetarEixo: (papelId: string, valor: number) =>
+    requisitar<{ valores: Record<string, number>; aceita?: boolean }>("/api/acoes/projetar-eixo", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ papel_id: papelId, valor })
     }),

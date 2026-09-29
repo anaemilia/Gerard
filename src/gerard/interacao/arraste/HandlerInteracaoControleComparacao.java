@@ -25,10 +25,35 @@ package gerard.interacao.arraste;
  * citada acima), e a confirmação/sincronização semântica ao soltar o mouse
  * (proprietário semântico — permanece em {@code Main}, inclusive a consulta
  * a {@code confirmarValorIncognitaAceito} sobre o papel da diferença).
+ *
+ * Fase 7.12: também concentra a sequência do pressionamento — fora do
+ * controle e da escala o clique não é consumido; dentro, com a manipulação
+ * das representações ainda não liberada pela modelagem, o gesto é bloqueado
+ * sem iniciar; liberada, o gesto inicia. O hit-test chega pela porta
+ * {@link AlvoControleComparacao}; a política de liberação é consultada por
+ * quem chama e chega como booleano; bloqueio, fantasma, cursor, valor e log
+ * são materializados pelo adaptador da tela.
  */
 public final class HandlerInteracaoControleComparacao {
 
     private boolean ativo;
+
+    /**
+     * Sequência do pressionamento: alvo antes da liberação, liberação antes
+     * do início (mesma ordem de avaliação anterior em mousePressed).
+     */
+    public ResultadoPressionamentoControleComparacao pressionar(
+            AlvoControleComparacao alvo, int posicaoX, int posicaoY,
+            boolean manipulacaoLiberada) {
+        if (alvo == null || !alvo.contemControleOuEscala(posicaoX, posicaoY)) {
+            return ResultadoPressionamentoControleComparacao.NAO_CONSUMIDO;
+        }
+        if (!manipulacaoLiberada) {
+            return ResultadoPressionamentoControleComparacao.BLOQUEADO;
+        }
+        iniciar();
+        return ResultadoPressionamentoControleComparacao.INICIADO;
+    }
 
     /** Inicia o gesto. */
     public void iniciar() {
