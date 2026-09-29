@@ -34,26 +34,10 @@ da atividade.
 
 ## Avaliação de maturidade
 
-Avalie separadamente:
-
-1. **maturidade REST**, pelo Richardson Maturity Model:
-   - RMM 0: HTTP como túnel;
-   - RMM 1: recursos identificados;
-   - RMM 2: métodos e códigos HTTP coerentes;
-   - RMM 3: controles hipermídia das transições permitidas.
-2. **maturidade semântica multiplataforma**, pela escala operacional do Gérard:
-   - G0: semântica duplicada no cliente;
-   - G1: projeção semântica, com ciclo de comandos parcial;
-   - G2: comandos avaliados no servidor e resultados factuais versionados;
-   - G3: protocolo completo nas categorias suportadas;
-   - G4: conformidade entre clientes e ciclo de vida de versões.
-
-HATEOAS não é objetivo automático. Priorize o próximo incremento que reduza
-duplicação semântica e torne o protocolo observável e compatível.
-
-Esta escala G0–G4 é uma convenção operacional interna do Gérard, não um padrão
-externo. Para critérios detalhados, evidências e fotografia atual, leia
-[references/maturidade.md](references/maturidade.md).
+Ao classificar a API, comparar clientes ou priorizar o próximo incremento,
+leia [references/maturidade.md](references/maturidade.md). A avaliação separa
+maturidade REST e maturidade semântica multiplataforma; não transforma
+HATEOAS em objetivo automático nem transfere regras para o cliente.
 
 ## Verificação mínima
 

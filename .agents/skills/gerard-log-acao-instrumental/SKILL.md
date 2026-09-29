@@ -11,14 +11,11 @@ O esquema abaixo vem do material de pesquisa (Quadro 4.55, "Análise da tarefa")
 
 ## Comparação com o log real (checado em 2026-07-20)
 
-`gerard/pesquisador/log/EventoLogGerard.java` já é uma implementação real e ativa de log, e a comparação com o Quadro 4.55 é majoritariamente positiva:
-
-- **"Tarefa de Interação" já usa os termos de Shneiderman no código real**, não é só teoria: `registrarAcaoGranular("SELECIONAR", ...)`, `"ORIENTACAO"`, `"CAMINHO"`, `"POSICIONAR"`, `"TEXTO"`, `"QUANTIFICAR"` aparecem literalmente como primeiro argumento em dezenas de pontos de `Main.java` (ex.: linhas 9178, 9196, 9202, 9207, 10297, 10388, 10496). Essa parte do esquema teórico já é comportamento real, não é lacuna.
-- **O log real tem mais campos que o Quadro 4.55, não menos**: além de usuário/problema/tentativa/tarefa/C-E/instrumento-organização/instrumento-artefato/função-do-artefato/regras (que já existem, com nomes próximos: `usuario`, `problema`, `tentativa`, `tarefa`, `ce`, `instrumento_organizacao`, `instrumento_artefato`, `funcao_do_artefato`, `regras`), `EventoLogGerard` também registra `sessao`, `situacao_versao_id`, `situacao_grupo_id`, `idioma_situacao`, `categoria`, `enunciado`, `origem_evento`, `detalhes`, `propriedade_acao`, `mudanca_observavel`, `tentativa_numero_situacao`, `natureza_acao`, `efeito_acao`.
-- **Diferença real de estrutura**: o Quadro 4.55 tem um único campo "Função → Invariantes"; o log real tem **quatro** campos de invariante (`invariante_origem`, `invariante_codigo`, `invariante_simbolico`, `invariante_observacao`) — uma decomposição mais granular do mesmo conceito, não uma lacuna a preencher.
-- **Não verificado**: se o campo `usuario` do log real corresponde a um identificador numérico como o "04" do exemplo do material, ou a outra forma de identificação — não confirmei o formato exato usado em runtime.
-
-Ao estender o log, siga o padrão de "acrescentar campos ao final preservando leitura de logs antigos" já usado em `EventoLogGerard.deTsv()` (comentário: "Os quatro campos de invariante foram acrescentados ao final para preservar a leitura dos logs produzidos pelas versões anteriores") — é a convenção já estabelecida no código real, não uma sugestão nova.
+Ao comparar o esquema com `EventoLogGerard`, alterar TSV ou preservar leitura
+de versões anteriores, leia
+[`references/compatibilidade-log-real.md`](references/compatibilidade-log-real.md).
+Essa referência registra o confronto datado com a implementação; ela não
+redefine o esquema factual abaixo.
 
 ## Propriedade do registro
 
@@ -40,97 +37,13 @@ não recalcula C/E e não passa a possuir o conhecimento registrado. O mesmo
 registro pode servir a auditoria, testes, análise qualitativa e aprendizagem
 do Modelador.
 
-### Implementação piloto — P2.5A, 2026-08-15
+## Estado da migração
 
-`RegistroAcaoInstrumental` é o valor factual comum da primeira migração. Para
-o protocolo `TEXTO` da incógnita, ele é produzido por
-`IncognitaQuantitativa` e contém identidade, protocolo, proprietário, alvo,
-categoria, resultado tipado, diagnóstico, valores, regra semântica, contexto
-instrumental e participantes. `LoggerInteracaoGerard` grava no máximo uma
-linha por `action_id`; reenvios do mesmo registro são idempotentes e eventos
-correlatos não são reinterpretados como novas ações.
-
-O caso entregue ao Modelador preserva `action_id`, avaliação, tipo de erro e
-participantes em colunas acrescentadas ao final de `diagnosticos_tarefa.tsv`.
-Arquivos antigos com 11 ou 15 colunas continuam válidos. Este estado vale
-somente para `TEXTO` da incógnita; os demais protocolos ainda não devem ser
-descritos como migrados.
-
-### Identidade da sequência de rejeições — P3.1, 2026-08-24
-
-Na branch arquitetural integrada, `PapelQuantitativo` passou a emitir um
-`action_id` novo para cada submissão semanticamente constituída da incógnita.
-As rejeições consecutivas são correlacionadas por um identificador separado,
-`rejection_sequence_id`. Assim, três rejeições produzem três ações distintas e
-uma única sequência; o identificador da sequência nunca integra o log factual
-de gestos.
-
-`EventoLogGerard` acrescenta `action_id` e `rejection_sequence_id` ao final do
-TSV, mantendo a leitura das linhas anteriores. No protocolo `TEXTO` migrado,
-os eventos de limite e de apresentação das ajudas já existentes carregam o
-`action_id` da terceira ação e a mesma sequência, mas não originam novas ações.
-`LoggerInteracaoGerard` apenas transporta essas identidades produzidas pelo
-proprietário semântico.
-
-A descrição da P2.5A foi consolidada na branch arquitetural pela P4.1 em
-2026-08-25. `RegistroAcaoInstrumental` e `IncognitaQuantitativa` estão ligados
-ao fluxo `TEXTO` real; a identidade correta da P3.1 permanece a base dessa
-integração.
-
-### Restauração como ação própria — P3.2, 2026-08-24
-
-Os dois comandos já existentes, “Restaurar elementos fora do diagrama” e
-“Restaurar diagrama”, constituem ações instrumentais distintas. Cada clique
-produz um novo `action_id`, mesmo quando nenhuma rejeição ocorreu antes.
-
-Como a restauração coordena a tentativa/modelagem e pode envolver vários
-papéis, seu proprietário não é o botão Swing nem um `PapelQuantitativo`
-isolado. `TentativaModelagemAditiva` produz um único
-`RegistroAcaoRestauracaoModelagem`, referencia os papéis participantes e manda
-cada papel aplicar somente sua mudança local de contagem/bloqueio. A interface
-solicita a ação, persiste o registro já constituído e materializa o efeito
-visual existente.
-
-A restauração encerra a sequência de rejeições anterior, mas não é uma
-rejeição dessa sequência. Portanto, o campo `rejection_sequence_id` da linha
-de restauração fica vazio. As sequências encerradas permanecem como contexto
-factual no payload/detalhes do registro, permitindo reconstrução posterior sem
-fundir identidade de ação e identidade de sequência. A restauração não recebe
-C/E matemático.
-
-### Classificação da situação como ação própria — P5.1, 2026-08-25
-
-`RegistroFactualAcaoInstrumental` é o contrato comum que permite ao logger e
-ao Modelador receber registros produzidos por proprietários diferentes sem
-reinterpretá-los. O registro numérico da incógnita continua tipado como
-`RegistroAcaoInstrumental`; a classificação usa
-`RegistroAcaoClassificacaoCategoria`, sem fingir que categoria é um papel
-quantitativo.
-
-`TentativaClassificacaoCategoriaAditiva` produz uma ação para cada escolha de
-categoria e outra para cada resposta ao questionamento de confirmação. Clique
-errado e concordância com a definição errada são rejeições distintas. Ações
-corretas não carregam `rejection_sequence_id`; discordar corretamente da
-definição errada conserva internamente a sequência anterior, pois ainda falta
-classificar a situação. No terceiro erro, o mesmo registro informa o limite e
-a interface materializa a reexplicação existente. Persistência e apresentação
-não calculam C/E nesse fluxo.
-
-### Seleção de sinal como ação própria — P5.2, 2026-08-25
-
-Cada clique numa opção `+` ou `-` do número relativo constitui uma única ação
-instrumental `SELECIONAR`. O papel quantitativo proprietário produz
-`RegistroAcaoEscolhaSinalPapelQuantitativo`; o `NumeroInteiro` esperado
-fornece a correspondência de sinal, e logger/Modelador recebem o mesmo
-registro sem recalcular C/E.
-
-Toda seleção recebe novo `action_id`. Somente sinais divergentes consecutivos
-do mesmo papel compartilham `rejection_sequence_id`; um acerto encerra essa
-sequência. O fluxo não adota bloqueio após três erros. O diagnóstico factual
-é `SINAL_DIVERGENTE_DO_PAPEL`, o valor proposto é a opção escolhida e o valor
-esperado é a opção correspondente ao número curado. Papéis sem valor
-normativo não fabricam diagnóstico; continuam no caminho de compatibilidade
-sem critério.
+Ao alterar protocolos já migrados, identidades de ação e sequência,
+restauração, classificação ou seleção de sinal, leia
+[`references/estado-migracao.md`](references/estado-migracao.md). O histórico
+de implantação não é necessário para aplicar o esquema geral a um novo tipo de
+ação.
 
 ## Esquema de captura (Quadro 4.55)
 

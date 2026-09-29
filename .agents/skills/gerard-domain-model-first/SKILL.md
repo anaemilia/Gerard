@@ -85,13 +85,11 @@ Define como usuário, sistema, agente ou pesquisador produz solicitações de mu
 - distinção da origem da ação;
 - apresentação de feedbacks e apoios.
 
-O objeto rico da representação possui e produz o registro factual do gesto
-que o envolve. Se o gesto for convertido em comando, o objeto de domínio ou a
-relação estrutural proprietária da regra possui e produz o registro da ação e
-seu resultado. A persistência desses registros continua sendo infraestrutura.
-Uma ação mantém um único `action_id`: quando abrange vários objetos, o menor
-agregado ou relação de escopo fechado que conhece a ação completa produz o
-registro único e referencia todos os participantes.
+Produção factual permanece com o proprietário do conhecimento e persistência
+permanece na infraestrutura. Ao alterar a fronteira entre gesto, comando,
+ação instrumental e evento persistido, consulte `gerard-log-gestos-interacao`,
+`gerard-log-acao-instrumental` e `gerard-semantic-event-logging`; esta skill
+não possui seus esquemas nem suas identidades de correlação.
 
 Para um padrão concreto (ainda não implementado) de como estruturar essa camada em código, ver `gerard-handlers-de-interacao`.
 
@@ -101,40 +99,17 @@ A representação não deve ser tratada somente como uma forma estática. Manipu
 
 O modelo preserva a identidade e o significado dos elementos; skills e camadas de interação podem variar os apoios e as formas concretas apresentadas.
 
-## Responsabilidades dos objetos
+## Interior dos objetos de domínio
 
-Um objeto de domínio deve responder apenas às perguntas coerentes com sua responsabilidade, por exemplo:
+Esta skill define em qual camada o conhecimento reside, mas não repete como
+dividi-lo entre objeto local, relação estrutural, agregado e hipótese
+analítica. Ao criar ou enriquecer esses elementos, aplique
+`gerard-knowledge-oriented-domain-objects`.
 
-- Qual é minha identidade semântica?
-- Qual papel exerço nesta representação?
-- Qual estado possuo?
-- Quais valores aceito?
-- Com quais relações estruturais posso participar?
-- Qual descritor abstrato de representação ofereço?
-- Como sou serializado semanticamente?
-- Minha condição local é consistente?
-- Que registro factual pertence à ação que constituo ou avalio?
-- Qual ajuda do meu repertório é aplicável a este diagnóstico e a esta
-  projeção de usuário?
-
-Perguntas sobre desenho concreto, posição de tela ou gesto de mouse pertencem a outras camadas.
-Aprender regras com J48/PART ou Apriori e persistir o Modelo do Usuário também
-não pertencem ao objeto: são responsabilidades do Modelador e da
-infraestrutura. O objeto apenas aplica regras publicadas dentro de seu escopo.
-
-## Relações que envolvem vários objetos
-
-Uma regra que coordena papéis irmãos deve ser modelada por um objeto de escopo fechado, como:
-
-- `RelacaoEstruturalComposicao`;
-- `RelacaoEstruturalTransformacao`;
-- `RelacaoEstruturalComparacao`.
-
-Não coloque uma relação de vários papéis dentro de um único papel apenas para evitar serviços.
-
-## Esquemas e conhecimento-em-ação
-
-O sistema pode registrar ações e formular hipóteses analíticas sobre esquemas, teoremas-em-ação e conceitos-em-ação. Essas hipóteses não são estados factuais do diagrama e não devem ser confundidas com relações formais do domínio.
+Permanece obrigatória a fronteira: desenho concreto, posição e gesto ficam
+fora do domínio; relações multiobjeto não são empurradas para um papel
+isolado; aprendizagem e persistência do Modelo do Usuário não pertencem ao
+objeto; hipóteses sobre conhecimento-em-ação não se tornam estado factual.
 
 ## Decisões obrigatórias
 
@@ -146,22 +121,9 @@ O sistema pode registrar ações e formular hipóteses analíticas sobre esquema
 - Relações formais recebem nomes de relações estruturais, nunca de invariantes operatórios.
 - Eventos factuais e hipóteses analíticas permanecem separados.
 
-## Anti-padrões
+## Revisão arquitetural
 
-- Tratar cada componente visual como objeto de domínio.
-- Chamar `Parte`, `Todo` ou `Transformação` de conceito completo.
-- Armazenar estado somente em nós gráficos.
-- Duplicar regras entre GTN e interface.
-- Criar `InvarianteOperatorio` para verificar apenas uma equação formal.
-- Registrar um cálculo automático como ação do usuário.
-- Acoplar o domínio a Swing, JavaFX, AWT, pixels ou controles de mouse.
-
-## Checklist
-
-- O elemento é semanticamente significativo ou apenas visual?
-- O estado está no domínio ou somente na interface?
-- A regra é local, relacional ou uma política global?
-- A relação foi nomeada como relação estrutural?
-- GTN e diagrama continuam sincronizados pelo mesmo modelo?
-- A representação concreta está separada do descritor abstrato?
-- Eventos e hipóteses analíticas estão separados?
+Ao auditar uma alteração, classificar um elemento ou revisar regressões de
+fronteira, leia
+[`references/checklist-fronteiras.md`](references/checklist-fronteiras.md).
+O checklist operacional não substitui as decisões obrigatórias desta skill.

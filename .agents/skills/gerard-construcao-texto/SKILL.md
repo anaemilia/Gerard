@@ -5,9 +5,13 @@ description: Construção de texto (enunciado de situação-problema) a partir d
 
 # Construção de texto a partir do diagrama — Gérard
 
-## Status de verificação (2026-07-20)
+## Fonte curada e compatibilidade
 
-1 das 4 afirmações centrais do rascunho original estava **errada** — e era exatamente o tipo de erro que o próprio documento avisava para tomar cuidado (inversão referido/referendo). As outras duas têm ressalvas importantes, corrigidas abaixo. Não trate versões anteriores deste texto como válidas.
+Ao alterar campos de fragmentos, persistência tabular, aliases históricos de
+categorias ou o fallback para linhas antigas, leia
+[`references/fonte-curada-compatibilidade.md`](references/fonte-curada-compatibilidade.md).
+Essa fotografia datada não é necessária para discutir somente a realização
+linguística de papéis já fornecidos.
 
 ## O que esta skill cobre
 
@@ -17,15 +21,9 @@ Direção inversa da interação normal: em vez de o usuário extrair valores do
 
 O texto gerado deve ter baixa distância semântica entre os pedaços de texto sugeridos — ou seja, os fragmentos de texto propostos para cada valor semântico (`quantidade_1`, `quantidade_2`, `resultado`, `referido`, `referendo`, `valor_relativo`, `termo_desconhecido`) devem ser próximos, coerentes e naturais em relação ao papel que aquele valor exerce na situação-problema.
 
-## Campos de trecho de texto na curadoria (implementado em 2026-07-20)
-
-A `TelaCuradoriaSituacoes` agora tem 3 campos de texto livre — `trecho_texto_1`, `trecho_texto_2`, `trecho_texto_3` — onde o pesquisador pode escrever trechos correspondentes aos papéis semânticos da categoria. Os campos `trecho_texto_4`, `trecho_texto_5` e `trecho_texto_6` atendem às situações cuja estrutura curada requer mais fragmentos. A correspondência deve ser lida dos campos semânticos da própria situação; não deve ser inferida apenas do nome da categoria.
-
-O campo `tipo` do arquivo curado é a fonte normativa para a categoria de cada situação-problema. Após retirar as repetições e os dois nomes redundantes, existem exatamente seis categorias canônicas. `COMPOSICAO_TRANSFORMACAO_MEDIDAS` e `TRANSFORMACAO_COMPOSTA_DOIS_PASSOS` são identificadores históricos aceitos somente para compatibilidade de leitura; ambos convergem para `COMPOSICAO_TRANSFORMACOES`. Essa compatibilidade não autoriza renomear nenhuma outra categoria.
-
-Persistência: os 6 campos (`fragmento_texto_1`..`fragmento_texto_6`) foram adicionados como colunas finais do `situacoes_vergnaud.tsv` e do modelo `SituacaoProblemaAditiva` (getters `getFragmentoTexto1()`..`getFragmentoTexto6()`). São opcionais e retrocompatíveis — linhas antigas do TSV sem essas colunas continuam carregando normalmente, com os fragmentos vazios (validado contra as 210 situações reais do arquivo curado). Nenhuma situação curada existente tem esses campos preenchidos ainda — é infraestrutura nova, não dado retroativo.
-
-Use estes campos, quando preenchidos, como a fonte preferencial de fragmentos de texto por papel — são mais confiáveis do que inferir a partir do `enunciado` inteiro, porque foram escritos pelo pesquisador especificamente para esse propósito. Quando estiverem vazios (a maioria dos dados hoje), caia de volta para a extração a partir do enunciado validado, como já era feito antes.
+Quando fragmentos curados forem fornecidos, use-os por papel em vez de inferir
+a correspondência pelo nome da categoria. Na ausência deles, somente o
+fallback documentado na referência de compatibilidade pode ser usado.
 
 ### Autoridade humana sobre `relacao_final`
 
@@ -33,25 +31,11 @@ Na curadoria de `TRANSFORMACAO_RELACAO`, `relacao_final` — magnitude e sinal �
 
 ## Fonte de verdade obrigatória
 
-Para gerar corretamente situações-problema e diagramas por categoria, é obrigatório usar o log curado do Gérard — arquivo `situacoes_vergnaud.tsv`, com colunas `id, situacao_grupo_id, tipo_versao, versao_origem_id, validada, idioma, tipo, contexto, enunciado, fonte, subtipo, estado_inicial, transformacao, sinal_transformacao, estado_final, quantidade_1, quantidade_2, resultado, referido, referendo, valor_relativo, sinal_valor_relativo, termo_desconhecido, representacao_visual, observacoes, personagem_1, personagem_2, personagem_3` — confirmado contra o header real do arquivo. Ele contém itens validados em português, com traduções em inglês/francês.
-
-Nunca improvisar textos ou diagramas sem consultar essa referência. Um texto gerado sem base no log curado não tem garantia de estar semanticamente correto nem de ter sido validado.
-
-## Categorias suportadas — corrigido
-
-**Medidas**
-
-- `COMPOSICAO_MEDIDAS`
-- `TRANSFORMACAO_MEDIDAS`
-- `COMPARACAO_MEDIDAS`
-
-**Relações**
-
-- `COMPOSICAO_TRANSFORMACOES`
-- `TRANSFORMACAO_RELACAO`
-- `COMPOSICAO_RELACOES`
-
-Essa lista tem exatamente seis categorias. Confira o campo `tipo` do arquivo curado e `TipoSituacaoAditiva.java` para a nomenclatura executável; nomes históricos aceitos pelo carregador não constituem novas categorias.
+Nunca improvise textos ou diagramas sem consultar a situação curada que lhes
+dá lastro. Um texto sem referência curada não tem garantia de correção
+semântica nem de validação humana. Categorias, papéis e correspondências ricas
+seguem `gerard-situacao-problema-agregado`; a sintaxe textual permanece nesta
+skill.
 
 ## Papéis semânticos por categoria (cuidado com inversão)
 

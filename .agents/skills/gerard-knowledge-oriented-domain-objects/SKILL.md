@@ -58,18 +58,12 @@ Conforme sua responsabilidade:
 - afirmações sobre esquemas ou invariantes operatórios do usuário;
 - persistência concreta e transporte de eventos.
 
-Objetos ricos da camada de representação possuem e produzem os registros dos
-gestos físicos que os envolvem. Objetos ricos do domínio e relações
-estruturais possuem e produzem os registros das ações instrumentais e dos
-resultados factuais que pertencem às suas regras. Essa divisão preserva a
-localidade: coordenadas e trajetórias não entram no domínio, e C/E não é
-calculado pela representação. A infraestrutura apenas persiste ou transporta
-os registros produzidos.
-
-A multiplicidade de participantes não multiplica ações. Se uma única ação
-envolve vários objetos semânticos, o menor objeto relacional ou agregado de
-escopo fechado que compreende a ação produz um único registro com um único
-`action_id`; os objetos participantes são apenas referenciados nesse registro.
+Quando a tarefa alterar produção de registros, fronteira entre gesto e ação,
+identidade de ação ou persistência factual, consulte
+`gerard-log-gestos-interacao`, `gerard-log-acao-instrumental` e
+`gerard-semantic-event-logging`. Esta skill conserva somente o princípio de
+localidade: o proprietário do conhecimento produz o fato; infraestrutura não
+adquire sua autoridade por persistir ou transportar o registro.
 
 ## Responsabilidades típicas
 
@@ -89,139 +83,15 @@ O objeto pode responder:
 
 ## Situação-problema como agregado rico
 
-Quando o conhecimento cruza a estrutura aditiva e uma narrativa curada, o
-menor proprietário legítimo é `SituacaoProblema`. Ela compõe, sem fundir:
+Quando a tarefa envolver a composição entre `EstruturaAditiva`,
+`NarrativaCurada`, correspondências papel--fato, pontes das seis categorias,
+sidecar editorial, traduções ou promoção humana, aplique
+`gerard-situacao-problema-agregado`.
 
-- `EstruturaAditiva`: categoria, papéis, relações e incógnita original;
-- `NarrativaCurada`: participantes, objetos contados, inventários, marcadores
-  temporais e eventos quantitativos ordenados, quando a história possuir
-  mudanças;
-- correspondências explícitas, declaradas pela curadoria humana, entre cada
-  papel e o fato narrativo que realiza seu valor.
-
-Não associe participantes, objetos ou papéis pela posição em uma lista, campo,
-figura ou tela. O agregado pode validar a compatibilidade entre os dois lados
-porque possui o escopo completo; ele não deve corrigir silenciosamente uma
-divergência humana.
-
-A sequência produzida pelo agregado é semântica e independente de mídia.
-Renderizadores de texto, quadrinhos, animação e vídeo materializam essa
-sequência em suas sintaxes próprias, sem possuir o cálculo, os papéis ou a
-curadoria. Conteúdo convertido ou gerado continua
-`CANDIDATA_NAO_CURADA` até promoção explícita pelo pesquisador.
-
-Um `EventoNarrativoCurado` não é uma ação instrumental do participante. O
-primeiro pertence ao conteúdo da história; a segunda pertence à atividade do
-usuário sobre a interface e segue o esquema factual de ações.
-
-Na categoria canônica `COMPOSICAO_TRANSFORMACOES`, a estrutura rica possui
-exatamente seis papéis: estado inicial, transformação 1, estado intermediário,
-transformação 2, transformação resultante e estado final. O estado
-intermediário deve apontar explicitamente para o estado produzido pelo evento
-curado correspondente; não o associe por índice de personagem, posição de
-campo ou ordem visual.
-
-As transformações 1 e 2 representam eventos efetivos e pertencem aos inteiros
-não nulos. A transformação resultante não representa um terceiro evento e
-permanece no domínio dos inteiros: ela pode ser zero quando os efeitos se
-anulam, como em `+2 + (-2) = 0`.
-
-Na categoria canônica `COMPOSICAO_MEDIDAS`, a estrutura rica possui exatamente
-três papéis — parte 1, parte 2 e todo — ligados pela relação pertencente a
-`RelacaoEstruturalComposicao`. Uma narrativa de composição estática pode ter
-zero eventos: nesse caso, o estado final declarado preserva o inventário
-inicial e existe para validar a declaração humana, não para inventar uma
-transformação temporal.
-
-Quando a curadoria distinguir variantes contadas de uma mesma família, uma
-parte pode referenciar explicitamente um `ObjetoContado`, enquanto o todo pode
-referenciar o total da `FamiliaObjeto`. Essa é uma possibilidade de modelagem
-declarada pelo humano, não uma regra universal da categoria nem uma associação
-inferida do texto, da ordem ou da posição visual.
-
-Na categoria canônica `COMPARACAO_MEDIDAS`, a estrutura rica possui Referido,
-Valor Relativo e Referendo, ligados por `RelacaoEstruturalComparacao` segundo
-`Referendo = Referido + ValorRelativo`. Referido e Referendo pertencem aos
-naturais; Valor Relativo pertence aos inteiros e pode ser nulo. Na narrativa
-estática, a referência do Valor Relativo recebe nominalmente o participante do
-Referendo e o participante do Referido e calcula a diferença nessa ordem. Não
-associe esses participantes pela posição dos campos `personagem_*`, pela ordem
-textual ou pela posição visual. A chave viva é `papel.diferenca`; “Valor
-Relativo” é o nome conceitual do papel.
-
-Em `TRANSFORMACAO_MEDIDAS`, Estado Inicial e Estado Final são medidas naturais,
-enquanto a Transformação representa uma mudança efetiva e pertence aos inteiros
-não nulos. Somente nesse esquema a consequência pode ser expressa como: uma
-transformação direta igual a zero produziria `EstadoFinal = EstadoInicial` e não
-constitui uma situação de Transformação de Medidas.
-
-Não transfira essa justificativa para as categorias de números relativos. Em
-`TRANSFORMACAO_RELACAO`, Relação Inicial e Relação Final pertencem aos inteiros e
-podem ser zero; a transformação operante continua sendo um evento efetivo e não
-nulo. Assim, `RelaçãoInicial = +2` e `Transformação = -2` produzem legitimamente
-`RelaçãoFinal = 0`. Em `COMPOSICAO_TRANSFORMACOES`, as duas transformações
-componentes são eventos não nulos, mas a Transformação Resultante pode ser zero
-quando seus efeitos se anulam. Em `COMPOSICAO_RELACOES`, todos os papéis são
-relações inteiras e podem ser zero. Valide o domínio de cada papel; nunca rejeite
-zero genericamente por pertencer a uma categoria de Relações.
-
-Na ponte rica de `COMPOSICAO_RELACOES`, cada um dos três papéis referencia uma
-diferença orientada entre participantes nominalmente declarados. A operação
-curada pertence à relação estrutural do agregado: soma pode realizar uma
-configuração encadeada e subtração pode realizar uma configuração com
-referência comum. Não determine essa operação pelos sinais, pelo enunciado,
-pelos campos `personagem_*` ou pela posição visual. O pesquisador declara tanto
-a operação quanto as três correspondências, e uma divergência permanece como
-candidata diagnosticada. Relações opostas podem totalizar zero sem violar o
-domínio de nenhum papel.
-
-Em `TRANSFORMACAO_RELACAO`, não confunda a relação estrutural com a operação
-pedida ao participante. A transformação descreve uma mudança; soma ou subtração
-selecionada na interface é um procedimento de resolução curado. Preserve esse
-segundo conhecimento em um critério próprio, como `CriterioOperacaoModelagem`,
-sem usá-lo para recalcular a relação final declarada pelo pesquisador. O objeto
-relacional considera os participantes nominalmente associados a cada relação e
-ao evento, inclusive quando a relação final inverte a orientação da inicial.
-Esta decisão é específica da ponte dessa categoria e não redefine as operações
-já curadas das outras categorias.
-
-A ponte do registro tabular para o agregado rico é um adaptador de curadoria,
-não uma responsabilidade de `SituacaoProblema`. Ela pode transportar valores,
-incógnita e operações já declarados, mas deve exigir à parte a narrativa e as
-correspondências nominais. Campo obrigatório ausente, operação não curada ou
-conflito entre `termo_desconhecido` e `?` interrompe a construção com
-diagnóstico. A marca `validada` do registro anterior não promove
-automaticamente a nova representação rica.
-
-A narrativa e as correspondências ricas devem ser persistidas em um sidecar
-XML versionado próprio da curadoria. Esse registro pode referenciar a situação
-tabular pelo identificador, mas não pode reconstruir participantes, objetos,
-eventos ou orientações a partir de `personagem_*`, da ordem das colunas, do
-enunciado ou da geometria. A serialização é responsabilidade de infraestrutura;
-os objetos de domínio permanecem independentes de XML, JSON, arquivos e Swing.
-Quando o registro rico estiver ausente, a conversão deve parar com diagnóstico
-factual, sem recorrer a uma inferência de compatibilidade.
-
-O editor Swing é somente um adaptador de entrada das declarações humanas. Ele
-expõe campos nominais para participantes, famílias, objetos, inventários,
-eventos, marcadores temporais e correspondências, mas delega a montagem a um
-componente independente da interface. Linhas, colunas e posições do formulário
-não possuem significado semântico; todos os vínculos usam identificadores
-declarados. Uma declaração completa mas divergente pode ser preservada como
-candidata, acompanhada dos diagnósticos e de confirmação explícita do
-pesquisador, sem correção silenciosa.
-
-A versão original é a proprietária do sidecar semântico. Traduções alteram a
-realização textual e referenciam a narrativa rica da original por
-`versao_origem_id`; elas não criam participantes, objetos, eventos ou
-correspondências paralelos.
-
-O status editorial pertence ao registro da representação rica e começa como
-`CANDIDATA_NAO_CURADA`. A marca `validada` da tabela histórica não o promove.
-Somente um ato explícito do pesquisador no editor pode registrar
-`VALIDADA_PELO_PESQUISADOR`, e essa promoção é bloqueada enquanto a conversão
-produzir qualquer diagnóstico. Sidecars anteriores, que não possuem o status,
-são lidos conservadoramente como candidatos.
+Esta skill preserva somente o princípio geral: um agregado pode possuir o
+conhecimento que cruza vários objetos quando ele for o menor escopo que conhece
+todos os fatos necessários. A especificação interna de `SituacaoProblema` não
+pertence à regra geral sobre objetos de domínio ricos.
 
 ## Relações estruturais
 
@@ -237,40 +107,21 @@ Não use `InvarianteOperatorio` para essas classes.
 
 ## Diagnóstico e ajuda local
 
-O objeto pode produzir um diagnóstico factual, por exemplo:
+Um proprietário semântico pode produzir diagnóstico factual e selecionar uma
+ajuda do próprio repertório sem receber componentes visuais ou o modelo mutável
+completo. O protocolo de decisão pertence a `gerard-ajuda-adaptativa`; o
+esquema e as projeções pertencem a `gerard-modelo-usuario`; o repertório e sua
+materialização pertencem a `gerard-scaffolding-interacao`. Consulte essas
+skills quando a tarefa alcançar qualquer desses conhecimentos. Esta skill não
+duplica seus campos, algoritmos, códigos ou estados de implementação.
 
-- valor fora do domínio;
-- papel incompatível com a relação;
-- estado incompleto;
-- representação estruturalmente inconsistente.
+## Número inteiro e sinal representado
 
-O objeto pode selecionar uma ajuda de seu repertório local usando esse
-diagnóstico e um `ContextoAdaptativoUsuario` somente de leitura. O resultado
-é uma decisão semântica — por exemplo, código do apoio, finalidade, modalidade
-abstrata, regra aplicada e versão do modelo — e não um componente visual.
-
-A representação decide como materializar a decisão em sua própria sintaxe. O
-registro factual confirma separadamente o que foi efetivamente exibido.
-
-O contexto da sessão não deve chegar como um mapa global. Objetos como
-`FatosSelecaoAjudaIncognita` e `FatosSelecaoAjudaPosicionamento` exemplificam
-projeções locais e tipadas do Modelo da Situação/Solução: elas mudam durante a
-tentativa, enquanto a fotografia do Modelo do Usuário permanece estável.
-
-Mensagens devem ser representadas por chaves de internacionalização, não por texto final embutido no domínio.
-
-## Número inteiro e sinal representado — P5.2
-
-`NumeroInteiro` possui a correspondência entre seu valor e a opção de sinal
-da representação binária. O papel curado fornece o número normativo e mantém
-a tentativa da ação; nem a tela nem o logger inspecionam o inteiro para
-decidir C/E. Na sintaxe atual, que oferece somente `+` e `-`, zero corresponde
-à opção MAIS. Isso é uma decisão de representação compatível com a interface
-existente, não a afirmação conceitual de que zero é positivo.
-
-Quando o valor curado está ausente, é `?` ou não é inteiro, não há critério de
-avaliação de sinal. A ausência de critério não autoriza a interface a inferir
-um valor esperado pelo texto, pela posição ou por outro elemento visual.
+A semântica e o protocolo da seleção de sinal foram localizados em
+`gerard-sinal-valor-inteiro`. Esta skill continua afirmando apenas a regra
+geral: o domínio numérico local pertence ao objeto semanticamente responsável.
+Consulte a skill especializada antes de alterar correspondência `+`/`-`, ordem
+da interação ou capacidade de sinal publicada para as representações.
 
 ## Representação
 
@@ -284,16 +135,6 @@ O sistema pode manter hipóteses analíticas separadas, tipadas e revisáveis, s
 
 ## Regra de revisão
 
-Antes de criar ou enriquecer um objeto, pergunte:
-
-1. Este conhecimento é específico deste elemento?
-2. A regra envolve somente seu estado ou coordena vários objetos?
-3. Trata-se de fato do domínio ou de política pedagógica?
-4. Trata-se de observação factual ou de interpretação sobre o usuário?
-5. O objeto conheceria tecnologia de interface se essa regra fosse inserida aqui?
-6. O contexto do usuário foi reduzido ao mínimo necessário e permanece
-   imutável durante a sessão?
-7. Estou preservando uma única ação e apenas referenciando seus vários objetos
-   participantes, em vez de duplicar o registro?
-
-Use as respostas para escolher entre objeto local, relação estrutural, skill, infraestrutura ou hipótese analítica.
+Antes de criar ou enriquecer um objeto, aplique
+[`references/roteiro-revisao.md`](references/roteiro-revisao.md). O roteiro
+operacional não substitui as responsabilidades e exclusões deste núcleo.

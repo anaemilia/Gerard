@@ -39,6 +39,12 @@
       "knowledge_owner": "responsabilidades_dos_objetos_semanticos"
     },
     {
+      "id": "gerard-situacao-problema-agregado",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-situacao-problema-agregado/SKILL.md",
+      "knowledge_owner": "agregado_situacao_problema_narrativa_e_curadoria"
+    },
+    {
       "id": "gerard-semantic-event-logging",
       "kind": "skill",
       "path": ".agents/skills/gerard-semantic-event-logging/SKILL.md",
@@ -54,7 +60,19 @@
       "id": "gerard-consistencia-estado",
       "kind": "skill",
       "path": ".agents/skills/gerard-consistencia-estado/SKILL.md",
-      "knowledge_owner": "propagacao_de_estado_entre_representacoes"
+      "knowledge_owner": "invariantes_gerais_de_consistencia_entre_representacoes"
+    },
+    {
+      "id": "gerard-propagacao-estado-semantico",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-propagacao-estado-semantico/SKILL.md",
+      "knowledge_owner": "protocolo_de_publicacao_reconciliacao_e_difusao_do_estado"
+    },
+    {
+      "id": "gerard-sinal-valor-inteiro",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-sinal-valor-inteiro/SKILL.md",
+      "knowledge_owner": "semantica_e_protocolo_da_selecao_de_sinal_para_valores_inteiros"
     },
     {
       "id": "gerard-construcao-texto",
@@ -155,6 +173,42 @@
       "reason": "O modelo normativo define o vocabulario que a skill nao pode redefinir."
     },
     {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-knowledge-oriented-domain-objects",
+      "reason": "A fronteira entre camadas encaminha o desenho interno dos objetos para sua skill proprietaria."
+    },
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-log-gestos-interacao",
+      "reason": "A fronteira representacao-dominio condiciona quem produz fatos de gesto, sem possuir seu esquema."
+    },
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "Acoes do dominio preservam a fonte semantica, enquanto o esquema factual pertence ao log instrumental."
+    },
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Producao pelo dominio e persistencia de eventos sao responsabilidades separadas."
+    },
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-ajuda-adaptativa",
+      "reason": "O dominio aplica decisoes locais sem possuir aprendizagem e publicacao de regras."
+    },
+    {
+      "from": "gerard-domain-model-first",
+      "relation": "related",
+      "to": "gerard-modelo-usuario",
+      "reason": "O objeto recebe projecoes do modelo sem possuir seu esquema ou repositorio."
+    },
+    {
       "from": "gerard-knowledge-locality-principle",
       "relation": "requires",
       "to": "gerard-semantic-model",
@@ -177,6 +231,72 @@
       "relation": "related",
       "to": "gerard-knowledge-locality-principle",
       "reason": "A responsabilidade de cada objeto deve respeitar a localidade."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-ajuda-adaptativa",
+      "reason": "Objetos podem selecionar ajuda local, mas o protocolo adaptativo pertence a sua skill proprietaria."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-modelo-usuario",
+      "reason": "Contextos imutaveis usados pelos objetos seguem o esquema e as projecoes do Modelo do Usuario."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-scaffolding-interacao",
+      "reason": "O objeto possui repertorio local, enquanto codigos e materializacoes pertencem a skill de scaffolding."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-log-gestos-interacao",
+      "reason": "Objetos representacionais produzem fatos do gesto segundo o esquema proprietario desse registro."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "A propriedade local do fato nao substitui o esquema da acao instrumental."
+    },
+    {
+      "from": "gerard-knowledge-oriented-domain-objects",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Producao pelo objeto e persistencia do evento permanecem responsabilidades distintas."
+    },
+    {
+      "from": "gerard-situacao-problema-agregado",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Situacao, papeis, relacoes, narrativa e representacao seguem o vocabulario normativo."
+    },
+    {
+      "from": "gerard-situacao-problema-agregado",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "O agregado coordena modelos sem transferir significado para interface ou persistencia."
+    },
+    {
+      "from": "gerard-situacao-problema-agregado",
+      "relation": "requires",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A situacao-problema e o menor escopo que conhece estrutura, narrativa e correspondencias."
+    },
+    {
+      "from": "gerard-situacao-problema-agregado",
+      "relation": "requires",
+      "to": "gerard-knowledge-oriented-domain-objects",
+      "reason": "A especializacao conserva os limites gerais dos objetos semanticos ricos."
+    },
+    {
+      "from": "gerard-situacao-problema-agregado",
+      "relation": "related",
+      "to": "gerard-construcao-texto",
+      "reason": "O agregado publica a sequencia semantica; a realizacao linguistica pertence a construcao de texto."
     },
     {
       "from": "gerard-semantic-event-logging",
@@ -395,6 +515,102 @@
       "reason": "Propagacoes automaticas devem registrar a origem factual correta."
     },
     {
+      "from": "gerard-consistencia-estado",
+      "relation": "related",
+      "to": "gerard-propagacao-estado-semantico",
+      "reason": "Os invariantes de consistencia encaminham mudancas no mecanismo de difusao para a skill proprietaria do protocolo."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Papeis, valores, origens e representacoes seguem o vocabulario normativo."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "A relacao estrutural reconcilia o estado; representacoes somente o projetam."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "requires",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "O publicador nao pode assumir o conhecimento dos ouvintes nem das relacoes."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "requires",
+      "to": "gerard-consistencia-estado",
+      "reason": "O protocolo localizado deve preservar os invariantes gerais ja verificados."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "related",
+      "to": "gerard-api-semantica",
+      "reason": "Clientes remotos recebem descritores e snapshots sem se tornar fonte de verdade."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "related",
+      "to": "gerard-handlers-de-interacao",
+      "reason": "O gesto publica a mudanca, mas sua mecanica permanece no protocolo de interacao."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "related",
+      "to": "gerard-construcao-texto",
+      "reason": "O texto observa o snapshot compartilhado usando sua sintaxe proprietaria."
+    },
+    {
+      "from": "gerard-propagacao-estado-semantico",
+      "relation": "related",
+      "to": "gerard-semantic-event-logging",
+      "reason": "Difusao interna, fato semantico e evento persistido devem permanecer distintos."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "requires",
+      "to": "gerard-semantic-model",
+      "reason": "Papeis, valores e universos numericos seguem o vocabulario normativo."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "O dominio declara a capacidade de sinal e a representacao somente a materializa."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "requires",
+      "to": "gerard-knowledge-oriented-domain-objects",
+      "reason": "O papel e NumeroInteiro possuem o universo, o valor normativo e o veredito local."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "constrains",
+      "to": "gerard-consistencia-estado",
+      "reason": "A escolha de sinal preserva a ordem de confirmacao e os invariantes entre representacoes."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "related",
+      "to": "gerard-propagacao-estado-semantico",
+      "reason": "O valor assinado decidido localmente e difundido pelo protocolo de propagacao."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "related",
+      "to": "gerard-api-semantica",
+      "reason": "A API publica a capacidade de sinal sem transferir sua propriedade ao cliente."
+    },
+    {
+      "from": "gerard-sinal-valor-inteiro",
+      "relation": "related",
+      "to": "gerard-handlers-de-interacao",
+      "reason": "A ordem numero-antes-do-sinal e materializada pelo protocolo de interacao."
+    },
+    {
       "from": "gerard-construcao-texto",
       "relation": "requires",
       "to": "gerard-semantic-model",
@@ -417,6 +633,12 @@
       "relation": "related",
       "to": "gerard-consistencia-estado",
       "reason": "Texto e diagrama projetam identidades comuns com sintaxes distintas."
+    },
+    {
+      "from": "gerard-construcao-texto",
+      "relation": "related",
+      "to": "gerard-situacao-problema-agregado",
+      "reason": "A realizacao textual usa papeis e correspondencias do agregado quando a representacao rica estiver no escopo."
     },
     {
       "from": "gerard-posicionamento-relativo",

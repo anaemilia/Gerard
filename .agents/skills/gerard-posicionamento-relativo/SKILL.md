@@ -13,20 +13,8 @@ Isso vale para qualquer elemento — painel, card, diagrama, palavra arrastável
 
 ## Caso concreto que motivou esta skill (2026-08-06)
 
-`Main.java` tinha duas cópias independentes da altura vertical da área do enunciado:
-
-- `estaNaAreaDoTexto(x, y)`: `y >= 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA && y <= 190 + ALTURA_PAINEL_ATALHOS_CATEGORIA` — corretamente amarrada à constante.
-- O clamp de arraste de palavra em `processarMovimentoArraste` (ramo `elementoTextoSelecionado`): `int limiteSuperior = 58 + altura; int limiteInferior = 184;` — **sem** a constante.
-
-`ALTURA_PAINEL_ATALHOS_CATEGORIA` cresceu de 110 para 130 em 2026-07-28 (decisão da usuária, para abrir espaço aos rótulos "Medidas"/"Relações" acima dos ícones — comentário no próprio código, linha ~7420). `estaNaAreaDoTexto` acompanhou porque referenciava a constante. O clamp de arraste não acompanhou porque tinha 58/184 soltos — visualmente pareciam próximos de 55/190 (a diferença nem chamava atenção lendo o código), mas eram uma cópia independente, calculada uma vez e nunca mais revisitada.
-
-Resultado, um mês depois: arrastar uma palavra do enunciado para cima deixava ela presa sobrepondo a barra de ícones — porque o limite parava ~130px abaixo de onde deveria. Ver `RELATORIO_BUG_LIMITE_SUPERIOR_ARRASTE_TEXTO_ENUNCIADO_2026-08-06.md` e os commits `e89e718`/`cfe582b`.
-
-A correção final não foi só somar a constante que faltava (isso foi a primeira tentativa, `e89e718` — ainda preservava dois números "mágicos" por trás). Foi eliminar a segunda cópia: `TOPO_AREA_ENUNCIADO`/`BASE_AREA_ENUNCIADO`, duas constantes novas, viraram a única fonte, usadas tanto em `estaNaAreaDoTexto` quanto no clamp (`cfe582b`). Os mesmos números (55/190) que já definiam a área real desenhada por `desenharCard(g2, 15, 55 + ALTURA_PAINEL_ATALHOS_CATEGORIA, getWidth() - 30, 135, 18)`.
-
-## Exemplos do padrão correto já no código
-
-`ALTURA_PAINEL_ATALHOS_CATEGORIA` é o exemplo positivo — uma constante única referenciada em ~20 pontos (`Y_BASE_VERGNAUD = 215 + ALTURA_PAINEL_ATALHOS_CATEGORIA`, `Y_BASE_VENN`, posições de botões, áreas de card, `desenharFaixaAtalhoCategoria`). Quando ela muda, todo mundo que depende dela muda junto, automaticamente. É esse padrão que faltava replicar para a área do enunciado antes da correção de hoje.
+Para o histórico, a correção aplicada e o procedimento de investigação, leia
+[`references/caso-area-enunciado.md`](references/caso-area-enunciado.md).
 
 ## Perguntas obrigatórias antes de escrever um número de pixel
 
@@ -34,7 +22,3 @@ A correção final não foi só somar a constante que faltava (isso foi a primei
 2. Se esse outro elemento mudar de tamanho no futuro, quantos lugares no código precisariam ser lembrados e atualizados manualmente? Se a resposta é "mais de um", é sinal de que a fonte deveria ser única — extraia uma constante ou método, não copie o número.
 3. Este número "parece" bater com outro já existente no código (ex.: 58 perto de 55, 184 perto de 190)? Proximidade não é evidência de que a conta está certa — é sinal de que alguém já derivou esse valor antes e você está reconstruindo (pior: divergindo) em vez de reaproveitar.
 4. Estou copiando um valor de outro trecho sem entender de onde ele vem? Ache a fonte real (o método que desenha/define aquela área) antes de reusar o número.
-
-## Onde procurar ao investigar um bug de posição/sobreposição
-
-Grep pelo nome da constante relevante (`ALTURA_PAINEL_ATALHOS_CATEGORIA` e afins) para ver todos os pontos que já dependem dela — se o código com bug NÃO aparece nessa lista mas deveria (porque está na mesma área visual), esse é frequentemente o próprio bug: uma cópia solta que ficou de fora quando a constante foi introduzida ou alterada.

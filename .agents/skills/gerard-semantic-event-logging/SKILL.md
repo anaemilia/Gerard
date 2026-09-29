@@ -80,66 +80,28 @@ o invariante e relacionando-o à ação; sua origem é sempre `PESQUISADOR`.
 
 ## Tipos de eventos
 
-Exemplos:
+Os nomes expressam significado, não gesto físico isolado. Ao nomear um tipo
+novo ou revisar cobertura, consulte o catálogo aberto de exemplos e o checklist
+em
+[`references/tipos-e-antipadroes.md`](references/tipos-e-antipadroes.md).
+Os exemplos não constituem enumeração fechada.
 
-- papel selecionado;
-- valor proposto;
-- valor aceito;
-- valor rejeitado;
-- papel posicionado;
-- representação alterada;
-- relação estrutural verificada;
-- cálculo sugerido pelo sistema;
-- feedback apresentado;
-- ajuda adaptativa decidida;
-- explicação solicitada;
-- verbalização registrada;
-- tentativa iniciada, concluída ou abandonada.
+## Verbalizações e hipóteses analíticas
 
-Os nomes devem expressar o significado da ação, não o gesto físico isolado.
-
-## Eventos e verbalizações
-
-Perguntas, respostas e explicações devem poder ser vinculadas:
-
-- à tentativa;
-- ao evento ou intervalo de eventos relevante;
-- à representação e ao papel envolvidos;
-- ao autor da verbalização;
-- ao momento da atividade.
-
-## Eventos não são invariantes operatórios
-
-Uma ação, sequência de eventos ou verbalização não constitui automaticamente um esquema, teorema-em-ação ou conceito-em-ação.
-
-A análise pode formular uma hipótese separada e revisável, com:
-
-- tipo da hipótese;
-- classe de situações;
-- evidências citadas por identificador;
-- critérios analíticos;
-- nível de sustentação;
-- interpretações alternativas;
-- estado da hipótese.
-
-Se os registros forem insuficientes, não formule hipótese.
+Eventos factuais nunca se tornam automaticamente esquemas, invariantes
+operatórios ou conclusões sobre conhecimento-em-ação. Ao alterar vínculos de
+perguntas, respostas e explicações, ou ao estruturar hipóteses analíticas
+separadas, leia
+[`references/hipoteses-e-verbalizacoes.md`](references/hipoteses-e-verbalizacoes.md).
+Essa referência não é necessária para produzir um evento estritamente factual
+que não contenha verbalização nem participe de análise do pesquisador.
 
 ## Publicação e infraestrutura
 
-O publicador deve ser injetável por interface. Para funcionamento sem infraestrutura, prefira Null Object, como `PublicadorEventoDominio.NENHUM`, em vez de dependência `null`.
-
-O publicador recebe um registro já produzido pelo objeto proprietário. Ele não
-constitui a ação, não avalia C/E, não reinterpreta o gesto e não passa a ser o
-dono do log por gravá-lo.
-
-A infraestrutura é responsável por:
-
-- persistir;
-- indexar;
-- consultar;
-- exportar;
-- aplicar retenção e anonimização;
-- validar versão do esquema de evento.
+Ao integrar um publicador ou alterar persistência, retenção, anonimização e
+versionamento técnico, leia
+[`references/publicacao-infraestrutura.md`](references/publicacao-infraestrutura.md).
+A infraestrutura recebe fatos já produzidos; não constitui nem avalia ações.
 
 ## Regra de produção
 
@@ -170,34 +132,14 @@ Uma decisão não prova exibição; uma exibição não prova compreensão.
 
 ## Consolidação durante um gesto contínuo
 
-Atualizar uma representação a cada amostra do ponteiro não exige emitir um
-novo evento semântico por pixel. No controle de barras de
-`COMPARACAO_MEDIDAS`, o estado e as representações são propagados a cada
-movimento, mas o evento `CONSISTENCIA_AUTOMATICA` retém somente o último
-`Snapshot` e é gravado no término do gesto. Um novo pressionamento executa
-um descarregamento defensivo caso o término anterior tenha sido interrompido.
+Ao alterar emissão de eventos durante arraste, retenção do último snapshot ou
+descarregamento defensivo no término do gesto, leia
+[`references/granularidade-gesto-continuo.md`](references/granularidade-gesto-continuo.md).
+Essa política especializada permanece subordinada às regras gerais de origem,
+identidade e propriedade dos eventos definidas nesta skill.
 
-Essa é uma política de granularidade do registro, não uma regra matemática
-nem um bloqueio da sincronização visual. A identificação do papel recalculado
-permanece no estado semântico/relação proprietária; a apresentação somente
-retém o fato já produzido. As amostras intermediárias podem integrar o
-registro factual do gesto segundo `gerard-log-gestos-interacao`, mas não se
-transformam automaticamente em ações instrumentais.
+## Revisão
 
-Status verificado em 2026-08-30: os métodos
-`registrarLogConsistenciaAutomaticaSeHouve` e
-`flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao` implementam a
-retenção, e o verificador determinístico protege os términos normal e
-defensivo.
-
-## Anti-padrões
-
-- Logar apenas `mouseClicked(x,y)`.
-- Omitir a origem da ação.
-- Registrar cálculo automático como ação do estudante.
-- Vincular explicação apenas à situação, ignorando a tentativa.
-- Inserir inferência cognitiva dentro do evento factual.
-- Declarar invariante operatório a partir de um evento isolado.
-- Fazer o objeto executar I/O diretamente em arquivo ou banco, ou atribuir ao
-  persistidor a propriedade semântica do registro.
-- Emitir uma ação duplicada para cada objeto participante de uma mesma ação.
+Antes de concluir uma mudança no esquema ou em um produtor, aplique os
+antipadrões de
+[`references/tipos-e-antipadroes.md`](references/tipos-e-antipadroes.md).

@@ -62,34 +62,7 @@ históricos aceitos para leitura não criam categorias adicionais.
 
 ## Procedimento
 
-1. Identifique os valores e a relação numérica fornecidos sem lhes atribuir
-   uma categoria por conta própria.
-2. Selecione padrões curados compatíveis com a categoria, o subtipo, o papel
-   desconhecido, o idioma e o contexto pedidos.
-3. Reutilize os fragmentos curados quando existirem; caso contrário, siga o
-   fallback permitido por `gerard-construcao-texto`.
-4. Realize os mesmos papéis semânticos em sintaxe textual própria, preservando
-   a relação numérica e a identidade de cada papel. Personagens são lidos dos
-   campos nomeados; nunca são associados por posição no diagrama.
-5. Verifique a candidata contra o padrão curado e marque qualquer ausência de
-   lastro. Sem correspondência clara, informe a lacuna em vez de improvisar.
-
-## Saída para revisão humana
-
-Para cada candidata, apresente pelo menos:
-
-```text
-status: CANDIDATA_NAO_CURADA
-categoria:
-subtipo:
-papel_desconhecido:
-valores_por_papel:
-personagens_por_campo:
-idioma:
-enunciado:
-referencias_curadas:
-observacoes_para_revisao:
-```
-
-O formato é uma ficha de revisão, não o esquema de transporte entre cliente e
-servidor e não uma linha pronta do catálogo curado.
+Depois de identificar a fonte e os limites de autoridade, leia
+[`references/procedimento-candidatas.md`](references/procedimento-candidatas.md)
+para produzir candidatas e formatar a ficha entregue à revisão humana. O
+procedimento não promove conteúdo ao catálogo nem redefine as seis categorias.
