@@ -63,7 +63,7 @@ public final class AreaTituloCategoriaEnunciado {
 
         if (linhaResumoAbaixoDoTitulo != null) {
             g2.setFont(new Font("Arial", Font.PLAIN, 10));
-            g2.setColor(new Color(92, 104, 108));
+            g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
             g2.drawString(linhaResumoAbaixoDoTitulo, margemX, yTitulo + 14);
         }
 

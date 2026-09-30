@@ -204,7 +204,7 @@ public final class RenderizadorProcessoTransformacao {
         int x = ancora.x + ancora.width + ESPACO_FUNIL_CONTROLES
                 + TAMANHO_CONTROLE_SINAL + ESPACO_APOS_CONTROLES;
         int y = ancora.y + (ancora.height - altura) / 2;
-        g2.setColor(new Color(0xFC, 0xFB, 0xF8, 232));
+        g2.setColor(new Color(0xFF, 0xFF, 0xFF, 232));
         g2.fillRoundRect(x, y, largura, altura, 12, 12);
         g2.setColor(borda);
         g2.drawRoundRect(x, y, largura, altura, 12, 12);
@@ -281,7 +281,7 @@ public final class RenderizadorProcessoTransformacao {
         int altura = 26;
         int x = zona.x + (zona.largura - largura) / 2;
         int y = indice == 1 ? zona.y + 8 : zona.y - altura - 8;
-        g2.setColor(new Color(0xFC, 0xFB, 0xF8, 232));
+        g2.setColor(new Color(0xFF, 0xFF, 0xFF, 232));
         g2.fillRoundRect(x, y, largura, altura, 12, 12);
         g2.setColor(borda);
         g2.drawRoundRect(x, y, largura, altura, 12, 12);

@@ -475,18 +475,8 @@ public class Main extends JFrame {
      * (ex.: "Acesso do pesquisador", edição de valores).
      */
     private static void aplicarTemaSwingPadrao() {
-        UIManager.put("TabbedPane.selected", gerard.ui.UITemaGerard.COR_SUPERFICIE_SUAVE);
-        UIManager.put("TabbedPane.selectHighlight", gerard.ui.UITemaGerard.COR_SUPERFICIE);
-        UIManager.put("TabbedPane.focus", gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-        UIManager.put("TabbedPane.contentAreaColor", gerard.ui.UITemaGerard.COR_SUPERFICIE_SUAVE);
-
-        UIManager.put("OptionPane.background", gerard.ui.UITemaGerard.COR_SUPERFICIE);
-        UIManager.put("Panel.background", gerard.ui.UITemaGerard.COR_SUPERFICIE);
-        UIManager.put("OptionPane.messageForeground", gerard.ui.UITemaGerard.COR_TEXTO);
-        UIManager.put("TextField.selectionBackground", gerard.ui.UITemaGerard.COR_SUPERFICIE_SUAVE);
-        UIManager.put("TextField.selectionForeground", gerard.ui.UITemaGerard.COR_TEXTO);
-        UIManager.put("Button.select", gerard.ui.UITemaGerard.COR_SUPERFICIE_SUAVE);
-        UIManager.put("Button.focus", gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+        // Design System instalado num unico ponto - ver gerard.ui.GerardTema.
+        gerard.ui.GerardTema.instalar();
     }
 
     public Main() {
@@ -893,7 +883,7 @@ public class Main extends JFrame {
         final Color COR_TEXTO_SECUNDARIO = gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
         final Color COR_BORDA = gerard.ui.UITemaGerard.COR_BORDA;
         final Color COR_DESTAQUE = gerard.ui.UITemaGerard.COR_DESTAQUE;
-        final Color COR_AVISO = new Color(224, 160, 58);               // #E0A03A (sinal de revisão, mantido)
+        final Color COR_AVISO = gerard.ui.UITemaGerard.COR_ALERTA;               // sinal de revisão (token de alerta do Design System)
         final Color COR_BORDA_BOTAO = gerard.ui.UITemaGerard.COR_BORDA;
         final Color COR_MARCADOR_NUMERO = gerard.ui.UITemaGerard.COR_SUPERFICIE;
         final Color COR_BORDA_MARCADOR = gerard.ui.UITemaGerard.COR_BORDA;
@@ -1457,6 +1447,8 @@ public class Main extends JFrame {
         private void atualizarTextosTipConclusaoModelagem() {
             seloConclusaoModelagem.atualizarTexto(
                     localizacao.texto("ui.completion.next"));
+            seloConclusaoModelagem.atualizarTextoConclusao(
+                    localizacao.texto("ui.completion.completed"));
             tipConclusaoModelagem.atualizarTextos(
                     localizacao.texto("ui.completion.congratulations"),
                     localizacao.texto("ui.completion.yes"),
@@ -2088,7 +2080,7 @@ public class Main extends JFrame {
         private void criarIndicadorAgenteModelador() {
             final Color corApagadoLed = gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO;
             indicadorAgenteModelador = new gerard.pesquisador.IndicadorPulsoAgente(
-                    new Color(0x4F, 0x6F, 0x64), corApagadoLed,
+                    gerard.ui.UITemaGerard.COR_SUCESSO, corApagadoLed,
                     "Agente Modelador: pisca sempre que armazena um novo caso no Modelo do Usuário.");
             agenteModelador.adicionarOuvinte(new gerard.agente.modelador.OuvinteCasoAgenteModelador() {
                 public void aoArmazenar(String idUsuario, gerard.agente.modelousuario.DiagnosticoTarefa diagnostico) {
@@ -7324,7 +7316,7 @@ public class Main extends JFrame {
                     g2.setColor(COR_PRIMARIA);
                     g2.setStroke(new BasicStroke(1.0f));
                 } else {
-                    g2.setColor(new Color(247, 246, 241));
+                    g2.setColor(gerard.ui.UITemaGerard.COR_FUNDO);
                     g2.fillRoundRect(elemento.x - 4, elemento.y - fm.getAscent() + 1,
                             elemento.largura + 8, elemento.altura + 4, 8, 8);
                     g2.setColor(COR_BORDA);
@@ -13516,7 +13508,7 @@ public class Main extends JFrame {
             // Terceiro tom de cinza (mais claro que COR_TEXTO/COR_TEXTO_SECUNDARIO,
             // ainda legível) usado só para distinguir o "total" de parcela1/parcela2
             // no rastreio de valores entre colunas — ver comentário acima de total.setForeground.
-            final Color COR_CINZA_TOTAL_COMPARACAO = new Color(150, 142, 128);
+            final Color COR_CINZA_TOTAL_COMPARACAO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_SINAL;
             final EstadoNumericoComparacaoCategorias modelo =
                     new EstadoNumericoComparacaoCategorias(4, 7);
             final JSpinner spinnerA = new JSpinner(new SpinnerNumberModel(4, 0, 999, 1));

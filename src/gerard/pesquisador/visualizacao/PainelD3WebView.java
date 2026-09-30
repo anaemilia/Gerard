@@ -31,11 +31,11 @@ import java.lang.reflect.Method;
  */
 public class PainelD3WebView extends JPanel {
 
-    private static final Color COR_FUNDO = new Color(246, 247, 248);
-    private static final Color COR_SUPERFICIE = Color.WHITE;
-    private static final Color COR_TEXTO = new Color(31, 41, 51);
-    private static final Color COR_TEXTO_SECUNDARIO = new Color(82, 97, 107);
-    private static final Color COR_BORDA = new Color(213, 218, 224);
+    private static final Color COR_FUNDO = gerard.ui.UITemaGerard.COR_FUNDO;
+    private static final Color COR_SUPERFICIE = gerard.ui.UITemaGerard.COR_SUPERFICIE;
+    private static final Color COR_TEXTO = gerard.ui.UITemaGerard.COR_TEXTO;
+    private static final Color COR_TEXTO_SECUNDARIO = gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
+    private static final Color COR_BORDA = gerard.ui.UITemaGerard.COR_BORDA;
 
     private final String html;
     private final ServicoLocalizacao i18n;

@@ -43,19 +43,19 @@ public class QuadradinhoVenn {
 
     public void desenhar(Graphics2D g2) {
         if ("transformacao_negativa".equals(origem)) {
-            g2.setColor(new Color(111, 143, 151));
+            g2.setColor(gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_NEGATIVA_BASE);
         } else {
-            g2.setColor(new Color(210, 154, 164));
+            g2.setColor(gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_POSITIVA_BASE);
         }
 
         g2.fillRoundRect(x, y, tamanho, tamanho, 6, 6);
 
-        g2.setColor(new Color(86, 116, 126));
+        g2.setColor(gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_POSITIVA_BORDA);
         g2.setStroke(new BasicStroke(1.0f));
         g2.drawRoundRect(x, y, tamanho, tamanho, 6, 6);
 
         if (textoEditavel != null && textoEditavel.trim().length() > 0) {
-            g2.setFont(new Font("Arial", Font.BOLD, 10));
+            g2.setFont(gerard.ui.GerardFontes.monoTexto(10f));
             FontMetrics fm = g2.getFontMetrics();
             String texto = textoEditavel;
             while (texto.length() > 1 && fm.stringWidth(texto) > tamanho - 3) {
@@ -63,7 +63,7 @@ public class QuadradinhoVenn {
             }
             int tx = x + (tamanho - fm.stringWidth(texto)) / 2;
             int ty = y + (tamanho - fm.getHeight()) / 2 + fm.getAscent();
-            g2.setColor(new Color(35, 45, 49));
+            g2.setColor(gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_POSITIVA_TEXTO);
             g2.drawString(texto, tx, ty);
         }
     }

@@ -20,13 +20,13 @@ public final class ControleRemoverQuadradinhoVenn {
     private static final int AFASTAMENTO_VERTICAL = 6;
     private static final int ESPACO_ENTRE_CONTROLES = 5;
 
-    private static final Color FUNDO = new Color(255, 255, 255);
-    private static final Color FUNDO_FOCADO = new Color(243, 244, 246);
-    private static final Color BORDA = new Color(148, 163, 184);
-    private static final Color SINAL = new Color(71, 85, 105);
-    private static final Color FUNDO_DESABILITADO = new Color(247, 248, 250);
-    private static final Color BORDA_DESABILITADA = new Color(180, 188, 198);
-    private static final Color SINAL_DESABILITADO = new Color(145, 154, 166);
+    private static final Color FUNDO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO;
+    private static final Color FUNDO_FOCADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO_FOCADO;
+    private static final Color BORDA = gerard.ui.CoresRepresentacaoGerard.CONTROLE_BORDA;
+    private static final Color SINAL = gerard.ui.CoresRepresentacaoGerard.CONTROLE_SINAL;
+    private static final Color FUNDO_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO_DESABILITADO;
+    private static final Color BORDA_DESABILITADA = gerard.ui.CoresRepresentacaoGerard.CONTROLE_BORDA_DESABILITADA;
+    private static final Color SINAL_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_SINAL_DESABILITADO;
 
     public Rectangle obterArea(RepresentacaoComUnidadesRemoviveis representacao, Rectangle areaDiagrama) {
         if (representacao == null || areaDiagrama == null) {

@@ -20,7 +20,7 @@ import javax.swing.text.AbstractDocument;
  * Componente coeso da curadoria para magnitude + escolha obrigatória do sinal.
  */
 public final class PainelValorComSinalCuradoria extends JPanel {
-    private static final Color COR_ERRO = new Color(183, 28, 28);
+    private static final Color COR_ERRO = gerard.ui.UITemaGerard.COR_ERRO;
 
     private final TipoSituacaoAditiva tipo;
     private final PapelSinalCuradoria papel;

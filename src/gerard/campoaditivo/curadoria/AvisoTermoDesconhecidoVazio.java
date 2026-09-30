@@ -15,8 +15,8 @@ import javax.swing.border.Border;
  * altera valores semânticos e não interfere nas regras de salvamento.
  */
 public final class AvisoTermoDesconhecidoVazio {
-    private static final Color COR_AVISO = new Color(180, 83, 9);
-    private static final Color COR_BORDA_AVISO = new Color(245, 158, 11);
+    private static final Color COR_AVISO = gerard.ui.UITemaGerard.COR_ALERTA_TEXTO;
+    private static final Color COR_BORDA_AVISO = gerard.ui.UITemaGerard.COR_ALERTA;
 
     private final JComboBox<String> campo;
     private final JLabel aviso;

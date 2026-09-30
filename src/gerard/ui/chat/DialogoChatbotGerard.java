@@ -1,6 +1,8 @@
 package gerard.ui.chat;
 
 import gerard.i18n.ServicoLocalizacao;
+import gerard.ui.GerardButton;
+import gerard.ui.GerardFontes;
 import gerard.ui.UITemaGerard;
 import javax.swing.*;
 import java.awt.*;
@@ -28,10 +30,10 @@ public final class DialogoChatbotGerard extends JDialog {
         raiz.setBackground(UITemaGerard.COR_FUNDO);
         raiz.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
         JLabel titulo = new JLabel(localizacao.texto("ui.chat.heading"));
-        titulo.setFont(new Font("Arial", Font.BOLD, 18)); titulo.setForeground(UITemaGerard.COR_TEXTO);
+        titulo.setFont(GerardFontes.sans(true, 18f)); titulo.setForeground(UITemaGerard.COR_TEXTO);
         raiz.add(titulo, BorderLayout.NORTH);
         conversa.setEditable(false); conversa.setLineWrap(true); conversa.setWrapStyleWord(true);
-        conversa.setFont(new Font("Arial", Font.PLAIN, 14)); conversa.setForeground(UITemaGerard.COR_TEXTO);
+        conversa.setFont(GerardFontes.sans(false, 14f)); conversa.setForeground(UITemaGerard.COR_TEXTO);
         conversa.setBackground(UITemaGerard.COR_SUPERFICIE); conversa.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         conversa.getAccessibleContext().setAccessibleName(localizacao.texto("ui.chat.history"));
         JPanel corpoConversa = new JPanel(new BorderLayout(10, 0));
@@ -50,10 +52,11 @@ public final class DialogoChatbotGerard extends JDialog {
         areas.add(criarBotaoArea(MensagensComunicabilidadeChatbot.Area.COMPLEMENTAR));
         rodape.add(areas); rodape.add(Box.createVerticalStrut(8));
         JPanel envio = new JPanel(new BorderLayout(6,0)); envio.setOpaque(false);
-        entrada.setFont(new Font("Arial", Font.PLAIN, 14));
+        entrada.setFont(GerardFontes.sans(false, 14f));
         entrada.getAccessibleContext().setAccessibleName(localizacao.texto("ui.chat.input"));
         entrada.addActionListener(e -> enviar());
-        JButton enviar = criarBotao(localizacao.texto("ui.chat.send")); enviar.addActionListener(e -> enviar());
+        JButton enviar = criarBotao(localizacao.texto("ui.chat.send"), GerardButton.Estilo.PRIMARIO);
+        enviar.addActionListener(e -> enviar());
         envio.add(entrada, BorderLayout.CENTER); envio.add(enviar, BorderLayout.EAST); rodape.add(envio);
         raiz.add(rodape, BorderLayout.SOUTH); setContentPane(raiz); setSize(680,500);
         escrever("Gérard", localizacao.texto("ui.chat.greeting"));
@@ -65,7 +68,7 @@ public final class DialogoChatbotGerard extends JDialog {
     }
 
     private JButton criarBotaoArea(final MensagensComunicabilidadeChatbot.Area area) {
-        JButton b = criarBotao(localizacao.texto(mensagensComunicabilidade.chaveArea(area)));
+        JButton b = criarBotao(localizacao.texto(mensagensComunicabilidade.chaveArea(area)), GerardButton.Estilo.SECUNDARIO);
         b.addActionListener(e -> { areaAtual=area; registrar("NEUTRA_OPERACIONAL", "selecionar_area="+area.name()); responder(MensagensComunicabilidadeChatbot.Intencao.DUVIDA); });
         return b;
     }
@@ -85,9 +88,8 @@ public final class DialogoChatbotGerard extends JDialog {
         avatar.getAccessibleContext().setAccessibleDescription(descricao);
         return avatar;
     }
-    private JButton criarBotao(String texto) {
-        JButton b=new JButton(texto); b.setFont(new Font("Arial",Font.BOLD,12)); b.setForeground(UITemaGerard.COR_TEXTO);
-        b.setBackground(UITemaGerard.COR_SUPERFICIE); b.setFocusPainted(true); b.setBorder(BorderFactory.createLineBorder(UITemaGerard.COR_BORDA)); return b;
+    private JButton criarBotao(String texto, GerardButton.Estilo estilo) {
+        return new GerardButton(texto, estilo);
     }
     private void enviar() {
         String texto=entrada.getText()==null?"":entrada.getText().trim(); if(texto.length()==0)return;

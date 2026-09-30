@@ -43,7 +43,7 @@ public abstract class RenderizadorPickupAbstrato implements RenderizadorPickup {
         Composite compositeAnterior = sombra.getComposite();
         sombra.setComposite(AlphaComposite.getInstance(
                 AlphaComposite.SRC_OVER, obterAlphaSombra()));
-        sombra.setColor(new Color(22, 35, 48));
+        sombra.setColor(gerard.ui.CoresRepresentacaoGerard.SOMBRA);
         int arco = Math.max(6, Math.min(14,
                 Math.min(limites.width, limites.height) / 3));
         sombra.fillRoundRect(

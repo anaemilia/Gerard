@@ -6,6 +6,9 @@ import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.i18n.ServicoLocalizacao;
 import gerard.idioma.IdiomaInterface;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
+import gerard.ui.GerardButton;
+import gerard.ui.GerardFontes;
+import gerard.ui.GerardPanel;
 import gerard.ui.UITemaGerard;
 import gerard.ui.conclusao.TipConclusaoModelagem;
 import java.awt.BorderLayout;
@@ -61,10 +64,10 @@ public final class TelaMontagemSituacao extends JPanel {
     private static final Color BORDA = UITemaGerard.COR_BORDA;
     private static final Color PRIMARIA = UITemaGerard.COR_PRIMARIA;
     private static final Color SUCESSO = UITemaGerard.COR_SUCESSO;
-    private static final Color AVISO = new Color(161, 98, 7);
-    private static final Color ERRO_SUAVE = new Color(191, 109, 122);
-    private static final Color FUNDO_CORRETO = new Color(239, 246, 255);
-    private static final Color FUNDO_INCORRETO = new Color(255, 245, 246);
+    private static final Color AVISO = UITemaGerard.COR_ALERTA_TEXTO;
+    private static final Color ERRO_SUAVE = UITemaGerard.COR_ERRO_TEXTO;
+    private static final Color FUNDO_CORRETO = UITemaGerard.COR_SUCESSO_FUNDO;
+    private static final Color FUNDO_INCORRETO = UITemaGerard.COR_ERRO_FUNDO;
 
     private final RepositorioSituacoesAditivas repositorio;
     private final GeradorBlocosMontagem gerador = new GeradorBlocosMontagem();
@@ -119,15 +122,15 @@ public final class TelaMontagemSituacao extends JPanel {
         // este ajuste, o texto de instrução ficava pequeno demais perto do
         // diagrama grande logo abaixo.
         rotuloTitulo = new JLabel();
-        rotuloTitulo.setFont(new Font("Arial", Font.BOLD, 26));
+        rotuloTitulo.setFont(GerardFontes.sans(true, 26f));
         rotuloTitulo.setForeground(TEXTO);
         rotuloTitulo.setIcon(criarIconeConstruirTitulo());
         rotuloTitulo.setIconTextGap(8);
         rotuloInstrucao = new JLabel();
-        rotuloInstrucao.setFont(new Font("Arial", Font.PLAIN, 16));
+        rotuloInstrucao.setFont(GerardFontes.texto());
         rotuloInstrucao.setForeground(TEXTO_SECUNDARIO);
         rotuloSituacao = new JLabel(" ");
-        rotuloSituacao.setFont(new Font("Arial", Font.BOLD, 15));
+        rotuloSituacao.setFont(GerardFontes.sans(true, 15f));
         rotuloSituacao.setForeground(TEXTO_SECUNDARIO);
 
         comboIdioma = new JComboBox<IdiomaInterface>(new DefaultComboBoxModel<IdiomaInterface>(new IdiomaInterface[] {
@@ -173,7 +176,7 @@ public final class TelaMontagemSituacao extends JPanel {
         // Mesmo tamanho de criarTituloLista() — os três cartões (Diagrama
         // preenchido, Blocos disponíveis, Situação-problema em construção)
         // são títulos do mesmo nível hierárquico.
-        tituloDiagrama.setFont(new Font("Arial", Font.BOLD, 17));
+        tituloDiagrama.setFont(GerardFontes.tituloPainel());
         tituloDiagrama.setForeground(TEXTO);
         // Botão "Novo diagrama" ao lado do rótulo "Diagrama preenchido"
         // (decisão da usuária, 2026-07-28) — antes ficava acima do título
@@ -193,7 +196,7 @@ public final class TelaMontagemSituacao extends JPanel {
         // diagrama de Vergnaud: colada ao contorno real desenhado, não ao
         // fim da área alocada pelo layout.
         rotuloFeedback = new JLabel(" ");
-        rotuloFeedback.setFont(new Font("Arial", Font.BOLD, 15));
+        rotuloFeedback.setFont(GerardFontes.sans(true, 15f));
         rotuloFeedback.setForeground(TEXTO_SECUNDARIO);
         painelDiagrama.anexarRotuloFeedback(rotuloFeedback);
 
@@ -755,17 +758,15 @@ public final class TelaMontagemSituacao extends JPanel {
     }
 
     private JPanel criarCard(java.awt.LayoutManager layout) {
-        JPanel panel = new JPanel(layout);
-        panel.setBackground(SUPERFICIE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDA),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        GerardPanel panel = new GerardPanel();
+        panel.setLayout(layout);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         return panel;
     }
 
     private JLabel criarTituloLista() {
         JLabel label = new JLabel();
-        label.setFont(new Font("Arial", Font.BOLD, 17));
+        label.setFont(GerardFontes.tituloPainel());
         label.setForeground(TEXTO);
         return label;
     }
@@ -941,15 +942,7 @@ public final class TelaMontagemSituacao extends JPanel {
     }
 
     private JButton criarBotaoSecundario() {
-        JButton botao = new JButton();
-        botao.setFont(UITemaGerard.FONTE_BOTAO_MENU_PRINCIPAL);
-        botao.setForeground(TEXTO);
-        botao.setBackground(UITemaGerard.COR_FUNDO_CONTEUDO);
-        botao.setFocusPainted(false);
-        botao.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UITemaGerard.COR_BORDA),
-                BorderFactory.createEmptyBorder(7, 10, 7, 10)));
-        return botao;
+        return new GerardButton("", GerardButton.Estilo.SECUNDARIO);
     }
 
     private final class RenderizadorBloco extends DefaultListCellRenderer {
@@ -959,7 +952,7 @@ public final class TelaMontagemSituacao extends JPanel {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             String texto = value instanceof BlocoTextoMontagem ? ((BlocoTextoMontagem) value).getTexto() : String.valueOf(value);
             label.setText("<html><div style='width:245px;padding:6px 4px;'>" + escaparHtml(texto) + "</div></html>");
-            label.setFont(new Font("Arial", Font.PLAIN, 15));
+            label.setFont(GerardFontes.sans(false, 15f));
             label.setVerticalAlignment(SwingConstants.TOP);
             label.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDA));
             if (list == listaMontagem) {
@@ -967,10 +960,13 @@ public final class TelaMontagemSituacao extends JPanel {
                 if (status == StatusVerificacaoBlocoMontagem.CORRETO) {
                     label.setForeground(SUCESSO);
                     label.setBackground(FUNDO_CORRETO);
+                    label.setIcon(new IconeStatusBloco(true));
                 } else if (status == StatusVerificacaoBlocoMontagem.INCORRETO) {
                     label.setForeground(ERRO_SUAVE);
                     label.setBackground(FUNDO_INCORRETO);
+                    label.setIcon(new IconeStatusBloco(false));
                 } else {
+                    label.setIcon(null);
                     label.setBackground(Color.WHITE);
                     label.setForeground(TEXTO);
                 }
@@ -980,10 +976,58 @@ public final class TelaMontagemSituacao extends JPanel {
                             BorderFactory.createEmptyBorder(0, 0, 0, 0)));
                 }
             } else if (!isSelected) {
+                label.setIcon(null);
                 label.setBackground(Color.WHITE);
                 label.setForeground(TEXTO);
+            } else {
+                label.setIcon(null);
             }
             return label;
+        }
+    }
+
+    /**
+     * Indicador de status do bloco além da cor (prompt-claude-code-cores.md,
+     * seção 7: "todo estado deve ter um indicador além da cor"): círculo com
+     * ✓ (compatível) ou ✕ (incompatível), desenhado — sem texto novo. A cor
+     * continua vindo de SUCESSO/ERRO_SUAVE, o mesmo par do fundo da linha.
+     */
+    private static final class IconeStatusBloco implements javax.swing.Icon {
+        private static final int TAMANHO = 18;
+        private final boolean correto;
+
+        IconeStatusBloco(boolean correto) {
+            this.correto = correto;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return TAMANHO + 6;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return TAMANHO + 12;
+        }
+
+        @Override
+        public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                    java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(correto ? SUCESSO : ERRO_SUAVE);
+            g2.setStroke(new java.awt.BasicStroke(1.6f, java.awt.BasicStroke.CAP_ROUND,
+                    java.awt.BasicStroke.JOIN_ROUND));
+            int topo = y + 6;
+            g2.drawOval(x + 2, topo, TAMANHO - 1, TAMANHO - 1);
+            if (correto) {
+                g2.drawLine(x + 6, topo + 9, x + 9, topo + 12);
+                g2.drawLine(x + 9, topo + 12, x + 15, topo + 5);
+            } else {
+                g2.drawLine(x + 7, topo + 5, x + 14, topo + 12);
+                g2.drawLine(x + 14, topo + 5, x + 7, topo + 12);
+            }
+            g2.dispose();
         }
     }
 

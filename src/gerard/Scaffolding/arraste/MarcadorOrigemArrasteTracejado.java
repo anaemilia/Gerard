@@ -8,7 +8,7 @@ public final class MarcadorOrigemArrasteTracejado
 
     @Override
     protected Color obterCor() {
-        return new Color(76, 104, 128);
+        return gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
     }
 
     @Override

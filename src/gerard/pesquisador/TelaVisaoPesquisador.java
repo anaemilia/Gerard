@@ -12,6 +12,9 @@ import gerard.pesquisador.log.EventoLogGerard;
 import gerard.pesquisador.log.ExportadorLogGerard;
 import gerard.pesquisador.log.LoggerInteracaoGerard;
 import gerard.pesquisador.visualizacao.PainelD3WebView;
+import gerard.ui.GerardButton;
+import gerard.ui.GerardFontes;
+import gerard.ui.GerardTabbedPaneUI;
 import gerard.ui.UITemaGerard;
 
 import javax.swing.BorderFactory;
@@ -127,10 +130,10 @@ public class TelaVisaoPesquisador extends JDialog {
         JPanel cabecalho = new JPanel(new BorderLayout(8, 2));
         cabecalho.setOpaque(false);
         JLabel titulo = new JLabel(t("pesq.title"));
-        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        titulo.setFont(GerardFontes.sans(true, 18f));
         titulo.setForeground(COR_TEXTO);
         JLabel subtitulo = new JLabel(t("pesq.subtitle"));
-        subtitulo.setFont(new Font("Arial", Font.PLAIN, 12));
+        subtitulo.setFont(GerardFontes.sans(false, 12f));
         subtitulo.setForeground(COR_TEXTO_SECUNDARIO);
         cabecalho.add(titulo, BorderLayout.NORTH);
         cabecalho.add(subtitulo, BorderLayout.CENTER);
@@ -141,7 +144,7 @@ public class TelaVisaoPesquisador extends JDialog {
         raiz.add(cabecalho, BorderLayout.NORTH);
 
         JTabbedPane abas = new JTabbedPane();
-        abas.setFont(new Font("Arial", Font.BOLD, 12));
+        GerardTabbedPaneUI.aplicar(abas);
         abas.addTab(t("pesq.tab.summary"), criarAbaSintese());
         abas.addTab(t("pesq.tab.table4"), criarAbaTabela4ProblemasEstudo());
         abas.addTab(t("pesq.tab.table6"), criarAbaTabela6UsuariosEstudo());
@@ -181,7 +184,7 @@ public class TelaVisaoPesquisador extends JDialog {
         texto.setEditable(false);
         texto.setLineWrap(true);
         texto.setWrapStyleWord(true);
-        texto.setFont(new Font("Arial", Font.PLAIN, 13));
+        texto.setFont(GerardFontes.sans(false, 13f));
         texto.setForeground(COR_TEXTO);
         texto.setBackground(COR_SUPERFICIE);
         texto.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -273,6 +276,7 @@ public class TelaVisaoPesquisador extends JDialog {
     private JPanel criarAbaGraficos() {
         JPanel painel = painelBase(new BorderLayout(12, 12));
         JTabbedPane graficos = new JTabbedPane();
+        GerardTabbedPaneUI.aplicar(graficos);
         JPanel aba1 = painelBase(new BorderLayout(12, 12));
         aba1.add(criarTabelaComTitulo(t("pesq.table.correctErrorsByCategory"), dadosAcertosErrosPorCategoria(), new int[]{260, 110, 110, 110}), BorderLayout.NORTH);
         aba1.add(new GraficoBarras(t("pesq.chart.errorsByCategory"), t("pesq.chart.errorsByCategory.subtitle2"), estatisticas.contarErrosPorCategoria(), COR_PRIMARIA), BorderLayout.CENTER);
@@ -289,13 +293,13 @@ public class TelaVisaoPesquisador extends JDialog {
                 BorderFactory.createEmptyBorder(10, 12, 10, 12)
         ));
         JLabel labelTitulo = new JLabel(titulo);
-        labelTitulo.setFont(new Font("Arial", Font.BOLD, 13));
+        labelTitulo.setFont(GerardFontes.sans(true, 13f));
         labelTitulo.setForeground(COR_TEXTO);
         JTextArea area = new JTextArea(texto);
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setFont(new Font("Arial", Font.PLAIN, 12));
+        area.setFont(GerardFontes.sans(false, 12f));
         area.setForeground(COR_TEXTO_SECUNDARIO);
         area.setBackground(COR_SUPERFICIE);
         painel.add(labelTitulo, BorderLayout.NORTH);
@@ -309,7 +313,7 @@ public class TelaVisaoPesquisador extends JDialog {
         texto.setEditable(false);
         texto.setLineWrap(true);
         texto.setWrapStyleWord(true);
-        texto.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        texto.setFont(GerardFontes.monoTexto(12f));
         texto.setForeground(COR_TEXTO);
         texto.setBackground(COR_SUPERFICIE);
         texto.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -595,7 +599,7 @@ public class TelaVisaoPesquisador extends JDialog {
         final JSpinner spinnerMinApriori = new JSpinner(new SpinnerNumberModel(10, 1, 10000, 1));
         final JButton botaoRodar = criarBotao(t("pesq.model.run"));
         final JLabel status = new JLabel(perfis.isEmpty() ? t("pesq.model.noUsers") : t("pesq.model.selectUser"));
-        status.setFont(new Font("Arial", Font.PLAIN, 12));
+        status.setFont(GerardFontes.sans(false, 12f));
         status.setForeground(COR_TEXTO_SECUNDARIO);
 
         JPanel controles = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
@@ -661,7 +665,7 @@ public class TelaVisaoPesquisador extends JDialog {
 
     private JLabel rotuloControle(String texto) {
         JLabel label = new JLabel(texto);
-        label.setFont(new Font("Arial", Font.BOLD, 12));
+        label.setFont(GerardFontes.sans(true, 12f));
         label.setForeground(COR_TEXTO);
         return label;
     }
@@ -670,7 +674,7 @@ public class TelaVisaoPesquisador extends JDialog {
         JTextArea area = new JTextArea();
         area.setEditable(false);
         area.setLineWrap(false);
-        area.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        area.setFont(GerardFontes.monoTexto(11f));
         area.setForeground(COR_TEXTO);
         area.setBackground(COR_SUPERFICIE);
         area.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -685,7 +689,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
         JLabel label = new JLabel(titulo);
-        label.setFont(new Font("Arial", Font.BOLD, 13));
+        label.setFont(GerardFontes.sans(true, 13f));
         label.setForeground(COR_TEXTO);
         painel.add(label, BorderLayout.NORTH);
         painel.add(new JScrollPane(area), BorderLayout.CENTER);
@@ -758,7 +762,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 ? modelo.getPerfilAluno().getNome() : modelo.getPerfilAluno().getId();
         JLabel cabecalho = new JLabel("<html><b>" + escaparHtml(nomeOuId)
                 + "</b> &nbsp;—&nbsp; " + escaparHtml(diagnostico.getTarefa()) + "</html>");
-        cabecalho.setFont(new Font("Arial", Font.BOLD, 13));
+        cabecalho.setFont(GerardFontes.sans(true, 13f));
         cabecalho.setForeground(COR_TEXTO);
         card.add(cabecalho, BorderLayout.NORTH);
 
@@ -766,7 +770,7 @@ public class TelaVisaoPesquisador extends JDialog {
         texto.setEditable(false);
         texto.setLineWrap(true);
         texto.setWrapStyleWord(true);
-        texto.setFont(new Font("Arial", Font.PLAIN, 12));
+        texto.setFont(GerardFontes.sans(false, 12f));
         texto.setForeground(COR_TEXTO);
         texto.setBackground(COR_SUPERFICIE);
         texto.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
@@ -1123,6 +1127,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 "Tabelas 16 e 17 - Camadas do comportamento do agente a partir da análise da tarefa",
                 "Formato do estudo: camada, situação observada nas ações, comportamento esperado do agente e indício/decisão após a ajuda. As situações observadas e os indícios são calculados a partir do log."), BorderLayout.NORTH);
         JTabbedPane abas = new JTabbedPane();
+        GerardTabbedPaneUI.aplicar(abas);
         abas.addTab("Parte 1", criarTabelaComTitulo("Camadas do comportamento do agente - parte 1", dadosTabela16CamadasAgenteEstudo(), new int[]{230, 430, 520, 520}));
         abas.addTab("Parte 2", criarTabelaComTitulo("Camadas do comportamento do agente - parte 2", dadosTabela17CamadasAgenteEstudo(), new int[]{230, 430, 520, 520}));
         painel.add(abas, BorderLayout.CENTER);
@@ -1859,13 +1864,13 @@ public class TelaVisaoPesquisador extends JDialog {
         card.setPreferredSize(new Dimension(190, 94));
 
         JLabel labelTitulo = new JLabel(titulo);
-        labelTitulo.setFont(new Font("Arial", Font.BOLD, 12));
+        labelTitulo.setFont(GerardFontes.sans(true, 12f));
         labelTitulo.setForeground(COR_TEXTO_SECUNDARIO);
         JLabel labelValor = new JLabel(valor);
-        labelValor.setFont(new Font("Arial", Font.BOLD, 28));
+        labelValor.setFont(GerardFontes.sans(true, 28f));
         labelValor.setForeground(corValor);
         JLabel labelSubtitulo = new JLabel(subtitulo);
-        labelSubtitulo.setFont(new Font("Arial", Font.PLAIN, 11));
+        labelSubtitulo.setFont(GerardFontes.sans(false, 11f));
         labelSubtitulo.setForeground(COR_TEXTO_SECUNDARIO);
 
         card.add(labelTitulo, BorderLayout.NORTH);
@@ -1875,16 +1880,7 @@ public class TelaVisaoPesquisador extends JDialog {
     }
 
     private JButton criarBotao(String texto) {
-        JButton botao = new JButton(texto);
-        botao.setFont(new Font("Arial", Font.BOLD, 12));
-        botao.setFocusPainted(false);
-        botao.setBackground(UITemaGerard.COR_SUPERFICIE_SUAVE);
-        botao.setForeground(COR_TEXTO);
-        botao.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COR_BORDA),
-                BorderFactory.createEmptyBorder(6, 18, 6, 18)
-        ));
-        return botao;
+        return new GerardButton(texto);
     }
 
     private JPanel criarAbaTabela(String titulo, Object[][] dados, int[] larguras) {
@@ -1902,7 +1898,7 @@ public class TelaVisaoPesquisador extends JDialog {
         painel.setBackground(COR_FUNDO);
 
         JLabel label = new JLabel(titulo);
-        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setFont(GerardFontes.sans(true, 14f));
         label.setForeground(COR_TEXTO);
         painel.add(label, BorderLayout.NORTH);
 
@@ -1936,14 +1932,14 @@ public class TelaVisaoPesquisador extends JDialog {
                 return super.getToolTipText(evento);
             }
         };
-        tabela.setFont(new Font("Arial", Font.PLAIN, 12));
+        tabela.setFont(GerardFontes.sans(false, 12f));
         tabela.setRowHeight(26);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setGridColor(COR_BORDA);
         tabela.setShowVerticalLines(true);
         tabela.setShowHorizontalLines(true);
         tabela.setFillsViewportHeight(true);
-        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tabela.getTableHeader().setFont(GerardFontes.sans(true, 12f));
         tabela.getTableHeader().setBackground(COR_DESTAQUE);
         tabela.getTableHeader().setForeground(COR_TEXTO);
         tabela.setAutoCreateRowSorter(true);
@@ -2066,14 +2062,14 @@ public class TelaVisaoPesquisador extends JDialog {
             int areaH = Math.max(10, h - margemTopo - margemBaixo);
 
             g2.setColor(COR_TEXTO);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
+            g2.setFont(GerardFontes.sans(true, 14f));
             g2.drawString(titulo, 18, 24);
-            g2.setFont(new Font("Arial", Font.PLAIN, 11));
+            g2.setFont(GerardFontes.sans(false, 11f));
             g2.setColor(COR_TEXTO_SECUNDARIO);
             g2.drawString(subtitulo, 18, 40);
 
             if ((dadosA == null || dadosA.isEmpty()) && (dadosB == null || dadosB.isEmpty())) {
-                g2.setFont(new Font("Arial", Font.PLAIN, 13));
+                g2.setFont(GerardFontes.sans(false, 13f));
                 g2.drawString(t("pesq.chart.noData"), 24, h / 2);
                 g2.dispose();
                 return;
@@ -2120,7 +2116,7 @@ public class TelaVisaoPesquisador extends JDialog {
                 desenharBarra(g2, baseX, larguraBarra, margemTopo, areaH, max, a, COR_PRIMARIA);
                 desenharBarra(g2, baseX + larguraBarra + 6, larguraBarra, margemTopo, areaH, max, b, COR_TEXTO_SECUNDARIO);
 
-                g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                g2.setFont(GerardFontes.sans(false, 10f));
                 g2.setColor(COR_TEXTO_SECUNDARIO);
                 String label = abreviar(chave, 16);
                 int labelW = g2.getFontMetrics().stringWidth(label);
@@ -2129,7 +2125,7 @@ public class TelaVisaoPesquisador extends JDialog {
             }
 
             int legendaY = h - 18;
-            g2.setFont(new Font("Arial", Font.PLAIN, 11));
+            g2.setFont(GerardFontes.sans(false, 11f));
             g2.setColor(COR_PRIMARIA);
             g2.fillRect(18, legendaY - 9, 10, 10);
             g2.setColor(COR_TEXTO_SECUNDARIO);
@@ -2146,7 +2142,7 @@ public class TelaVisaoPesquisador extends JDialog {
             g2.setColor(cor);
             g2.fillRoundRect(x, y, largura, barraH, 8, 8);
             g2.setColor(COR_TEXTO);
-            g2.setFont(new Font("Arial", Font.BOLD, 10));
+            g2.setFont(GerardFontes.sans(true, 10f));
             String textoValor = String.valueOf(valor);
             int textoW = g2.getFontMetrics().stringWidth(textoValor);
             g2.drawString(textoValor, x + (largura - textoW) / 2, Math.max(margemTopo + 10, y - 5));
@@ -2198,14 +2194,14 @@ public class TelaVisaoPesquisador extends JDialog {
             int areaH = Math.max(10, h - margemTopo - margemBaixo);
 
             g2.setColor(COR_TEXTO);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
+            g2.setFont(GerardFontes.sans(true, 14f));
             g2.drawString(titulo, 18, 24);
-            g2.setFont(new Font("Arial", Font.PLAIN, 11));
+            g2.setFont(GerardFontes.sans(false, 11f));
             g2.setColor(COR_TEXTO_SECUNDARIO);
             g2.drawString(subtitulo, 18, 40);
 
             if (dados == null || dados.isEmpty()) {
-                g2.setFont(new Font("Arial", Font.PLAIN, 13));
+                g2.setFont(GerardFontes.sans(false, 13f));
                 g2.drawString(t("pesq.chart.noData"), 24, h / 2);
                 g2.dispose();
                 return;
@@ -2243,12 +2239,12 @@ public class TelaVisaoPesquisador extends JDialog {
                 g2.setColor(corBarra);
                 g2.fillRoundRect(x, y, larguraBarra, barraH, 10, 10);
                 g2.setColor(COR_TEXTO);
-                g2.setFont(new Font("Arial", Font.BOLD, 12));
+                g2.setFont(GerardFontes.sans(true, 12f));
                 String textoValor = String.valueOf(valor);
                 int textoW = g2.getFontMetrics().stringWidth(textoValor);
                 g2.drawString(textoValor, x + (larguraBarra - textoW) / 2, Math.max(margemTopo + 12, y - 6));
 
-                g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                g2.setFont(GerardFontes.sans(false, 10f));
                 g2.setColor(COR_TEXTO_SECUNDARIO);
                 String label = abreviar(entrada.getKey(), 16);
                 int labelW = g2.getFontMetrics().stringWidth(label);

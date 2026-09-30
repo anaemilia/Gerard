@@ -89,7 +89,7 @@ public final class RenderizadorEditorNarrativa {
                 g2.setColor(UITemaGerard.COR_PRIMARIA);
                 g2.setStroke(new BasicStroke(1.2f));
             } else {
-                g2.setColor(new Color(247, 246, 241));
+                g2.setColor(UITemaGerard.COR_FUNDO);
                 g2.fillRoundRect(peca.x - 4, peca.y - fm.getAscent() + 1, peca.largura + 8, peca.altura + 4, 8, 8);
                 g2.setColor(UITemaGerard.COR_BORDA);
                 g2.setStroke(new BasicStroke(0.8f));

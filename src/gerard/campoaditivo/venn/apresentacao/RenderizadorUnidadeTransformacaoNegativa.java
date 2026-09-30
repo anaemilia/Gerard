@@ -3,7 +3,7 @@ package gerard.campoaditivo.venn.apresentacao;
 import java.awt.Color;
 
 public final class RenderizadorUnidadeTransformacaoNegativa extends RenderizadorUnidadeVennAbstrato {
-    protected Color corBase() { return new Color(111, 143, 151); }
-    protected Color corBorda() { return new Color(70, 99, 110); }
-    protected Color corTexto() { return new Color(245, 248, 250); }
+    protected Color corBase() { return gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_NEGATIVA_BASE; }
+    protected Color corBorda() { return gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_NEGATIVA_BORDA; }
+    protected Color corTexto() { return gerard.ui.CoresRepresentacaoGerard.TRANSFORMACAO_NEGATIVA_TEXTO; }
 }

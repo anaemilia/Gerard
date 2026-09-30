@@ -25,16 +25,16 @@ public final class ControleSinalComposicaoTransformacoes {
     private static final int ESPACO_FUNIL = 7;
     private static final int ESPACO_CONTROLES = 5;
 
-    private static final Color FUNDO = new Color(255, 255, 255);
+    private static final Color FUNDO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO;
     private static final Color FUNDO_MAIS_FOCADO = new Color(234, 244, 255);
     private static final Color FUNDO_MENOS_FOCADO = new Color(255, 242, 242);
     private static final Color AZUL = new Color(59, 130, 246);
     private static final Color AZUL_ESCURO = new Color(29, 78, 216);
     private static final Color VERMELHO = new Color(220, 86, 86);
     private static final Color VERMELHO_ESCURO = new Color(176, 48, 48);
-    private static final Color FUNDO_DESABILITADO = new Color(247, 248, 250);
-    private static final Color BORDA_DESABILITADA = new Color(180, 188, 198);
-    private static final Color SINAL_DESABILITADO = new Color(145, 154, 166);
+    private static final Color FUNDO_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO_DESABILITADO;
+    private static final Color BORDA_DESABILITADA = gerard.ui.CoresRepresentacaoGerard.CONTROLE_BORDA_DESABILITADA;
+    private static final Color SINAL_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_SINAL_DESABILITADO;
 
     public Rectangle obterAreaAdicionar(List<CirculoVenn> zonas,
             EstadoComposicaoTransformacoes estado, int indice) {

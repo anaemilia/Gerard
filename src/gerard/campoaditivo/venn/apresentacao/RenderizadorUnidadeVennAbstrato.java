@@ -49,7 +49,7 @@ public abstract class RenderizadorUnidadeVennAbstrato implements RenderizadorUni
         int arco = Math.max(3, Math.min(6, tamanho / 3));
 
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaSombra));
-        g2.setColor(new Color(22, 35, 48));
+        g2.setColor(gerard.ui.CoresRepresentacaoGerard.SOMBRA);
         g2.fillRoundRect(x + deslocamentoSombra, y + deslocamentoSombra,
                 tamanho, tamanho, arco, arco);
 
@@ -96,7 +96,7 @@ public abstract class RenderizadorUnidadeVennAbstrato implements RenderizadorUni
         if (unidade.textoEditavel == null || unidade.textoEditavel.trim().length() == 0) {
             return;
         }
-        g2.setFont(new Font("Arial", Font.BOLD, 10));
+        g2.setFont(gerard.ui.GerardFontes.monoTexto(10f));
         FontMetrics fm = g2.getFontMetrics();
         String texto = unidade.textoEditavel;
         while (texto.length() > 1 && fm.stringWidth(texto) > tamanho - 3) {

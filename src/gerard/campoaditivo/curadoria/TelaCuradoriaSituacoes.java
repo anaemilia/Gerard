@@ -16,6 +16,9 @@ import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import gerard.campoaditivo.servico.RegistroErrosCuradoria;
 import gerard.campoaditivo.servico.ValidadorVinculosTraducoes;
 import gerard.i18n.ServicoLocalizacao;
+import gerard.ui.GerardButton;
+import gerard.ui.GerardFontes;
+import gerard.ui.UITemaGerard;
 import gerard.idioma.IdiomaInterface;
 import gerard.idioma.IdiomaSituacao;
 import gerard.idioma.UnicodeTexto;
@@ -146,14 +149,14 @@ public class TelaCuradoriaSituacoes extends JPanel {
 
     private void construirInterface() {
         setLayout(new BorderLayout(8, 8));
-        setBackground(new Color(246, 247, 248));
+        setBackground(UITemaGerard.COR_FUNDO);
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel topo = new JPanel(new BorderLayout(8, 8));
         topo.setOpaque(false);
         JLabel titulo = new JLabel("Curadoria humana das situações-problema");
-        titulo.setFont(new Font("Arial", Font.BOLD, 16));
-        titulo.setForeground(new Color(31, 41, 51));
+        titulo.setFont(GerardFontes.sans(true, 16f));
+        titulo.setForeground(UITemaGerard.COR_TEXTO);
         topo.add(titulo, BorderLayout.NORTH);
 
         JTextArea explicacao = new JTextArea(
@@ -165,16 +168,16 @@ public class TelaCuradoriaSituacoes extends JPanel {
         explicacao.setLineWrap(true);
         explicacao.setWrapStyleWord(true);
         explicacao.setOpaque(false);
-        explicacao.setFont(new Font("Arial", Font.PLAIN, 12));
-        explicacao.setForeground(new Color(82, 97, 107));
+        explicacao.setFont(GerardFontes.sans(false, 12f));
+        explicacao.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
         topo.add(explicacao, BorderLayout.CENTER);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         botoes.setOpaque(false);
-        JButton validar = new JButton("Validar seleção");
-        JButton recarregar = new JButton("Recarregar");
-        JButton nova = new JButton("Nova linha");
-        JButton remover = new JButton("Remover linha");
+        JButton validar = new GerardButton("Validar seleção", GerardButton.Estilo.PRIMARIO);
+        JButton recarregar = new GerardButton("Recarregar");
+        JButton nova = new GerardButton("Nova linha");
+        JButton remover = new GerardButton("Remover linha");
 
         validar.addActionListener(e -> validarSelecionadas());
         recarregar.addActionListener(e -> recarregar());
@@ -190,11 +193,11 @@ public class TelaCuradoriaSituacoes extends JPanel {
 
         configurarTabela();
         JScrollPane rolagem = new JScrollPane(tabela);
-        rolagem.setBorder(BorderFactory.createLineBorder(new Color(213, 218, 224)));
+        rolagem.setBorder(BorderFactory.createLineBorder(UITemaGerard.COR_BORDA));
         add(rolagem, BorderLayout.CENTER);
 
-        status.setFont(new Font("Arial", Font.PLAIN, 12));
-        status.setForeground(new Color(82, 97, 107));
+        status.setFont(GerardFontes.sans(false, 12f));
+        status.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
         status.setHorizontalAlignment(SwingConstants.LEFT);
         add(status, BorderLayout.SOUTH);
     }
@@ -204,8 +207,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
         tabela.setRowHeight(24);
         tabela.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tabela.getTableHeader().setReorderingAllowed(false);
-        tabela.setFont(new Font("Arial", Font.PLAIN, 12));
-        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tabela.setFont(GerardFontes.sans(false, 12f));
+        tabela.getTableHeader().setFont(GerardFontes.sans(true, 12f));
 
         JComboBox<TipoSituacaoAditiva> comboTipo = new JComboBox<TipoSituacaoAditiva>(TipoSituacaoAditiva.values());
         tabela.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboTipo));
@@ -324,16 +327,16 @@ public class TelaCuradoriaSituacoes extends JPanel {
 
         JPanel conteudo = new JPanel(new BorderLayout(8, 8));
         conteudo.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        conteudo.setBackground(new Color(246, 247, 248));
+        conteudo.setBackground(UITemaGerard.COR_FUNDO);
 
         final JCheckBox campoValidada = new JCheckBox("", Boolean.TRUE.equals(linha.validada));
         campoValidada.setOpaque(false);
-        campoValidada.setFont(new Font("Arial", Font.BOLD, 12));
+        campoValidada.setFont(GerardFontes.sans(true, 12f));
         campoValidada.setToolTipText("Valida somente a versão linguística atualmente aberta nesta tela.");
         final JLabel rotuloValidacaoAtual = new JLabel();
-        rotuloValidacaoAtual.setFont(new Font("Arial", Font.BOLD, 12));
+        rotuloValidacaoAtual.setFont(GerardFontes.sans(true, 12f));
         final JLabel indicadorValidacao = new JLabel();
-        indicadorValidacao.setFont(new Font("Arial", Font.PLAIN, 11));
+        indicadorValidacao.setFont(GerardFontes.sans(false, 11f));
         indicadorValidacao.setToolTipText("Estado atual da validação desta versão linguística.");
         Runnable atualizarIndicadorValidacao = () -> {
             IdiomaSituacao idiomaAtual = cadastroIdiomas.obter(linha.codigoIdioma);
@@ -352,7 +355,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         atualizarIndicadorValidacao.run();
 
         JLabel rotuloEnunciado = new JLabel("Situação-problema");
-        rotuloEnunciado.setFont(new Font("Arial", Font.BOLD, 13));
+        rotuloEnunciado.setFont(GerardFontes.sans(true, 13f));
         JPanel cabecalhoEnunciado = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         cabecalhoEnunciado.setOpaque(false);
         cabecalhoEnunciado.add(rotuloEnunciado);
@@ -361,7 +364,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         areaEnunciado.setWrapStyleWord(true);
         areaEnunciado.setFont(UnicodeTexto.fonteCompativel(areaEnunciado, Font.PLAIN, 13));
         areaEnunciado.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(213, 218, 224)),
+                BorderFactory.createLineBorder(UITemaGerard.COR_BORDA),
                 BorderFactory.createEmptyBorder(6, 6, 6, 6)));
 
         JPanel topoDialogo = new JPanel(new BorderLayout(4, 4));
@@ -389,7 +392,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         campoTraducaoValidada.setOpaque(false);
         campoTraducaoValidada.setToolTipText("Marque somente após revisar linguisticamente a tradução selecionada.");
         final JLabel indicadorValidacaoTraducao = new JLabel("○ Não validada");
-        indicadorValidacaoTraducao.setFont(new Font("Arial", Font.PLAIN, 11));
+        indicadorValidacaoTraducao.setFont(GerardFontes.sans(false, 11f));
         Runnable atualizarIndicadorTraducao = () -> {
             if (campoTraducaoValidada.isSelected()) {
                 indicadorValidacaoTraducao.setText("✓ Tradução validada");
@@ -480,7 +483,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         }
         atualizarIndicadorTraducao.run();
         JScrollPane rolagemTraducao = new JScrollPane(campoTextoTraducao);
-        rolagemTraducao.setBorder(BorderFactory.createLineBorder(new Color(213, 218, 224)));
+        rolagemTraducao.setBorder(BorderFactory.createLineBorder(UITemaGerard.COR_BORDA));
         JPanel painelTraducao = new JPanel(new BorderLayout(6, 0));
         painelTraducao.setOpaque(false);
         JPanel controlesTraducao = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -862,8 +865,8 @@ public class TelaCuradoriaSituacoes extends JPanel {
 
         int y = 0;
         final JLabel avisoSemanticaOriginal = new JLabel(localizacao.texto("curadoria.semantica.somenteOriginal"));
-        avisoSemanticaOriginal.setFont(new Font("Arial", Font.PLAIN, 11));
-        avisoSemanticaOriginal.setForeground(new Color(82, 97, 107));
+        avisoSemanticaOriginal.setFont(GerardFontes.sans(false, 11f));
+        avisoSemanticaOriginal.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
         avisoSemanticaOriginal.setVisible(versaoTraducaoSomenteTexto);
         gbc.gridx = 0;
         gbc.gridy = y++;
@@ -983,9 +986,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
             areaEnunciado.setEditable(!outroIdiomaSelecionado);
             areaEnunciado.setFocusable(!outroIdiomaSelecionado);
             areaEnunciado.setBackground(outroIdiomaSelecionado
-                    ? new Color(238, 241, 244) : UIManager.getColor("TextArea.background"));
+                    ? UITemaGerard.COR_CAMPO_DESABILITADO : UIManager.getColor("TextArea.background"));
             areaEnunciado.setForeground(outroIdiomaSelecionado
-                    ? new Color(82, 97, 107) : UIManager.getColor("TextArea.foreground"));
+                    ? UITemaGerard.COR_TEXTO_SECUNDARIO : UIManager.getColor("TextArea.foreground"));
             campoValidada.setEnabled(!outroIdiomaSelecionado);
             campoIdiomaVersao.setEnabled(!semanticaHerdada);
             avisoSemanticaOriginal.setVisible(semanticaHerdada);
@@ -1043,15 +1046,15 @@ public class TelaCuradoriaSituacoes extends JPanel {
         };
         atualizarModoEdicaoPorIdioma[0].run();
 
-        formulario.setBorder(BorderFactory.createLineBorder(new Color(213, 218, 224)));
+        formulario.setBorder(BorderFactory.createLineBorder(UITemaGerard.COR_BORDA));
         conteudo.add(formulario, BorderLayout.CENTER);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         botoes.setOpaque(false);
         JLabel avisoSalvamento = new JLabel("As alterações serão salvas automaticamente ao fechar.");
-        avisoSalvamento.setFont(new Font("Arial", Font.PLAIN, 11));
-        avisoSalvamento.setForeground(new Color(82, 97, 107));
-        JButton editarNarrativaRica = new JButton("Narrativa rica...");
+        avisoSalvamento.setFont(GerardFontes.sans(false, 11f));
+        avisoSalvamento.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
+        JButton editarNarrativaRica = new GerardButton("Narrativa rica...");
         editarNarrativaRica.setEnabled(!versaoTraducaoSomenteTexto);
         editarNarrativaRica.setToolTipText(versaoTraducaoSomenteTexto
                 ? "A narrativa rica pertence à versão original vinculada."
@@ -1060,7 +1063,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                 "Editar narrativa rica da situação-problema");
         editarNarrativaRica.getAccessibleContext().setAccessibleDescription(
                 "Abre o editor de participantes, objetos, estados, eventos e correspondências declarados pelo pesquisador.");
-        JButton fechar = new JButton("Salvar e fechar");
+        JButton fechar = new GerardButton("Salvar e fechar", GerardButton.Estilo.PRIMARIO);
 
         final Runnable fecharESalvar = new Runnable() {
             private boolean executando;
@@ -1837,7 +1840,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(45, 92, 155));
+            g2.setColor(UITemaGerard.COR_ACAO);
             g2.setFont(new Font("SansSerif", Font.BOLD, 11));
             g2.drawString("A", x + 1, y + 11);
             g2.drawLine(x + 8, y + 5, x + 16, y + 5);
@@ -1991,9 +1994,9 @@ public class TelaCuradoriaSituacoes extends JPanel {
         campo.setEditable(!herdado);
         campo.setFocusable(!herdado);
         campo.setBackground(herdado
-                ? new Color(238, 241, 244) : UIManager.getColor("TextField.background"));
+                ? UITemaGerard.COR_CAMPO_DESABILITADO : UIManager.getColor("TextField.background"));
         campo.setForeground(herdado
-                ? new Color(82, 97, 107) : UIManager.getColor("TextField.foreground"));
+                ? UITemaGerard.COR_TEXTO_SECUNDARIO : UIManager.getColor("TextField.foreground"));
         Object tooltipOriginal = campo.getClientProperty("gerard.tooltipOriginal");
         campo.setToolTipText(herdado ? dica
                 : (tooltipOriginal == null || tooltipOriginal.toString().isEmpty() ? null : tooltipOriginal.toString()));
@@ -2019,7 +2022,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
     private JComboBox<String> comboTipoVersao(String valorAtual) {
         String[] opcoes = new String[] { "original", "traducao" };
         JComboBox<String> combo = new JComboBox<String>(opcoes);
-        combo.setFont(new Font("Arial", Font.PLAIN, 12));
+        combo.setFont(GerardFontes.sans(false, 12f));
         String valor = valorAtual == null ? "" : valorAtual.trim();
         if (valor.length() > 0 && !"original".equals(valor) && !"traducao".equals(valor)) {
             combo.addItem(valor);
@@ -2036,7 +2039,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
             if (candidata == null || candidata.id == null || candidata.id.equals(idAtual)) continue;
             if ("original".equals(candidata.tipoVersao)) combo.addItem(candidata.id);
         }
-        combo.setFont(new Font("Arial", Font.PLAIN, 12));
+        combo.setFont(GerardFontes.sans(false, 12f));
         combo.setSelectedItem(valorAtual == null ? "" : valorAtual.trim());
         return combo;
     }
@@ -2104,7 +2107,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
             opcoes = new String[] { "" };
         }
         JComboBox<String> combo = new JComboBox<String>(opcoes);
-        combo.setFont(new Font("Arial", Font.PLAIN, 12));
+        combo.setFont(GerardFontes.sans(false, 12f));
         String valor = valorAtual == null ? "" : valorAtual.trim();
         boolean encontrado = false;
         for (String opcao : opcoes) {
@@ -2125,7 +2128,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         JLabel label = new JLabel(rotulo);
-        label.setFont(new Font("Arial", Font.BOLD, 12));
+        label.setFont(GerardFontes.sans(true, 12f));
         painel.add(label, gbc);
 
         gbc.gridx = 1;
@@ -2847,7 +2850,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
     static class RendererCuradoria extends DefaultTableCellRenderer {
         private final Color fundoValidado = new Color(236, 253, 245);
         private final Color fundoNaoValidado = new Color(255, 251, 235);
-        private final Color texto = new Color(31, 41, 51);
+        private final Color texto = UITemaGerard.COR_TEXTO;
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

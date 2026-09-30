@@ -36,9 +36,9 @@ public class MenuSinalNumeroRelativo {
         }
 
         final JPopupMenu menu = new JPopupMenu();
-        menu.setBackground(new Color(255, 255, 255));
+        menu.setBackground(UITemaGerard.COR_SUPERFICIE);
         menu.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(213, 218, 224)),
+                BorderFactory.createLineBorder(UITemaGerard.COR_BORDA_CONTROLE),
                 BorderFactory.createEmptyBorder(4, 4, 4, 4)
         ));
 
@@ -82,8 +82,8 @@ public class MenuSinalNumeroRelativo {
     private JRadioButtonMenuItem criarOpcao(String texto) {
         JRadioButtonMenuItem item = new JRadioButtonMenuItem(texto);
         item.setFont(UITemaGerard.FONTE_ITEM_MENU);
-        item.setForeground(new Color(31, 41, 51));
-        item.setBackground(new Color(255, 255, 255));
+        item.setForeground(UITemaGerard.COR_TEXTO);
+        item.setBackground(UITemaGerard.COR_SUPERFICIE);
         item.setMargin(new Insets(6, 10, 6, 10));
         item.setOpaque(true);
         return item;
