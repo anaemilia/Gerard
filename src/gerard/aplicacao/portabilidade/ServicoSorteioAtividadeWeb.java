@@ -30,7 +30,7 @@ import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
-import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
+import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
 import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public final class ServicoSorteioAtividadeWeb {
     // PaineisEixosRelacoes.desativar()/ativar() reinicia o desktop.
     private final Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel =
             new LinkedHashMap<String, ControleVisibilidadeEixoPapel>();
-    private final PortaAjudaContextual portaAjudaContextual = new AdaptadorAjudaContextualWeb();
+    private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
     private final gerard.idioma.CadastroIdiomasSituacao cadastroIdiomasSituacao =
             new gerard.idioma.CadastroIdiomasSituacao();
     public ServicoSorteioAtividadeWeb() {
@@ -824,11 +824,11 @@ public final class ServicoSorteioAtividadeWeb {
      */
     private List<Object> projetarAjudaContextual(Object modelagem) {
         List<Object> areas = new ArrayList<Object>();
-        areas.add(portaAjudaContextual.projetarArea("TEXTO"));
-        areas.add(portaAjudaContextual.projetarArea("VERGNAUD"));
+        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.TEXTO));
+        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.VERGNAUD));
         if (modelagem instanceof Map
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"))) {
-            areas.add(portaAjudaContextual.projetarArea("COMPLEMENTAR"));
+            areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.COMPLEMENTAR));
         }
         return areas;
     }
@@ -842,17 +842,18 @@ public final class ServicoSorteioAtividadeWeb {
      * escolha da categoria, sem expor essa persistência ao caso de uso.
      */
     public synchronized Map<String, Object> ajudaContextual(String areaTexto, String intencaoTexto) {
-        String nomeArea;
-        String rotuloOpcao;
-        String mensagem;
+        ScaffoldingAjudaContextual.Area area;
+        ScaffoldingAjudaContextual.Intencao intencao;
         try {
-            nomeArea = portaAjudaContextual.nomeArea(areaTexto);
-            rotuloOpcao = portaAjudaContextual.rotuloOpcao(intencaoTexto);
-            mensagem = portaAjudaContextual.mensagem(areaTexto, intencaoTexto);
+            area = ScaffoldingAjudaContextual.Area.valueOf(areaTexto);
+            intencao = ScaffoldingAjudaContextual.Intencao.valueOf(intencaoTexto);
         } catch (RuntimeException erro) {
             throw new IllegalArgumentException("área ou intenção de ajuda contextual inválida: "
                     + areaTexto + "/" + intencaoTexto);
         }
+        String nomeArea = AjudaContextualWeb.nomeArea(scaffoldingAjudaContextual, area);
+        String rotuloOpcao = AjudaContextualWeb.rotuloOpcao(scaffoldingAjudaContextual, intencao);
+        String mensagem = AjudaContextualWeb.mensagem(scaffoldingAjudaContextual, area, intencao);
         // Mesmos 9 argumentos que o wrapper privado registrarAcaoGranular
         // do desktop monta (Main.java:11063-11067) a partir dos 7 que
         // criarOpcaoAjudaContextual passa — "OBJ_INTERACAO" e
@@ -866,7 +867,7 @@ public final class ServicoSorteioAtividadeWeb {
                 rotuloOpcao,
                 "OBJ_INTERACAO",
                 "ACAO_GRANULAR_SELECIONAR",
-                "area=" + areaTexto + "; intencao=" + intencaoTexto,
+                "area=" + area.name() + "; intencao=" + intencao.name(),
                 "A orientação contextual da área foi apresentada.");
         Map<String, Object> resultado = mapa();
         resultado.put("schema", "gerard.atividade-web.resultado-ajuda-contextual.v1");
