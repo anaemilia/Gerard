@@ -31,6 +31,20 @@ function IconeIdioma() {
   </svg>;
 }
 
+// Selo de conclusão da modelagem (SeloConclusaoModelagem.java): marca de visto
+// sempre visível + texto ui.completion.completed de mensagens_pt.properties
+// ("Modelagem concluída"), que some sozinho por CSS depois de 4 s — o sucesso não
+// depende só da cor. role="status" faz o leitor de tela anunciar o texto.
+function SeloConclusao() {
+  return <div className="selo-conclusao" role="status">
+    <svg viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+      <circle cx="22" cy="22" r="20" />
+      <path d="M12 23l7 7 13-14" />
+    </svg>
+    <span className="selo-conclusao-texto">Modelagem concluída</span>
+  </div>;
+}
+
 // Porta descricaoBotaoIdiomaSituacao (Main.java): tooltip do botão de idioma
 // da situação = ui.tooltip.problemLanguage + ": " + nome do idioma atual
 // (mensagens_pt.properties), mesmo texto-base do desktop.
@@ -625,6 +639,8 @@ export default function App() {
                   projetarEixo(figura.chave_papel_semantico, valor)}
                 aoFechar={() => void alternarEixo(figura)} />;
             })}
+          {estado.modelagem?.concluida === true
+            && <SeloConclusao key={estado.modelagem?.tentativa_id ?? estado.situacao_id} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
