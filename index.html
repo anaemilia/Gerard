@@ -133,12 +133,12 @@
           </div>
         </div>
 
-        <figure style="margin:0;">
-          <div style="border:1px solid #D5DBE5;border-radius:16px;background:#FFFFFF;padding:clamp(14px,2vw,22px);box-shadow:0 1px 2px rgba(14,23,38,0.04),0 24px 48px -28px rgba(14,23,38,0.22);">
+        <figure style="margin:0 0 0 auto;width:100%;max-width:580px;">
+          <div style="border:1px solid #D5DBE5;border-radius:16px;background:#FFFFFF;padding:clamp(12px,1.6vw,18px);box-shadow:0 1px 2px rgba(14,23,38,0.04),0 24px 48px -28px rgba(14,23,38,0.22);">
             <img src="imagens/conceito.png" alt="Tríade dos Campos Conceituais, como sugerido por Vergnaud: C = (S, I, R). S — situações que dão sentido ao conceito; I — invariantes operatórios que o estudante mobiliza; R — representações: linguagem, diagramas, símbolos." style="display:block;width:100%;height:auto;border-radius:10px;">
           </div>
           <figcaption style="display:flex;align-items:center;gap:14px;margin-top:16px;">
-            <img src="imagens/Vergnaud_melhorada.png" alt="Retrato de Gérard Vergnaud." style="flex:none;width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:55% 30%;border:1px solid #D5DBE5;">
+            <img src="imagens/Vergnaud_melhorada.png" alt="Retrato de Gérard Vergnaud." style="flex:none;width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:55% 30%;border:1px solid #D5DBE5;">
             <span style="font-size:14px;line-height:1.5;color:#3D4759;"><strong style="display:block;font-weight:600;color:#0E1726;">Gérard Vergnaud (1933–2021)</strong>Tríade dos Campos Conceituais: um conceito é a união de situações, invariantes e representações.</span>
           </figcaption>
         </figure>
@@ -381,9 +381,16 @@
     <section id="produtos" data-screen-label="05 Produtos" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Ecossistema Gérard</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Produtos conectados por uma mesma base científica.</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px;margin-top:clamp(40px,5vw,56px);">
-          <sc-for list="{{ products }}" as="p" hint-placeholder-count="4">
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Produtos organizados pela tríade de Vergnaud.</h2>
+        <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Cada produto nasce de um dos elementos do conceito — C = (S, I, R): situações que dão sentido, invariantes que o estudante mobiliza e representações que o expressam.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;margin-top:clamp(40px,5vw,56px);align-items:start;">
+          <sc-for list="{{ pillars }}" as="pl" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid #DDE3EC;border-radius:18px;background:#FFFFFF;">
+              <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #E4E8EF;">
+                <span aria-hidden="true" style="flex:none;width:52px;height:52px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;">{{ pl.letter }}</span>
+                <div><h3 style="margin:0;font-size:19px;font-weight:600;color:#0E1726;">{{ pl.name }}</h3><p style="margin:2px 0 0;font-size:14px;line-height:1.45;color:#3D4759;">{{ pl.def }}</p></div>
+              </div>
+              <sc-for list="{{ pl.items }}" as="p" hint-placeholder-count="2">
             <article style="display:flex;flex-direction:column;border:1px solid #E1E6EE;border-top:3px solid {{ p.accent }};border-radius:14px;padding:28px;background:#FFFFFF;transition:border-color .2s ease, box-shadow .2s ease;" style-hover="box-shadow:0 12px 32px -20px rgba(14,23,38,0.25);">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                 <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:{{ p.tint }};">
@@ -404,6 +411,8 @@
                 </sc-if>
               </div>
             </article>
+          </sc-for>
+            </div>
           </sc-for>
         </div>
       </div>
@@ -516,6 +525,49 @@
       </div>
     </section>
     </sc-if>
+    <sc-if value="{{ show_inteligencia }}" hint-placeholder-val="{{ true }}">
+    <section id="analise-modelagem" data-screen-label="Análise da modelagem" style="padding:clamp(56px,8vw,96px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
+        <div>
+          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Análise da modelagem</p>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:20ch;text-wrap:balance;">O estudante explica as próprias decisões.</h2>
+          <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">Após cada tentativa, o estudante pode justificar como interpretou a situação e onde posicionou cada elemento no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.</p>
+          <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Papel semântico de cada elemento: referido, valor relativo, referendo</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Dificuldade percebida — fácil, intermediária ou difícil — e justificativa</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Registro automático dos protocolos de interação usados</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Fotografia do estado da modelagem no momento da explicação</span></li>
+          </ul>
+          <p style="margin:22px 0 0;padding:12px 14px;border-radius:10px;background:#FFFFFF;border:1px solid #DDE3EC;font-size:14.5px;line-height:1.55;color:#3D4759;max-width:56ch;"><strong style="font-weight:600;color:#0E1726;">Para a pesquisa:</strong> une o que o estudante fez, como fez e o que diz ter pensado — dados para analisar invariantes operatórios.</p>
+        </div>
+        <figure style="margin:0;">
+          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="imagens/analise-modelagem.png" alt="Tela Análise da modelagem: situação de comparação, tabela com elemento, papel semântico, dificuldade e justificativa, e registro automático dos protocolos de interação." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Análise da modelagem em uma situação de comparação de medidas.</figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+    <sc-if value="{{ show_inteligencia }}" hint-placeholder-val="{{ true }}">
+    <section id="chat-gerard" data-screen-label="Chat do Gérard" style="padding:clamp(56px,8vw,96px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
+        <figure style="margin:0;">
+          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);max-width:560px;"><img src="imagens/chat-gerard.png" alt="Tela Chat do Gérard: 'Como posso ajudar?', conversa com dica sobre números, personagens e papéis semânticos, e botões de ajuda para Texto, Diagrama de Vergnaud e Diagrama complementar." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Chat do Gérard durante a resolução de uma situação-problema.</figcaption>
+        </figure>
+        <div>
+          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Chat do Gérard</p>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:20ch;text-wrap:balance;">Ajuda no momento em que o estudante precisa.</h2>
+          <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">O estudante escreve sua dúvida ou escolhe a área em que precisa de apoio. O Gérard responde com dicas que orientam a leitura da situação — sem entregar a resposta.</p>
+          <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Ajuda por área: texto, diagrama de Vergnaud e diagrama complementar</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Dicas que chamam atenção para números, personagens e a pergunta</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Remete aos papéis semânticos destacados no enunciado</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Cada pedido de ajuda é registrado junto da interação</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    </sc-if>
 
     <sc-if value="{{ show_pesquisa }}" hint-placeholder-val="{{ true }}">
     <section id="pesquisa" data-screen-label="09 Pesquisa" style="padding:clamp(64px,9vw,112px) 0;">
@@ -550,25 +602,27 @@
     </sc-if>
 
     <sc-if value="{{ show_demonstracao }}" hint-placeholder-val="{{ true }}">
-    <section id="demonstracao" data-screen-label="09 Demonstração" style="padding:clamp(64px,9vw,112px) 0;background:#0B1A3D;color:#FFFFFF;">
-      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(40px,5vw,72px);align-items:center;">
-        <div>
-          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#9DB8F5;">Demonstração</p>
-          <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#FFFFFF;max-width:22ch;text-wrap:balance;">Veja como o Gérard transforma situações-problema em experiências interativas de aprendizagem.</h2>
-          <p style="margin:20px 0 0;font-size:17px;line-height:1.6;color:#C9D5EE;max-width:50ch;text-wrap:pretty;">Experimente no celular ao lado ou abra a versão web completa no navegador — sem instalar nada.</p>
-          <div role="tablist" aria-label="Categoria da demonstração" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;">
-            <sc-for list="{{ demoTabs }}" as="t" hint-placeholder-count="3">
-              <button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.onClick }}" style="min-height:44px;padding:0 16px;border-radius:10px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};font:inherit;font-size:15px;font-weight:500;cursor:pointer;">{{ t.label }}</button>
-            </sc-for>
+    <section id="demonstracao" data-screen-label="Demonstração" style="padding:clamp(64px,9vw,112px) 0;background:#0B1A3D;color:#FFFFFF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px 48px;">
+          <div style="flex:1 1 480px;">
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#9DB8F5;">Demonstração</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#FFFFFF;max-width:24ch;text-wrap:balance;">Veja como o Gérard transforma situações-problema em experiências interativas de aprendizagem.</h2>
+            <p style="margin:20px 0 0;font-size:17px;line-height:1.6;color:#C9D5EE;max-width:56ch;text-wrap:pretty;">Três demonstrações interativas: arraste os quadradinhos, preencha o diagrama e observe o retorno a cada ação.</p>
           </div>
-          <a href="https://gerard-web-deploy.onrender.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;margin-top:32px;border-radius:10px;background:#FFFFFF;color:#0B1A3D;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#E3ECFD;color:#0B1A3D;">Abrir o Gérard na web<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+          <a href="https://gerard-web-deploy.onrender.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;color:#0B1A3D;font-size:16px;font-weight:500;text-decoration:none;flex:none;" style-hover="background:#E3ECFD;color:#0B1A3D;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir o Gérard na web</a>
         </div>
-        <div style="display:flex;justify-content:center;">
-          <div style="width:100%;max-width:340px;border:1px solid #2A3D6B;border-radius:42px;padding:10px;background:#13254F;box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);">
-            <div style="border-radius:32px;overflow:hidden;background:#F5F7FA;">
-              <iframe srcdoc="{{ demoSrcdoc }}" title="{{ demoTitle }}" style="display:block;width:100%;height:660px;border:0;"></iframe>
-            </div>
-          </div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:32px;margin-top:clamp(40px,5vw,56px);">
+          <sc-for list="{{ demoPhones }}" as="m" hint-placeholder-count="3">
+            <figure style="margin:0;flex:0 1 330px;max-width:330px;">
+              <div style="border:1px solid #2A3D6B;border-radius:40px;padding:10px;background:#13254F;box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);">
+                <div style="border-radius:30px;overflow:hidden;background:#F5F7FA;">
+                  <iframe srcdoc="{{ m.srcdoc }}" title="{{ m.title }}" loading="lazy" style="display:block;width:100%;height:640px;border:0;"></iframe>
+                </div>
+              </div>
+              <figcaption style="margin-top:14px;text-align:center;font-size:16px;font-weight:500;color:#FFFFFF;">{{ m.label }}</figcaption>
+            </figure>
+          </sc-for>
         </div>
       </div>
     </section>
@@ -672,12 +726,23 @@
     <sc-if value="{{ show_produtosDetalhe }}" hint-placeholder-val="{{ false }}">
     <section id="produtos-detalhe" data-screen-label="Produtos · Detalhe" style="padding:clamp(56px,8vw,104px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);;display:flex;flex-direction:column;gap:clamp(56px,7vw,96px);">
-        <sc-for list="{{ products }}" as="p" hint-placeholder-count="4">
+        <sc-for list="{{ pillars }}" as="pl" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:clamp(48px,6vw,80px);">
+            <header style="display:flex;align-items:center;gap:20px;padding:24px 28px;border:1px solid #C6D7FA;border-radius:18px;background:#F2F6FE;">
+              <span aria-hidden="true" style="flex:none;width:72px;height:72px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:600;">{{ pl.letter }}</span>
+              <div>
+                <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">C = (S, I, R)</p>
+                <h2 style="margin:0;font-size:clamp(24px,2.8vw,32px);line-height:1.2;font-weight:600;color:#0E1726;">{{ pl.name }} <span style="font-weight:400;color:#3D4759;">{{ pl.def }}</span></h2>
+                <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;color:#3D4759;max-width:70ch;">{{ pl.intro }}</p>
+              </div>
+            </header>
+            <sc-for list="{{ pl.items }}" as="p" hint-placeholder-count="2">
           <article id="{{ p.slug }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(28px,4vw,56px);align-items:center;">
             <div style="order:{{ p.textOrder }};">
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                 <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:{{ p.tint }};"><span style="width:24px;height:24px;background:{{ p.accent }};-webkit-mask:url({{ p.icon }}) center/contain no-repeat;mask:url({{ p.icon }}) center/contain no-repeat;"></span></span>
                 <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;background:{{ p.badgeBg }};color:{{ p.badgeFg }};"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>{{ p.status }}</span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 4px;border-radius:999px;border:1px solid #C6D7FA;font-size:12.5px;font-weight:500;color:#173A8C;"><span aria-hidden="true" style="width:20px;height:20px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">{{ p.pillar }}</span>{{ p.pillarName }}</span>
               </div>
               <p style="margin:20px 0 2px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5B6577;">Gérard</p>
               <h2 style="margin:0;font-size:clamp(28px,3vw,36px);line-height:1.15;font-weight:600;letter-spacing:-0.015em;color:#0E1726;border-bottom:3px solid {{ p.accent }};display:inline-block;padding-bottom:6px;">{{ p.name }}</h2>
@@ -692,6 +757,8 @@
               <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ p.caption }}</figcaption>
             </figure>
           </article>
+        </sc-for>
+          </div>
         </sc-for>
       </div>
     </section>
@@ -873,7 +940,7 @@ class Component extends DCLogic {
     const pages = {
       inicio: { t: 'Início' },
       sobre: { t: 'O Gérard', h1: 'Um ambiente inteligente de aprendizagem e pesquisa.', lead: 'O Gérard integra educação, sistema adaptativo e pesquisa científica em torno das Estruturas Aditivas e da Teoria dos Campos Conceituais de Gérard Vergnaud.' },
-      produtos: { t: 'Produtos', h1: 'O ecossistema Gérard.', lead: 'Quatro produtos conectados pela mesma base científica e pelo mesmo modelo de dados: do estudante que resolve ao pesquisador que analisa.' },
+      produtos: { t: 'Produtos', h1: 'O ecossistema Gérard.', lead: 'Cinco produtos organizados pela tríade de Vergnaud — situações, invariantes operatórios e representações — sobre a mesma base científica e o mesmo modelo de dados.' },
       'como-funciona': { t: 'Como funciona', h1: 'Da situação-problema ao acompanhamento da aprendizagem.', lead: 'O estudante representa e resolve; o sistema registra, analisa e responde. Veja cada etapa, as representações e a adaptatividade por trás delas.' },
       pesquisa: { t: 'Pesquisa', h1: 'Pesquisa científica desde 2006.', lead: 'Fundamentação teórica, projetos de pesquisa e extensão e a formação de professores que deram origem ao Gérard.' },
       publicacoes: { t: 'Publicações', h1: 'Publicações e produção científica.', lead: 'Artigos, trabalhos em anais, tese, capítulos, trabalho de conclusão de curso, registro de software e relatórios de pesquisa relacionados ao Gérard.' },
@@ -906,11 +973,12 @@ class Component extends DCLogic {
     const q = s.q.trim().toLowerCase();
     const filtered = pubsAll.filter(p => (s.pub === 'Todos' || p.g === s.pub) && (!q || (p.title + ' ' + p.authors + ' ' + p.venue + ' ' + p.year).toLowerCase().includes(q)));
     const products = [
-      { slug: 'estruturas-aditivas', accent: '#1F56D6', tint: '#EEF3FE', mark: [0,0,0,1], icon: I('layers'), web: 'https://gerard-web-deploy.onrender.com/', name: 'Estruturas Aditivas', status: 'Disponível', badgeBg: '#E7F5EE', badgeFg: '#16603C', body: 'Ambiente principal para resolução e representação de situações de composição, transformação e comparação.', long: 'O ambiente principal do ecossistema. O estudante resolve situações-problema do campo aditivo alternando entre enunciado, diagrama de Vergnaud e material concreto.', features: ['Composição, transformação e comparação de medidas', 'Diagrama de Vergnaud e quadradinhos manipuláveis', 'Escolha da categoria a partir do enunciado', 'Português e outros idiomas na interface'], img: 'imagens/Comparacao_nitida.png', alt: 'Tela de comparação de medidas.', caption: 'Comparação de medidas com eixo de inteiros.', hasDl: true, dl: 'https://github.com/anaemilia/Gerard-2011/releases/tag/v1.0.0', dlLabel: 'Baixar v1.0.0' },
-      { slug: 'professor', accent: '#0F6E80', tint: '#E6F4F6', mark: [1,0,0,0], icon: I('presentation'), name: 'Professor', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Ferramentas para criar, revisar e acompanhar situações-problema e analisar as resoluções da turma.', long: 'Ferramentas para o professor construir situações-problema a partir de um diagrama, revisá-las antes de liberar para a turma e acompanhar as estratégias dos estudantes.', features: ['Construção de enunciados a partir do diagrama', 'Curadoria e validação das situações', 'Organização por categoria e nível', 'Acompanhamento das resoluções'], img: 'imagens/construirSituacaoProblema_nitida.png', alt: 'Tela de construção de situação-problema.', caption: 'Construção de situação-problema a partir do diagrama preenchido.' },
-      { slug: 'aluno', accent: '#4338CA', tint: '#EEEDFB', mark: [0,1,0,0], icon: I('graduation-cap'), name: 'Aluno', status: 'Protótipo mobile', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'Ambiente de interação e resolução de problemas, no computador e no celular.', long: 'A experiência do estudante, simplificada para telas pequenas: só a modelagem formal da situação, com retorno imediato a cada ação.', features: ['Composição, comparação e transformação no celular', 'Arrastar e soltar quadradinhos', 'Retorno imediato', 'Mesma linguagem visual do desktop'], img: 'imagens/Transformacao_nitida.png', alt: 'Tela de transformação de medidas.', caption: 'Transformação de medidas: estado inicial, transformação e estado final.' },
-      { slug: 'pesquisa', accent: '#173A8C', tint: '#E8EDF7', mark: [0,0,1,0], icon: I('microscope'), name: 'Pesquisa', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Log de interação, tabelas do estudo sob demanda e modelagem para investigar dependências.', long: 'Recursos para investigação científica: cada interação é registrada e as tabelas do estudo são reconstruídas sob demanda a partir do log bruto.', features: ['Log bruto de interação', 'Tabelas do estudo sob demanda', 'Agente Modelador: PART e Apriori', 'Exportação para análise'], img: 'imagens/visaoPesquisador_nitida.png', alt: 'Visão do pesquisador.', caption: 'Visão do pesquisador: tabelas reconstruídas a partir do log.' },
-    ].map((p, i) => ({ ...p, hasDl: !!p.hasDl, hasWeb: !!p.web, mark: p.mark.map(on => ({ bg: on ? p.accent : 'transparent' })), textOrder: i % 2, imgOrder: 1 - (i % 2) }));
+      { pillar: 'R', slug: 'estruturas-aditivas', accent: '#1F56D6', tint: '#EEF3FE', mark: [0,0,0,1], icon: I('layers'), web: 'https://gerard-web-deploy.onrender.com/', name: 'Estruturas Aditivas', status: 'Disponível', badgeBg: '#E7F5EE', badgeFg: '#16603C', body: 'Ambiente principal para resolução e representação de situações de composição, transformação e comparação.', long: 'O ambiente principal do ecossistema. O estudante resolve situações-problema do campo aditivo alternando entre enunciado, diagrama de Vergnaud e material concreto.', features: ['Composição, transformação e comparação de medidas', 'Diagrama de Vergnaud e quadradinhos manipuláveis', 'Escolha da categoria a partir do enunciado', 'Português e outros idiomas na interface'], img: 'imagens/Comparacao_nitida.png', alt: 'Tela de comparação de medidas.', caption: 'Comparação de medidas com eixo de inteiros.', hasDl: true, dl: 'https://github.com/anaemilia/Gerard-2011/releases/tag/v1.0.0', dlLabel: 'Baixar v1.0.0' },
+      { pillar: 'S', slug: 'professor', accent: '#0F6E80', tint: '#E6F4F6', mark: [1,0,0,0], icon: I('presentation'), name: 'Professor', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Ferramentas para criar, revisar e acompanhar situações-problema e analisar as resoluções da turma.', long: 'Ferramentas para o professor construir situações-problema a partir de um diagrama, revisá-las antes de liberar para a turma e acompanhar as estratégias dos estudantes.', features: ['Construção de enunciados a partir do diagrama', 'Curadoria e validação das situações', 'Organização por categoria e nível', 'Acompanhamento das resoluções'], img: 'imagens/construirSituacaoProblema_nitida.png', alt: 'Tela de construção de situação-problema.', caption: 'Construção de situação-problema a partir do diagrama preenchido.' },
+      { pillar: 'R', slug: 'aluno', accent: '#4338CA', tint: '#EEEDFB', mark: [0,1,0,0], icon: I('graduation-cap'), name: 'Aluno', status: 'Protótipo mobile', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'Ambiente de interação e resolução de problemas, no computador e no celular.', long: 'A experiência do estudante, simplificada para telas pequenas: só a modelagem formal da situação, com retorno imediato a cada ação.', features: ['Chat do Gérard: ajuda contextual durante a resolução', 'Composição, comparação e transformação no celular', 'Arrastar e soltar quadradinhos', 'Retorno imediato', 'Mesma linguagem visual do desktop'], img: 'imagens/Transformacao_nitida.png', alt: 'Tela de transformação de medidas.', caption: 'Transformação de medidas: estado inicial, transformação e estado final.' },
+      { pillar: 'I', slug: 'analise-modelagem', accent: '#2563A8', tint: '#E8F0F9', mark: [1,0,0,1], icon: I('message-square-text'), name: 'Análise da modelagem', status: 'Nova', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'O estudante explica as decisões tomadas em cada tentativa; os protocolos de interação são registrados.', long: 'Após cada tentativa, o estudante justifica como interpretou a situação-problema e onde posicionou cada elemento semântico no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.', features: ['Papel semântico de cada elemento: referido, valor relativo, referendo', 'Dificuldade percebida e justificativa da conduta', 'Estratégia de modelagem descrita pelo estudante', 'Registro automático dos protocolos de interação e fotografia da modelagem'], img: 'imagens/analise-modelagem.png', alt: 'Tela Análise da modelagem.', caption: 'Análise da modelagem em uma situação de comparação de medidas.' },
+      { pillar: 'I', slug: 'pesquisa', accent: '#173A8C', tint: '#E8EDF7', mark: [0,0,1,0], icon: I('microscope'), name: 'Pesquisa', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Log de interação, tabelas do estudo sob demanda e modelagem para investigar dependências.', long: 'Recursos para investigação científica: cada interação é registrada e as tabelas do estudo são reconstruídas sob demanda a partir do log bruto.', features: ['Análise da modelagem com explicação do estudante', 'Log bruto de interação', 'Tabelas do estudo sob demanda', 'Agente Modelador: PART e Apriori', 'Exportação para análise'], img: 'imagens/visaoPesquisador_nitida.png', alt: 'Visão do pesquisador.', caption: 'Visão do pesquisador: tabelas reconstruídas a partir do log.' },
+    ].sort((a, b) => 'SIR'.indexOf(a.pillar) - 'SIR'.indexOf(b.pillar)).map((p, i) => ({ ...p, pillarName: { S: 'Situações', I: 'Invariantes operatórios', R: 'Representações' }[p.pillar], hasDl: !!p.hasDl, hasWeb: !!p.web, mark: p.mark.map(on => ({ bg: on ? p.accent : 'transparent' })), textOrder: i % 2, imgOrder: 1 - (i % 2) }));
     const navDef = [['inicio','Início','#/'],['sobre','O Gérard','#/sobre'],['produtos','Produtos','#/produtos'],['como-funciona','Como funciona','#/como-funciona'],['pesquisa','Pesquisa','#/pesquisa'],['publicacoes','Publicações','#/publicacoes'],['equipe','Equipe','#/equipe']];
     const P = pages[page];
     return {
@@ -973,6 +1041,11 @@ class Component extends DCLogic {
       ticks: [0,5,10,15,20,25,30,35,40,12,37].map(n => ({ left: (n / 40 * 100) + '%', label: String(n), color: (n === 12 || n === 37) ? '#1F56D6' : '#5B6577', weight: (n === 12 || n === 37) ? 600 : 400 })),
       sq12: Array.from({ length: 12 }, (_, i) => i), sq25: Array.from({ length: 25 }, (_, i) => i),
       products,
+      pillars: [
+        { letter: 'S', name: 'Situações', def: 'que dão sentido ao conceito', intro: 'Produtos para criar, organizar e propor as situações-problema que dão sentido às estruturas aditivas.', items: products.filter(p => p.pillar === 'S') },
+        { letter: 'I', name: 'Invariantes operatórios', def: 'que o estudante mobiliza', intro: 'Produtos que tornam visíveis os conhecimentos que o estudante mobiliza — pelas suas ações e pelas suas explicações.', items: products.filter(p => p.pillar === 'I') },
+        { letter: 'R', name: 'Representações', def: 'texto, diagramas, símbolos', intro: 'Produtos em que o estudante lê, representa e manipula a situação: enunciado, diagrama de Vergnaud e material concreto.', items: products.filter(p => p.pillar === 'R') },
+      ],
       audiences: [
         { id: 'p-estudantes', kicker: 'Para estudantes', icon: I('graduation-cap'), title: 'Resolver entendendo a situação.', body: 'O estudante lê o enunciado, identifica o papel de cada quantidade e representa a relação antes de calcular.', items: ['Diagrama e material concreto manipuláveis', 'Retorno imediato a cada ação', 'No computador e no celular'], cta: 'Ver demonstração', href: '#/demonstracao', img: 'imagens/Transformacao_nitida.png', alt: 'Tela do Gérard: transformação de medidas.', caption: 'Transformação de medidas: estado inicial, transformação e estado final.', textOrder: 0, imgOrder: 1 },
         { id: 'p-professores', kicker: 'Para professores', icon: I('presentation'), title: 'Acompanhar estratégias, não só respostas.', body: 'O professor constrói e revisa situações-problema e observa como cada estudante chega à solução.', items: ['Construção de situações a partir do diagrama', 'Curadoria antes de liberar para a turma', 'Situações organizadas por categoria'], cta: 'Conhecer Gérard Professor', href: '#/produtos', img: 'imagens/curadoria_nitida.png', alt: 'Tela de curadoria de situações-problema.', caption: 'Curadoria: revisão e validação das situações-problema.', textOrder: 1, imgOrder: 0 },
@@ -1011,6 +1084,7 @@ class Component extends DCLogic {
       pubCountLabel: filtered.length === 1 ? '1 publicação' : filtered.length + ' publicações',
       q: s.q, onSearch: e => this.setState({ q: e.target.value }), clearPub: () => this.setState({ q: '', pub: 'Todos' }),
       demoTabs: demos.map(([id, label]) => ({ label, sel: s.demo === id ? 'true' : 'false', bg: s.demo === id ? '#FFFFFF' : 'transparent', fg: s.demo === id ? '#0B1A3D' : '#FFFFFF', bd: s.demo === id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', onClick: () => this.setState({ demo: id }) })),
+      demoPhones: demos.map(([id, label]) => ({ label, title: 'Demonstração interativa — ' + label, srcdoc: embeds[id] ? this.dec(embeds[id]) : '' })),
       demoSrcdoc: embeds[s.demo] ? this.dec(embeds[s.demo]) : '',
       demoTitle: 'Demonstração interativa — ' + (demos.find(d => d[0] === s.demo) || [, ''])[1],
       demoCtaHref: page === 'demonstracao' ? '#galeria' : '#/demonstracao',
@@ -1021,6 +1095,8 @@ class Component extends DCLogic {
         ['imagens/Transformacao_nitida.png', 'Transformação de medidas', 'Estado inicial, transformação e estado final.'],
         ['imagens/construirSituacaoProblema_nitida.png', 'Construção de situação-problema', 'Blocos de texto gerados a partir do diagrama preenchido.'],
         ['imagens/curadoria_nitida.png', 'Curadoria', 'Revisão e validação das situações antes de liberar para a turma.'],
+        ['imagens/chat-gerard.png', 'Chat do Gérard', 'Ajuda por área — texto, diagrama de Vergnaud e diagrama complementar.'],
+        ['imagens/analise-modelagem.png', 'Análise da modelagem', 'O estudante explica suas decisões; os protocolos de interação são registrados.'],
         ['imagens/visaoPesquisador_nitida.png', 'Visão do pesquisador', 'Tabelas do estudo reconstruídas a partir do log de interação.'],
       ].map(([img, title, body]) => ({ img, title, body })),
       institutions: [
