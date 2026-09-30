@@ -11,6 +11,7 @@ import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { ChatbotGerard } from "./ChatbotGerard";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
+import { EstadoSemanticoExploratorio } from "./estadoSemanticoExploratorio";
 
 // Ícones dos botões contextuais portados de Main.java (criarIconeRestaurar/
 // criarIconeIdiomaSituacao) — mesma affordance convencional descrita lá:
@@ -63,6 +64,7 @@ export default function App() {
   const ultimaProjecaoAceita = useRef<{
     papelId: string; novoValor: number; valores: Readonly<Record<string, number>>;
   } | null>(null);
+  const difusorExploratorio = useRef<EstadoSemanticoExploratorio | null>(null);
   const [snapshotPropostaRejeitada, setSnapshotPropostaRejeitada] = useState<EstadoWeb | null>(null);
   // Valor rejeitado aguardando a resposta Sim/Não: a resposta é uma
   // tentativa própria registrada pelo servidor (decisão de 2026-09-28).
@@ -80,6 +82,25 @@ export default function App() {
     setEstadoExploratorio(null);
     ultimaProjecaoAceita.current = null;
   }, [tentativaAtualId]);
+
+  useEffect(() => {
+    const relacao = estado?.cena?.relacao_exploratoria;
+    const concluida = estado?.modelagem && "concluida" in estado.modelagem
+      && estado.modelagem.concluida;
+    if (!relacao || !concluida || !estado.cena) {
+      difusorExploratorio.current = null;
+      return;
+    }
+    const valores = Object.fromEntries(estado.cena.figuras
+      .filter((figura) => figura.valor !== null)
+      .map((figura) => [figura.chave_papel_semantico, figura.valor as number]));
+    const difusor = new EstadoSemanticoExploratorio(relacao, valores);
+    difusorExploratorio.current = difusor;
+    return difusor.observarSnapshot((mudanca, snapshot) => {
+      setEstadoExploratorio({ papelId: mudanca.papelId,
+        novoValor: mudanca.novoValor, valores: snapshot });
+    });
+  }, [estado]);
 
   useEffect(() => {
     if (!avisoSinal) return;
@@ -385,6 +406,10 @@ export default function App() {
   }
 
   async function projetarEixo(papelId: string, valor: number) {
+    if (difusorExploratorio.current) {
+      difusorExploratorio.current.alterarPapel(papelId, valor);
+      return;
+    }
     const sequencia = ++sequenciaProjecaoEixo.current;
     try {
       const resultado = await api.projetarEixo(papelId, valor);
@@ -444,8 +469,9 @@ export default function App() {
     const origem = cenaComMagnitude.figuras.find(
       (figura) => figura.chave_papel_semantico === estadoExploratorio.papelId);
     if (!origem || origem.valor === null) return cenaComMagnitude;
-    // O papel publica a alteração; a relação estrutural do domínio (servidor)
-    // a resolve uma vez e todas as representações consomem os mesmos valores.
+    // Cada projeção interessada recolhe do broadcast os papéis que materializa.
+    // As projeções relacionais vieram calculadas pelo domínio no snapshot;
+    // nenhum componente React escolhe destinatários ou reproduz fórmulas.
     const valoresExplorados = new Map<string, number>(
       Object.entries(estadoExploratorio.valores));
     return {

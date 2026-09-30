@@ -28,11 +28,16 @@ texto, diagramas ou outros consumidores.
 
 O fluxo é:
 
-1. o papel de origem publica a mudança do próprio valor;
-2. a relação estrutural pertinente decide se a mudança lhe interessa;
-3. a relação reconcilia uma única vez os papéis que coordena;
-4. o estado semântico compartilhado publica um snapshot coerente;
-5. cada representação interessada lê desse snapshot o papel que materializa.
+1. o papel de origem publica em broadcast a mudança do próprio valor;
+2. cada objeto ou representação inscrita decide localmente se a mudança lhe
+   interessa; nenhum publicador, controlador ou coordenador escolhe os
+   destinatários;
+3. uma relação estrutural inscrita que reconheça um de seus papéis reconcilia
+   uma única vez os papéis que conhece e publica no mesmo canal as mudanças
+   resultantes de cada papel;
+4. o estado semântico compartilhado, como mais um inscrito, captura uma visão
+   coerente ao fim da cadeia de broadcasts;
+5. cada representação inscrita materializa apenas o papel que lhe interessa.
 
 A representação onde o gesto começou identifica a origem da mudança, mas não
 se torna fonte privilegiada nem cria uma direção permanente entre
@@ -40,14 +45,17 @@ representações.
 
 ## Ouvintes e localidade
 
-O interesse pertence a quem conhece a relação. Um estado final, uma relação
-final ou outro papel dependente pode observar a mudança, identificar o papel
-de origem e consultar sua relação estrutural. O lançador nunca mantém uma
-lista de dependentes.
+O interesse pertence a cada inscrito. Um estado final, uma relação final,
+outro papel ou uma representação pode observar a mudança e decidir ignorá-la
+ou reagir segundo o conhecimento que possui. O lançador e o canal nunca mantêm
+uma lista semântica de dependentes; o canal mantém apenas inscrições técnicas
+e transmite o mesmo fato a todas elas.
 
-Representações são ouvintes do snapshot reconciliado, não proprietárias da
-regra que o produz. Texto, reta, Vergnaud e material concreto não recalculam
-cada qual a sua versão da relação e não mantêm verdades paralelas.
+Uma relação inscrita só conhece os papéis que ela própria relaciona; ela não
+conhece texto, reta, Vergnaud, material concreto nem escolhe quem receberá seus
+resultados. Representações podem ouvir as mudanças de papel ou o snapshot
+reconciliado, mas não são proprietárias das fórmulas e não mantêm verdades
+paralelas.
 
 ## Limites
 
@@ -87,4 +95,3 @@ Ao alterar este protocolo:
 - execute o build web e a regressão completa do Gérard;
 - preserve Composição de Medidas quando a mudança tratar apenas de valores
   assinados.
-

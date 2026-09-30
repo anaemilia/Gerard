@@ -46,10 +46,39 @@ public final class TesteAjusteEixoComparacaoWeb {
                 "pré-condição: comparação deveria ser confirmada");
         estado = estado(confirmado);
 
+        Map<String, Object> cenaConcluida = (Map<String, Object>) estado.get("cena");
+        Map<String, Object> relacaoExploratoria =
+                (Map<String, Object>) cenaConcluida.get("relacao_exploratoria");
+        Map<String, Object> projecoesPorPapel =
+                (Map<String, Object>) relacaoExploratoria.get("projecoes");
+        Map<String, Object> projecoesValorRelativo =
+                (Map<String, Object>) projecoesPorPapel.get("papel.diferenca");
+        exigir(projecoesValorRelativo != null && !projecoesValorRelativo.isEmpty(),
+                "snapshot concluído deve publicar projeções para broadcast local da reta");
+
         int referido = valor(estado, "papel.referido");
         int relativoConfirmado = valor(estado, "papel.diferenca");
         int referendoConfirmado = valor(estado, "papel.referendo");
-        int relativoExplorado = relativoConfirmado + 1;
+        int relativoExplorado = relativoConfirmado;
+        for (String valorPublicado : projecoesValorRelativo.keySet()) {
+            int candidato = Integer.parseInt(valorPublicado);
+            if (candidato != relativoConfirmado) {
+                relativoExplorado = candidato;
+                break;
+            }
+        }
+        exigir(relativoExplorado != relativoConfirmado,
+                "reta deve publicar ao menos uma mudança exploratória válida");
+        Map<String, Object> projecaoPublicada = (Map<String, Object>)
+                projecoesValorRelativo.get(String.valueOf(relativoExplorado));
+        exigir(projecaoPublicada != null,
+                "posição arrastável deve possuir projeção calculada pelo domínio");
+        exigir(Integer.valueOf(relativoExplorado).equals(
+                        projecaoPublicada.get("papel.diferenca")),
+                "broadcast publicado deve preservar o papel de origem");
+        exigir(Integer.valueOf(referido + relativoExplorado).equals(
+                        projecaoPublicada.get("papel.referendo")),
+                "projeção publicada deve conter a reação relacional sem fórmula no cliente");
         servico.revelarEixo("papel.diferenca");
         // Decisão da usuária (2026-09-29): mexer no eixo é exploratório e não
         // persiste. A relação do domínio projeta o dependente; nada é gravado.

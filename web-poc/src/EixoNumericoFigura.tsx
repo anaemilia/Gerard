@@ -35,7 +35,8 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupad
   const [posicao, setPosicao] = useState<{ left: number; top: number } | null>(null);
   const [valorArrastando, setValorArrastando] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const arrastandoValorRef = useRef(false);
+  const arrastandoValorRef = useRef<{ pointerId: number; clienteXInicial: number;
+    houveMovimento: boolean } | null>(null);
   const painelRef = useRef<HTMLDivElement | null>(null);
   const posicaoRef = useRef<{ left: number; top: number } | null>(null);
   const posicaoManualRef = useRef(false);
@@ -162,30 +163,40 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupad
   }
 
   useEffect(() => {
-    function mover(evento: MouseEvent) {
-      if (!arrastandoValorRef.current) return;
+    function mover(evento: PointerEvent) {
+      const arraste = arrastandoValorRef.current;
+      if (!arraste || evento.pointerId !== arraste.pointerId) return;
+      if (!arraste.houveMovimento && Math.abs(evento.clientX - arraste.clienteXInicial) < 2) return;
+      arraste.houveMovimento = true;
       const valor = valorDoClienteX(evento.clientX);
       setValorArrastando(valor);
       aoPrevisualizarValor(valor);
     }
-    function soltar(evento: MouseEvent) {
-      if (!arrastandoValorRef.current) return;
-      arrastandoValorRef.current = false;
-      const valor = valorDoClienteX(evento.clientX);
+    function soltar(evento: PointerEvent) {
+      const arraste = arrastandoValorRef.current;
+      if (!arraste || evento.pointerId !== arraste.pointerId) return;
+      arrastandoValorRef.current = null;
       setValorArrastando(null);
-      aoPrevisualizarValor(valor);
     }
-    window.addEventListener("mousemove", mover);
-    window.addEventListener("mouseup", soltar);
-    return () => { window.removeEventListener("mousemove", mover); window.removeEventListener("mouseup", soltar); };
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", soltar);
+    return () => {
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+      window.removeEventListener("pointercancel", soltar);
+    };
   });
 
-  function iniciarAlteracao(evento: React.MouseEvent) {
-    if (!editavel || ocupado) return;
+  function iniciarAlteracao(evento: React.PointerEvent<SVGGElement>) {
+    if (!editavel || ocupado || evento.button !== 0) return;
     evento.preventDefault();
-    arrastandoValorRef.current = true;
-    const valor = valorDoClienteX(evento.clientX);
-    setValorArrastando(valor);
+    evento.stopPropagation();
+    arrastandoValorRef.current = {
+      pointerId: evento.pointerId,
+      clienteXInicial: evento.clientX,
+      houveMovimento: false,
+    };
   }
 
   if (!posicao) return null;
@@ -224,11 +235,9 @@ export function EixoNumericoFigura({ figuraId, papelNome, eixo, editavel, ocupad
       <text x={xEsquerda} y={origemY - 14} className="eixo-rotulo-lado">{eixo.rotulo_negativos}</text>
       <text x={xDireita} y={origemY - 14} textAnchor="end" className="eixo-rotulo-lado">{eixo.rotulo_positivos}</text>
       <text x={xDireita - 4} y={origemY - 24} textAnchor="end" className="eixo-rotulo-eixo">{eixo.rotulo_eixo}</text>
-      {editavel && <rect x={xEsquerda} y={origemY - 12} width={xDireita - xEsquerda} height={24}
-        className="eixo-area-clicavel" onMouseDown={iniciarAlteracao} />}
       {temValor && <g className={`eixo-ponto-controle${editavel ? " eixo-ponto-controle-interativo" : ""}`}
           transform={`translate(${xDoValor(valorMostrado!)} ${origemY})`}
-          onMouseDown={editavel ? iniciarAlteracao : undefined}>
+          onPointerDown={editavel ? iniciarAlteracao : undefined}>
         <circle r={7} />
         <circle r={3} className="eixo-ponto-controle-miolo" />
         <text y={20} textAnchor="middle" className="eixo-valor-escolhido">{valorMostrado}</text>

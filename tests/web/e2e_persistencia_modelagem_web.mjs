@@ -27,7 +27,8 @@ function linhasLog(trecho) {
 const resultados = [];
 function verificar(nome, ok) { resultados.push([nome, ok]); console.log(`${ok ? '[OK]' : '[FALHA]'} ${nome}`); }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PLAYWRIGHT_BROWSER_PATH
+  ? { executablePath: process.env.PLAYWRIGHT_BROWSER_PATH } : undefined);
 const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
 let estado = null;
 page.on('response', async (r) => {
@@ -196,6 +197,42 @@ verificar('valor assinado correto foi registrado após a escolha do sinal',
 verificar('Transformação de medidas ficou azul com a incógnita assinada correta',
   estado.modelagem?.concluida === true
     && await page.locator('.diagram-panel-concluido').count() === 1);
+
+// A reta altera o papel por mouseDragged. O papel transmite em broadcast;
+// cada interessado recolhe o que reconhece. Depois do azul, as projeções já
+// vieram calculadas pelo domínio no snapshot e o gesto não chama a API.
+const papelEixo = estado.modelagem.papeis.find(p => p.id === 'papel.transformacao');
+const figuraEixo = figuraDe(papelEixo.id);
+await clicar(`[data-figura-id="${figuraEixo.id}"] [aria-label="Ver o eixo x deste número relativo"]`);
+await page.waitForSelector('.eixo-ponto-controle');
+let requisicoesProjecaoEixo = 0;
+const contarProjecaoEixo = req => {
+  if (req.url().includes('/api/acoes/projetar-eixo')) requisicoesProjecaoEixo++;
+};
+page.on('request', contarProjecaoEixo);
+const idsPapeisEixo = estado.modelagem.papeis.map(p => p.id);
+async function valoresVisuais(ids) {
+  const valores = {};
+  for (const id of ids) {
+    const figura = figuraDe(id);
+    valores[id] = Number(await page.locator(
+      `[data-figura-id="${figura.id}"] .scene-figure-valor`).textContent());
+  }
+  return valores;
+}
+const antesEixo = await valoresVisuais(idsPapeisEixo);
+const escalaEixo = figuraEixo.eixo.escala;
+const pontoEixo = await centro(page.locator('.eixo-ponto-controle'));
+const passoEixo = 232 / escalaEixo;
+const direcaoEixo = antesEixo[papelEixo.id] > 0 ? -1 : 1;
+await arrastar(pontoEixo, { x: pontoEixo.x + direcaoEixo * passoEixo, y: pontoEixo.y });
+const depoisEixo = await valoresVisuais(idsPapeisEixo);
+verificar('mouseDragged da reta muda o número relativo',
+  depoisEixo[papelEixo.id] !== antesEixo[papelEixo.id]);
+verificar('interessado no broadcast atualiza sua própria projeção',
+  idsPapeisEixo.some(id => id !== papelEixo.id && depoisEixo[id] !== antesEixo[id]));
+verificar('broadcast exploratório concluído não chama a API', requisicoesProjecaoEixo === 0);
+page.off('request', contarProjecaoEixo);
 await page.screenshot({ path: path.join(EVIDENCIAS, 'transformacao_medidas_incognita_assinada_azul.png') });
 console.log(`L0=${L0} RESUMO falhas=${resultados.filter(r => !r[1]).length}`);
 await browser.close();

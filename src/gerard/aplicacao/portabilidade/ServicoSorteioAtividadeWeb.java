@@ -30,7 +30,7 @@ import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
-import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
+import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
 import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public final class ServicoSorteioAtividadeWeb {
     // PaineisEixosRelacoes.desativar()/ativar() reinicia o desktop.
     private final Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel =
             new LinkedHashMap<String, ControleVisibilidadeEixoPapel>();
-    private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
+    private final PortaAjudaContextual portaAjudaContextual = new AdaptadorAjudaContextualWeb();
     private final gerard.idioma.CadastroIdiomasSituacao cadastroIdiomasSituacao =
             new gerard.idioma.CadastroIdiomasSituacao();
     public ServicoSorteioAtividadeWeb() {
@@ -347,6 +347,20 @@ public final class ServicoSorteioAtividadeWeb {
     @SuppressWarnings("unchecked")
     public synchronized Map<String, Object> projetarAlteracaoEixo(String papelId, int valor) {
         TipoSituacaoAditiva tipo = contextoAtual.getSituacao().getTipo();
+        Map<String, Object> atuais = mapa();
+        Object cena = projetarEstado().get("cena");
+        if (cena instanceof Map) {
+            for (Object objeto : (List<Object>) ((Map<String, Object>) cena).get("figuras")) {
+                Map<String, Object> figura = (Map<String, Object>) objeto;
+                atuais.put(String.valueOf(figura.get("chave_papel_semantico")), figura.get("valor"));
+            }
+        }
+        return projetarAlteracaoEixo(tipo, papelId, valor, atuais);
+    }
+
+    private static Map<String, Object> projetarAlteracaoEixo(
+            TipoSituacaoAditiva tipo, String papelId, int valor,
+            Map<String, Object> atuais) {
         CatalogoRelacoesEstruturaisAditivas catalogo = new CatalogoRelacoesEstruturaisAditivas();
         CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada descritor =
                 catalogo.criar(tipo, null);
@@ -360,14 +374,6 @@ public final class ServicoSorteioAtividadeWeb {
         }
         String[] chaves = descritor.chavesDosPapeis();
         int indiceAlterado = -1;
-        Map<String, Object> atuais = mapa();
-        Object cena = projetarEstado().get("cena");
-        if (cena instanceof Map) {
-            for (Object objeto : (List<Object>) ((Map<String, Object>) cena).get("figuras")) {
-                Map<String, Object> figura = (Map<String, Object>) objeto;
-                atuais.put(String.valueOf(figura.get("chave_papel_semantico")), figura.get("valor"));
-            }
-        }
         gerard.semantica.numero.ValorNumerico[] numeros =
                 new gerard.semantica.numero.ValorNumerico[chaves.length];
         for (int i = 0; i < chaves.length; i++) {
@@ -818,11 +824,11 @@ public final class ServicoSorteioAtividadeWeb {
      */
     private List<Object> projetarAjudaContextual(Object modelagem) {
         List<Object> areas = new ArrayList<Object>();
-        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.TEXTO));
-        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.VERGNAUD));
+        areas.add(portaAjudaContextual.projetarArea("TEXTO"));
+        areas.add(portaAjudaContextual.projetarArea("VERGNAUD"));
         if (modelagem instanceof Map
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"))) {
-            areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.COMPLEMENTAR));
+            areas.add(portaAjudaContextual.projetarArea("COMPLEMENTAR"));
         }
         return areas;
     }
@@ -836,18 +842,17 @@ public final class ServicoSorteioAtividadeWeb {
      * escolha da categoria, sem expor essa persistência ao caso de uso.
      */
     public synchronized Map<String, Object> ajudaContextual(String areaTexto, String intencaoTexto) {
-        ScaffoldingAjudaContextual.Area area;
-        ScaffoldingAjudaContextual.Intencao intencao;
+        String nomeArea;
+        String rotuloOpcao;
+        String mensagem;
         try {
-            area = ScaffoldingAjudaContextual.Area.valueOf(areaTexto);
-            intencao = ScaffoldingAjudaContextual.Intencao.valueOf(intencaoTexto);
+            nomeArea = portaAjudaContextual.nomeArea(areaTexto);
+            rotuloOpcao = portaAjudaContextual.rotuloOpcao(intencaoTexto);
+            mensagem = portaAjudaContextual.mensagem(areaTexto, intencaoTexto);
         } catch (RuntimeException erro) {
             throw new IllegalArgumentException("área ou intenção de ajuda contextual inválida: "
                     + areaTexto + "/" + intencaoTexto);
         }
-        String nomeArea = AjudaContextualWeb.nomeArea(scaffoldingAjudaContextual, area);
-        String rotuloOpcao = AjudaContextualWeb.rotuloOpcao(scaffoldingAjudaContextual, intencao);
-        String mensagem = AjudaContextualWeb.mensagem(scaffoldingAjudaContextual, area, intencao);
         // Mesmos 9 argumentos que o wrapper privado registrarAcaoGranular
         // do desktop monta (Main.java:11063-11067) a partir dos 7 que
         // criarOpcaoAjudaContextual passa — "OBJ_INTERACAO" e
@@ -861,7 +866,7 @@ public final class ServicoSorteioAtividadeWeb {
                 rotuloOpcao,
                 "OBJ_INTERACAO",
                 "ACAO_GRANULAR_SELECIONAR",
-                "area=" + area.name() + "; intencao=" + intencao.name(),
+                "area=" + areaTexto + "; intencao=" + intencaoTexto,
                 "A orientação contextual da área foi apresentada.");
         Map<String, Object> resultado = mapa();
         resultado.put("schema", "gerard.atividade-web.resultado-ajuda-contextual.v1");
@@ -974,10 +979,39 @@ public final class ServicoSorteioAtividadeWeb {
                 && contexto.getSituacao().getTipo() != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             Map<String, Object> descritorRelacao = mapa();
             List<Object> papeisRelacao = new ArrayList<Object>();
+            Map<String, Object> valoresAtuais = mapa();
+            for (Map.Entry<String, Object> entrada : valoresPorChave.entrySet()) {
+                Object valor = extrairCampo(entrada.getValue(), "valor");
+                if (valor instanceof Number) {
+                    valoresAtuais.put(entrada.getKey(), valor);
+                }
+            }
+            Map<String, Object> projecoesPorPapel = mapa();
             for (String chave : relacaoExploratoria.chavesDosPapeis()) {
                 papeisRelacao.add(chave);
+                FiguraDiagrama figuraDoPapel = buscarFigura(cena, chave);
+                if (figuraDoPapel == null || !figuraDoPapel.isExibirLupa()) {
+                    continue;
+                }
+                Object valorAtual = valoresAtuais.get(chave);
+                int escala = Math.max(5, valorAtual instanceof Number
+                        ? Math.abs(((Number) valorAtual).intValue()) : 0);
+                Map<String, Object> projecoesPorValor = mapa();
+                for (int valor = -escala; valor <= escala; valor++) {
+                    Map<String, Object> projecao = projetarAlteracaoEixo(
+                            contexto.getSituacao().getTipo(), chave, valor, valoresAtuais);
+                    if (!Boolean.FALSE.equals(projecao.get("aceita"))) {
+                        projecoesPorValor.put(String.valueOf(valor), projecao.get("valores"));
+                    }
+                }
+                projecoesPorPapel.put(chave, projecoesPorValor);
             }
             descritorRelacao.put("papeis", papeisRelacao);
+            // Projeções finitas da geometria publicada para a reta. São
+            // calculadas pelas relações do domínio uma vez; depois da
+            // conclusão, cada interessado pode reagir ao broadcast local sem
+            // pedir ao cliente que reproduza fórmulas ou chamar novamente a API.
+            descritorRelacao.put("projecoes", projecoesPorPapel);
             resultado.put("relacao_exploratoria", descritorRelacao);
         }
         resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
