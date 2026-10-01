@@ -68,6 +68,7 @@ export default function App() {
   const [chatAberto, setChatAberto] = useState(false);
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
   const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
+  const [historinhaVisivel, setHistorinhaVisivel] = useState(false);
   const [atividadeIniciada, setAtividadeIniciada] = useState(false);
   // Projeção exploratória da reta: o servidor (relação estrutural do
   // domínio) calcula o dependente; o cliente só exibe. Nada é gravado.
@@ -95,6 +96,7 @@ export default function App() {
   useEffect(() => {
     setEstadoExploratorio(null);
     ultimaProjecaoAceita.current = null;
+    setHistorinhaVisivel(false);
   }, [tentativaAtualId]);
 
   useEffect(() => {
@@ -229,6 +231,7 @@ export default function App() {
         // (processarLimiteTentativasAtingido), não há nova pergunta; o
         // snapshot do servidor traz a escalada (material concreto).
         setSinalPendenteIncognita(null);
+        setHistorinhaVisivel(true);
         receberSnapshot(resultado.estado);
         enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
       } else if (!resultado.chave_mensagem) {
@@ -286,6 +289,7 @@ export default function App() {
         const resultado = await api.responderConfirmacaoValor(
           proposta.papelId, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
+        if (limiteAtingido) setHistorinhaVisivel(true);
         estadoServidor = resultado.estado;
       } catch (erro) { console.error(erro); }
       finally { setOcupado(false); }
@@ -644,6 +648,11 @@ export default function App() {
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
+          {historinhaVisivel && modelagemComSinal &&
+            <div className="historinha-passiva" aria-label="Historinha">
+              <img src="/ajuda/composicao_transformacoes/01_joao_bilas_historinha.gif"
+                alt="" aria-hidden="true" />
+            </div>}
           {cenaMaterialConcreto && <section className="material-concreto" aria-label="Material concreto">
             {modelagemMaterialConcreto?.material_concreto_texto &&
               <p className="material-concreto-aviso">{modelagemMaterialConcreto.material_concreto_texto}</p>}

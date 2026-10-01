@@ -142,6 +142,8 @@ button.help-mark:hover,button.help-mark[aria-expanded="true"] { background:var(-
 .workspace { min-height:0; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr); gap:34px; }
 .diagram-panel { position:relative; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .response-panel { position:relative; min-height:0; display:flex; flex-direction:column; padding:clamp(22px,3vw,36px); }
+.historinha-passiva { width:100%; height:100%; min-height:0; display:flex; align-items:center; justify-content:center; }
+.historinha-passiva img { display:block; max-width:100%; max-height:100%; object-fit:contain; }
 .diagram-panel > .help-mark-wrap,.response-panel > .help-mark-wrap { position:absolute; top:10px; right:10px; z-index:4; }
 .diagram-panel > .diagram-restore-wrap { left:10px; right:auto; }
 .diagram-panel > .help-mark-wrap .help-menu,.response-panel > .help-mark-wrap .help-menu,

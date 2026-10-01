@@ -6,6 +6,7 @@ WORKDIR /app/web-poc
 COPY web-poc/package.json web-poc/package-lock.json ./
 RUN npm ci
 COPY web-poc/ ./
+COPY src/gerard/recursos/ajuda/ ./public/ajuda/
 RUN npm run build
 
 # ---------- Etapa 2: build do backend Java (domínio + servidor da prova web) ----------
