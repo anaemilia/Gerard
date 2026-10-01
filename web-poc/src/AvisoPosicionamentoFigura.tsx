@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { textoComNegrito } from "./textoComNegrito";
 
 /**
  * Tip ancorada na própria figura do diagrama (mesmo padrão de
@@ -24,6 +25,6 @@ export function AvisoPosicionamentoFigura({ figuraId, mensagem }: {
   const estilo = { left: retangulo.right + 10, top: retangulo.top };
 
   return <div className="valor-figura-tip" style={estilo} role="status">
-    <p>{mensagem}</p>
+    <p>{textoComNegrito(mensagem)}</p>
   </div>;
 }
