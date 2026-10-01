@@ -11,22 +11,35 @@
 <helmet>
 <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F2F6FE"/><g transform="translate(30 30) scale(1.667)"><circle cx="12" cy="6" r="4" fill="#1F56D6"/><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/></g></svg></template>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GÉRARD — Ambiente adaptativo de aprendizagem e pesquisa</title>
+<title>GÉRARD — Laboratório</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
 <script src="./mobile-embeds.js"></script>
 <style>
   html { scroll-behavior: smooth; scroll-padding-top: 84px; }
-  body { margin: 0; background: #FFFFFF; color: #0E1726; font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: #FFFFFF; color: #0E1726; font-family: 'Nunito', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: #1F56D6; text-underline-offset: 3px; }
   a:hover { color: #173A8C; }
   *:focus-visible { outline: 3px solid #1F56D6; outline-offset: 2px; border-radius: 6px; }
   ::selection { background: #C6D7FA; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  @keyframes gIntroFly { 0% { transform: translate(var(--fx), var(--fy)) scale(.2) rotate(-200deg); opacity: 0; } 65% { transform: translate(0,0) scale(1.12) rotate(8deg); opacity: 1; } 82% { transform: scale(.96); } 100% { transform: none; opacity: 1; } }
+  @keyframes gIntroFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes gIntroOp { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes gIntroDrop { 0% { opacity: 0; transform: translateY(-70px) scale(1.5); } 60% { opacity: 1; transform: translateY(6px) scale(.95); } 100% { opacity: 1; transform: none; } }
+  @keyframes gIntroBar { from { width: 0; } to { width: 100%; } }
+  @keyframes gIntroSpin { to { transform: rotate(360deg); } }
+  @keyframes gIntroOut { to { opacity: 0; transform: scale(1.05); } }
+  @keyframes gPopA { 0% { transform: scale(.6); box-shadow: 0 0 0 0 rgba(31,86,214,.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); box-shadow: 0 0 0 18px rgba(31,86,214,0); } }
+  @keyframes gPopB { 0% { transform: scale(.6); box-shadow: 0 0 0 0 rgba(31,86,214,.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); box-shadow: 0 0 0 18px rgba(31,86,214,0); } }
+  @keyframes gShakeA { 0%,100% { transform: none; } 20% { transform: translateX(-9px) rotate(-3deg); } 40% { transform: translateX(9px) rotate(3deg); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  @keyframes gShakeB { 0%,100% { transform: none; } 20% { transform: translateX(-9px) rotate(-3deg); } 40% { transform: translateX(9px) rotate(3deg); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
 </style>
 </helmet>
-<div style="zoom:{{ zoom }};min-height:100vh;background:#FFFFFF;color:#0E1726;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:17px;line-height:1.6;">
+<div style="zoom:{{ zoom }};min-height:100vh;background:#FFFFFF;color:#0E1726;font-family:'Nunito',system-ui,sans-serif;font-size:17px;line-height:1.6;">
+
+  {{ introEl }}
 
   <a href="#conteudo" style="position:absolute;left:-9999px;top:8px;z-index:100;background:#0E1726;color:#FFFFFF;padding:10px 16px;border-radius:8px;" style-focus="left:16px;">Pular para o conteúdo</a>
 
@@ -41,6 +54,7 @@
             <button type="button" onClick="{{ fontReset }}" aria-label="Tamanho padrão" style="min-width:32px;height:28px;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:6px;font:inherit;font-size:14px;color:#0E1726;cursor:pointer;" style-hover="border-color:#1F56D6;">A</button>
             <button type="button" onClick="{{ fontUp }}" aria-label="Aumentar texto" style="min-width:32px;height:28px;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:6px;font:inherit;font-size:16px;color:#0E1726;cursor:pointer;" style-hover="border-color:#1F56D6;">A+</button>
           </div>
+          <button type="button" onClick="{{ replayIntro }}" style="font:inherit;font-size:12.5px;font-weight:700;padding:4px 12px;border-radius:999px;border:1px solid #C6D3E8;background:linear-gradient(180deg,#FFFFFF,#E9EFF8);color:#173A8C;cursor:pointer;" style-hover="border-color:#1F56D6;">▶ Rever intro</button>
           <div role="group" aria-label="Idioma" style="display:flex;align-items:center;gap:2px;font-family:'IBM Plex Mono',monospace;font-size:12px;">
             <span aria-current="true" style="padding:4px 8px;border-radius:6px;background:#E3ECFD;color:#173A8C;font-weight:500;">PT</span>
             <span title="Em breve" aria-disabled="true" style="padding:4px 8px;color:#5B6577;">EN</span>
@@ -51,7 +65,7 @@
     </div>
   </sc-if>
 
-  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid #E4E8EF;">
+  <header style="position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#FFFFFF 0%,#EAF1FC 100%);border-bottom:1px solid #C6D3E8;box-shadow:0 3px 0 #DCE5F4,0 10px 20px -12px rgba(23,58,140,0.35);">
     <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:68px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
       <a href="#/" aria-label="GÉRARD — início" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#0E1726;">
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" style="flex:none;display:block;"><circle cx="12" cy="6" r="4" fill="#1F56D6"></circle><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle></svg>
@@ -65,7 +79,7 @@
         </nav>
       </sc-if>
       <div style="display:flex;align-items:center;gap:8px;">
-        <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:10px;background:#1F56D6;color:#FFFFFF;font-size:15px;font-weight:500;text-decoration:none;white-space:nowrap;" style-hover="background:#1946B3;color:#FFFFFF;" style-active="background:#173A8C;">
+        <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:15px;font-weight:500;text-decoration:none;white-space:nowrap;" style-hover="transform:translateY(-1px);filter:brightness(1.08);color:#FFFFFF;" style-active="transform:translateY(2px);filter:brightness(0.95);">
           <span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/play.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/play.svg) center/contain no-repeat;"></span>
           Ver demonstração
         </a>
@@ -87,10 +101,10 @@
 
   <main id="conteudo">
     <sc-if value="{{ isInner }}" hint-placeholder-val="{{ false }}">
-    <section data-screen-label="Cabeçalho da página" style="background:#F5F8FE;border-bottom:1px solid #E4E8EF;padding:clamp(40px,6vw,72px) 0 clamp(36px,5vw,56px);">
+    <section data-screen-label="Cabeçalho da página" style="background-color:#EEF4FD;background-image:linear-gradient(#DCE6F7 1px,transparent 1px),linear-gradient(90deg,#DCE6F7 1px,transparent 1px);background-size:24px 24px;border-bottom:1px solid #C6D3E8;padding:clamp(40px,6vw,72px) 0 clamp(36px,5vw,56px);">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <nav aria-label="Breadcrumb" style="font-size:14px;margin-bottom:20px;"><ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;color:#5B6577;"><li><a href="#/" style="color:#3D4759;">Início</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color:#0E1726;font-weight:500;">{{ pageTitle }}</li></ol></nav>
-        <h1 style="margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.1;font-weight:600;letter-spacing:-0.022em;color:#0E1726;max-width:22ch;text-wrap:balance;">{{ pageH1 }}</h1>
+        <h1 style="margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.1;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">{{ pageH1 }}</h1>
         <p style="margin:18px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:60ch;text-wrap:pretty;">{{ pageLead }}</p>
       </div>
     </section>
@@ -98,21 +112,21 @@
 
 
     <sc-if value="{{ show_inicio }}" hint-placeholder-val="{{ true }}">
-    <section id="inicio" data-screen-label="01 Hero" style="background:#F5F8FE;border-bottom:1px solid #E4E8EF;padding:clamp(48px,7vw,96px) 0 clamp(56px,7vw,88px);">
+    <section id="inicio" data-screen-label="01 Hero" style="background-color:#EEF4FD;background-image:linear-gradient(#DCE6F7 1px,transparent 1px),linear-gradient(90deg,#DCE6F7 1px,transparent 1px);background-size:24px 24px;border-bottom:1px solid #C6D3E8;padding:clamp(48px,7vw,96px) 0 clamp(56px,7vw,88px);">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:clamp(40px,5vw,72px);align-items:center;">
         <div>
           <p style="display:inline-flex;align-items:center;gap:8px;margin:0 0 24px;padding:6px 12px 6px 10px;border:1px solid #C6D7FA;background:#FFFFFF;border-radius:999px;font-size:13px;font-weight:500;color:#173A8C;">
             <span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;background:#1F56D6;"></span>
             Ensino e aprendizagem · Sistema adaptativo · Pesquisa
           </p>
-          <h1 style="margin:0;font-size:clamp(36px,4.8vw,58px);line-height:1.08;font-weight:600;letter-spacing:-0.025em;color:#0E1726;text-wrap:balance;">Da situação ao conceito.</h1>
+          <h1 style="margin:0;font-size:clamp(36px,4.8vw,58px);line-height:1.08;font-weight:800;letter-spacing:-0.01em;color:#0E1726;text-wrap:balance;">Da situação ao conceito.</h1>
           <p style="margin:24px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:56ch;text-wrap:pretty;">Um ambiente adaptativo de aprendizagem e pesquisa sobre Estruturas Aditivas, fundamentado na Teoria dos Campos Conceituais de Gérard Vergnaud.</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;">
-            <a href="#/sobre" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#1F56D6;color:#FFFFFF;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;" style-active="background:#173A8C;">
+            <a href="#/sobre" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="transform:translateY(-1px);filter:brightness(1.08);color:#FFFFFF;" style-active="transform:translateY(2px);filter:brightness(0.95);">
               Conhecer o Gérard
               <span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span>
             </a>
-            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">
+            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">
               <span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/circle-play.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/circle-play.svg) center/contain no-repeat;"></span>
               Ver demonstração
             </a>
@@ -121,7 +135,7 @@
             <p style="margin:0 0 12px;font-size:14px;color:#5B6577;">Comece pelo seu perfil</p>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
               <sc-for list="{{ entryPaths }}" as="e" hint-placeholder-count="3">
-                <a href="{{ e.href }}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #D5DBE5;background:#FFFFFF;font-size:15px;font-weight:500;color:#0E1726;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">
+                <a href="{{ e.href }}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #B5C4DC;background:linear-gradient(180deg,#FFFFFF 0%,#E9EFF8 100%);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #C3CFE2;font-size:15px;font-weight:500;color:#0E1726;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">
                   <span aria-hidden="true" style="width:18px;height:18px;background:#1F56D6;-webkit-mask:url({{ e.icon }}) center/contain no-repeat;mask:url({{ e.icon }}) center/contain no-repeat;"></span>{{ e.label }}
                 </a>
               </sc-for>
@@ -130,8 +144,43 @@
         </div>
 
         <figure style="margin:0 0 0 auto;width:100%;max-width:580px;">
-          <div style="border:1px solid #D5DBE5;border-radius:16px;background:#FFFFFF;padding:clamp(12px,1.6vw,18px);box-shadow:0 1px 2px rgba(14,23,38,0.04),0 24px 48px -28px rgba(14,23,38,0.22);">
-            <img src="imagens/conceito.png" alt="Tríade dos Campos Conceituais, como sugerido por Vergnaud: C = (S, I, R). S — situações que dão sentido ao conceito; I — invariantes operatórios que o estudante mobiliza; R — representações: linguagem, diagramas, símbolos." style="display:block;width:100%;height:auto;border-radius:10px;">
+          <div data-screen-label="Laboratório" style="position:relative;border-radius:24px;padding:6px;background:linear-gradient(180deg,#9DBBF2 0%,#3F72DE 100%);box-shadow:0 6px 0 #1C4BB8,0 28px 44px -22px rgba(23,58,140,0.6);">
+            <div style="border-radius:19px;background:linear-gradient(180deg,#FFFFFF 0%,#EFF5FE 100%);overflow:hidden;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px 10px 16px;background:linear-gradient(180deg,#4A7EF2 0%,#2560E3 50%,#1B4FCB 51%,#2259D8 100%);color:#FFFFFF;">
+                <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;text-shadow:0 1px 0 rgba(0,0,0,0.3);">
+                  <span aria-hidden="true" style="display:flex;gap:4px;"><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span></span>
+                  Laboratório · Composição
+                </span>
+                <button type="button" onClick="{{ labReset }}" style="font:inherit;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.6);background:linear-gradient(180deg,rgba(255,255,255,0.35),rgba(255,255,255,0.08));color:#FFFFFF;cursor:pointer;text-shadow:0 1px 0 rgba(0,0,0,0.25);" style-hover="background:rgba(255,255,255,0.3);">Recomeçar</button>
+              </div>
+              <div style="padding:18px 20px 20px;">
+                <p style="margin:0;font-size:17px;line-height:1.55;color:#0E1726;text-wrap:pretty;">Lucas tem <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">12</strong> figurinhas do Pokémon e <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">25</strong> do Digimon. Quantas figurinhas ele tem <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">ao todo</strong>?</p>
+                <p style="margin:6px 0 0;font-size:14px;color:#5B6577;">Arraste as peças para o diagrama de Vergnaud. Também dá para tocar na peça e depois no lugar.</p>
+                <div style="margin-top:16px;padding:22px 12px 14px;border-radius:16px;border:2px dashed #B9CAE6;background-color:#F7FAFF;background-image:linear-gradient(#E3EBF8 1px,transparent 1px),linear-gradient(90deg,#E3EBF8 1px,transparent 1px);background-size:20px 20px;display:grid;grid-template-columns:auto 40px auto;align-items:center;justify-content:center;gap:10px;">
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="p1" onClick="{{ slot_p1_click }}" aria-label="{{ slot_p1_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_p1_bs }} {{ slot_p1_bd }};background:{{ slot_p1_bg }};color:{{ slot_p1_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_p1_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_p1_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_p1_cap }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="p2" onClick="{{ slot_p2_click }}" aria-label="{{ slot_p2_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_p2_bs }} {{ slot_p2_bd }};background:{{ slot_p2_bg }};color:{{ slot_p2_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_p2_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_p2_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_p2_cap }}</span>
+                  </div>
+                  </div>
+                  <div aria-hidden="true" style="height:150px;margin-top:-20px;border:4px solid #1F56D6;border-left:none;border-radius:0 18px 18px 0;width:16px;"></div>
+                  <div style="margin-top:-20px;"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="w" onClick="{{ slot_w_click }}" aria-label="{{ slot_w_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_w_bs }} {{ slot_w_bd }};background:{{ slot_w_bg }};color:{{ slot_w_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_w_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_w_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_w_cap }}</span>
+                  </div></div>
+                </div>
+                <div role="group" aria-label="Peças" style="display:flex;justify-content:center;gap:14px;min-height:64px;margin-top:16px;align-items:center;">
+                  <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+                    <button type="button" onPointerDown="{{ c.down }}" onClick="{{ c.key }}" aria-pressed="{{ c.sel }}" aria-label="Peça {{ c.label }}" style="position:relative;z-index:{{ c.z }};touch-action:none;width:74px;height:58px;border-radius:16px;border:none;font:inherit;font-size:28px;font-weight:900;color:#3A2A00;background:linear-gradient(180deg,#FFF7D1 0%,#FFD95A 50%,#F5BC0E 51%,#FFCB2E 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.8),0 4px 0 #C48A00,0 12px 16px -8px rgba(0,0,0,0.35);cursor:grab;transform:translate({{ c.dx }}px,{{ c.dy }}px) scale({{ c.sc }});transition:{{ c.tr }};outline:{{ c.ol }};outline-offset:3px;">{{ c.label }}</button>
+                  </sc-for>
+                </div>
+                <p role="status" style="margin:12px 0 0;min-height:24px;text-align:center;font-size:15.5px;font-weight:700;color:{{ labMsgFg }};">{{ labMsg }}</p>
+              </div>
+            </div>
           </div>
           <figcaption style="display:flex;align-items:center;gap:14px;margin-top:16px;">
             <img src="imagens/Vergnaud_melhorada.png" alt="Retrato de Gérard Vergnaud." style="flex:none;width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:55% 30%;border:1px solid #D5DBE5;">
@@ -147,12 +196,12 @@
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:clamp(40px,5vw,72px);align-items:start;">
         <div>
           <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Fundamentação científica</p>
-          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:20ch;text-wrap:balance;">A Teoria dos Campos Conceituais.</h2>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">A Teoria dos Campos Conceituais.</h2>
           <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px;font-size:17px;line-height:1.65;color:#3D4759;max-width:58ch;">
             <p style="margin:0;text-wrap:pretty;">Para Gérard Vergnaud, um conceito não se aprende isolado: ele ganha sentido dentro de um campo — um conjunto de situações, invariantes e representações que se apoiam mutuamente.</p>
             <p style="margin:0;text-wrap:pretty;">As estruturas aditivas formam um desses campos. Somar e subtrair são apenas o cálculo; o que se aprende é a relação entre as quantidades em cada classe de situação.</p>
           </div>
-          <a href="#/pesquisa" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:32px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">Conhecer a fundamentação<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+          <a href="#/pesquisa" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:32px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">Conhecer a fundamentação<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
         </div>
         <div style="display:flex;flex-direction:column;gap:20px;">
           
@@ -201,7 +250,7 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(24px,5vw,72px);align-items:start;">
           <div>
             <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">O que é o Gérard</p>
-            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;text-wrap:balance;">Três dimensões integradas em um só ambiente.</h2>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;text-wrap:balance;">Três dimensões integradas em um só ambiente.</h2>
           </div>
           <div style="display:flex;flex-direction:column;gap:16px;font-size:17px;line-height:1.65;color:#3D4759;">
             <p style="margin:0;text-wrap:pretty;">Diante de um problema aditivo, muitos estudantes procuram palavras-chave — “ganhou” é somar, “perdeu” é subtrair — sem compreender a estrutura da situação.</p>
@@ -219,7 +268,7 @@
         <p style="margin:clamp(48px,6vw,72px) 0 0;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">Ensino e aprendizagem + Sistema adaptativo + Pesquisa científica</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;margin-top:16px;">
           <sc-for list="{{ dimensions }}" as="d" hint-placeholder-count="3">
-            <article style="display:flex;flex-direction:column;border:1px solid #E1E6EE;border-radius:16px;padding:32px;background:#FFFFFF;transition:border-color .2s ease;" style-hover="border-color:#C6D7FA;">
+            <article style="display:flex;flex-direction:column;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);padding:32px;background:#FFFFFF;transition:border-color .2s ease;" style-hover="border-color:#C6D7FA;">
               <div style="display:flex;align-items:center;justify-content:space-between;">
                 <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:#EEF3FE;">
                   <span style="width:24px;height:24px;background:#1F56D6;-webkit-mask:url({{ d.icon }}) center/contain no-repeat;mask:url({{ d.icon }}) center/contain no-repeat;"></span>
@@ -244,7 +293,7 @@
     <section id="como-funciona" data-screen-label="03 Como funciona" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Como funciona</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Da situação-problema ao acompanhamento da aprendizagem.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Da situação-problema ao acompanhamento da aprendizagem.</h2>
         <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:20px;font-size:14px;color:#3D4759;">
           <span style="display:inline-flex;align-items:center;gap:8px;"><span aria-hidden="true" style="width:14px;height:14px;border-radius:50%;border:2px solid #1F56D6;background:#FFFFFF;"></span>Ação do estudante</span>
           <span style="display:inline-flex;align-items:center;gap:8px;"><span aria-hidden="true" style="width:14px;height:14px;border-radius:4px;background:#1F56D6;"></span>Ação do sistema</span>
@@ -272,7 +321,7 @@
         <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
           <div>
             <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Representações</p>
-            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:22ch;text-wrap:balance;">Uma situação, muitas formas de ver.</h2>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Uma situação, muitas formas de ver.</h2>
           </div>
           <p style="margin:0;font-size:17px;line-height:1.6;color:#3D4759;max-width:46ch;text-wrap:pretty;">Cada representação destaca um aspecto da mesma relação. Alternar entre elas é parte da aprendizagem.</p>
         </div>
@@ -377,7 +426,7 @@
     <section id="produtos" data-screen-label="05 Produtos" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Ecossistema Gérard</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Produtos organizados pela tríade de Vergnaud.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Produtos organizados pela tríade de Vergnaud.</h2>
         <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Cada produto nasce de um dos elementos do conceito — C = (S, I, R): situações que dão sentido, invariantes que o estudante mobiliza e representações que o expressam.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;margin-top:clamp(40px,5vw,56px);align-items:start;">
           <sc-for list="{{ pillars }}" as="pl" hint-placeholder-count="3">
@@ -419,7 +468,7 @@
     <section id="publico" data-screen-label="06 Para quem é" style="padding:clamp(64px,9vw,112px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Para quem é</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Um ambiente, três formas de uso.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Um ambiente, três formas de uso.</h2>
         <div style="display:flex;flex-direction:column;gap:clamp(48px,6vw,80px);margin-top:clamp(40px,5vw,64px);">
           <sc-for list="{{ audiences }}" as="a" hint-placeholder-count="3">
             <div id="{{ a.id }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(28px,4vw,56px);align-items:center;">
@@ -438,7 +487,7 @@
                 <a href="{{ a.href }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:24px;font-size:15.5px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:44px;" style-hover="color:#173A8C;text-decoration:underline;">{{ a.cta }}<span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
               </div>
               <figure style="margin:0;order:{{ a.imgOrder }};">
-                <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
+                <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
                   <img src="{{ a.img }}" alt="{{ a.alt }}" style="display:block;width:100%;height:auto;">
                 </div>
                 <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ a.caption }}</figcaption>
@@ -470,7 +519,7 @@
         <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
           <div>
             <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Adaptatividade do sistema</p>
-            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:22ch;text-wrap:balance;">Não é uma coleção de exercícios.</h2>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Não é uma coleção de exercícios.</h2>
           </div>
           <p style="margin:0;font-size:17px;line-height:1.6;color:#3D4759;max-width:48ch;text-wrap:pretty;">Cada ação vira dado. O sistema modela o que o estudante já domina e propõe a próxima situação dentro da sua Zona de Desenvolvimento Proximal.</p>
         </div>
@@ -526,7 +575,7 @@
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
         <div>
           <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Análise da modelagem</p>
-          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:20ch;text-wrap:balance;">O estudante explica as próprias decisões.</h2>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">O estudante explica as próprias decisões.</h2>
           <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">Após cada tentativa, o estudante pode justificar como interpretou a situação e onde posicionou cada elemento no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.</p>
           <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
             <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Papel semântico de cada elemento: referido, valor relativo, referendo</span></li>
@@ -537,7 +586,7 @@
           <p style="margin:22px 0 0;padding:12px 14px;border-radius:10px;background:#FFFFFF;border:1px solid #DDE3EC;font-size:14.5px;line-height:1.55;color:#3D4759;max-width:56ch;"><strong style="font-weight:600;color:#0E1726;">Para a pesquisa:</strong> une o que o estudante fez, como fez e o que diz ter pensado — dados para analisar invariantes operatórios.</p>
         </div>
         <figure style="margin:0;">
-          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="imagens/analise-modelagem.png" alt="Tela Análise da modelagem: situação de comparação, tabela com elemento, papel semântico, dificuldade e justificativa, e registro automático dos protocolos de interação." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="imagens/analise-modelagem.png" alt="Tela Análise da modelagem: situação de comparação, tabela com elemento, papel semântico, dificuldade e justificativa, e registro automático dos protocolos de interação." loading="lazy" style="display:block;width:100%;height:auto;"></div>
           <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Análise da modelagem em uma situação de comparação de medidas.</figcaption>
         </figure>
       </div>
@@ -547,12 +596,12 @@
     <section id="chat-gerard" data-screen-label="Chat do Gérard" style="padding:clamp(56px,8vw,96px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
         <figure style="margin:0;">
-          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);max-width:560px;"><img src="imagens/chat-gerard.png" alt="Tela Chat do Gérard: 'Como posso ajudar?', conversa com dica sobre números, personagens e papéis semânticos, e botões de ajuda para Texto, Diagrama de Vergnaud e Diagrama complementar." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);max-width:560px;"><img src="imagens/chat-gerard.png" alt="Tela Chat do Gérard: 'Como posso ajudar?', conversa com dica sobre números, personagens e papéis semânticos, e botões de ajuda para Texto, Diagrama de Vergnaud e Diagrama complementar." loading="lazy" style="display:block;width:100%;height:auto;"></div>
           <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Chat do Gérard durante a resolução de uma situação-problema.</figcaption>
         </figure>
         <div>
           <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Chat do Gérard</p>
-          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:20ch;text-wrap:balance;">Ajuda no momento em que o estudante precisa.</h2>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">Ajuda no momento em que o estudante precisa.</h2>
           <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">O estudante escreve sua dúvida ou escolhe a área em que precisa de apoio. O Gérard responde com dicas que orientam a leitura da situação — sem entregar a resposta.</p>
           <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
             <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Ajuda por área: texto, diagrama de Vergnaud e diagrama complementar</span></li>
@@ -571,7 +620,7 @@
         <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
           <div>
             <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Pesquisa e publicações</p>
-            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:22ch;text-wrap:balance;">Duas décadas de investigação.</h2>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Duas décadas de investigação.</h2>
           </div>
           <div id="publicacoes" role="group" aria-label="Filtrar por tipo" style="display:flex;flex-wrap:wrap;gap:8px;">
             <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="5">
@@ -592,7 +641,7 @@
             </article>
           </sc-for>
         </div>
-        <a href="#/publicacoes" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:28px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Ver todas as publicações · {{ pubTotal }}<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+        <a href="#/publicacoes" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:28px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Ver todas as publicações · {{ pubTotal }}<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
       </div>
     </section>
     </sc-if>
@@ -603,7 +652,7 @@
         <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px 48px;">
           <div style="flex:1 1 480px;">
             <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#9DB8F5;">Demonstração</p>
-            <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#FFFFFF;max-width:24ch;text-wrap:balance;">Veja como o Gérard transforma situações-problema em experiências interativas de aprendizagem.</h2>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#FFFFFF;max-width:24ch;text-wrap:balance;">Veja como o Gérard transforma situações-problema em experiências interativas de aprendizagem.</h2>
             <p style="margin:20px 0 0;font-size:17px;line-height:1.6;color:#C9D5EE;max-width:56ch;text-wrap:pretty;">Três demonstrações interativas: arraste os quadradinhos, preencha o diagrama e observe o retorno a cada ação.</p>
           </div>
           <a href="https://gerard-web-deploy.onrender.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;color:#0B1A3D;font-size:16px;font-weight:500;text-decoration:none;flex:none;" style-hover="background:#E3ECFD;color:#0B1A3D;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir o Gérard na web</a>
@@ -649,7 +698,7 @@
     <section id="equipe" data-screen-label="11 Equipe" style="padding:clamp(64px,9vw,112px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Equipe</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Quem pesquisa e desenvolve o Gérard.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Quem pesquisa e desenvolve o Gérard.</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:20px;margin-top:clamp(40px,5vw,56px);">
           <sc-for list="{{ team }}" as="m" hint-placeholder-count="4">
             <article style="display:flex;flex-direction:column;">
@@ -680,11 +729,11 @@
     <section id="estruturas" data-screen-label="Sobre · Estruturas aditivas" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Estruturas aditivas</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Três classes de situação, uma mesma família de conceitos.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Três classes de situação, uma mesma família de conceitos.</h2>
         <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;">Na teoria de Vergnaud, o campo aditivo reúne as situações que se resolvem por adição, subtração ou pela combinação das duas. O que muda de uma classe para outra é a relação entre as quantidades.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;margin-top:40px;">
           <sc-for list="{{ categoriesDetail }}" as="c" hint-placeholder-count="3">
-            <article style="border:1px solid #E1E6EE;border-radius:16px;padding:28px;background:#FFFFFF;display:flex;flex-direction:column;gap:14px;">
+            <article style="border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);padding:28px;background:#FFFFFF;display:flex;flex-direction:column;gap:14px;">
               <a href="#/demonstracao" style="display:block;margin:-12px -12px 4px;border:1px solid #E1E6EE;border-radius:10px;overflow:hidden;"><img src="{{ c.img }}" alt="Tela do Gérard: {{ c.title }} resolvida." loading="lazy" style="display:block;width:100%;height:auto;"></a>
               <h3 style="margin:0;font-size:21px;font-weight:600;color:#0E1726;">{{ c.title }}</h3>
               <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:#173A8C;padding:8px 12px;border-radius:8px;background:#F2F6FE;">{{ c.rule }}</p>
@@ -701,10 +750,10 @@
     <section id="versoes" data-screen-label="Sobre · Versões" style="padding:clamp(56px,8vw,104px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Histórico</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Vinte anos de desenvolvimento.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Vinte anos de desenvolvimento.</h2>
         <ol style="list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;">
           <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
-            <li style="display:flex;flex-direction:column;border:1px solid #E1E6EE;border-radius:16px;overflow:hidden;background:#FFFFFF;">
+            <li style="display:flex;flex-direction:column;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);overflow:hidden;background:#FFFFFF;">
               <div style="aspect-ratio:16/10;background:#F7F9FC;border-bottom:1px solid #E4E8EF;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="{{ v.img }}" alt="{{ v.alt }}" style="display:block;width:100%;height:100%;object-fit:contain;"></div>
               <div style="padding:24px;display:flex;flex-direction:column;gap:8px;flex:1;">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:#1F56D6;">{{ v.year }}</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;background:{{ v.badgeBg }};color:{{ v.badgeFg }};">{{ v.status }}</span></div>
@@ -747,10 +796,10 @@
               <ul style="list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
                 <sc-for list="{{ p.features }}" as="it" hint-placeholder-count="4"><li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>{{ it }}</span></li></sc-for>
               </ul>
-              <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;"><sc-if value="{{ p.hasWeb }}" hint-placeholder-val="{{ false }}"><a href="{{ p.web }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;background:#1F56D6;color:#FFFFFF;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir versão web</a></sc-if><sc-if value="{{ p.hasDl }}" hint-placeholder-val="{{ false }}"><a href="{{ p.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>{{ p.dlLabel }}</a></sc-if></div>
+              <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;"><sc-if value="{{ p.hasWeb }}" hint-placeholder-val="{{ false }}"><a href="{{ p.web }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir versão web</a></sc-if><sc-if value="{{ p.hasDl }}" hint-placeholder-val="{{ false }}"><a href="{{ p.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>{{ p.dlLabel }}</a></sc-if></div>
             </div>
             <figure style="margin:0;order:{{ p.imgOrder }};">
-              <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ p.img }}" alt="{{ p.alt }}" style="display:block;width:100%;height:auto;"></div>
+              <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ p.img }}" alt="{{ p.alt }}" style="display:block;width:100%;height:auto;"></div>
               <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ p.caption }}</figcaption>
             </figure>
           </article>
@@ -765,7 +814,7 @@
     <section id="projetos" data-screen-label="Pesquisa · Projetos" style="padding:clamp(56px,8vw,104px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Projetos e experimentos</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Pesquisa, extensão e formação de professores.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Pesquisa, extensão e formação de professores.</h2>
         <ol style="list-style:none;margin:40px 0 0;padding:0;border-left:2px solid #C6D7FA;display:flex;flex-direction:column;gap:28px;">
           <sc-for list="{{ projects }}" as="p" hint-placeholder-count="5">
             <li style="position:relative;padding-left:28px;">
@@ -825,7 +874,7 @@
     <section id="percurso" data-screen-label="Demonstração · Percurso de resolução" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Percurso de resolução</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Do enunciado ao diagrama validado.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Do enunciado ao diagrama validado.</h2>
         <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Escolha uma classe de situação e acompanhe, passo a passo, como o estudante modela o problema no diagrama de Vergnaud e como o Gérard responde.</p>
         <div role="tablist" aria-label="Classe de situação" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:32px;">
           <sc-for list="{{ seqTabs }}" as="t" hint-placeholder-count="4">
@@ -843,7 +892,7 @@
           </sc-for>
         </ol>
         <figure style="margin:24px 0 0;">
-          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"></div>
+          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"></div>
           <figcaption style="margin-top:12px;font-size:14.5px;line-height:1.55;color:#3D4759;"><strong style="font-weight:600;color:#0E1726;">{{ seqLabel }}</strong> · “{{ seqText }}”</figcaption>
         </figure>
       </div>
@@ -854,11 +903,11 @@
     <section id="galeria" data-screen-label="Demonstração · Galeria" style="padding:clamp(56px,8vw,104px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Versão desktop</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Construir, validar e acompanhar.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Construir, validar e acompanhar.</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px;margin-top:40px;">
           <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="6">
             <figure style="margin:0;">
-              <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;"><img src="{{ g.img }}" alt="{{ g.title }}" loading="lazy" style="display:block;width:100%;height:auto;"></div>
+              <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;"><img src="{{ g.img }}" alt="{{ g.title }}" loading="lazy" style="display:block;width:100%;height:auto;"></div>
               <figcaption style="margin-top:12px;"><strong style="display:block;font-size:16px;font-weight:600;color:#0E1726;">{{ g.title }}</strong><span style="font-size:14.5px;line-height:1.55;color:#3D4759;">{{ g.body }}</span></figcaption>
             </figure>
           </sc-for>
@@ -871,7 +920,7 @@
     <section id="colaboradores" data-screen-label="Equipe · Colaboradores" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Colaboradores</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Estudantes e pesquisadores que contribuíram.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Estudantes e pesquisadores que contribuíram.</h2>
         <ul style="list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;">
           <sc-for list="{{ collaborators }}" as="c" hint-placeholder-count="8">
             <li style="padding:16px 18px;border:1px solid #E1E6EE;border-radius:12px;background:#FFFFFF;"><strong style="display:block;font-size:15.5px;font-weight:600;color:#0E1726;">{{ c.name }}</strong><span style="font-size:14px;color:#5B6577;">{{ c.role }}</span></li>
@@ -886,7 +935,7 @@
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px;">
           <sc-for list="{{ channels }}" as="c" hint-placeholder-count="3">
-            <a href="{{ c.href }}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;padding:28px;border:1px solid #E1E6EE;border-radius:16px;background:#FFFFFF;text-decoration:none;color:#0E1726;transition:border-color .2s ease;" style-hover="border-color:#1F56D6;color:#0E1726;">
+            <a href="{{ c.href }}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;padding:28px;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);background:#FFFFFF;text-decoration:none;color:#0E1726;transition:border-color .2s ease;" style-hover="border-color:#1F56D6;color:#0E1726;">
               <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:#EEF3FE;"><span style="width:24px;height:24px;background:#1F56D6;-webkit-mask:url({{ c.icon }}) center/contain no-repeat;mask:url({{ c.icon }}) center/contain no-repeat;"></span></span>
               <strong style="margin-top:8px;font-size:19px;font-weight:600;">{{ c.title }}</strong>
               <span style="font-size:15.5px;line-height:1.6;color:#3D4759;flex:1;">{{ c.body }}</span>
@@ -907,9 +956,9 @@
             <p style="margin:14px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:52ch;">Converse com a equipe e com professores e pesquisadores de outras instituições.</p>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:12px;">
-            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#1F56D6;color:#FFFFFF;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;">Ver demonstração</a>
-            <a href="#/produtos" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Conhecer produtos</a>
-            <a href="https://github.com/anaemilia/Gerard/discussions" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;border:1px solid #C5CCD8;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;"></span>Entrar na comunidade</a>
+            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;">Ver demonstração</a>
+            <a href="#/produtos" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Conhecer produtos</a>
+            <a href="https://github.com/anaemilia/Gerard/discussions" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;"></span>Entrar na comunidade</a>
           </div>
         </div>
       </div>
@@ -948,9 +997,17 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showUtilityBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;heroOverlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero&quot;}}">
 class Component extends DCLogic {
-  state = { seq: 'comp', seqStep: 0, rep: 'texto', demo: 'mobile-composicao.html', pub: 'Todos', q: '', menu: false, scale: 1, w: typeof window !== 'undefined' ? window.innerWidth : 1200, page: this.routeFromHash() };
+  state = { intro: true, introOut: false, introKey: 0, lab: { p1: null, p2: null, w: null }, drag: null, sel: null, flash: null, labMsg: '', labMsgKind: '', seq: 'comp', seqStep: 0, rep: 'texto', demo: 'mobile-composicao.html', pub: 'Todos', q: '', menu: false, scale: 1, w: typeof window !== 'undefined' ? window.innerWidth : 1200, page: this.routeFromHash() };
   routeFromHash() { if (typeof window === 'undefined') return 'inicio'; const h = window.location.hash || ''; if (!h.startsWith('#/')) return (this.state && this.state.page) || 'inicio'; const p = h.slice(2).split('?')[0]; return p || 'inicio'; }
   componentDidMount() {
+    this.labMove = e => { const d = this.dragStart; if (!d) return; const z = this.state.scale || 1; const dx = (e.clientX - d.x) / z, dy = (e.clientY - d.y) / z; if (Math.abs(dx) + Math.abs(dy) > 5) d.moved = true; if (d.moved) this.setState({ drag: { id: d.id, dx, dy } }); };
+    this.labUp = e => { const d = this.dragStart; if (!d) return; this.dragStart = null; this.suppressClick = true; setTimeout(() => { this.suppressClick = false; }, 0);
+      if (!d.moved) { this.setState({ drag: null }); this.toggleSel(d.id); return; }
+      const el = document.elementsFromPoint(e.clientX, e.clientY).map(x => x.closest && x.closest('[data-slot]')).find(Boolean);
+      this.setState({ drag: null });
+      if (el) this.place(d.id, el.getAttribute('data-slot')); else this.setState({ labMsg: 'Solte a peça dentro de um dos quadros do diagrama.', labMsgKind: '' }); };
+    window.addEventListener('pointermove', this.labMove); window.addEventListener('pointerup', this.labUp);
+    this.startIntro();
     this.onResize = () => this.setState({ w: window.innerWidth });
     this.onHash = () => { const h = window.location.hash || ''; if (!h.startsWith('#/')) return; this.setState({ page: this.routeFromHash(), menu: false }); window.scrollTo(0, 0); };
     window.addEventListener('resize', this.onResize);
@@ -958,8 +1015,45 @@ class Component extends DCLogic {
     let t = 0;
     this.iv = setInterval(() => { if (window.MOBILE_HTML_B64 || ++t > 100) { clearInterval(this.iv); this.forceUpdate(); } }, 60);
   }
-  componentWillUnmount() { window.removeEventListener('resize', this.onResize); window.removeEventListener('hashchange', this.onHash); clearInterval(this.iv); }
+  componentWillUnmount() { window.removeEventListener('pointermove', this.labMove); window.removeEventListener('pointerup', this.labUp); clearTimeout(this.introT); window.removeEventListener('resize', this.onResize); window.removeEventListener('hashchange', this.onHash); clearInterval(this.iv); }
   dec(b) { try { return decodeURIComponent(Array.prototype.map.call(atob(b), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); } catch (_) { return ''; } }
+  startIntro() { clearTimeout(this.introT); this.introT = setTimeout(() => this.closeIntro(), 9000); }
+  closeIntro() { if (!this.state.intro || this.state.introOut) return; clearTimeout(this.introT); this.setState({ introOut: true }); setTimeout(() => this.setState({ intro: false, introOut: false }), 450); }
+  toggleSel(id) { const sel = this.state.sel === id ? null : id; this.setState({ sel, labMsg: sel ? 'Agora toque no quadro onde a peça deve ficar.' : '', labMsgKind: '' }); }
+  place(id, slot) {
+    const CH = { a: 'part', b: 'part', q: 'whole' }; const lab = this.state.lab; const n = (this.state.flash ? this.state.flash.n : 0) + 1;
+    if (lab[slot]) { this.setState({ sel: null, labMsg: 'Esse quadro já está ocupado. Toque nele para liberar.', labMsgKind: '' }); return; }
+    const ok = (CH[id] === 'part') === (slot !== 'w');
+    if (!ok) { this.setState({ sel: null, flash: { slot, kind: 'err', n }, labMsg: CH[id] === 'part' ? 'Quase! 12 e 25 são as partes: ficam à esquerda.' : 'O ? é o que queremos descobrir: o todo, à direita.', labMsgKind: 'err' }); clearTimeout(this.flT); this.flT = setTimeout(() => this.setState({ flash: null }), 900); return; }
+    const nl = { ...lab, [slot]: id }; const done = nl.p1 && nl.p2 && nl.w;
+    this.setState({ lab: nl, sel: null, flash: { slot: done ? 'w' : slot, kind: 'ok', n }, labMsg: done ? '✓ Muito bem! 12 + 25 = 37 figurinhas ao todo.' : (CH[id] === 'part' ? '✓ Isso! Esse valor é uma das partes.' : '✓ Isso! O ? é o todo que procuramos.'), labMsgKind: 'ok' });
+  }
+  introEl() {
+    if (!this.state.intro) return null;
+    const h = React.createElement; const W = 360;
+    const C = [['S', 'Situações', 180, 70, '0px', '-420px', true, 0.2], ['I', 'Invariantes', 76, 252, '-520px', '260px', false, 0.55], ['R', 'Representações', 284, 252, '520px', '260px', false, 0.9]];
+    const circ = ([L, cap, x, y, fx, fy, f, d]) => h('div', { key: L, style: { position: 'absolute', left: x - 50, top: y - 50, width: 100, height: 100, '--fx': fx, '--fy': fy, animation: 'gIntroFly .9s cubic-bezier(.2,1.3,.4,1) ' + d + 's both' } },
+      h('div', { style: { width: 100, height: 100, borderRadius: '50%', background: f ? 'radial-gradient(circle at 35% 28%,#9CBDFF 0%,#2F67EC 55%,#173A8C 100%)' : 'radial-gradient(circle at 35% 28%,#FFFFFF 0%,#DCE7FB 60%,#AFC4EC 100%)', boxShadow: 'inset 0 -6px 10px rgba(0,0,0,0.2),0 8px 0 rgba(4,14,46,0.45),0 0 30px rgba(120,170,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 50, fontWeight: 900, color: f ? '#FFFFFF' : '#1F56D6', textShadow: f ? '0 2px 0 rgba(0,0,0,0.3)' : 'none' } }, L),
+      h('div', { style: { position: 'absolute', top: 108, left: -40, right: -40, textAlign: 'center', fontSize: 14, fontWeight: 800, letterSpacing: '0.04em', color: '#CFE0FF', animation: 'gIntroOp .5s ' + (d + 0.7) + 's both' } }, cap));
+    const btn = (label, on, style) => h('button', { type: 'button', onClick: on, style: Object.assign({ font: 'inherit', cursor: 'pointer' }, style) }, label);
+    return h('div', { key: 'intro' + this.state.introKey, role: 'dialog', 'aria-label': 'Abertura do Gérard', style: { position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontFamily: "'Nunito',system-ui,sans-serif", background: 'radial-gradient(circle at 50% 38%,#2D60E0 0%,#0F2D7A 52%,#06143A 100%)', animation: this.state.introOut ? 'gIntroOut .45s ease forwards' : 'gIntroOp .3s both' } },
+      h('div', { 'aria-hidden': true, style: { position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(160,190,255,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(160,190,255,0.08) 1px,transparent 1px)', backgroundSize: '32px 32px' } }),
+      btn('Pular intro ▸▸', () => this.closeIntro(), { position: 'absolute', top: 20, right: 20, padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 14, fontWeight: 800 }),
+      h('div', { style: { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: 20, transform: 'scale(var(--k,1))' } },
+        h('div', { style: { position: 'relative', width: W, height: 330, maxWidth: '90vw' } },
+          h('svg', { 'aria-hidden': true, width: W, height: 330, viewBox: '0 0 360 330', style: { position: 'absolute', inset: 0, animation: 'gIntroOp .6s 1.5s both' } },
+            h('g', { style: { transformOrigin: '180px 192px', animation: 'gIntroSpin 14s linear 1.5s infinite' } },
+              h('circle', { cx: 180, cy: 192, r: 118, fill: 'none', stroke: '#7FA6FF', strokeWidth: 5, strokeDasharray: '14 12', strokeLinecap: 'round' }))),
+          C.map(circ)),
+        h('div', { style: { display: 'flex', gap: 2, fontSize: 64, fontWeight: 900, letterSpacing: '0.08em', color: '#FFFFFF', textShadow: '0 5px 0 #0B2366,0 0 28px rgba(120,170,255,0.7)', lineHeight: 1 } },
+          'GÉRARD'.split('').map((ch, i) => h('span', { key: i, style: { display: 'inline-block', animation: 'gIntroDrop .6s cubic-bezier(.2,1.5,.4,1) ' + (1.9 + i * 0.09) + 's both' } }, ch))),
+        h('div', { style: { fontSize: 18, fontWeight: 700, color: '#CFE0FF', textAlign: 'center', animation: 'gIntroFade .6s 2.7s both' } }, 'Ambiente adaptativo de aprendizagem e pesquisa · C = (S, I, R)'),
+        h('div', { style: { width: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'gIntroOp .3s .2s both' } },
+          h('div', { style: { width: '100%', height: 14, borderRadius: 999, background: 'rgba(0,0,0,0.35)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4)', overflow: 'hidden', padding: 2, boxSizing: 'border-box' } },
+            h('div', { style: { height: '100%', borderRadius: 999, background: 'linear-gradient(180deg,#B9D0FF 0%,#5E8FFF 50%,#2F67EC 51%,#4F82F5 100%)', animation: 'gIntroBar 3.2s .2s ease-out both' } })),
+          h('span', { style: { fontSize: 13, fontWeight: 700, color: '#9DB8EE', letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Carregando o laboratório')),
+        btn('Entrar ▸', () => this.closeIntro(), { marginTop: 4, padding: '14px 34px', borderRadius: 999, border: 'none', fontSize: 19, fontWeight: 900, color: '#3A2A00', background: 'linear-gradient(180deg,#FFF7D1 0%,#FFD95A 50%,#F5BC0E 51%,#FFCB2E 100%)', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.8),0 5px 0 #C48A00,0 14px 22px -8px rgba(0,0,0,0.5)', animation: 'gIntroFade .5s 3.5s both' })));
+  }
   renderVals() {
     const I = n => `https://unpkg.com/lucide-static@0.469.0/icons/${n}.svg`;
     const s = this.state;
@@ -1021,6 +1115,23 @@ class Component extends DCLogic {
     const P = pages[page];
     return {
       zoom: s.scale,
+      introEl: this.introEl(),
+      replayIntro: () => { this.setState({ intro: true, introOut: false, introKey: s.introKey + 1 }); this.startIntro(); },
+      labReset: () => this.setState({ lab: { p1: null, p2: null, w: null }, sel: null, flash: null, drag: null, labMsg: '', labMsgKind: '' }),
+      labMsg: s.labMsg || 'Arraste o 12, o 25 e o ? para os quadros.', labMsgFg: s.labMsgKind === 'ok' ? '#1F56D6' : s.labMsgKind === 'err' ? '#C42B2B' : '#3D4759',
+      chips: [['a', '12'], ['b', '25'], ['q', '?']].filter(([id]) => !Object.values(s.lab).includes(id)).map(([id, label]) => { const dg = s.drag && s.drag.id === id; return { id, label, sel: s.sel === id ? 'true' : 'false', dx: dg ? s.drag.dx : 0, dy: dg ? s.drag.dy : 0, sc: dg ? 1.12 : 1, z: dg ? 20 : 1, tr: dg ? 'none' : 'transform .35s cubic-bezier(.2,1.4,.4,1)', ol: s.sel === id ? '3px solid #1F56D6' : 'none', down: e => { if (e.button) return; e.preventDefault(); this.dragStart = { id, x: e.clientX, y: e.clientY, moved: false }; }, key: e => { if (this.suppressClick || e.detail) return; this.toggleSel(id); } }; }),
+      ...(() => { const o = {}; const LB = { a: '12', b: '25', q: '?' }; const done = s.lab.p1 && s.lab.p2 && s.lab.w; const CAP = { p1: 'parte', p2: 'parte', w: 'todo' };
+        ['p1', 'p2', 'w'].forEach(k => { const v = s.lab[k]; const fl = s.flash && s.flash.slot === k ? s.flash : null; const err = fl && fl.kind === 'err';
+          o['slot_' + k + '_label'] = v ? (k === 'w' && done ? '37' : LB[v]) : '';
+          o['slot_' + k + '_cap'] = k === 'w' && done ? '? = 37' : CAP[k];
+          o['slot_' + k + '_aria'] = 'Quadro ' + CAP[k] + (v ? ': ' + LB[v] : ': vazio');
+          o['slot_' + k + '_bs'] = v || err ? 'solid' : 'dashed';
+          o['slot_' + k + '_bd'] = err ? '#C42B2B' : v ? '#1F56D6' : '#93ABD6';
+          o['slot_' + k + '_bg'] = err ? '#FDE8E8' : v ? '#E3ECFD' : 'rgba(255,255,255,0.85)';
+          o['slot_' + k + '_fg'] = v ? '#173A8C' : '#93ABD6';
+          o['slot_' + k + '_anim'] = fl ? (fl.kind === 'ok' ? 'gPop' : 'gShake') + (fl.n % 2 ? 'A' : 'B') + ' .5s cubic-bezier(.2,1.4,.4,1)' : 'none';
+          o['slot_' + k + '_click'] = () => { if (s.sel) return this.place(s.sel, k); if (v) this.setState({ lab: { ...s.lab, [k]: null }, flash: null, labMsg: 'Peça devolvida. Tente outro lugar.', labMsgKind: '' }); };
+        }); return o; })(),
       showUtilityBar: this.props.showUtilityBar ?? true,
       heroOverlay: this.props.heroOverlay ?? false,
       fontUp: () => this.setState(p => ({ scale: Math.min(1.3, +(p.scale + 0.1).toFixed(1)) })),
