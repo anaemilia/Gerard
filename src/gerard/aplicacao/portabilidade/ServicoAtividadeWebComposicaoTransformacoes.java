@@ -50,6 +50,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private final EscopoTentativaWeb escopo;
+    private final AvaliadorOrigemDestinoWeb avaliadorOrigemDestino;
     private SinalNumeroRelativoWeb sinais;
     private PapelQuantitativo estadoInicial;
     private PapelQuantitativo transformacao1;
@@ -80,6 +81,12 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
 
     public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
             SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+        this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
+    }
+
+    public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+            PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null
                 || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             throw new IllegalArgumentException(
@@ -88,6 +95,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         this.tentativaId = tentativaId;
         this.situacao = situacao;
         this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.avaliadorOrigemDestino = new AvaliadorOrigemDestinoWeb(questionamento);
         reiniciar();
     }
 
@@ -366,8 +374,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
             throw new IllegalArgumentException(
                     "papel sem valor curado para posicionar: " + papelId);
         }
-        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
+        ResultadoQuestionamentoPosicionamento questionamento =
+                avaliadorOrigemDestino.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
                         participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();

@@ -70,6 +70,7 @@ public final class ServicoAtividadeWebTransformacaoRelacao
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private final EscopoTentativaWeb escopo;
+    private final AvaliadorOrigemDestinoWeb avaliadorOrigemDestino;
     private IncognitaQuantitativa incognita;
     private SinalNumeroRelativoWeb sinais;
     private PapelQuantitativo relacaoInicial;
@@ -99,6 +100,12 @@ public final class ServicoAtividadeWebTransformacaoRelacao
 
     public ServicoAtividadeWebTransformacaoRelacao(String tentativaId,
             SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+        this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
+    }
+
+    public ServicoAtividadeWebTransformacaoRelacao(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+            PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null
                 || situacao.getTipo() != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             throw new IllegalArgumentException(
@@ -107,6 +114,7 @@ public final class ServicoAtividadeWebTransformacaoRelacao
         this.tentativaId = tentativaId;
         this.situacao = situacao;
         this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.avaliadorOrigemDestino = new AvaliadorOrigemDestinoWeb(questionamento);
         reiniciar();
     }
 
@@ -263,8 +271,8 @@ public final class ServicoAtividadeWebTransformacaoRelacao
             throw new IllegalArgumentException(
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
         }
-        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
+        ResultadoQuestionamentoPosicionamento questionamento =
+                avaliadorOrigemDestino.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
                         participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();
@@ -327,8 +335,8 @@ public final class ServicoAtividadeWebTransformacaoRelacao
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
         }
-        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
+        ResultadoQuestionamentoPosicionamento questionamento =
+                avaliadorOrigemDestino.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
                         participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();

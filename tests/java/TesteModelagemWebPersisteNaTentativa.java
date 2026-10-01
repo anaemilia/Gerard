@@ -118,7 +118,9 @@ public final class TesteModelagemWebPersisteNaTentativa {
         return new ServicoSorteioAtividadeWeb(new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
-                new Random(semente), IdiomaInterface.PORTUGUES, porta);
+                new Random(semente), IdiomaInterface.PORTUGUES, porta,
+                new gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb(),
+                new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
     }
 
     @SuppressWarnings("unchecked")

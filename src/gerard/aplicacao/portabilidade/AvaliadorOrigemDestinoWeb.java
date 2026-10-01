@@ -1,7 +1,5 @@
 package gerard.aplicacao.portabilidade;
 
-import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
-import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
 import gerard.i18n.ServicoLocalizacao;
@@ -12,17 +10,23 @@ import java.util.List;
  * Compatibilidade semântica entre o elemento arrastado do enunciado (origem)
  * e o papel da figura-alvo (destino) — mesma avaliação usada pelo desktop em
  * avaliarQuestionamentoPosicionamento/Main.java, via o scaffolding portátil
- * já existente (ScaffoldingQuestionamento, sem Swing). Sem isso, a versão web
- * decidia essa compatibilidade só no cliente (papelId !==
+ * já existente (ScaffoldingQuestionamento, sem Swing), aqui só pela porta
+ * neutra {@link PortaQuestionamentoPosicionamento} — quem instancia o
+ * scaffolding concreto é o adaptador, entregue pela raiz de composição
+ * (ServidorPrototipoWeb); a aplicação não importa infraestrutura. Sem isso,
+ * a versão web decidia essa compatibilidade só no cliente (papelId !==
  * figura.chave_papel_semantico em App.tsx) e o servidor aceitava cegamente
  * qualquer papel_id de destino, sem saber o que foi arrastado.
  */
 final class AvaliadorOrigemDestinoWeb {
-    private static final ScaffoldingQuestionamento SCAFFOLDING = new ScaffoldingQuestionamento();
     private static final CatalogoPapeisSemanticosAditivos CATALOGO =
             new CatalogoPapeisSemanticosAditivos();
 
-    private AvaliadorOrigemDestinoWeb() {
+    private final PortaQuestionamentoPosicionamento scaffolding;
+
+    AvaliadorOrigemDestinoWeb(PortaQuestionamentoPosicionamento scaffolding) {
+        this.scaffolding = scaffolding == null
+                ? PortaQuestionamentoPosicionamento.NAO_APLICAVEL : scaffolding;
     }
 
     /**
@@ -31,13 +35,13 @@ final class AvaliadorOrigemDestinoWeb {
      * papel de origem (mesmo proprietário usado pelo desktop em
      * avaliarQuestionamentoPosicionamento).
      */
-    static ResultadoQuestionamento avaliar(
+    ResultadoQuestionamentoPosicionamento avaliar(
             String origemPapelId, String chavePapelAlvo, TipoSituacaoAditiva categoria,
             List<String> participantes, EscopoTentativaWeb escopo) {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
         String categoriaEscolhida = localizacao.descricaoTipo(categoria);
-        ResultadoQuestionamento resultado = SCAFFOLDING.avaliarPosicionamento(
+        ResultadoQuestionamentoPosicionamento resultado = scaffolding.avaliar(
                 origemPapelId, chavePapelAlvo, papelDoElementoNoDiagrama, categoriaEscolhida);
         if (resultado != null && resultado.isAplicavel() && categoria != null && escopo != null) {
             escopo.persistir(CATALOGO.obterDescritor(origemPapelId).avaliarPosicionamento(

@@ -1,16 +1,3 @@
 {
-  "dividas_conhecidas": [
-    {
-      "arquivo": "src/gerard/aplicacao/portabilidade/AjudaContextualWeb.java",
-      "regra": "aplicação importa UI, persistência ou scaffolding concreto"
-    },
-    {
-      "arquivo": "src/gerard/aplicacao/portabilidade/AvaliadorOrigemDestinoWeb.java",
-      "regra": "aplicação importa UI, persistência ou scaffolding concreto"
-    },
-    {
-      "arquivo": "src/gerard/aplicacao/portabilidade/ServicoSorteioAtividadeWeb.java",
-      "regra": "aplicação importa UI, persistência ou scaffolding concreto"
-    }
-  ]
+  "dividas_conhecidas": []
 }

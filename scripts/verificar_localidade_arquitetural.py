@@ -34,6 +34,9 @@ PERSISTENCIA_CONCRETA = (
     "java.nio.file.Files",
 )
 SCAFFOLDING_CONCRETO = ("gerard.Scaffolding.",)
+# Direção de dependência: a aplicação conhece PORTAS; os adaptadores concretos
+# (gerard.infraestrutura.*) são entregues pela raiz de composição.
+INFRAESTRUTURA_CONCRETA = ("gerard.infraestrutura.",)
 
 
 def imports(texto: str) -> tuple[str, ...]:
@@ -69,6 +72,10 @@ def auditar_fonte(caminho: Path, texto: str) -> list[str]:
         proibidas = UI_CONCRETA + PERSISTENCIA_CONCRETA + SCAFFOLDING_CONCRETO
         if possui_prefixo(deps, proibidas):
             falhas.append("aplicação importa UI, persistência ou scaffolding concreto")
+        if possui_prefixo(deps, INFRAESTRUTURA_CONCRETA):
+            falhas.append(
+                "aplicação importa infraestrutura concreta (inverter por porta)"
+            )
 
     if re.search(r"(?:Persistidor|Repositorio|Repository)", nome):
         if decisoes_ce(texto):
@@ -123,6 +130,15 @@ def autoteste() -> list[str]:
     """
     if not auditar_fonte(Path("src/gerard/aplicacao/ControladorDesktop.java"), mini_main):
         falhas.append("autoteste não rejeitou mini-Main")
+    app_importa_infra = """
+        package gerard.aplicacao.portabilidade;
+        import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
+        class ServicoQualquer {
+            void executar() { }
+        }
+    """
+    if not auditar_fonte(Path("src/gerard/aplicacao/portabilidade/ServicoQualquer.java"), app_importa_infra):
+        falhas.append("autoteste não rejeitou aplicação que importa infraestrutura")
     if auditar_fonte(Path("src/gerard/aplicacao/interacao/CasoDeUsoEscolha.java"), caso_portas):
         falhas.append("autoteste rejeitou caso de uso composto somente por portas")
     return falhas

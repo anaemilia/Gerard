@@ -1,5 +1,7 @@
 package gerard.infraestrutura.web;
 
+import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
+import gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
@@ -36,8 +38,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** Servidor local da prova funcional; HTTP e arquivos ficam na infraestrutura. */
 public final class ServidorPrototipoWeb {
+    // Raiz de composição: a infraestrutura fornece as implementações das portas
+    // da aplicação (registro, ajuda contextual e questionamento de posicionamento).
     private final ServicoSorteioAtividadeWeb sorteios =
-            new ServicoSorteioAtividadeWeb(new RegistradorAtividadeWebLogGerard());
+            new ServicoSorteioAtividadeWeb(new RegistradorAtividadeWebLogGerard(),
+                    new AdaptadorAjudaContextualWeb(),
+                    new AdaptadorQuestionamentoPosicionamentoWeb());
     private final Path raizWeb;
     private final AtomicLong gestosRecebidos = new AtomicLong();
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();

@@ -36,6 +36,7 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private final EscopoTentativaWeb escopo;
+    private final AvaliadorOrigemDestinoWeb avaliadorOrigemDestino;
     private PapelQuantitativo papelDesconhecido;
     private IncognitaQuantitativa incognita;
     // Rascunho da contagem de quadradinhos — NUNCA grava em papelDesconhecido
@@ -62,6 +63,13 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
         this(tentativaId, carregarSituacaoCurada());
     }
 
+    /** Situação curada padrão com a porta de questionamento fornecida pela composição. */
+    public ServicoAtividadeWebComposicao(String tentativaId,
+            PortaQuestionamentoPosicionamento questionamento) {
+        this(tentativaId, carregarSituacaoCurada(),
+                EscopoTentativaWeb.isolado(tentativaId), questionamento);
+    }
+
     public ServicoAtividadeWebComposicao(String tentativaId,
             SituacaoProblemaAditiva situacao) {
         this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
@@ -69,12 +77,19 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
 
     public ServicoAtividadeWebComposicao(String tentativaId,
             SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+        this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
+    }
+
+    public ServicoAtividadeWebComposicao(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+            PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             throw new IllegalArgumentException("situação de Composição de Medidas é obrigatória");
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
         this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.avaliadorOrigemDestino = new AvaliadorOrigemDestinoWeb(questionamento);
         reiniciar();
     }
 
@@ -159,8 +174,8 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
             throw new IllegalArgumentException(
                     "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
         }
-        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
+        ResultadoQuestionamentoPosicionamento questionamento =
+                avaliadorOrigemDestino.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
                         participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();
@@ -196,8 +211,8 @@ public final class ServicoAtividadeWebComposicao implements ServicoAtividadeWeb 
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
         }
-        gerard.Scaffolding.questionamento.ResultadoQuestionamento questionamento =
-                AvaliadorOrigemDestinoWeb.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
+        ResultadoQuestionamentoPosicionamento questionamento =
+                avaliadorOrigemDestino.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
                         participantes(), escopo);
         if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
             Map<String, Object> rejeitado = mapa();

@@ -30,7 +30,6 @@ import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
 import gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva;
-import gerard.Scaffolding.ajudacontextual.ScaffoldingAjudaContextual;
 import gerard.interacao.eixo.ControleVisibilidadeEixoPapel;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -70,7 +69,8 @@ public final class ServicoSorteioAtividadeWeb {
     // PaineisEixosRelacoes.desativar()/ativar() reinicia o desktop.
     private final Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel =
             new LinkedHashMap<String, ControleVisibilidadeEixoPapel>();
-    private final ScaffoldingAjudaContextual scaffoldingAjudaContextual = new ScaffoldingAjudaContextual();
+    private final PortaAjudaContextual portaAjudaContextual;
+    private final PortaQuestionamentoPosicionamento portaQuestionamento;
     private final gerard.idioma.CadastroIdiomasSituacao cadastroIdiomasSituacao =
             new gerard.idioma.CadastroIdiomasSituacao();
     public ServicoSorteioAtividadeWeb() {
@@ -78,12 +78,25 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     public ServicoSorteioAtividadeWeb(PortaRegistroAtividadeWeb registroAtividade) {
+        this(registroAtividade, PortaAjudaContextual.NENHUMA,
+                PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
+    }
+
+    /**
+     * Construtor da raiz de composição: a infraestrutura entrega as
+     * implementações das portas (ajuda contextual e questionamento de
+     * posicionamento); a aplicação não importa nem instancia os adaptadores.
+     */
+    public ServicoSorteioAtividadeWeb(PortaRegistroAtividadeWeb registroAtividade,
+            PortaAjudaContextual ajudaContextual,
+            PortaQuestionamentoPosicionamento questionamento) {
         this(new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(
                         new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(),
                         new ConstrutorResultadoCurado()),
-                new Random(), IdiomaInterface.PORTUGUES, registroAtividade);
+                new Random(), IdiomaInterface.PORTUGUES, registroAtividade,
+                ajudaContextual, questionamento);
     }
 
     public ServicoSorteioAtividadeWeb(PoliticaSorteioSituacoesAditivas politica,
@@ -96,6 +109,15 @@ public final class ServicoSorteioAtividadeWeb {
     public ServicoSorteioAtividadeWeb(PoliticaSorteioSituacoesAditivas politica,
             FachadaCarregamentoAtividade carregamento, Random aleatorio,
             IdiomaInterface idioma, PortaRegistroAtividadeWeb registroAtividade) {
+        this(politica, carregamento, aleatorio, idioma, registroAtividade,
+                PortaAjudaContextual.NENHUMA, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
+    }
+
+    public ServicoSorteioAtividadeWeb(PoliticaSorteioSituacoesAditivas politica,
+            FachadaCarregamentoAtividade carregamento, Random aleatorio,
+            IdiomaInterface idioma, PortaRegistroAtividadeWeb registroAtividade,
+            PortaAjudaContextual ajudaContextual,
+            PortaQuestionamentoPosicionamento questionamento) {
         if (politica == null || carregamento == null || aleatorio == null || idioma == null) {
             throw new IllegalArgumentException("dependências do sorteio são obrigatórias");
         }
@@ -105,6 +127,10 @@ public final class ServicoSorteioAtividadeWeb {
         this.idioma = idioma;
         this.registroAtividade = registroAtividade == null
                 ? PortaRegistroAtividadeWeb.NENHUMA : registroAtividade;
+        this.portaAjudaContextual = ajudaContextual == null
+                ? PortaAjudaContextual.NENHUMA : ajudaContextual;
+        this.portaQuestionamento = questionamento == null
+                ? PortaQuestionamentoPosicionamento.NAO_APLICAVEL : questionamento;
     }
 
     /**
@@ -206,15 +232,18 @@ public final class ServicoSorteioAtividadeWeb {
         if (escolhida == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebComposicao(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao(), escopoTentativa);
+                    contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebTransformacaoMedidas(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao(), escopoTentativa);
+                    contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             atividadeModelagem = new ServicoAtividadeWebComparacaoMedidas(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao(), escopoTentativa);
+                    contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO) {
             // RelacaoEstruturalTransformacaoDeRelacao (básica, só dado
             // tabular) é o caminho CANÔNICO real — confirmado em
@@ -231,17 +260,20 @@ public final class ServicoSorteioAtividadeWeb {
             // achado: fonte de verdade divergente da canônica).
             atividadeModelagem = new ServicoAtividadeWebTransformacaoRelacao(
                     "tentativa.web." + contextoAtual.getSituacao().getId(),
-                    contextoAtual.getSituacao(), escopoTentativa);
+                    contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
             atividadeEscolhaOperacao =
                     new ServicoAtividadeWebComposicaoTransformacoes(
                             "tentativa.web." + contextoAtual.getSituacao().getId(),
-                            contextoAtual.getSituacao(), escopoTentativa);
+                            contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             atividadeEscolhaOperacao =
                     new ServicoAtividadeWebComposicaoRelacoes(
                             "tentativa.web." + contextoAtual.getSituacao().getId(),
-                            contextoAtual.getSituacao(), escopoTentativa);
+                            contextoAtual.getSituacao(), escopoTentativa,
+                    portaQuestionamento);
         }
     }
 
@@ -824,11 +856,11 @@ public final class ServicoSorteioAtividadeWeb {
      */
     private List<Object> projetarAjudaContextual(Object modelagem) {
         List<Object> areas = new ArrayList<Object>();
-        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.TEXTO));
-        areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.VERGNAUD));
+        areas.add(portaAjudaContextual.projetarArea("TEXTO"));
+        areas.add(portaAjudaContextual.projetarArea("VERGNAUD"));
         if (modelagem instanceof Map
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("material_concreto_disponivel"))) {
-            areas.add(AjudaContextualWeb.projetarArea(scaffoldingAjudaContextual, ScaffoldingAjudaContextual.Area.COMPLEMENTAR));
+            areas.add(portaAjudaContextual.projetarArea("COMPLEMENTAR"));
         }
         return areas;
     }
@@ -842,18 +874,17 @@ public final class ServicoSorteioAtividadeWeb {
      * escolha da categoria, sem expor essa persistência ao caso de uso.
      */
     public synchronized Map<String, Object> ajudaContextual(String areaTexto, String intencaoTexto) {
-        ScaffoldingAjudaContextual.Area area;
-        ScaffoldingAjudaContextual.Intencao intencao;
+        String nomeArea;
+        String rotuloOpcao;
+        String mensagem;
         try {
-            area = ScaffoldingAjudaContextual.Area.valueOf(areaTexto);
-            intencao = ScaffoldingAjudaContextual.Intencao.valueOf(intencaoTexto);
+            nomeArea = portaAjudaContextual.nomeArea(areaTexto);
+            rotuloOpcao = portaAjudaContextual.rotuloOpcao(intencaoTexto);
+            mensagem = portaAjudaContextual.mensagem(areaTexto, intencaoTexto);
         } catch (RuntimeException erro) {
             throw new IllegalArgumentException("área ou intenção de ajuda contextual inválida: "
                     + areaTexto + "/" + intencaoTexto);
         }
-        String nomeArea = AjudaContextualWeb.nomeArea(scaffoldingAjudaContextual, area);
-        String rotuloOpcao = AjudaContextualWeb.rotuloOpcao(scaffoldingAjudaContextual, intencao);
-        String mensagem = AjudaContextualWeb.mensagem(scaffoldingAjudaContextual, area, intencao);
         // Mesmos 9 argumentos que o wrapper privado registrarAcaoGranular
         // do desktop monta (Main.java:11063-11067) a partir dos 7 que
         // criarOpcaoAjudaContextual passa — "OBJ_INTERACAO" e
@@ -867,7 +898,7 @@ public final class ServicoSorteioAtividadeWeb {
                 rotuloOpcao,
                 "OBJ_INTERACAO",
                 "ACAO_GRANULAR_SELECIONAR",
-                "area=" + area.name() + "; intencao=" + intencao.name(),
+                "area=" + areaTexto + "; intencao=" + intencaoTexto,
                 "A orientação contextual da área foi apresentada.");
         Map<String, Object> resultado = mapa();
         resultado.put("schema", "gerard.atividade-web.resultado-ajuda-contextual.v1");
