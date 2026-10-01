@@ -77,6 +77,10 @@ export type EstadoModelagemTernaria = Readonly<{
   // escolha explícita positivo/negativo — ver ServicoAtividadeWebComSinal.
   papel_aguardando_sinal: string | null;
   magnitude_aguardando_sinal: number | null;
+  // Escalada de Scaffolding da incógnita no limite (3ª tentativa rejeitada
+  // consecutiva): fato do domínio, persistente até restaurar. A historinha
+  // passiva só é exibida enquanto for verdadeiro — o cliente não guarda esse estado.
+  escalada_no_limite?: boolean;
   // Segundo gate de conclusão, independente do papel_desconhecido acima --
   // só presente em TRANSFORMACAO_RELACAO, quando a situação curada tem
   // operacao_relacao preenchido (mesma guarda de

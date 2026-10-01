@@ -96,6 +96,13 @@ public final class ServicoAtividadeWebComparacaoMedidas
         estado.put("concluida", Boolean.valueOf(concluida));
         estado.put("papel_aguardando_sinal",
                 papelAguardandoSinal == null ? null : papelAguardandoSinal.getChave());
+        // Escalada de Scaffolding da incógnita no limite (3ª tentativa rejeitada
+        // consecutiva, ver PapelQuantitativo.estaBloqueadoPorLimiteTentativas):
+        // fato do domínio, persistente até restaurar(). O cliente só o exibe —
+        // a historinha passiva (representação complementar) depende dele e
+        // nunca de memória própria (decisão de 2026-10-01).
+        estado.put("escalada_no_limite",
+                Boolean.valueOf(papelDesconhecido.estaBloqueadoPorLimiteTentativas()));
         estado.put("magnitude_aguardando_sinal", valorCuradoAguardandoSinal == null
                 ? null : Integer.valueOf(Math.abs(valorCuradoAguardandoSinal.intValue())));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):

@@ -68,7 +68,6 @@ export default function App() {
   const [chatAberto, setChatAberto] = useState(false);
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
   const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
-  const [historinhaVisivel, setHistorinhaVisivel] = useState(false);
   const [atividadeIniciada, setAtividadeIniciada] = useState(false);
   // Projeção exploratória da reta: o servidor (relação estrutural do
   // domínio) calcula o dependente; o cliente só exibe. Nada é gravado.
@@ -96,7 +95,6 @@ export default function App() {
   useEffect(() => {
     setEstadoExploratorio(null);
     ultimaProjecaoAceita.current = null;
-    setHistorinhaVisivel(false);
   }, [tentativaAtualId]);
 
   useEffect(() => {
@@ -231,7 +229,6 @@ export default function App() {
         // (processarLimiteTentativasAtingido), não há nova pergunta; o
         // snapshot do servidor traz a escalada (material concreto).
         setSinalPendenteIncognita(null);
-        setHistorinhaVisivel(true);
         receberSnapshot(resultado.estado);
         enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
       } else if (!resultado.chave_mensagem) {
@@ -289,7 +286,6 @@ export default function App() {
         const resultado = await api.responderConfirmacaoValor(
           proposta.papelId, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
-        if (limiteAtingido) setHistorinhaVisivel(true);
         estadoServidor = resultado.estado;
       } catch (erro) { console.error(erro); }
       finally { setOcupado(false); }
@@ -465,6 +461,12 @@ export default function App() {
     && "papel_aguardando_sinal" in estado.modelagem
     ? estado.modelagem
     : undefined;
+  // Historinha passiva: exibida só enquanto o servidor informa que a escalada da
+  // incógnita está no limite (3ª tentativa rejeitada). Sem memória no cliente: o
+  // restaurar volta o domínio ao estado inicial e a historinha some junto.
+  const historinhaVisivel = Boolean(modelagemComSinal
+    && "escalada_no_limite" in modelagemComSinal
+    && modelagemComSinal.escalada_no_limite === true);
 
   const cenaExibida = (() => {
     if (!estado?.cena) return estado?.cena;
@@ -648,7 +650,7 @@ export default function App() {
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
-          {historinhaVisivel && modelagemComSinal &&
+          {historinhaVisivel &&
             <div className="historinha-passiva" aria-label="Historinha">
               <img src="/ajuda/composicao_transformacoes/01_joao_bilas_historinha.gif"
                 alt="" aria-hidden="true" />
