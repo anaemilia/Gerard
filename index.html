@@ -2,15 +2,16 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='6' r='4' fill='%231F56D6'/%3E%3Ccircle cx='5.8' cy='17' r='4' fill='none' stroke='%231F56D6' stroke-width='2.6'/%3E%3Ccircle cx='18.2' cy='17' r='4' fill='none' stroke='%231F56D6' stroke-width='2.6'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F2F6FE"/><rect x="31" y="31" width="17" height="17" rx="4" fill="none" stroke="#1F56D6" stroke-width="4"/><rect x="52" y="31" width="17" height="17" rx="4" fill="none" stroke="#1F56D6" stroke-width="4"/><rect x="31" y="52" width="17" height="17" rx="4" fill="none" stroke="#1F56D6" stroke-width="4"/><rect x="52" y="52" width="17" height="17" rx="4" fill="#1F56D6"/></svg></template>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F2F6FE"/><g transform="translate(30 30) scale(1.667)"><circle cx="12" cy="6" r="4" fill="#1F56D6"/><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/></g></svg></template>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GÉRARD — Ambiente inteligente de aprendizagem e pesquisa</title>
+<title>GÉRARD — Ambiente adaptativo de aprendizagem e pesquisa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
@@ -53,12 +54,7 @@
   <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid #E4E8EF;">
     <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:68px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
       <a href="#/" aria-label="GÉRARD — início" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#0E1726;">
-        <span aria-hidden="true" style="display:grid;grid-template-columns:repeat(2,10px);gap:3px;">
-          <span style="width:10px;height:10px;border:2px solid #1F56D6;border-radius:3px;box-sizing:border-box;"></span>
-          <span style="width:10px;height:10px;border:2px solid #1F56D6;border-radius:3px;box-sizing:border-box;"></span>
-          <span style="width:10px;height:10px;border:2px solid #1F56D6;border-radius:3px;box-sizing:border-box;"></span>
-          <span style="width:10px;height:10px;background:#1F56D6;border-radius:3px;"></span>
-        </span>
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" style="flex:none;display:block;"><circle cx="12" cy="6" r="4" fill="#1F56D6"></circle><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle></svg>
         <span style="font-weight:600;font-size:19px;letter-spacing:0.1em;">GÉRARD</span>
       </a>
       <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
@@ -110,7 +106,7 @@
             Ensino e aprendizagem · Sistema adaptativo · Pesquisa
           </p>
           <h1 style="margin:0;font-size:clamp(36px,4.8vw,58px);line-height:1.08;font-weight:600;letter-spacing:-0.025em;color:#0E1726;text-wrap:balance;">Da situação ao conceito.</h1>
-          <p style="margin:24px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:56ch;text-wrap:pretty;">Um ambiente inteligente de aprendizagem e pesquisa sobre Estruturas Aditivas, fundamentado na Teoria dos Campos Conceituais de Gérard Vergnaud.</p>
+          <p style="margin:24px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:56ch;text-wrap:pretty;">Um ambiente adaptativo de aprendizagem e pesquisa sobre Estruturas Aditivas, fundamentado na Teoria dos Campos Conceituais de Gérard Vergnaud.</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;">
             <a href="#/sobre" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#1F56D6;color:#FFFFFF;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;" style-active="background:#173A8C;">
               Conhecer o Gérard
@@ -689,6 +685,7 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;margin-top:40px;">
           <sc-for list="{{ categoriesDetail }}" as="c" hint-placeholder-count="3">
             <article style="border:1px solid #E1E6EE;border-radius:16px;padding:28px;background:#FFFFFF;display:flex;flex-direction:column;gap:14px;">
+              <a href="#/demonstracao" style="display:block;margin:-12px -12px 4px;border:1px solid #E1E6EE;border-radius:10px;overflow:hidden;"><img src="{{ c.img }}" alt="Tela do Gérard: {{ c.title }} resolvida." loading="lazy" style="display:block;width:100%;height:auto;"></a>
               <h3 style="margin:0;font-size:21px;font-weight:600;color:#0E1726;">{{ c.title }}</h3>
               <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:#173A8C;padding:8px 12px;border-radius:8px;background:#F2F6FE;">{{ c.rule }}</p>
               <p style="margin:0;font-size:15.5px;line-height:1.6;color:#3D4759;">{{ c.body }}</p>
@@ -825,10 +822,39 @@
     </sc-if>
 
     <sc-if value="{{ show_galeria }}" hint-placeholder-val="{{ false }}">
+    <section id="percurso" data-screen-label="Demonstração · Percurso de resolução" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Percurso de resolução</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Do enunciado ao diagrama validado.</h2>
+        <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Escolha uma classe de situação e acompanhe, passo a passo, como o estudante modela o problema no diagrama de Vergnaud e como o Gérard responde.</p>
+        <div role="tablist" aria-label="Classe de situação" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:32px;">
+          <sc-for list="{{ seqTabs }}" as="t" hint-placeholder-count="4">
+            <button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="font:inherit;font-size:15px;font-weight:500;padding:10px 18px;border-radius:999px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};cursor:pointer;">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <ol style="list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;">
+          <sc-for list="{{ seqSteps }}" as="s" hint-placeholder-count="4">
+            <li style="display:flex;">
+              <button type="button" aria-pressed="{{ s.sel }}" onClick="{{ s.pick }}" style="font:inherit;text-align:left;width:100%;display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:1px solid {{ s.bd }};background:{{ s.bg }};cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:10px;"><span style="flex:none;width:28px;height:28px;border-radius:50%;border:2px solid #1F56D6;background:{{ s.nbg }};color:{{ s.nfg }};display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12.5px;box-sizing:border-box;">{{ s.no }}</span><strong style="font-size:15.5px;font-weight:600;color:#0E1726;">{{ s.title }}</strong></span>
+                <span style="font-size:14px;line-height:1.5;color:#3D4759;">{{ s.body }}</span>
+              </button>
+            </li>
+          </sc-for>
+        </ol>
+        <figure style="margin:24px 0 0;">
+          <div style="border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"></div>
+          <figcaption style="margin-top:12px;font-size:14.5px;line-height:1.55;color:#3D4759;"><strong style="font-weight:600;color:#0E1726;">{{ seqLabel }}</strong> · “{{ seqText }}”</figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_galeria }}" hint-placeholder-val="{{ false }}">
     <section id="galeria" data-screen-label="Demonstração · Galeria" style="padding:clamp(56px,8vw,104px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
         <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Versão desktop</p>
-        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">As telas do Gérard.</h2>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:600;letter-spacing:-0.018em;color:#0E1726;max-width:24ch;text-wrap:balance;">Construir, validar e acompanhar.</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px;margin-top:40px;">
           <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="6">
             <figure style="margin:0;">
@@ -896,7 +922,7 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:32px;">
         <div style="grid-column:span 1;">
           <span style="font-weight:600;font-size:18px;letter-spacing:0.1em;color:#0E1726;">GÉRARD</span>
-          <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3D4759;max-width:32ch;">Ambiente inteligente de aprendizagem e pesquisa sobre Estruturas Aditivas.</p>
+          <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3D4759;max-width:32ch;">Ambiente adaptativo de aprendizagem e pesquisa sobre Estruturas Aditivas.</p>
         </div>
         <sc-for list="{{ footerCols }}" as="col" hint-placeholder-count="3">
           <nav aria-label="{{ col.title }}">
@@ -922,7 +948,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showUtilityBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;heroOverlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero&quot;}}">
 class Component extends DCLogic {
-  state = { rep: 'texto', demo: 'mobile-composicao.html', pub: 'Todos', q: '', menu: false, scale: 1, w: typeof window !== 'undefined' ? window.innerWidth : 1200, page: this.routeFromHash() };
+  state = { seq: 'comp', seqStep: 0, rep: 'texto', demo: 'mobile-composicao.html', pub: 'Todos', q: '', menu: false, scale: 1, w: typeof window !== 'undefined' ? window.innerWidth : 1200, page: this.routeFromHash() };
   routeFromHash() { if (typeof window === 'undefined') return 'inicio'; const h = window.location.hash || ''; if (!h.startsWith('#/')) return (this.state && this.state.page) || 'inicio'; const p = h.slice(2).split('?')[0]; return p || 'inicio'; }
   componentDidMount() {
     this.onResize = () => this.setState({ w: window.innerWidth });
@@ -939,7 +965,7 @@ class Component extends DCLogic {
     const s = this.state;
     const pages = {
       inicio: { t: 'Início' },
-      sobre: { t: 'O Gérard', h1: 'Um ambiente inteligente de aprendizagem e pesquisa.', lead: 'O Gérard integra educação, sistema adaptativo e pesquisa científica em torno das Estruturas Aditivas e da Teoria dos Campos Conceituais de Gérard Vergnaud.' },
+      sobre: { t: 'O Gérard', h1: 'Um ambiente adaptativo de aprendizagem e pesquisa.', lead: 'O Gérard integra educação, sistema adaptativo e pesquisa científica em torno das Estruturas Aditivas e da Teoria dos Campos Conceituais de Gérard Vergnaud.' },
       produtos: { t: 'Produtos', h1: 'O ecossistema Gérard.', lead: 'Cinco produtos organizados pela tríade de Vergnaud — situações, invariantes operatórios e representações — sobre a mesma base científica e o mesmo modelo de dados.' },
       'como-funciona': { t: 'Como funciona', h1: 'Da situação-problema ao acompanhamento da aprendizagem.', lead: 'O estudante representa e resolve; o sistema registra, analisa e responde. Veja cada etapa, as representações e a adaptatividade por trás delas.' },
       pesquisa: { t: 'Pesquisa', h1: 'Pesquisa científica desde 2006.', lead: 'Fundamentação teórica, projetos de pesquisa e extensão e a formação de professores que deram origem ao Gérard.' },
@@ -972,6 +998,18 @@ class Component extends DCLogic {
     const groups = ['Todos', 'Artigos e anais', 'Teses e trabalhos acadêmicos', 'Capítulos', 'Registros e relatórios'];
     const q = s.q.trim().toLowerCase();
     const filtered = pubsAll.filter(p => (s.pub === 'Todos' || p.g === s.pub) && (!q || (p.title + ' ' + p.authors + ' ' + p.venue + ' ' + p.year).toLowerCase().includes(q)));
+    const E = ['Início', 'O enunciado aparece com os valores marcados e o diagrama vazio.'];
+    const M = ['Modelagem', 'O estudante arrasta os valores do texto para o diagrama; a incógnita recebe “?”.'];
+    const X = ['Erro', 'Um valor inconsistente fica em vermelho e o Gérard pergunta antes de validar.'];
+    const C = ['Concluída', 'O valor correto é confirmado em azul, com o sinal de validação.'];
+    const SEQ = [
+      { k: 'comp', label: 'Composição', text: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?', steps: [['01_composicao_inicio', ...E], ['02_composicao_modelagem', ...M], ['03_composicao_erro', ...X], ['04_composicao_concluida', ...C]] },
+      { k: 'trans', label: 'Transformação', text: 'Lucas ganhou 12 figurinhas de seu tio. Ele possui agora 17 figurinhas. Quantas figurinhas ele tinha antes?', steps: [['05_transformacao_inicio', ...E], ['06_transformacao_modelagem', ...M], ['07_transformacao_erro', ...X], ['08_transformacao_concluida', ...C]] },
+      { k: 'compar', label: 'Comparação', text: 'Ingrid tem 12 reais a mais que Ligianne. Se Ligianne possui 27 reais, quantos reais Ingrid tem?', steps: [['09_comparacao_inicio', ...E], ['10_comparacao_modelagem', ...M], ['11_comparacao_erro', ...X], ['12_comparacao_concluida', ...C], ['13_comparacao_concluida_material_concreto', 'Material concreto', 'Quadradinhos e eixo de inteiros tornam visível a diferença entre referido e referendo.']] },
+      { k: 'ctrans', label: 'Composição de transformações', text: 'Geisa tinha uma caixa com 35 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?', steps: [['14_composicao_transformacoes_inicio', ...E], ['15_composicao_transformacoes_modelagem', 'Modelagem', 'Duas transformações sucessivas se compõem numa transformação final, calculada pelo sistema.']] },
+    ];
+    const seq = SEQ.find(q => q.k === this.state.seq) || SEQ[0];
+    const seqI = Math.min(this.state.seqStep || 0, seq.steps.length - 1);
     const products = [
       { pillar: 'R', slug: 'estruturas-aditivas', accent: '#1F56D6', tint: '#EEF3FE', mark: [0,0,0,1], icon: I('layers'), web: 'https://gerard-web-deploy.onrender.com/', name: 'Estruturas Aditivas', status: 'Disponível', badgeBg: '#E7F5EE', badgeFg: '#16603C', body: 'Ambiente principal para resolução e representação de situações de composição, transformação e comparação.', long: 'O ambiente principal do ecossistema. O estudante resolve situações-problema do campo aditivo alternando entre enunciado, diagrama de Vergnaud e material concreto.', features: ['Composição, transformação e comparação de medidas', 'Diagrama de Vergnaud e quadradinhos manipuláveis', 'Escolha da categoria a partir do enunciado', 'Português e outros idiomas na interface'], img: 'imagens/Comparacao_nitida.png', alt: 'Tela de comparação de medidas.', caption: 'Comparação de medidas com eixo de inteiros.', hasDl: true, dl: 'https://github.com/anaemilia/Gerard-2011/releases/tag/v1.0.0', dlLabel: 'Baixar v1.0.0' },
       { pillar: 'S', slug: 'professor', accent: '#0F6E80', tint: '#E6F4F6', mark: [1,0,0,0], icon: I('presentation'), name: 'Professor', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Ferramentas para criar, revisar e acompanhar situações-problema e analisar as resoluções da turma.', long: 'Ferramentas para o professor construir situações-problema a partir de um diagrama, revisá-las antes de liberar para a turma e acompanhar as estratégias dos estudantes.', features: ['Construção de enunciados a partir do diagrama', 'Curadoria e validação das situações', 'Organização por categoria e nível', 'Acompanhamento das resoluções'], img: 'imagens/construirSituacaoProblema_nitida.png', alt: 'Tela de construção de situação-problema.', caption: 'Construção de situação-problema a partir do diagrama preenchido.' },
@@ -1062,9 +1100,9 @@ class Component extends DCLogic {
         { k: 'compar', title: 'Comparação de medidas', rule: 'referente ± relação = referido' },
       ].map(c => ({ ...c, is_comp: c.k === 'comp', is_trans: c.k === 'trans', is_compar: c.k === 'compar', is_ctrans: c.k === 'ctrans', is_trel: c.k === 'trel', is_crel: c.k === 'crel' })),
       categoriesDetail: [
-        { title: 'Composição', rule: 'parte + parte = todo', body: 'Duas ou mais medidas se juntam para formar um todo. A incógnita pode ser o todo ou uma das partes.', example: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?' },
-        { title: 'Transformação', rule: 'estado inicial ± transformação = estado final', body: 'Uma medida inicial sofre um ganho ou uma perda. A incógnita pode ser o estado inicial, a transformação ou o estado final.', example: 'Ana tinha 18 bolinhas e ganhou 7. Com quantas bolinhas ela ficou?' },
-        { title: 'Comparação', rule: 'referente ± relação = referido', body: 'Duas medidas são confrontadas; a diferença entre elas é a relação. A incógnita pode ser o referente, a relação ou o referido.', example: 'Pedro tem 12 anos. Maria tem 5 anos a mais que Pedro. Quantos anos tem Maria?' },
+        { img: 'imagens/prints_gerard/04_composicao_concluida.png', title: 'Composição', rule: 'parte + parte = todo', body: 'Duas ou mais medidas se juntam para formar um todo. A incógnita pode ser o todo ou uma das partes.', example: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?' },
+        { img: 'imagens/prints_gerard/08_transformacao_concluida.png', title: 'Transformação', rule: 'estado inicial ± transformação = estado final', body: 'Uma medida inicial sofre um ganho ou uma perda. A incógnita pode ser o estado inicial, a transformação ou o estado final.', example: 'Ana tinha 18 bolinhas e ganhou 7. Com quantas bolinhas ela ficou?' },
+        { img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Comparação', rule: 'referente ± relação = referido', body: 'Duas medidas são confrontadas; a diferença entre elas é a relação. A incógnita pode ser o referente, a relação ou o referido.', example: 'Pedro tem 12 anos. Maria tem 5 anos a mais que Pedro. Quantos anos tem Maria?' },
       ],
       versions: [
         { year: '2006', title: 'Primeira versão', status: 'Concluída', badgeBg: '#EEF1F5', badgeFg: '#3D4759', body: 'Desenvolvida por Maurício Motta Braga (mestrado, UFPE), com percurso fixo de situações.', img: 'imagens/gerard-2006.png', alt: 'Tela da versão 2006 do Gérard.' },
@@ -1089,12 +1127,12 @@ class Component extends DCLogic {
       demoTitle: 'Demonstração interativa — ' + (demos.find(d => d[0] === s.demo) || [, ''])[1],
       demoCtaHref: page === 'demonstracao' ? '#galeria' : '#/demonstracao',
       demoCtaLabel: page === 'demonstracao' ? 'Ver telas do desktop' : 'Explorar demonstração',
+      seqTabs: SEQ.map(q => ({ label: q.label, sel: q.k === seq.k ? 'true' : 'false', bd: q.k === seq.k ? '#1F56D6' : '#D5DBE5', bg: q.k === seq.k ? '#1F56D6' : '#FFFFFF', fg: q.k === seq.k ? '#FFFFFF' : '#0E1726', pick: () => this.setState({ seq: q.k, seqStep: 0 }) })),
+      seqSteps: seq.steps.map((st, i) => ({ no: String(i + 1).padStart(2, '0'), title: st[1], body: st[2], sel: i === seqI ? 'true' : 'false', bd: i === seqI ? '#1F56D6' : '#E1E6EE', bg: i === seqI ? '#F2F6FE' : '#FFFFFF', nbg: i === seqI ? '#1F56D6' : '#FFFFFF', nfg: i === seqI ? '#FFFFFF' : '#1F56D6', pick: () => this.setState({ seqStep: i }) })),
+      seqImg: 'imagens/prints_gerard/' + seq.steps[seqI][0] + '.png', seqAlt: seq.label + ' — ' + seq.steps[seqI][1] + ': ' + seq.steps[seqI][2], seqLabel: seq.label + ' — ' + seq.steps[seqI][1], seqText: seq.text,
       gallery: [
-        ['imagens/Composicao_nitida.png', 'Composição de medidas', 'Partes e todo no diagrama de Vergnaud e no material concreto.'],
-        ['imagens/Comparacao_nitida.png', 'Comparação de medidas', 'Referente, referido e relação, com eixo de inteiros.'],
-        ['imagens/Transformacao_nitida.png', 'Transformação de medidas', 'Estado inicial, transformação e estado final.'],
-        ['imagens/construirSituacaoProblema_nitida.png', 'Construção de situação-problema', 'Blocos de texto gerados a partir do diagrama preenchido.'],
-        ['imagens/curadoria_nitida.png', 'Curadoria', 'Revisão e validação das situações antes de liberar para a turma.'],
+        ['imagens/prints_gerard/16_construir_situacao_problema.png', 'Construir', 'O estudante organiza blocos de texto para compor uma situação-problema compatível com o diagrama preenchido.'],
+        ['imagens/prints_gerard/17_validar_curadoria.png', 'Validar', 'Curadoria humana das situações-problema por categoria de Vergnaud, idioma e contexto.'],
         ['imagens/chat-gerard.png', 'Chat do Gérard', 'Ajuda por área — texto, diagrama de Vergnaud e diagrama complementar.'],
         ['imagens/analise-modelagem.png', 'Análise da modelagem', 'O estudante explica suas decisões; os protocolos de interação são registrados.'],
         ['imagens/visaoPesquisador_nitida.png', 'Visão do pesquisador', 'Tabelas do estudo reconstruídas a partir do log de interação.'],
