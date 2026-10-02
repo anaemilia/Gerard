@@ -69,6 +69,13 @@ diagnóstico e seguem o caminho de compatibilidade sem critério.
 
 ## Decisão da usuária — resposta à confirmação da incógnita (2026-09-28)
 
+**Revisão explícita em 2026-10-02:** Sim/Não confirma ou retira a proposta
+anterior e não acrescenta uma tentativa ao limite. O registro factual, a
+identidade própria e o diagnóstico da resposta são preservados. O limite
+passa a contar três propostas de valor erradas, independentemente das
+confirmações. Esta revisão substitui a contagem de respostas descrita no
+histórico abaixo; não altera a confirmação de categoria.
+
 Pergunta `ui.question.valueMismatch` ("Tem certeza que esse é o valor do
 X?"). Decisão literal: *"registre tudo, pois cada resposta sim ou não denota
 uma tentativa e precisa ser logada. A ação original tem uma relação 1->n com

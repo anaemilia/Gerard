@@ -18,9 +18,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Decisão da usuária (2026-09-28): cada resposta Sim/Não à confirmação de um
- * valor rejeitado é uma tentativa própria, na mesma sequência, contando para
- * o limite de três rejeições consecutivas.
+ * Revisão de 2026-10-02: Sim/Não permanece registrado na sequência, mas
+ * somente propostas erradas incrementam o limite de três.
  */
 public class TesteRespostaConfirmacaoValorRejeitado {
 
@@ -38,20 +37,20 @@ public class TesteRespostaConfirmacaoValorRejeitado {
         exigir(!ignorada.isAcaoRegistrada() && eventos.isEmpty(),
                 "Sem valor rejeitado, a resposta não pode ser registrada.");
 
-        // valor errado (1) -> Sim (2) -> Não (3): limite atingido na resposta.
+        // valor errado (1) -> Sim (1) -> Não (1): confirmações não incrementam.
         PapelQuantitativo papel = FabricaPapeisComparacaoMedidas.referendo(publicador);
         ResultadoRegistroTentativaPapel r1 = papel.registrarTentativaComIdentidade(
                 id(papel), incorreto, contexto, new NumeroNatural(5));
         ResultadoRegistroTentativaPapel sim = papel.registrarRespostaConfirmacaoValorRejeitado(
                 id(papel), true, contexto, new NumeroNatural(5));
         exigir(sim.isAcaoRegistrada() && !sim.isCorreta(), "Sim deve ser tentativa registrada.");
-        exigir(sim.getRejeicoesConsecutivas() == 2 && !sim.isLimiteAtingidoAgora(),
-                "Sim deve contar como segunda rejeição.");
+        exigir(sim.getRejeicoesConsecutivas() == 1 && !sim.isLimiteAtingidoAgora(),
+                "Sim preserva a contagem da primeira proposta.");
         ResultadoRegistroTentativaPapel nao = papel.registrarRespostaConfirmacaoValorRejeitado(
                 id(papel), false, contexto, new NumeroNatural(5));
-        exigir(nao.getRejeicoesConsecutivas() == 3 && nao.isLimiteAtingidoAgora()
-                        && papel.estaBloqueadoPorLimiteTentativas(),
-                "Não deve contar como terceira rejeição e atingir o limite.");
+        exigir(nao.getRejeicoesConsecutivas() == 1 && !nao.isLimiteAtingidoAgora()
+                        && !papel.estaBloqueadoPorLimiteTentativas(),
+                "Não também preserva a contagem da proposta.");
 
         Set<String> acoes = new HashSet<String>();
         acoes.add(r1.getActionId()); acoes.add(sim.getActionId()); acoes.add(nao.getActionId());
@@ -65,6 +64,15 @@ public class TesteRespostaConfirmacaoValorRejeitado {
         exigir(eSim.getDiagnostico().getTipo() == TipoErroPapel.CONFIRMOU_VALOR_REJEITADO
                         && eNao.getDiagnostico().getTipo() == TipoErroPapel.RETIROU_VALOR_REJEITADO,
                 "O diagnóstico distingue confirmação e retirada.");
+        ResultadoRegistroTentativaPapel r2 = papel.registrarTentativaComIdentidade(
+                id(papel), incorreto, contexto, new NumeroNatural(6));
+        exigir(r2.getRejeicoesConsecutivas() == 2 && !r2.isLimiteAtingidoAgora(),
+                "Segunda proposta errada não atinge limite.");
+        papel.registrarRespostaConfirmacaoValorRejeitado(id(papel), true, contexto, new NumeroNatural(6));
+        ResultadoRegistroTentativaPapel r3 = papel.registrarTentativaComIdentidade(
+                id(papel), incorreto, contexto, new NumeroNatural(7));
+        exigir(r3.getRejeicoesConsecutivas() == 3 && r3.isLimiteAtingidoAgora(),
+                "Somente terceira proposta errada atinge limite.");
 
         // Acerto encerra a sequência: resposta posterior não é registrada.
         PapelQuantitativo outro = FabricaPapeisComparacaoMedidas.referendo(publicador);
@@ -75,7 +83,7 @@ public class TesteRespostaConfirmacaoValorRejeitado {
                 id(outro), true, contexto, new NumeroNatural(5)).isAcaoRegistrada(),
                 "Depois do acerto não há sequência aberta.");
 
-        System.out.println("Teste aprovado: respostas Sim/Não são tentativas da mesma sequência e contam para o limite.");
+        System.out.println("Teste aprovado: respostas Sim/Não são tentativas da mesma sequência e não contam para o limite.");
     }
 
     private static IdentidadeAcaoInstrumentalPapel id(PapelQuantitativo papel) {

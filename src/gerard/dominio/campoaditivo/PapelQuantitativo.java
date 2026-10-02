@@ -403,14 +403,13 @@ public final class PapelQuantitativo {
     }
 
     /**
-     * Decisão da usuária (2026-09-28): a resposta Sim ou Não à pergunta de
-     * confirmação de um valor já rejeitado é uma tentativa própria, com
+     * Revisão da usuária (2026-10-02): a resposta Sim ou Não à pergunta de
+     * confirmação de um valor já rejeitado é uma ação registrada, com
      * action_id novo, pertence à mesma sequência de rejeições (a ação
-     * original, encerrada só no acerto) e conta para o limite de
+     * original, encerrada só no acerto) e não conta para o limite de
      * LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS. Sem sequência aberta não há
-     * pergunta a responder e nada é registrado. Com o papel bloqueado, segue
-     * o mesmo caminho de registrarTentativaComIdentidade (registro sem
-     * contagem).
+     * pergunta a responder e nada é registrado. A resposta preserva o
+     * contador e o bloqueio existentes.
      */
     public ResultadoRegistroTentativaPapel registrarRespostaConfirmacaoValorRejeitado(
             IdentidadeAcaoInstrumentalPapel identidade, boolean confirmou,
@@ -426,8 +425,22 @@ public final class PapelQuantitativo {
                         "erro.papel.confirmouValorRejeitado", null, null)
                 : new DiagnosticoErroPapel(TipoErroPapel.RETIROU_VALOR_REJEITADO,
                         "erro.papel.retirouValorRejeitado", null, null);
-        return registrarTentativaComIdentidade(identidade,
-                Optional.of(resposta), contexto, valorProposto);
+        if (identidade == null || identidade.getOrigem() != OrigemAcao.ORIGEM_USUARIO) {
+            return ResultadoRegistroTentativaPapel.ignorada(tentativasRejeitadasConsecutivas);
+        }
+        if (!chave.equals(identidade.getPapelSemantico())) {
+            throw new IllegalArgumentException("A ação pertence a outro papel semântico");
+        }
+        // A resposta confirma ou retira a proposta anterior; não submete outro valor.
+        ultimoActionId = identidade.getActionId();
+        String estado = descreverEstadoAtual();
+        publicar(new EventoPapelQuantitativo(TipoEventoPapel.VALOR_REJEITADO,
+                identidade.getOrigem(), contexto, chave, estado, estado,
+                formatarValorProposto(valorProposto), ResultadoAcao.REJEITADO,
+                resposta, ultimoActionId, rejectionSequenceIdAtual));
+        return new ResultadoRegistroTentativaPapel(true, false,
+                bloqueadoPorLimiteTentativas, false, tentativasRejeitadasConsecutivas,
+                ultimoActionId, rejectionSequenceIdAtual);
     }
 
     private String descreverEstadoAtual() {

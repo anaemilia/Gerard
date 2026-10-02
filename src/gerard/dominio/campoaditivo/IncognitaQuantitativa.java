@@ -172,8 +172,8 @@ public final class IncognitaQuantitativa
 
     /**
      * Resposta Sim/Não à pergunta ui.question.valueMismatch sobre um valor
-     * já rejeitado (decisão da usuária, 2026-09-28): uma tentativa própria,
-     * com action_id novo, na mesma sequência de rejeições, contando para o
+     * já rejeitado (revisão da usuária, 2026-10-02): uma ação própria,
+     * com action_id novo, na mesma sequência de rejeições, sem acrescentar tentativa ao
      * limite. É ERRADA no código C/E porque só assim permanece na sequência
      * que a usuária definiu como a ação original (encerrada no acerto); o
      * diagnóstico distingue a confirmação da retirada. A interface só

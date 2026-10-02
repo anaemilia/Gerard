@@ -35,11 +35,19 @@ try{
   exigir(await page.locator('.valor-figura-confirmacao').count()===1,'pergunta após valor errado');
   await clicar(page.locator('.valor-figura-confirmacao input').first());
   const confirmacao=chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).at(-1).resposta;
-  exigir(confirmacao.rejeicoes_consecutivas===2,'Sim conta a segunda tentativa');
-  for(const valor of (process.env.GERARD_TESTAR_DECISAO==='1'?['2']:['2','3','4','6'])){
+  exigir(confirmacao.rejeicoes_consecutivas===1,'Sim preserva primeira tentativa');
+  for(const valor of (process.env.GERARD_TESTAR_DECISAO==='1'?['2','3']:['2','3','4','6'])){
    await page.mouse.dblclick(p.x,p.y);await pausa();await input.fill(valor);await input.press('Enter');await pausa();
    const resultado=chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).at(-1).resposta;
    console.log('VALOR='+valor+' CONTAGEM='+resultado.rejeicoes_consecutivas+' LIMITE='+resultado.limite_atingido+' DIAGNOSTICO='+resultado.diagnostico);
+   if(valor==='2'){
+    exigir(resultado.rejeicoes_consecutivas===2&&!resultado.limite_atingido,'segunda proposta ainda não atinge limite');
+    exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===0,'sem aviso na segunda tentativa');
+    await clicar(page.locator('.valor-figura-confirmacao input').first());
+    const resposta=chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).at(-1).resposta;
+    exigir(resposta.rejeicoes_consecutivas===2&&!resposta.limite_atingido,'segundo Sim não altera a contagem');
+    continue;
+   }
    exigir(resultado.rejeicoes_consecutivas===3&&resultado.limite_atingido,'limite do domínio permanece em três');
    exigir(estado.ajuda_visual_acionada===true,'historinha acionada em TM mesmo com acervo vazio');
    exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===1,
@@ -77,6 +85,9 @@ try{
  await clicar(page.locator('.valor-figura-confirmacao input').last());
  if(await input.count()){
   await input.fill('2');await input.press('Enter');await page.waitForTimeout(1100);
+  exigir(await page.locator('.valor-figura-confirmacao').count()===1,'segunda proposta ainda pede confirmação');
+  await clicar(page.locator('.valor-figura-confirmacao input').last());
+  await input.fill('3');await input.press('Enter');await page.waitForTimeout(1100);
   console.log('DIALOGO_NO_LIMITE='+await page.locator('.valor-figura-confirmacao').count());
   console.log('CONFIRMACOES_NO_LIMITE='+chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).length);
   await page.screenshot({path:dir+'/limite.png'});
