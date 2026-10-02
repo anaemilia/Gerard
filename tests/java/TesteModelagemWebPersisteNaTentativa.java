@@ -80,26 +80,36 @@ public final class TesteModelagemWebPersisteNaTentativa {
 
         int totalNoAzul = porta.registros.size();
         Map<String, Object> reiniciado = servico.reiniciarAtividadeAtual();
-        exigir(porta.restauracoes == 1, "restauração após o azul não é registrada");
+        exigir(porta.restauracoes == 2,
+                "restauração após o azul reabre a primeira modelagem e é registrada (" + porta.restauracoes + ")");
         for (Object item : papeis(reiniciado)) {
             String id = String.valueOf(((Map<?, ?>) item).get("id"));
             if (!id.equals(alvo)) servico.posicionarValorConhecido(id, id);
         }
         servico.engatarIncognita(alvo, alvo);
-        Map<String, Object> exploratorio = servico.proporValor(alvo, correto + 2);
-        exigir(Boolean.FALSE.equals(exploratorio.get("aceita"))
-                        && exploratorio.get("chave_mensagem") == null,
-                "após o azul: sem pergunta de confirmação");
+        int aposRestaurar = porta.registros.size();
+        Map<String, Object> reaberto = servico.proporValor(alvo, correto + 2);
+        exigir(Boolean.FALSE.equals(reaberto.get("aceita")),
+                "após restaurar: valor errado é rejeitado como na primeira modelagem");
+        exigir(porta.registros.size() > aposRestaurar,
+                "após restaurar: a primeira modelagem reaberta volta a registrar ("
+                        + aposRestaurar + "->" + porta.registros.size() + ")");
         servico.proporValor(alvo, correto);
-        exigir(porta.registros.size() == totalNoAzul,
-                "após o azul nada é registrado (" + totalNoAzul + "->" + porta.registros.size() + ")");
+        exigir(Boolean.TRUE.equals(modelagem(estadoDe(servico.proporValor(alvo, correto))).get("concluida")),
+                "a modelagem reaberta pode ser concluída de novo");
 
-        // Nova situação sorteada encerra o modo exploratório.
+        // Exploração sem persistência: só depois da nova conclusão correta.
+        int totalNoAzul2 = porta.registros.size();
+        servico.proporValor(alvo, correto + 3);
+        exigir(porta.registros.size() == totalNoAzul2,
+                "após o novo azul nada é registrado (" + totalNoAzul2 + "->" + porta.registros.size() + ")");
+
+        // Sortear também reabre a primeira modelagem.
         classificarComposicao(servico);
-        exigir(porta.registros.size() > totalNoAzul,
+        exigir(porta.registros.size() > totalNoAzul2,
                 "nova situação sorteada volta a registrar");
 
-        System.out.println("Teste aprovado: modelagem web persiste pela tentativa; após o azul é exploratória.");
+        System.out.println("Teste aprovado: modelagem web persiste pela tentativa; após o azul é exploratória até restaurar ou sortear.");
     }
 
     @SuppressWarnings("unchecked")

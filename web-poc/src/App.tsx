@@ -225,6 +225,12 @@ export default function App() {
     const controle = estado.acoes_disponiveis.find((item) =>
       item.id === interacao?.acao_id && item.corpo?.papel_id === interacao.papel_id);
     if (!figura || !interacao || !controle || !Number.isInteger(valor)) return;
+    if (difusorExploratorio.current) {
+      difusorExploratorio.current.alterarPapel(interacao.papel_id, valor);
+      setSinalPendenteIncognita(null);
+      enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
+      return;
+    }
     envioValorEmCurso.current = true;
     setOcupado(true);
     try {

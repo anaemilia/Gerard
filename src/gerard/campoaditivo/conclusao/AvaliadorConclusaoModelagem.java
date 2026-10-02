@@ -35,6 +35,9 @@ public final class AvaliadorConclusaoModelagem {
             if (estado == null || !estado.isNoDiagrama()) {
                 return FaseConclusaoModelagem.INCOMPLETA;
             }
+            if (Boolean.TRUE.equals(estado.getEstadoModificado())) {
+                return FaseConclusaoModelagem.INCOMPLETA;
+            }
             String papelItem = estado.getPapelItem();
             String papelAlvo = estado.getPapelAlvo();
             if (!papelValido(papelItem) || !papelValido(papelAlvo)

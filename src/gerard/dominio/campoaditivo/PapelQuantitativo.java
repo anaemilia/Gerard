@@ -262,11 +262,16 @@ public final class PapelQuantitativo {
 
     /**
      * Após a conclusão toda submissão é exploratória: não é avaliada como
-     * tentativa, não conta rejeição e não constitui ação. A restauração não
-     * desfaz este estado; só uma nova situação (novo papel) o faz.
+     * tentativa, não conta rejeição e não constitui ação. Restaurar ou
+     * sortear reabre a primeira modelagem (regra de 2026-10-02).
      */
     public void encerrarPorConclusao() {
         encerradoPorConclusao = true;
+    }
+
+    /** Reabre a primeira modelagem: volta a avaliar, contar rejeições e constituir ação. */
+    public void reabrirPrimeiraModelagem() {
+        encerradoPorConclusao = false;
     }
 
     public boolean estaEncerradoPorConclusao() {

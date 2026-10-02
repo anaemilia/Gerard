@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Decisões da usuária (2026-09-29): depois do diagrama ficar azul, toda
- * modificação é exploratória; o modo exploratório só termina quando uma nova
- * situação é sorteada (nova TentativaModelagemAditiva). A restauração não o
- * encerra. O dono da regra é a tentativa (e cada papel participante), não um
+ * Regra de 2026-10-02: toda primeira modelagem tem persistência; depois do
+ * diagrama ficar azul (conclusão correta com os dados originais) a exploração
+ * ocorre sem persistência; restaurar ou sortear reabre a primeira modelagem.
+ * O dono da regra é a tentativa (e cada papel participante), não um
  * controlador.
  */
 public final class TesteConclusaoAtingidaExploratoria {
@@ -54,18 +54,25 @@ public final class TesteConclusaoAtingidaExploratoria {
         tentativa.incorporar(tardio);
         exigir(tardio.estaEncerradoPorConclusao(), "Papel criado depois do azul herda o encerramento.");
 
-        tentativa.restaurar(TipoRestauracaoModelagem.values()[0], OrigemAcao.ORIGEM_USUARIO, papel);
-        exigir(tentativa.estaEncerradaPorConclusao() && papel.estaEncerradoPorConclusao(),
-                "Restaurar não encerra o modo exploratório.");
+        gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem restauracao =
+                tentativa.restaurar(TipoRestauracaoModelagem.values()[0], OrigemAcao.ORIGEM_USUARIO, papel);
+        exigir(!tentativa.estaEncerradaPorConclusao() && !papel.estaEncerradoPorConclusao()
+                        && !tardio.estaEncerradoPorConclusao(),
+                "Restaurar reabre a primeira modelagem (tentativa e todos os papéis).");
+        exigir(tentativa.constituir(restauracao).isPresent(),
+                "O registro da própria restauração é constituído (persistido).");
+        exigir(papel.registrarTentativaComIdentidade(papel.iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO),
+                incorreto, contexto, new NumeroNatural(7)).isAcaoRegistrada(),
+                "Após restaurar, a tentativa do papel volta a ser registrada.");
 
         TentativaModelagemAditiva nova = new TentativaModelagemAditiva("t2");
         PapelQuantitativo papelNovo = FabricaPapeisComparacaoMedidas.referendo(publicador);
         nova.incorporar(papelNovo);
         exigir(!nova.estaEncerradaPorConclusao() && !papelNovo.estaEncerradoPorConclusao()
                         && nova.constituir("r").isPresent(),
-                "Só a nova situação sorteada (nova tentativa) termina o modo exploratório.");
+                "Sortear (nova tentativa) também reabre a primeira modelagem.");
 
-        System.out.println("Teste aprovado: após o azul tudo é exploratório até nova situação sorteada.");
+        System.out.println("Teste aprovado: após o azul tudo é exploratório até restaurar ou sortear.");
     }
     private static void exigir(boolean c, String m) { if (!c) throw new AssertionError(m); }
 }

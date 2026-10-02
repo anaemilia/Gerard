@@ -862,8 +862,18 @@ public class Main extends JFrame {
         final ExecutorAjudaIncognita executorAjudaIncognita =
                 new ExecutorAjudaIncognita(
                         materializadorDecisaoAjuda, registradorEventosAjuda);
+        final java.util.function.BooleanSupplier admissaoRegistroFactual =
+                new java.util.function.BooleanSupplier() {
+                    public boolean getAsBoolean() {
+                        return tentativaModelagemAtual == null
+                                || tentativaModelagemAtual.admiteRegistroFactual();
+                    }
+                };
+        { loggerInteracaoGerard.definirAdmissaoRegistroDoSujeito(admissaoRegistroFactual); }
         final PublicadorGestoInteracao publicadorGestosInteracao =
-                LoggerGestosInteracaoGerard.paraSessao(loggerInteracaoGerard);
+                new gerard.interacao.PublicadorGestoAdmitido(
+                        LoggerGestosInteracaoGerard.paraSessao(loggerInteracaoGerard),
+                        admissaoRegistroFactual);
         ControladorContextoSituacao controladorContextoSituacao = new ControladorContextoSituacao(loggerInteracaoGerard);
         ControladorEstadoAtividade controladorEstadoAtividade = new ControladorEstadoAtividade();
         FachadaCarregamentoAtividade fachadaCarregamentoAtividade =

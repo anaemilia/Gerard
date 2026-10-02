@@ -63,32 +63,14 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
     private static void testarTela() throws Exception {
         Main.TelaGerard tela = new Main.TelaGerard();
         tela.setSize(1240, 760);
-        tela.tipoSituacaoSelecionada = TipoSituacaoAditiva.COMPARACAO_MEDIDAS;
+        tela.tipoSituacaoSelecionada = TipoSituacaoAditiva.COMPOSICAO_MEDIDAS;
         tela.categoriaSelecionadaParaAtividade = true;
         tela.indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
+        // Composição de Medidas continua usando unidades; categorias relativas selecionam historinhas.
         tela.situacaoProblemaAtual = new SituacaoProblemaAditiva(
-                "teste",
-                true,
-                TipoSituacaoAditiva.COMPARACAO_MEDIDAS,
-                IdiomaInterface.PORTUGUES,
-                "Teste",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "2",
-                "4",
-                "2",
-                "positivo",
-                "referendo",
-                "",
-                "");
+                "teste", true, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
+                IdiomaInterface.PORTUGUES, "Teste", "", "", "",
+                "", "", "", "2", "4", "6", "todo", "", "");
         tela.elementosVergnaud.clear();
         tela.circulosVenn.clear();
         tela.quadradinhosVenn.clear();
@@ -223,3 +205,6 @@ public final class TesteBloqueioAdicaoAntesVergnaud {
         }
     }
 }
+
+
+

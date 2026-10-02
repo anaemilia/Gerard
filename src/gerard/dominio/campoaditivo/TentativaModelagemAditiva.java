@@ -18,10 +18,11 @@ public final class TentativaModelagemAditiva {
 
     private final String tentativaId;
     /**
-     * Decisão da usuária (2026-09-29): depois do diagrama ficar azul, toda
-     * modificação é exploratória, até outra situação ser sorteada. O
-     * encerramento pertence a este agregado de escopo da tentativa; a
-     * restauração não o desfaz (só uma nova tentativa/situação o faz).
+     * Regra de 2026-10-02: toda primeira modelagem tem persistência. Depois
+     * do diagrama ficar azul (conclusão correta com os dados originais), a
+     * exploração ocorre sem persistência. Restaurar ou sortear reabre a
+     * primeira modelagem. O encerramento e a reabertura pertencem a este
+     * agregado de escopo da tentativa.
      */
     private boolean encerradaPorConclusao;
     private final java.util.Map<String, Integer> rejeicoesOperacao =
@@ -72,12 +73,21 @@ public final class TentativaModelagemAditiva {
     }
 
     /**
+     * A tentativa é a dona da regra de persistência (2026-10-02): só a
+     * primeira modelagem gera registro factual. Quem persiste (logger,
+     * publicador de gestos, porta web) apenas consulta este fato.
+     */
+    public boolean admiteRegistroFactual() {
+        return !encerradaPorConclusao;
+    }
+
+    /**
      * Constitui um fato como ação instrumental desta tentativa. Após o
      * encerramento pela conclusão, nenhuma ação é constituída: a manipulação
      * é exploratória e não gera registro.
      */
     public <R> java.util.Optional<R> constituir(R registro) {
-        if (registro == null || encerradaPorConclusao) {
+        if (registro == null || !admiteRegistroFactual()) {
             return java.util.Optional.empty();
         }
         if (registro instanceof gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) {
@@ -118,12 +128,32 @@ public final class TentativaModelagemAditiva {
         return tentativaId;
     }
 
+    /**
+     * Restaurar reabre a primeira modelagem: a tentativa deixa de estar
+     * encerrada pela conclusão e todos os papéis participantes voltam a
+     * avaliar, contar rejeições e constituir ações. Acontece antes de o
+     * registro da própria restauração ser constituído, que portanto é
+     * persistido.
+     */
+    private void reabrirPrimeiraModelagem(PapelQuantitativo[] papeisParticipantes) {
+        encerradaPorConclusao = false;
+        if (papeisParticipantes != null) {
+            for (PapelQuantitativo papel : papeisParticipantes) {
+                incorporar(papel);
+            }
+        }
+        for (PapelQuantitativo papel : participantes) {
+            papel.reabrirPrimeiraModelagem();
+        }
+    }
+
     public RegistroAcaoRestauracaoModelagem restaurar(
             TipoRestauracaoModelagem tipo, OrigemAcao origem,
             PapelQuantitativo... papeisParticipantes) {
         if (tipo == null) {
             throw new IllegalArgumentException("tipo de restauração não pode ser nulo");
         }
+        reabrirPrimeiraModelagem(papeisParticipantes);
         rejeicoesOperacao.clear();
         operacoesAcompanhadas.clear();
         ajudaVisualOperacaoNoLimite = false;

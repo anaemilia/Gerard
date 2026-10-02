@@ -153,8 +153,8 @@ public final class TesteConclusaoModelagem {
         confirmar(!controlador.deveApresentarTip(), "tip não deve reaparecer continuamente");
         confirmar(controlador.atualizar(esperados,
                         new ArrayList<EstadoPosicionamentoModelagem>())
-                        == AtualizacaoConclusaoModelagem.DEIXOU_DE_ESTAR_CONCLUIDA,
-                "nova manipulação deve retirar o estado de conclusão");
+                        == AtualizacaoConclusaoModelagem.CONTINUA_CONCLUIDA,
+                "nova manipulação permanece na fase exploratória");
     }
 
     private static void testarDestaqueVisual() {
@@ -194,8 +194,8 @@ public final class TesteConclusaoModelagem {
                         == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA,
                 "responder corretamente a operacao deve produzir a transicao de conclusao");
         confirmar(controlador.atualizar(esperados, completos, false)
-                        == AtualizacaoConclusaoModelagem.DEIXOU_DE_ESTAR_CONCLUIDA,
-                "invalidar requisito adicional deve retirar a conclusao");
+                        == AtualizacaoConclusaoModelagem.CONTINUA_CONCLUIDA,
+                "exploração não reavalia requisitos após conclusão");
     }
 
     private static void testarRegistroDoProtocoloNoItem() {
@@ -230,3 +230,4 @@ public final class TesteConclusaoModelagem {
         if (!condicao) throw new AssertionError(mensagem);
     }
 }
+

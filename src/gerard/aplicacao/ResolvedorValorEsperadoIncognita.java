@@ -19,6 +19,23 @@ public final class ResolvedorValorEsperadoIncognita {
         if (papelSolicitado == null) {
             return null;
         }
+        if (papelSolicitado.equals(papelIncognita) && estado != null
+                && indiceIncognita >= 0 && indiceIncognita < 3) {
+            Integer[] valores = new Integer[3];
+            boolean[] conhecidos = new boolean[3];
+            for (int i = 0; i < 3; i++) {
+                if (i != indiceIncognita) {
+                    valores[i] = estado.getValor(i);
+                    conhecidos[i] = estado.isConhecido(i);
+                }
+            }
+            gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas.ResolucaoAutomatica calculo =
+                    new gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas()
+                            .resolverValores(estado.getTipo(), valores, conhecidos, -1);
+            if (calculo.foiResolvida() && calculo.getIndice() == indiceIncognita) {
+                return Integer.valueOf(calculo.getValor());
+            }
+        }
         if (papelSolicitado.equals(papelIncognita)
                 && estado != null && indiceIncognita >= 0
                 && estado.isConhecido(indiceIncognita)) {

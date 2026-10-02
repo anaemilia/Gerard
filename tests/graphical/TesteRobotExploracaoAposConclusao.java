@@ -66,8 +66,9 @@ public class TesteRobotExploracaoAposConclusao {
         verificar("sem pergunta de confirmação após a conclusão", !dialogo);
         verificar("sem registro instrumental novo após a conclusão (" + antes + "->" + depois + ")", depois == antes);
         verificar("conclusão atingida mantida", atingida(t));
-        // Restaurar não encerra o modo exploratório (decisão 2026-09-29:
-        // só nova situação sorteada o encerra).
+        // Regra de 2026-10-02: restaurar reabre a primeira modelagem (volta a
+        // persistir); sortear também. A exploração sem persistência só vale
+        // após a conclusão correta com os dados originais.
         final Point b = new Point(); final boolean[] visivel = new boolean[1];
         SwingUtilities.invokeAndWait(new Runnable() { public void run() {
             if (t.botaoRestaurarDiagrama != null && t.botaoRestaurarDiagrama.isShowing()) {
@@ -84,9 +85,31 @@ public class TesteRobotExploracaoAposConclusao {
             r.mousePress(InputEvent.BUTTON1_DOWN_MASK); r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
             Thread.sleep(1500); fechar(r);
             int restDepois = contar("gerard_interacao_", "tipo_restauracao=");
-            verificar("restauração após a conclusão não gera registro (" + restAntes + "->" + restDepois + ")",
-                    restDepois == restAntes);
-            verificar("restauração não encerra o modo exploratório", atingida(t));
+            verificar("restauração após a conclusão gera registro (" + restAntes + "->" + restDepois + ")",
+                    restDepois == restAntes + 1);
+            verificar("restauração reabre a primeira modelagem", !atingida(t));
+            // Nova primeira modelagem pelos protocolos reais: posicionar tudo e errar a incógnita.
+            final List<ElementoTextoMovel> textos2 = new ArrayList<ElementoTextoMovel>();
+            final List<ElementoVergnaud> els2 = new ArrayList<ElementoVergnaud>();
+            SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+                textos2.addAll(t.elementosTexto); els2.addAll(t.elementosVergnaud); }});
+            for (ElementoTextoMovel tx : textos2) {
+                if (!tx.possuiVinculoSemantico()) continue;
+                ElementoVergnaud alvo = null;
+                for (ElementoVergnaud e : els2) if (e.chavePapelSemantico.equals(tx.chavePapelSemantico)) alvo = e;
+                if (alvo == null) continue;
+                arrastar(r, new Point(o.x + tx.x + tx.largura / 2, o.y + tx.y - tx.altura / 2),
+                        new Point(o.x + alvo.x + alvo.largura / 2, o.y + alvo.y + alvo.altura / 2));
+            }
+            int incAntes = contar("gerard_interacao_", "papel.incognita");
+            digitar(r, t, o, "1");
+            Thread.sleep(1200);
+            boolean perguntou = haDialogo();
+            fechar(r);
+            int incDepois = contar("gerard_interacao_", "papel.incognita");
+            verificar("após restaurar, valor errado volta a perguntar confirmação", perguntou);
+            verificar("após restaurar, a incógnita volta a gerar registro (" + incAntes + "->" + incDepois + ")",
+                    incDepois > incAntes);
         }
         System.out.println("RESUMO falhas=" + falhas);
         System.exit(falhas == 0 ? 0 : 1);

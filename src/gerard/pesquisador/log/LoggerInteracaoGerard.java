@@ -375,6 +375,17 @@ public class LoggerInteracaoGerard {
     }
 
 
+    /**
+     * Porta de admissão dos registros do sujeito. O logger não decide: quem
+     * conhece a regra (a tentativa em curso) responde; por padrão tudo é
+     * admitido. Não afeta registros do computador nem do pesquisador.
+     */
+    private volatile java.util.function.BooleanSupplier admissaoRegistroDoSujeito = () -> true;
+
+    public void definirAdmissaoRegistroDoSujeito(java.util.function.BooleanSupplier admissao) {
+        this.admissaoRegistroDoSujeito = admissao == null ? () -> true : admissao;
+    }
+
     public synchronized String getTentativaAtualId() { return tentativaAtualId; }
     public synchronized int getTentativaAtualNumeroSituacao() { return tentativaAtualNumeroSituacao; }
     public synchronized String getUsuarioAtual() { return usuario; }
@@ -725,6 +736,9 @@ public class LoggerInteracaoGerard {
                                        String mudancaObservavel,
                                        String actionId,
                                        String rejectionSequenceId) {
+        if ("S".equals(agente) && !admissaoRegistroDoSujeito.getAsBoolean()) {
+            return;
+        }
         EventoLogGerard evento = EventoLogGerard.criar(
                 sessao,
                 usuario,

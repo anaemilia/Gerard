@@ -20,6 +20,7 @@ public final class ControladorConclusaoModelagem {
             Collection<String> papeisEsperados,
             List<EstadoPosicionamentoModelagem> posicionamentos,
             boolean requisitosAdicionaisSatisfeitos) {
+        if (isConcluida()) return AtualizacaoConclusaoModelagem.CONTINUA_CONCLUIDA;
         FaseConclusaoModelagem novaFase = avaliador.avaliar(
                 papeisEsperados, posicionamentos);
         if (novaFase == FaseConclusaoModelagem.CONCLUIDA
