@@ -35,6 +35,13 @@ As convenções verificadas em `gerard/ui/UITemaGerard.java` são:
 
 ## Feedback de sucesso
 
+Verificação web em 2026-10-02, autorizada pela usuária para corrigir a
+confirmação de valor: envio repetido de Enter não constitui outra proposta;
+o passo Sim/Não é preservado durante o envio e em falha HTTP. O adaptador
+permite tentar novamente a mesma opção após uma falha, sem inventar resposta
+ou mudar a contagem do domínio. Roteiro e limites:
+`documentacao/relatorios/RELATORIO_CONFIRMACAO_MORANGOS_2026-10-02.md`.
+
 - `SequenciadorFeedbackConclusao` preserva o atraso validado de 1150 ms antes
   da solicitação de avanço.
 - O indicador de avanço é ocultado no cancelamento e não permanece fixo.

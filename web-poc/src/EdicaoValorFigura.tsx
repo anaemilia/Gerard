@@ -41,7 +41,12 @@ export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, 
         <input id={`valor-${figuraId}`} type="number" min={requerSinal ? 0 : undefined}
           step="1" inputMode="numeric" autoFocus value={valor.replace(/^-/, "")}
           disabled={ocupado} onChange={(evento) => aoAlterarValor(evento.target.value)}
-          onKeyDown={(evento) => { if (evento.key === "Enter") aoConfirmarDigitacao(); }} />
+          onKeyDown={(evento) => {
+            if (evento.key !== "Enter") return;
+            evento.preventDefault();
+            evento.stopPropagation();
+            if (!evento.repeat && !ocupado) aoConfirmarDigitacao();
+          }} />
       </div>
     </div>;
   }
@@ -51,11 +56,11 @@ export function EdicaoValorFigura({ figuraId, papelNome, pergunta, modo, valor, 
     <p>{pergunta}</p>
     <label className="valor-figura-opcao">
       <input type="radio" name={`confirmar-valor-${figuraId}`} disabled={ocupado}
-        onChange={aoConfirmarValor} /> Sim
+        onClick={aoConfirmarValor} /> Sim
     </label>
     <label className="valor-figura-opcao">
       <input type="radio" name={`confirmar-valor-${figuraId}`} disabled={ocupado}
-        onChange={aoNegarValor} /> Não
+        onClick={aoNegarValor} /> Não
     </label>
   </div>;
 }

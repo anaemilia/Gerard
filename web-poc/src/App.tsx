@@ -60,6 +60,8 @@ export default function App() {
     reduzirEstadoRepresentacoes, estadoRepresentacoesInicial);
   const estado = representacoes.snapshotServidor;
   const [ocupado, setOcupado] = useState(false);
+  // Exclusão síncrona do envio: setOcupado só desabilita a UI no próximo render.
+  const envioValorEmCurso = useRef(false);
   const [mensagemOperacao, setMensagemOperacao] = useState<string | null>(null);
   const [dicaVisivel, setDicaVisivel] = useState(false);
   const [figuraDestacadaId, setFiguraDestacadaId] = useState<string | null>(null);
@@ -210,6 +212,7 @@ export default function App() {
   }
 
   async function enviarPropostaValor(valor: number) {
+    if (envioValorEmCurso.current || propostaRejeitada || representacoes.confirmando) return;
     if (!estado || !representacoes.elementoEmEdicao) return;
     const figura = estado.cena?.figuras.find(
       (item) => item.id === representacoes.elementoEmEdicao);
@@ -218,6 +221,7 @@ export default function App() {
     const controle = estado.acoes_disponiveis.find((item) =>
       item.id === interacao?.acao_id && item.corpo?.papel_id === interacao.papel_id);
     if (!figura || !interacao || !controle || !Number.isInteger(valor)) return;
+    envioValorEmCurso.current = true;
     setOcupado(true);
     try {
       const resultado = await api.posicionar(controle, valor);
@@ -245,7 +249,7 @@ export default function App() {
           elementoId: representacoes.elementoEmEdicao });
       }
     } catch (erro) { console.error(erro); }
-    finally { setOcupado(false); }
+    finally { envioValorEmCurso.current = false; setOcupado(false); }
   }
 
   function aoConfirmarDigitacao() {
@@ -274,23 +278,27 @@ export default function App() {
   }
 
   async function responderConfirmacao(confirmou: boolean) {
+    if (envioValorEmCurso.current || !propostaRejeitada) return;
     const proposta = propostaRejeitada;
     const snapshotRejeitado = snapshotPropostaRejeitada;
-    setPropostaRejeitada(null);
-    setSnapshotPropostaRejeitada(null);
-    setSinalPendenteIncognita(null);
     let limiteAtingido = false;
     let estadoServidor: EstadoWeb | null = null;
     if (proposta) {
+      envioValorEmCurso.current = true;
       setOcupado(true);
       try {
         const resultado = await api.responderConfirmacaoValor(
           proposta.papelId, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
         estadoServidor = resultado.estado;
-      } catch (erro) { console.error(erro); }
-      finally { setOcupado(false); }
+      } catch (erro) { console.error(erro); return; }
+      finally { envioValorEmCurso.current = false; setOcupado(false); }
     }
+    // Mantém a pergunta durante o envio e em falha de rede; só uma resposta
+    // explicitamente enviada com sucesso encerra este passo da interação.
+    setPropostaRejeitada(null);
+    setSnapshotPropostaRejeitada(null);
+    setSinalPendenteIncognita(null);
     if (confirmou || limiteAtingido) {
       const snapshot = estadoServidor ?? snapshotRejeitado;
       if (snapshot) receberSnapshot(snapshot);
