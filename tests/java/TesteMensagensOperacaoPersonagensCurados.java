@@ -102,8 +102,8 @@ public final class TesteMensagensOperacaoPersonagensCurados {
         SituacaoProblemaAditiva situacao = criarSituacao(caso);
         List<ElementoVergnaud> elementos = elementosComRotulosNaoSemanticos();
         SeletorOperacaoRelacaoAluno seletor = new SeletorOperacaoRelacaoAluno();
-        seletor.ativar(caso.tipo, situacao, elementos,
-                Collections.emptyList(),
+        seletor.ativar(caso.tipo, situacao,
+                new gerard.campoaditivo.diagrama.modelo.PontoDiagrama(0, 0),
                 AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
                 localizacao);
 

@@ -4,7 +4,7 @@ import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
 import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
-import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
+import gerard.campoaditivo.diagrama.modelo.PontoDiagrama;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
@@ -73,28 +73,6 @@ public final class SeletorOperacaoRelacaoAluno {
     private static final int ESPACO_BOTAO_SINAL = 4;
     private static final int ESPACO_ENTRE_SINAL_E_NOME = 1;
     private static final int ESPACO_ROTULO_EXPLICACAO = 10;
-    // Deslocamento horizontal da haste/vertical da chave em relação ao x1
-    // armazenado no conector — replica o "+18" fixo em
-    // ConectorVergnaud.desenharChaveVertical (o traço vertical real da
-    // chave, não a marca de início da haste horizontal). Sem isso, o ponto
-    // usado para centralizar o seletor fica 18px à esquerda da linha
-    // realmente desenhada, e o rótulo "Soma" acaba caindo em cima dela.
-    private static final int DESLOCAMENTO_TRACO_CHAVE = 18;
-    // O seletor fica ACIMA do segmento/haste, não em cima dele. A distância
-    // precisa cobrir o círculo do botão (2×RAIO_BOTAO) MAIS as duas linhas
-    // de rótulo desenhadas abaixo dele (sinal + nome da operação, ver
-    // desenharBotao) — só descontar o raio deixava o texto "Soma"/
-    // "Subtração" cruzando a linha (reportado pela usuária: "tem que subir
-    // mais"). RAIO_BOTAO*7 cobre círculo + as duas linhas de texto em Arial
-    // 13 + uma folga visível acima da linha.
-    private static final int ELEVACAO_ACIMA_DO_SEGMENTO = RAIO_BOTAO * 7;
-    // Distância horizontal do centro do seletor até a borda esquerda do
-    // círculo inferior (transformação resultante), para a segunda operação
-    // de Composição de Transformações — "do lado esquerdo do círculo
-    // inferior". Precisa caber os dois botões + rótulos ("Subtração" é o
-    // mais largo) sem tocar o círculo; primeira estimativa, sujeita a
-    // ajuste por captura de tela como já ocorreu com ELEVACAO_ACIMA_DO_SEGMENTO.
-    private static final int DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO = 110;
 
     private boolean ativo;
     private Rectangle areaSoma;
@@ -160,18 +138,16 @@ public final class SeletorOperacaoRelacaoAluno {
      * medida entre si, nenhum liga os papéis de transformação entre si.
      */
     public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,
-            List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,
+            PontoDiagrama ancora,
             AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {
         desativar();
-        if (!aplicavel(tipo) || situacao == null || elementos == null || elementos.size() < 3) {
+        if (!aplicavel(tipo) || situacao == null || ancora == null) {
             return;
         }
         AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papelEfetivo = papel == null
                 ? AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES : papel;
         tipoOperacao = papelEfetivo;
         categoriaAtiva = tipo;
-        boolean papelEstadoTransformacao = papelEfetivo
-                == AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO;
         ServicoLocalizacao loc = localizacao == null ? ServicoLocalizacao.getInstancia() : localizacao;
         escolhaCorreta = AvaliacaoEscolhaOperacaoRelacao
                 .determinarOperacaoCorreta(tipo, situacao, papelEfetivo);
@@ -185,51 +161,10 @@ public final class SeletorOperacaoRelacaoAluno {
         textoExplicacaoCorreta = RealizadorTextoExplicacaoOperacaoRelacao.realizar(
                 tipo, papelEfetivo, escolhaCorreta, situacao, loc);
 
-        ElementoVergnaud e0 = elementos.get(0);
-        ElementoVergnaud e1 = elementos.get(1);
-        ElementoVergnaud e2 = elementos.get(2);
-
-        if (papelEstadoTransformacao) {
-            // "radiobutton de operações entre estado inicial e transformação
-            // do lado esquerdo do círculo inferior" — e2 é a transformação
-            // resultante (círculo inferior, ver ordem de elementosVergnaud
-            // em COMPOSICAO_TRANSFORMACOES).
-            centroX = left(e2) - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO;
-            centroY = centroY(e2);
-        } else {
-            ConectorVergnaud conectorParaRelacaoFinal = (tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
-                    || tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES)
-                    && conectores != null && !conectores.isEmpty() ? conectores.get(0) : null;
-
-            if (conectorParaRelacaoFinal != null) {
-                // Ponto médio da seta (sem alvo, Transformação de Relação) ou
-                // da haste da chave até a relação final (com alvo,
-                // Composição de Relações) — mesmo segmento que o diagrama já
-                // desenha.
-                int meioX = (conectorParaRelacaoFinal.x1 + conectorParaRelacaoFinal.x2) / 2;
-                int meioY = (conectorParaRelacaoFinal.y1 + conectorParaRelacaoFinal.y2) / 2;
-                if (conectorParaRelacaoFinal.temAlvo()) {
-                    // Chave vertical: o traço real fica DESLOCAMENTO_TRACO_CHAVE
-                    // à direita do x1/x2 armazenado (ver desenharChaveVertical).
-                    meioX += DESLOCAMENTO_TRACO_CHAVE;
-                    centroX = (meioX + conectorParaRelacaoFinal.xAlvo) / 2;
-                    centroY = (meioY + conectorParaRelacaoFinal.yAlvo) / 2;
-                } else {
-                    centroX = meioX;
-                    centroY = meioY;
-                }
-                // Acima do segmento, não sobre ele.
-                centroY -= ELEVACAO_ACIMA_DO_SEGMENTO;
-            } else {
-                // Composição de Transformações, primeira operação (entre as
-                // duas transformações de entrada): "radiobutton de soma e
-                // subtração entre transformação a cima dos dois círculos
-                // superiores" — acima de e0/e1 (t1/t2), não no vão abaixo
-                // deles.
-                centroX = (centroX(e0) + centroX(e1)) / 2;
-                centroY = Math.min(top(e0), top(e1)) - ELEVACAO_ACIMA_DO_SEGMENTO;
-            }
-        }
+        // A posição do seletor vem da cena (GeradorCenaDiagramaAditivo.ancoraSeletorOperacao);
+        // aqui só se desenham os dois botões em torno da âncora.
+        centroX = ancora.getX();
+        centroY = ancora.getY();
 
         areaSoma = new Rectangle(centroX - ESPACAMENTO_BOTOES / 2 - RAIO_BOTAO,
                 centroY - RAIO_BOTAO, RAIO_BOTAO * 2, RAIO_BOTAO * 2);
@@ -258,22 +193,6 @@ public final class SeletorOperacaoRelacaoAluno {
         if (areaSubtracao != null) {
             areaSubtracao.translate(dx, dy);
         }
-    }
-
-    private static int centroX(ElementoVergnaud e) {
-        return e.x + e.largura / 2;
-    }
-
-    private static int centroY(ElementoVergnaud e) {
-        return e.y + e.altura / 2;
-    }
-
-    private static int left(ElementoVergnaud e) {
-        return e.x;
-    }
-
-    private static int top(ElementoVergnaud e) {
-        return e.y;
     }
 
     /**

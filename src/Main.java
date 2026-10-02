@@ -9187,18 +9187,30 @@ public class Main extends JFrame {
             // e só pode aparecer dentro de uma figura após o arraste do usuário.
             removerInterrogacoesPreenchidasAutomaticamenteNoDiagrama();
             aplicarSubtitulosPersonagensNoDiagramaVergnaud();
+            // A âncora de cada seletor vem da cena; aqui só se aplica o mesmo
+            // deslocamento que o diagrama recebeu e se realiza o seletor.
             seletorOperacaoRelacaoAluno.ativar(
-                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
-                    conectoresVergnaud,
+                    tipoSituacaoSelecionada, situacaoProblemaAtual,
+                    ancoraSeletorOperacaoDaCena(false),
                     gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
                             .TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
                     localizacao);
             seletorOperacaoEstadoTransformacaoAluno.ativar(
-                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,
-                    conectoresVergnaud,
+                    tipoSituacaoSelecionada, situacaoProblemaAtual,
+                    ancoraSeletorOperacaoDaCena(true),
                     gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao
                             .TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,
                     localizacao);
+        }
+
+        private gerard.campoaditivo.diagrama.modelo.PontoDiagrama ancoraSeletorOperacaoDaCena(
+                boolean entreEstadoETransformacao) {
+            gerard.campoaditivo.diagrama.modelo.PontoDiagrama ancora =
+                    geradorCenaDiagrama.ancoraSeletorOperacao(
+                            cenaDiagramaAtual, tipoSituacaoSelecionada, entreEstadoETransformacao);
+            return ancora == null ? null
+                    : ancora.deslocado(deslocamentoCentroXAplicadoDiagramaVergnaud,
+                            deslocamentoCentroYAplicadoDiagramaVergnaud);
         }
 
         /**
@@ -9372,18 +9384,17 @@ public class Main extends JFrame {
          * ultrapassam a largura da própria caixa (caso comum).
          */
         private Rectangle calcularRetanguloRotuloFigura(FiguraDiagrama figura, FontMetrics fmRotulo) {
-            String participante = situacaoProblemaAtual == null ? ""
-                    : valorSeguroPersonagem(SemanticaCuradaSituacao.buscarParticipante(
-                            situacaoProblemaAtual, localizacao, figura.getChavePapelSemantico()));
-            int larguraRotulo = larguraTextoOuZero(fmRotulo, figura.getRotulo());
-            int larguraParticipante = larguraTextoOuZero(fmRotulo, participante);
-            int larguraNecessaria = Math.max(larguraRotulo, larguraParticipante);
+            // As linhas do bloco (subtítulo, rótulo) vêm da cena; aqui só se mede.
+            java.util.List<String> linhasBloco = figura.getLinhasRotulo();
+            int larguraNecessaria = 0;
+            for (String linha : linhasBloco) {
+                larguraNecessaria = Math.max(larguraNecessaria, larguraTextoOuZero(fmRotulo, linha));
+            }
             if (larguraNecessaria <= figura.getLargura()) {
                 return null;
             }
             int centroX = figura.getX() + figura.getLargura() / 2;
-            int linhas = (larguraRotulo > 0 ? 1 : 0) + (larguraParticipante > 0 ? 1 : 0);
-            int alturaTexto = Math.max(1, fmRotulo.getHeight() * Math.max(1, linhas));
+            int alturaTexto = Math.max(1, fmRotulo.getHeight() * Math.max(1, linhasBloco.size()));
             boolean acima = figura.getPosicaoRotulo()
                     == gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura.ACIMA;
             int y = acima ? figura.getY() - 8 - alturaTexto : figura.getY() + figura.getAltura();

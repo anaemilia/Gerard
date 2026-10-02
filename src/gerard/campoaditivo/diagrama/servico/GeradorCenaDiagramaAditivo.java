@@ -4,6 +4,7 @@ import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
+import gerard.campoaditivo.diagrama.modelo.PontoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
@@ -40,6 +41,52 @@ public class GeradorCenaDiagramaAditivo {
     public CenaDiagramaAditivo comSubtitulos(CenaDiagramaAditivo cena,
             java.util.function.Function<String, String> subtituloPorPapel) {
         return cena == null ? null : cena.comSubtitulos(subtituloPorPapel);
+    }
+
+    // Folgas da âncora do seletor de operação, na geometria da cena (pixels da cena).
+    private static final int ELEVACAO_ACIMA_DO_SEGMENTO = 63;
+    private static final int FOLGA_ABAIXO_DO_SEGMENTO = 30;
+    private static final int DESLOCAMENTO_TRACO_CHAVE = 18;
+    private static final int DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO = 110;
+
+    /**
+     * Âncora (centro) do seletor de operação (Soma/Subtração) na geometria da cena, ou
+     * {@code null} se a cena não tem as três figuras. O gerador só posiciona a partir
+     * da própria cena; se o seletor existe, e qual é a operação certa, é decisão de
+     * quem possui a situação. Em Transformação de Relação o seletor fica abaixo da seta,
+     * para não cair sobre o rótulo da transformação, que fica acima dela.
+     *
+     * @param entreEstadoETransformacao segunda operação de Composição de Transformações
+     */
+    public PontoDiagrama ancoraSeletorOperacao(CenaDiagramaAditivo cena, TipoSituacaoAditiva tipo,
+            boolean entreEstadoETransformacao) {
+        if (cena == null || cena.getFiguras().size() < 3) {
+            return null;
+        }
+        FiguraDiagrama f0 = cena.getFiguras().get(0);
+        FiguraDiagrama f1 = cena.getFiguras().get(1);
+        FiguraDiagrama f2 = cena.getFiguras().get(2);
+        if (entreEstadoETransformacao) {
+            return new PontoDiagrama(f2.getX() - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO,
+                    f2.getY() + f2.getAltura() / 2);
+        }
+        boolean relacoes = tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
+                || tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES;
+        if (relacoes && !cena.getConectores().isEmpty()) {
+            ConectorDiagrama conector = cena.getConectores().get(0);
+            int meioX = (conector.getX1() + conector.getX2()) / 2;
+            int meioY = (conector.getY1() + conector.getY2()) / 2;
+            if (conector.temAlvo()) {
+                // Chave vertical: o traço real fica à direita do x armazenado.
+                meioX += DESLOCAMENTO_TRACO_CHAVE;
+                return new PontoDiagrama((meioX + conector.getXAlvo()) / 2,
+                        (meioY + conector.getYAlvo()) / 2 - ELEVACAO_ACIMA_DO_SEGMENTO);
+            }
+            return new PontoDiagrama(meioX, meioY + FOLGA_ABAIXO_DO_SEGMENTO);
+        }
+        return new PontoDiagrama(
+                (f0.getX() + f0.getLargura() / 2 + f1.getX() + f1.getLargura() / 2) / 2,
+                Math.min(f0.getY(), f1.getY()) - ELEVACAO_ACIMA_DO_SEGMENTO);
     }
 
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */
