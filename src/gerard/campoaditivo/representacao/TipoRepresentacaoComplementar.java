@@ -7,6 +7,8 @@ public enum TipoRepresentacaoComplementar {
     TABULEIRO_TRANSFORMACAO,
     COLECOES_COMPOSICAO,
     BARRAS_COMPARACAO,
+    /** Historinhas passivas que substituem as representações com funil. */
+    HISTORINHAS_COMPOSICAO_TRANSFORMACOES,
     /**
      * Três funis (um por transformação) num único canal — Composição de
      * Transformações (TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES).

@@ -41,6 +41,9 @@ export type EstadoAtividade = Readonly<{
   acoes_disponiveis: readonly AcaoDisponivel[];
 }>;
 export type IdiomaSituacaoWeb = Readonly<{ codigo: string; nome: string; atual: boolean }>;
+export type HistorinhaAjudaVisualWeb = Readonly<{
+  identificador: string; referencia: string; da_situacao_atual: boolean;
+}>;
 export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |
     "AGUARDANDO_CONFIRMACAO_CATEGORIA" | "CATEGORIA_CLASSIFICADA" | "REEXPLICACAO_CATEGORIA";
@@ -55,6 +58,10 @@ export type EstadoClassificacao = Readonly<{
   explicacao_categoria_fechar?: string;
   dica_proximo_passo?: string | null;
   ajuda_contextual?: readonly ItemAjudaContextual[];
+  // Historinhas passivas do repertório da PRÓPRIA categoria (TipoSituacaoAditiva), só na
+  // escalada no limite; vazio quando a categoria não tem repertório (ex.: Transformação
+  // de Medidas). "referencia" é opaca (HistorinhaAjudaVisual): o adaptador web a resolve.
+  ajuda_visual?: readonly HistorinhaAjudaVisualWeb[];
   confirmacao_valor_papel?: string | null;
   cena?: CenaDiagrama;
   // Mesmo formato de CenaDiagrama, gerado pelo mesmo gerador de cena

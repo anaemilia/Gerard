@@ -45,8 +45,21 @@ public final class TesteProcessoTransformacao {
                 new SeletorRepresentacaoComplementar();
         confirmar(seletor.selecionar(
                 TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, false)
-                == TipoRepresentacaoComplementar.PROCESSO_TRANSFORMACAO,
-                "transformação de medidas deve selecionar processo próprio");
+                == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES,
+                "transformação de medidas deve selecionar historinha no lugar do funil");
+        confirmar(seletor.selecionar(
+                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, false)
+                == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES,
+                "composição de transformações deve selecionar as historinhas no lugar dos funis");
+        confirmar(!seletor.deveExibir(
+                true, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, false),
+                "historinhas não devem aparecer antes da terceira rejeição");
+        confirmar(seletor.deveExibir(
+                true, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, true),
+                "historinhas devem aparecer após a terceira rejeição");
+        confirmar(!seletor.deveExibir(
+                false, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, true),
+                "historinhas não devem aparecer sem categoria ativa");
     }
 
     private static void testarPoliticaDerivadaDoNumero() {

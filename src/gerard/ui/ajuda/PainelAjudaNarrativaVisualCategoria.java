@@ -43,7 +43,8 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
     private PainelAjudaNarrativaVisualCategoria(
             String chaveRepertorio,
             FormatoAjudaNarrativaVisual formato,
-            List<ImageIcon> historias) {
+            List<ImageIcon> historias,
+            Dimension tamanhoApresentacao) {
         super(new BorderLayout(0, 8));
         this.chaveRepertorio = chaveRepertorio;
         this.formato = formato;
@@ -58,7 +59,7 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
 
         imagem = new JLabel(historias.get(0));
         imagem.setHorizontalAlignment(SwingConstants.CENTER);
-        imagem.setPreferredSize(TAMANHO_APRESENTACAO);
+        imagem.setPreferredSize(tamanhoApresentacao);
         add(imagem, BorderLayout.CENTER);
 
         anterior = criarBotaoNavegacao("‹");
@@ -90,9 +91,35 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
     public static PainelAjudaNarrativaVisualCategoria criarSeDisponivel(
             RepertorioAjudaVisual repertorio,
             FormatoAjudaNarrativaVisual formato) {
+        return criarSeDisponivel(repertorio, formato, TAMANHO_APRESENTACAO);
+    }
+
+    public static PainelAjudaNarrativaVisualCategoria criarSeDisponivel(
+            RepertorioAjudaVisual repertorio,
+            FormatoAjudaNarrativaVisual formato,
+            Dimension tamanhoApresentacao) {
+        return criarSeDisponivel(repertorio, formato, tamanhoApresentacao, true);
+    }
+
+    public static PainelAjudaNarrativaVisualCategoria criarPassivoSeDisponivel(
+            RepertorioAjudaVisual repertorio,
+            FormatoAjudaNarrativaVisual formato,
+            Dimension tamanhoApresentacao) {
+        return criarSeDisponivel(repertorio, formato, tamanhoApresentacao, false);
+    }
+
+    private static PainelAjudaNarrativaVisualCategoria criarSeDisponivel(
+            RepertorioAjudaVisual repertorio,
+            FormatoAjudaNarrativaVisual formato,
+            Dimension tamanhoApresentacao,
+            boolean navegacaoVisivel) {
         if (repertorio == null || repertorio.estaVazio() || formato == null) {
             return null;
         }
+        Dimension limite = tamanhoApresentacao == null
+                ? TAMANHO_APRESENTACAO : new Dimension(
+                        Math.max(1, tamanhoApresentacao.width),
+                        Math.max(1, tamanhoApresentacao.height));
         List<ImageIcon> icones = new ArrayList<ImageIcon>();
         for (HistorinhaAjudaVisual historinha : repertorio.getHistorinhas()) {
             URL recurso = PainelAjudaNarrativaVisualCategoria.class.getResource(
@@ -101,10 +128,15 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
                 return null;
             }
             ImageIcon icone = new ImageIcon(recurso);
-            icones.add(formato == FormatoAjudaNarrativaVisual.HISTORIA_EM_QUADRINHOS
-                    ? reduzirParaApresentacao(icone) : icone);
+            icones.add(reduzirParaApresentacao(icone, limite));
         }
-        return new PainelAjudaNarrativaVisualCategoria(repertorio.getChave(), formato, icones);
+        PainelAjudaNarrativaVisualCategoria painel =
+                new PainelAjudaNarrativaVisualCategoria(
+                        repertorio.getChave(), formato, icones, limite);
+        painel.anterior.setVisible(navegacaoVisivel);
+        painel.proxima.setVisible(navegacaoVisivel);
+        painel.indicador.setVisible(navegacaoVisivel);
+        return painel;
     }
 
     private static String caminhoRecurso(
@@ -115,16 +147,18 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
         return RAIZ_RECURSOS + historinha.getReferenciaConteudo() + sufixo;
     }
 
-    private static ImageIcon reduzirParaApresentacao(ImageIcon original) {
+    private static ImageIcon reduzirParaApresentacao(
+            ImageIcon original,
+            Dimension limite) {
         int larguraOriginal = original.getIconWidth();
         int alturaOriginal = original.getIconHeight();
-        if (larguraOriginal <= TAMANHO_APRESENTACAO.width
-                && alturaOriginal <= TAMANHO_APRESENTACAO.height) {
+        if (larguraOriginal <= limite.width
+                && alturaOriginal <= limite.height) {
             return original;
         }
         double escala = Math.min(
-                (double) TAMANHO_APRESENTACAO.width / larguraOriginal,
-                (double) TAMANHO_APRESENTACAO.height / alturaOriginal);
+                (double) limite.width / larguraOriginal,
+                (double) limite.height / alturaOriginal);
         int largura = Math.max(1, (int) Math.round(larguraOriginal * escala));
         int altura = Math.max(1, (int) Math.round(alturaOriginal * escala));
         Image reduzida = original.getImage().getScaledInstance(

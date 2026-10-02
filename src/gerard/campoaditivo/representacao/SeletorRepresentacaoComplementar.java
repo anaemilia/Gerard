@@ -12,9 +12,11 @@ public final class SeletorRepresentacaoComplementar {
      *        Scaffolding da incógnita atual chegou à última opção
      *        (3ª tentativa rejeitada consecutiva — AG_EMCME, ver
      *        TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md). O material
-     *        concreto (este diagrama complementar — quadradinhos, barras,
-     *        processo) só aparece nesse momento, como último recurso de
-     *        apoio, não durante a modelagem normal (decisão de 2026-08-07).
+     *        concreto (quadradinhos e barras) só aparece nesse momento, como
+     *        último recurso de apoio, não durante a modelagem normal (decisão
+     *        de 2026-08-07). As historinhas que substituem os funis são uma
+     *        representação da categoria e não usam esse gatilho (decisão de
+     *        2026-10-01).
      *        Quem chama decide o que conta como "chegou no limite" —
      *        este método só aplica a regra de visibilidade dado esse fato.
      */
@@ -26,18 +28,20 @@ public final class SeletorRepresentacaoComplementar {
 
     public TipoRepresentacaoComplementar selecionar(TipoSituacaoAditiva tipo,
                                                      boolean cenaComposta) {
-        if (!cenaComposta && tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
-            return TipoRepresentacaoComplementar.PROCESSO_TRANSFORMACAO;
-        }
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.COLECOES_COMPOSICAO;
         }
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.BARRAS_COMPARACAO;
         }
-        if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            return TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
+        if (!cenaComposta && (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
+                || tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES)) {
+            return TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES;
         }
+        // Decisão da usuária (2026-10-01): representações com funil não
+        // participam mais da atividade. Em TRANSFORMACAO_MEDIDAS e
+        // COMPOSICAO_TRANSFORMACOES, os funis foram substituídos pelas
+        // historinhas existentes.
         return TipoRepresentacaoComplementar.GENERICA;
     }
 }

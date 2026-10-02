@@ -685,6 +685,8 @@ public class Main extends JFrame {
         JButton botaoAjudaTexto;
         JButton botaoAjudaVergnaud;
         JButton botaoAjudaComplementar;
+        PainelAjudaNarrativaVisualCategoria painelHistorinhasComplementar;
+        Dimension tamanhoHistorinhasComplementar;
         JPopupMenu menuAjudaContextualAtivo;
         ScaffoldingAjudaContextual.Area areaAjudaContextualAtiva;
         javax.swing.Timer timerOcultarTipConclusao;
@@ -5068,6 +5070,7 @@ public class Main extends JFrame {
             if (botaoAjudaTexto != null) botaoAjudaTexto.setVisible(false);
             if (botaoAjudaVergnaud != null) botaoAjudaVergnaud.setVisible(false);
             if (botaoAjudaComplementar != null) botaoAjudaComplementar.setVisible(false);
+            ocultarHistorinhasDoPainelComplementar();
             if (botaoVerDicaPosicionamento != null) botaoVerDicaPosicionamento.setVisible(false);
             if (menuAjudaContextualAtivo != null) {
                 menuAjudaContextualAtivo.setVisible(false);
@@ -8895,15 +8898,16 @@ public class Main extends JFrame {
         }
 
         /**
-         * O material concreto (diagrama complementar — quadradinhos, barras,
-         * processo) só aparece na última opção da escalada de Scaffolding
+         * O material concreto manipulável (quadradinhos e barras) só aparece
+         * na última opção da escalada de Scaffolding
          * (3ª tentativa rejeitada consecutiva da incógnita atual — AG_EMCME),
          * não durante a modelagem normal (decisão de 2026-08-07, item 5 do
          * levantamento de pendências — TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md).
          * Antes disso o diagrama complementar sempre aparecia junto com o de
          * Vergnaud. `tentativasIncognitaAtual` é null antes da primeira
          * tentativa rejeitada de uma situação-problema — tratado como "não
-         * bloqueado", igual a uma instância recém-criada.
+         * bloqueado", igual a uma instância recém-criada. As historinhas são
+         * representações passivas e também aguardam a terceira tentativa.
          *
          * Entre 2026-08-07 e 2026-08-16 o diagrama complementar ficou visível
          * o tempo todo (constante temporária
@@ -8935,6 +8939,11 @@ public class Main extends JFrame {
                     == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
         }
 
+        private boolean ehHistorinhasComposicaoTransformacoes() {
+            return obterTipoRepresentacaoComplementarAtual()
+                    == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES;
+        }
+
         private TipoRepresentacaoComplementar obterTipoRepresentacaoComplementarAtual() {
             return seletorRepresentacaoComplementar.selecionar(
                     tipoSituacaoSelecionada, false);
@@ -8944,9 +8953,9 @@ public class Main extends JFrame {
          * Verdadeiro quando a categoria selecionada ainda cai no fallback
          * {@link TipoRepresentacaoComplementar#GENERICA} — círculos vazios
          * ligados por setas, sem quadradinhos nem qualquer conteúdo
-         * manipulável. Hoje é o caso de TRANSFORMACAO_RELACAO e
-         * COMPOSICAO_RELACOES (nunca tiveram representação complementar
-         * própria — ver TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md).
+         * manipulável. É o caso das categorias que não possuem material
+         * complementar próprio. TRANSFORMACAO_MEDIDAS e
+         * COMPOSICAO_TRANSFORMACOES usam o tipo próprio de historinhas.
          *
          * Usado só para suprimir o CONTEÚDO do painel complementar (o que é
          * desenhado dentro dele e os controles de clique). NÃO deve ser
@@ -8961,6 +8970,49 @@ public class Main extends JFrame {
                     tipoSituacaoSelecionada,
                     false)
                     == TipoRepresentacaoComplementar.GENERICA;
+        }
+
+        private boolean ehRepresentacaoComplementarSemUnidades() {
+            return ehRepresentacaoComplementarGenerica()
+                    || ehHistorinhasComposicaoTransformacoes();
+        }
+
+        private void exibirHistorinhasNoPainelComplementar(Rectangle area) {
+            int margem = 10;
+            Rectangle conteudo = new Rectangle(
+                    area.x + margem,
+                    area.y + margem,
+                    Math.max(1, area.width - 2 * margem),
+                    Math.max(1, area.height - 2 * margem));
+            Dimension tamanhoImagem = new Dimension(
+                    conteudo.width,
+                    Math.max(1, conteudo.height - 38));
+            if (painelHistorinhasComplementar == null
+                    || !tamanhoImagem.equals(tamanhoHistorinhasComplementar)) {
+                if (painelHistorinhasComplementar != null) {
+                    remove(painelHistorinhasComplementar);
+                }
+                painelHistorinhasComplementar =
+                        PainelAjudaNarrativaVisualCategoria.criarPassivoSeDisponivel(
+                                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
+                                        .selecionarRepertorioAjudaVisual(),
+                                FormatoAjudaNarrativaVisual.ANIMACAO,
+                                tamanhoImagem);
+                tamanhoHistorinhasComplementar = new Dimension(tamanhoImagem);
+                if (painelHistorinhasComplementar != null) {
+                    add(painelHistorinhasComplementar);
+                }
+            }
+            if (painelHistorinhasComplementar != null) {
+                painelHistorinhasComplementar.setBounds(conteudo);
+                painelHistorinhasComplementar.setVisible(true);
+            }
+        }
+
+        private void ocultarHistorinhasDoPainelComplementar() {
+            if (painelHistorinhasComplementar != null) {
+                painelHistorinhasComplementar.setVisible(false);
+            }
         }
 
         private int obterXDivisorDiagramas() {
@@ -9496,22 +9548,32 @@ public class Main extends JFrame {
 
         private void desenharDiagramaVenn(Graphics2D g2) {
             if (!deveExibirDiagramaComplementar()) {
+                ocultarHistorinhasDoPainelComplementar();
                 return;
             }
             Rectangle area = obterAreaDiagramaAditivo();
+            if (ehHistorinhasComposicaoTransformacoes()) {
+                desenharCard(g2, area.x, area.y, area.width, area.height, 18);
+                if (botaoAjudaComplementar != null) {
+                    botaoAjudaComplementar.setVisible(false);
+                    botaoAjudaComplementar.setEnabled(false);
+                }
+                exibirHistorinhasNoPainelComplementar(area);
+                return;
+            }
+            ocultarHistorinhasDoPainelComplementar();
             boolean composicaoMedidas = ehDiagramaVennComposicaoMedidas();
             boolean comparacaoMedidas = ehGraficoBarrasComparacao();
             boolean processoTransformacao = ehProcessoTransformacaoMedidas();
             boolean composicaoTransformacoesProcesso = ehComposicaoTransformacoesProcesso();
             /*
-             * TRANSFORMACAO_RELACAO/COMPOSICAO_RELACOES caem no fallback
-             * GENERICA (círculos vazios + setas, sem nenhum conteúdo
-             * manipulável) — a pedido da usuária (2026-08-08), o painel
-             * complementar deixa de desenhar qualquer coisa para esses
-             * tipos, mas SEM alterar `deveExibirDiagramaComplementar()`
-             * nem a área reservada para este painel: o diagrama de
-             * Vergnaud deve continuar na mesma posição de sempre (ver
-             * TAREFA_PENDENTE_REPRESENTACAO_COMPLEMENTAR_RELACOES.md).
+             * Categorias sem representação complementar ativa caem no
+             * fallback GENERICA (círculos vazios + setas, sem conteúdo
+             * manipulável). Isso inclui as Relações (decisão de 2026-08-08)
+             * sem material próprio. Transformação de Medidas e Composição de
+             * Transformações já retornaram acima, materializadas pelas
+             * historinhas. O painel reservado e o diagrama de Vergnaud não
+             * mudam.
              * O estado (sincronizarDiagramaVennComRepresentacoes) continua
              * sendo recalculado normalmente abaixo, só o desenho/controles
              * são suprimidos.
@@ -9863,7 +9925,7 @@ public class Main extends JFrame {
 
         private RepresentacaoComUnidadesAdicionaveis
                 encontrarRepresentacaoPeloControleAdicionarQuadradinho(int x, int y) {
-            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarGenerica()) {
+            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarSemUnidades()) {
                 return null;
             }
             Rectangle area = obterAreaDiagramaAditivo();
@@ -9920,7 +9982,7 @@ public class Main extends JFrame {
 
         private RepresentacaoComUnidadesRemoviveis
                 encontrarRepresentacaoPeloControleRemoverQuadradinho(int x, int y) {
-            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarGenerica()) {
+            if (!deveExibirDiagramaComplementar() || ehRepresentacaoComplementarSemUnidades()) {
                 return null;
             }
             Rectangle area = obterAreaDiagramaAditivo();

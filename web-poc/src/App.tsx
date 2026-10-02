@@ -10,6 +10,7 @@ import { EnunciadoInterativo } from "./EnunciadoInterativo";
 import { IconeAjudaContextual, MenuAjudaContextual } from "./MenuAjudaContextual";
 import { GeradorCenaGerard } from "./cena-gerard/GeradorCenaGerard";
 import { ChatbotGerard } from "./ChatbotGerard";
+import { HistorinhaPassiva } from "./HistorinhaPassiva";
 import { estadoRepresentacoesInicial, reduzirEstadoRepresentacoes } from "./estadoRepresentacoes";
 import { EstadoSemanticoExploratorio } from "./estadoSemanticoExploratorio";
 
@@ -461,12 +462,12 @@ export default function App() {
     && "papel_aguardando_sinal" in estado.modelagem
     ? estado.modelagem
     : undefined;
-  // Historinha passiva: exibida só enquanto o servidor informa que a escalada da
-  // incógnita está no limite (3ª tentativa rejeitada). Sem memória no cliente: o
-  // restaurar volta o domínio ao estado inicial e a historinha some junto.
-  const historinhaVisivel = Boolean(modelagemComSinal
-    && "escalada_no_limite" in modelagemComSinal
-    && modelagemComSinal.escalada_no_limite === true);
+  // Historinha passiva: o servidor entrega o repertório da PRÓPRIA categoria e só na
+  // escalada no limite (3ª tentativa rejeitada); lista vazia quando a categoria não tem
+  // historinhas (ex.: Transformação de Medidas). Sem memória no cliente: o restaurar
+  // volta o domínio ao estado inicial e a historinha some junto.
+  const historinhasAjudaVisual = estado?.ajuda_visual ?? [];
+  const codigoIdiomaSituacao = estado?.idiomas_situacao?.find((idioma) => idioma.atual)?.codigo;
 
   const cenaExibida = (() => {
     if (!estado?.cena) return estado?.cena;
@@ -650,11 +651,9 @@ export default function App() {
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
-          {historinhaVisivel &&
-            <div className="historinha-passiva" aria-label="Historinha">
-              <img src="/ajuda/composicao_transformacoes/01_joao_bilas_historinha.gif"
-                alt="" aria-hidden="true" />
-            </div>}
+          {historinhasAjudaVisual.length > 0 &&
+            <HistorinhaPassiva historinhas={historinhasAjudaVisual}
+              codigoIdioma={codigoIdiomaSituacao} />}
           {cenaMaterialConcreto && <section className="material-concreto" aria-label="Material concreto">
             {modelagemMaterialConcreto?.material_concreto_texto &&
               <p className="material-concreto-aviso">{modelagemMaterialConcreto.material_concreto_texto}</p>}

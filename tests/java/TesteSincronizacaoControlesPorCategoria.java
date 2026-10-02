@@ -20,8 +20,6 @@ public final class TesteSincronizacaoControlesPorCategoria {
             public void run() {
                 try {
                     testarComposicao();
-                    testarTransformacaoNegativa();
-                    testarMagnitudeTransformacaoNegativa();
                     testarComparacao();
                 } catch (Throwable t) {
                     erro[0] = t;
@@ -32,7 +30,7 @@ public final class TesteSincronizacaoControlesPorCategoria {
             erro[0].printStackTrace();
             System.exit(1);
         }
-        System.out.println("Teste aprovado: composição, transformação e comparação sincronizam texto, Vergnaud e unidades sem alterar a curadoria.");
+        System.out.println("Teste aprovado: composição e comparação sincronizam texto, Vergnaud e unidades sem alterar a curadoria.");
         System.exit(0);
     }
 
@@ -57,58 +55,6 @@ public final class TesteSincronizacaoControlesPorCategoria {
                         && "8".equals(curada.getQuantidade2())
                         && "11".equals(curada.getResultado()),
                 "A curadoria da composição foi modificada.");
-    }
-
-    private static void testarTransformacaoNegativa() throws Exception {
-        SituacaoProblemaAditiva curada = novaSituacaoTransformacao();
-        Main.TelaGerard tela = prepararTela(
-                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                curada,
-                new String[] {"papel.estadoInicial", "papel.transformacao", "papel.estadoFinal"},
-                new int[] {10, -3, 7},
-                new TipoFiguraDiagrama[] {
-                    TipoFiguraDiagrama.RETANGULO,
-                    TipoFiguraDiagrama.ELIPSE,
-                    TipoFiguraDiagrama.RETANGULO
-                });
-
-        removerUmaUnidade(tela, 0);
-        exigirValores(tela, new int[] {9, -3, 6}, "transformação");
-        // O tabuleiro concreto representa também a magnitude da transformação.
-        exigirContagensVisuais(tela, new int[] {9, 3, 6}, "transformação");
-        // O texto linguístico exibe a magnitude; o sinal pertence ao papel
-        // semântico e às representações próprias de número relativo.
-        exigirTextos(tela, new String[] {"9", "3", "6"}, "transformação");
-        exigir("10".equals(curada.getEstadoInicial())
-                        && "3".equals(curada.getTransformacao())
-                        && "negativo".equals(curada.getSinalTransformacao())
-                        && "7".equals(curada.getEstadoFinal()),
-                "A curadoria da transformação foi modificada.");
-    }
-
-    private static void testarMagnitudeTransformacaoNegativa() throws Exception {
-        SituacaoProblemaAditiva curada = novaSituacaoTransformacao();
-        Main.TelaGerard tela = prepararTela(
-                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                curada,
-                new String[] {"papel.estadoInicial", "papel.transformacao", "papel.estadoFinal"},
-                new int[] {10, -2, 8},
-                new TipoFiguraDiagrama[] {
-                    TipoFiguraDiagrama.RETANGULO,
-                    TipoFiguraDiagrama.ELIPSE,
-                    TipoFiguraDiagrama.RETANGULO
-                });
-
-        adicionarUmaUnidade(tela, 1);
-        exigirValores(tela, new int[] {10, -3, 7},
-                "magnitude da transformação negativa");
-        exigirContagensVisuais(tela, new int[] {10, 3, 7},
-                "magnitude da transformação negativa");
-        exigirTextos(tela, new String[] {"10", "3", "7"},
-                "magnitude da transformação negativa");
-        exigir("3".equals(curada.getTransformacao())
-                        && "negativo".equals(curada.getSinalTransformacao()),
-                "A manipulação concreta modificou a curadoria da transformação.");
     }
 
     private static void testarComparacao() throws Exception {
@@ -184,16 +130,6 @@ public final class TesteSincronizacaoControlesPorCategoria {
         return tela;
     }
 
-    private static void adicionarUmaUnidade(Main.TelaGerard tela, int indiceVisual) {
-        CirculoVenn agrupamento = tela.circulosVenn.get(indiceVisual);
-        RepresentacaoVennEditavel representacao = new RepresentacaoVennEditavel(
-                agrupamento, "", tela.operacoesUnidadesVenn);
-        exigir(representacao.podeAdicionarUnidade(),
-                "A adição deveria estar habilitada antes da operação.");
-        exigir(representacao.adicionarUnidade().foiRealizada(),
-                "A adição não foi realizada.");
-    }
-
     private static void removerUmaUnidade(Main.TelaGerard tela, int indiceVisual) {
         CirculoVenn agrupamento = tela.circulosVenn.get(indiceVisual);
         RepresentacaoVennEditavel representacao = new RepresentacaoVennEditavel(
@@ -261,14 +197,6 @@ public final class TesteSincronizacaoControlesPorCategoria {
                 IdiomaInterface.PORTUGUES, "Composição", "", "", "",
                 "", "", "", "", "3", "8", "11",
                 "", "", "", "", "todo", "", "");
-    }
-
-    private static SituacaoProblemaAditiva novaSituacaoTransformacao() {
-        return new SituacaoProblemaAditiva(
-                "trans", true, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                IdiomaInterface.PORTUGUES, "Transformação", "", "", "",
-                "10", "3", "negativo", "7", "", "", "",
-                "", "", "", "", "estado_final", "", "");
     }
 
     private static SituacaoProblemaAditiva novaSituacaoComparacao() {
