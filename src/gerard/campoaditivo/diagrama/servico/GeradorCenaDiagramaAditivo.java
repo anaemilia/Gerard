@@ -33,6 +33,15 @@ public class GeradorCenaDiagramaAditivo {
                 definicao, valores);
     }
 
+    /**
+     * Projeta na cena o subtítulo de cada figura. O gerador não decide quem é o
+     * personagem de cada papel: recebe a resposta de quem a conhece e a renderiza.
+     */
+    public CenaDiagramaAditivo comSubtitulos(CenaDiagramaAditivo cena,
+            java.util.function.Function<String, String> subtituloPorPapel) {
+        return cena == null ? null : cena.comSubtitulos(subtituloPorPapel);
+    }
+
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */
     public CenaDiagramaAditivo comFeedback(CenaDiagramaAditivo cena,
             EstadoFeedbackDiagrama estado) {

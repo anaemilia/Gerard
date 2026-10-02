@@ -139,6 +139,12 @@
       "kind": "skill",
       "path": ".agents/skills/gerard-autorizacao-sem-invencao/SKILL.md",
       "knowledge_owner": "limites_de_autorizacao_e_disciplina_de_fontes"
+    },
+    {
+      "id": "gerard-tela-via-gerador-de-cena",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-tela-via-gerador-de-cena/SKILL.md",
+      "knowledge_owner": "projecao_da_tela_pela_cena"
     }
   ],
   "edges": [
@@ -681,6 +687,54 @@
       "relation": "constrains",
       "to": "gerard-knowledge-locality-principle",
       "reason": "A skill nao assume a autoridade curatorial nem duplica a sintaxe textual proprietaria."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "requires",
+      "to": "gerard-domain-model-first",
+      "reason": "Quem decide o que aparece e o objeto rico; a cena projeta o modelo."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "requires",
+      "to": "gerard-knowledge-locality-principle",
+      "reason": "A regra pertence ao menor objeto rico que a conhece, nao ao gerador nem ao adaptador."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "related",
+      "to": "gerard-api-semantica",
+      "reason": "A cena e as decisoes sao publicadas a web e mobile; o cliente so materializa."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "related",
+      "to": "gerard-posicionamento-relativo",
+      "reason": "A geometria concreta do adaptador deriva da geometria real."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "related",
+      "to": "gerard-consistencia-estado",
+      "reason": "Representacoes leem o mesmo estado projetado."
+    },
+    {
+      "from": "gerard-tela-via-gerador-de-cena",
+      "relation": "related",
+      "to": "gerard-identidade-visual",
+      "reason": "Aparencia convive com a projecao sem se confundir."
+    },
+    {
+      "from": "gerard-scaffolding-interacao",
+      "relation": "constrains",
+      "to": "gerard-tela-via-gerador-de-cena",
+      "reason": "Apoios visiveis chegam a tela pela cena."
+    },
+    {
+      "from": "gerard-handlers-de-interacao",
+      "relation": "constrains",
+      "to": "gerard-tela-via-gerador-de-cena",
+      "reason": "Handlers nao atribuem conteudo a elementos fora da cena."
     }
   ]
 }

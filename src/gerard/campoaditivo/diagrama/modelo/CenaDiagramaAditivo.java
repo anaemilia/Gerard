@@ -63,6 +63,21 @@ public class CenaDiagramaAditivo {
     public VocabularioTextoNarrativo getVocabularioTexto() { return vocabularioTexto; }
     public boolean isPermiteEditarNarrativa() { return permiteEditarNarrativa; }
 
+    /**
+     * Nova cena em que cada figura traz o subtítulo já decidido por quem o conhece
+     * (ex.: o personagem do papel na situação curada). A cena só o carrega.
+     */
+    public CenaDiagramaAditivo comSubtitulos(java.util.function.Function<String, String> subtituloPorPapel) {
+        List<FiguraDiagrama> novas = new ArrayList<FiguraDiagrama>();
+        for (FiguraDiagrama figura : figuras) {
+            String subtitulo = subtituloPorPapel == null ? ""
+                    : subtituloPorPapel.apply(figura.getChavePapelSemantico());
+            novas.add(figura.comSubtitulo(subtitulo));
+        }
+        return new CenaDiagramaAditivo(titulo, descricao, novas, conectores, estadoFeedback,
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa);
+    }
+
     public CenaDiagramaAditivo comEstadoFeedback(EstadoFeedbackDiagrama estado) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estado,
                 elementosTexto, vocabularioTexto, permiteEditarNarrativa);

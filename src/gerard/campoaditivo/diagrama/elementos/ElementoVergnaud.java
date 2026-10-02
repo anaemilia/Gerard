@@ -16,7 +16,8 @@ public class ElementoVergnaud implements ElementoComLupa {
     public TipoFiguraDiagrama tipo;
     public String rotulo;
     public String textoEditavel = "";
-    public String subtitulo = "";
+    /** Linhas do bloco de rótulo, de cima para baixo, como a cena as informou. */
+    public java.util.List<String> linhasRotulo = java.util.Collections.emptyList();
     public boolean rotulosAcima = false;
     /** Decisão portátil da cena; a camada Swing apenas materializa o controle. */
     public boolean exibirLupa = false;
@@ -142,54 +143,22 @@ public class ElementoVergnaud implements ElementoComLupa {
             g2.drawString(textoEditavel, tx, ty);
         }
 
-        if (rotulosAcima) {
-            int yBaseAcima = y - 8;
-            if (rotulo != null && rotulo.trim().length() > 0) {
-                String textoRotulo = rotulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmRotulo = g2.getFontMetrics();
-                int rx = x + (largura - fmRotulo.stringWidth(textoRotulo)) / 2;
-                int ry = yBaseAcima - 2;
-                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
-                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoRotulo, rx, ry);
-                // O subtítulo fica acima do TOPO do rótulo (linha de base menos
-                // a altura da fonte), não acima da linha de base: senão as duas
-                // linhas se sobrepõem.
-                yBaseAcima = ry - fmRotulo.getAscent() - 4;
-            }
-            if (subtitulo != null && subtitulo.trim().length() > 0) {
-                String textoSubtitulo = subtitulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmSubtitulo = g2.getFontMetrics();
-                int sx = x + (largura - fmSubtitulo.stringWidth(textoSubtitulo)) / 2;
-                int sy = yBaseAcima - 2;
-                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
-                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoSubtitulo, sx, sy);
-            }
-        } else {
-            int yRotuloBase = y + altura + 6;
-            if (subtitulo != null && subtitulo.trim().length() > 0) {
-                String textoSubtitulo = subtitulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmSubtitulo = g2.getFontMetrics();
-                int sx = x + (largura - fmSubtitulo.stringWidth(textoSubtitulo)) / 2;
-                int sy = yRotuloBase + fmSubtitulo.getAscent();
-                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
-                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoSubtitulo, sx, sy);
-                yRotuloBase = sy + 4;
-            }
-            if (rotulo != null && rotulo.trim().length() > 0) {
-                String textoRotulo = rotulo.trim();
-                g2.setFont(new Font("Arial", Font.BOLD, 18));
-                FontMetrics fmRotulo = g2.getFontMetrics();
-                int rx = x + (largura - fmRotulo.stringWidth(textoRotulo)) / 2;
-                int ry = yRotuloBase + fmRotulo.getAscent();
-                g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
-                        : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.drawString(textoRotulo, rx, ry);
+        // Bloco de rótulo: as linhas (subtítulo, rótulo), a ordem e o lado vêm da cena.
+        // Aqui só se empilha pelas métricas da fonte, sem sobreposição possível.
+        if (linhasRotulo != null && !linhasRotulo.isEmpty()) {
+            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            FontMetrics fmLinha = g2.getFontMetrics();
+            int alturaLinha = fmLinha.getHeight();
+            int topoBloco = rotulosAcima
+                    ? y - 8 - alturaLinha * linhasRotulo.size()
+                    : y + altura + 6;
+            g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
+                    : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
+            for (int i = 0; i < linhasRotulo.size(); i++) {
+                String linha = linhasRotulo.get(i);
+                int lx = x + (largura - fmLinha.stringWidth(linha)) / 2;
+                int ly = topoBloco + i * alturaLinha + fmLinha.getAscent();
+                g2.drawString(linha, lx, ly);
             }
         }
 

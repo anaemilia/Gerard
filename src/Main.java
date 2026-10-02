@@ -5250,9 +5250,11 @@ public class Main extends JFrame {
             }
 
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
-            CenaDiagramaAditivo cenaAtualizada = geradorCenaDiagrama.gerar(
-                    tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
-                    extrairValoresDoTexto());
+            CenaDiagramaAditivo cenaAtualizada = geradorCenaDiagrama.comSubtitulos(
+                    geradorCenaDiagrama.gerar(
+                            tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
+                            extrairValoresDoTexto()),
+                    participantePorPapelDaSituacaoAtual());
 
             if (cenaAtualizada == null) {
                 return;
@@ -9108,9 +9110,11 @@ public class Main extends JFrame {
             // reativaria sozinha dentro da MESMA categoria de Relações.
             desativarPaineisEixosRelacoes();
 
-            cenaDiagramaAtual = geradorCenaDiagrama.gerar(
-                    tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
-                    extrairValoresDoTexto());
+            cenaDiagramaAtual = geradorCenaDiagrama.comSubtitulos(
+                    geradorCenaDiagrama.gerar(
+                            tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
+                            extrairValoresDoTexto()),
+                    participantePorPapelDaSituacaoAtual());
 
             if (cenaDiagramaAtual == null) {
                 return;
@@ -9275,31 +9279,39 @@ public class Main extends JFrame {
             deslocamentoCentroYAplicadoDiagramaVergnaud = novoDeslocamentoCentroY;
         }
 
+        /**
+         * Realiza, nos elementos, o bloco de rótulo que a cena trouxe (ordem das linhas e
+         * lado). O personagem de cada papel é informado ao gerador por
+         * {@link #participantePorPapelDaSituacaoAtual()}; aqui nada é decidido.
+         */
         private void aplicarSubtitulosPersonagensNoDiagramaVergnaud() {
-            if (situacaoProblemaAtual == null || elementosVergnaud == null || elementosVergnaud.isEmpty()) {
+            if (cenaDiagramaAtual == null || elementosVergnaud == null || elementosVergnaud.isEmpty()) {
                 return;
             }
-            for (int i = 0; i < elementosVergnaud.size(); i++) {
+            for (int i = 0; i < elementosVergnaud.size()
+                    && i < cenaDiagramaAtual.getFiguras().size(); i++) {
                 ElementoVergnaud elemento = elementosVergnaud.get(i);
                 if (elemento == null) {
                     continue;
                 }
-                elemento.subtitulo = obterSubtituloPersonagemParaElemento(elemento);
-                if (cenaDiagramaAtual != null && i < cenaDiagramaAtual.getFiguras().size()) {
-                    elemento.rotulosAcima = cenaDiagramaAtual.getFiguras().get(i)
-                            .getPosicaoRotulo()
-                            == gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura.ACIMA;
-                }
+                FiguraDiagrama figura = cenaDiagramaAtual.getFiguras().get(i);
+                elemento.linhasRotulo = figura.getLinhasRotulo();
+                elemento.rotulosAcima = figura.getPosicaoRotulo()
+                        == gerard.campoaditivo.diagrama.modelo.PosicaoRotuloFigura.ACIMA;
             }
         }
 
-        private String obterSubtituloPersonagemParaElemento(ElementoVergnaud elemento) {
-            if (situacaoProblemaAtual == null || elemento == null) {
-                return "";
-            }
-            return valorSeguroPersonagem(SemanticaCuradaSituacao.buscarParticipante(
-                    situacaoProblemaAtual, localizacao,
-                    elemento.chavePapelSemantico));
+        /** Quem conhece o participante de cada papel é a situação curada; o gerador só o projeta. */
+        private java.util.function.Function<String, String> participantePorPapelDaSituacaoAtual() {
+            return new java.util.function.Function<String, String>() {
+                public String apply(String chavePapel) {
+                    if (situacaoProblemaAtual == null) {
+                        return "";
+                    }
+                    return valorSeguroPersonagem(SemanticaCuradaSituacao.buscarParticipante(
+                            situacaoProblemaAtual, localizacao, chavePapel));
+                }
+            };
         }
 
         private String valorSeguroPersonagem(String personagem) {

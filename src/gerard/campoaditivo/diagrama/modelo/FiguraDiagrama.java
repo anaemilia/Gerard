@@ -12,6 +12,7 @@ public class FiguraDiagrama implements ElementoComLupa {
     private final PosicaoRotuloFigura posicaoRotulo;
     private final boolean exibirLupa;
     private final String chavePapelSemantico;
+    private final String subtitulo;
 
     public FiguraDiagrama(TipoFiguraDiagrama tipo, int x, int y, int largura, int altura,
                           String rotulo, int valorReferencia, boolean exibirQuantidadeInterna) {
@@ -30,6 +31,14 @@ public class FiguraDiagrama implements ElementoComLupa {
                           String rotulo, int valorReferencia, boolean exibirQuantidadeInterna,
                           PosicaoRotuloFigura posicaoRotulo, boolean exibirLupa,
                           String chavePapelSemantico) {
+        this(tipo, x, y, largura, altura, rotulo, valorReferencia, exibirQuantidadeInterna,
+                posicaoRotulo, exibirLupa, chavePapelSemantico, "");
+    }
+
+    public FiguraDiagrama(TipoFiguraDiagrama tipo, int x, int y, int largura, int altura,
+                          String rotulo, int valorReferencia, boolean exibirQuantidadeInterna,
+                          PosicaoRotuloFigura posicaoRotulo, boolean exibirLupa,
+                          String chavePapelSemantico, String subtitulo) {
         this.tipo = tipo;
         this.x = x;
         this.y = y;
@@ -42,6 +51,7 @@ public class FiguraDiagrama implements ElementoComLupa {
         this.exibirLupa = exibirLupa;
         this.chavePapelSemantico = chavePapelSemantico == null
                 ? "" : chavePapelSemantico.trim();
+        this.subtitulo = subtitulo == null ? "" : subtitulo.trim();
     }
 
     public TipoFiguraDiagrama getTipo() { return tipo; }
@@ -55,4 +65,27 @@ public class FiguraDiagrama implements ElementoComLupa {
     public PosicaoRotuloFigura getPosicaoRotulo() { return posicaoRotulo; }
     public boolean isExibirLupa() { return exibirLupa; }
     public String getChavePapelSemantico() { return chavePapelSemantico; }
+    /** Linha de apoio do rótulo (ex.: o personagem), informada por quem a decide. */
+    public String getSubtitulo() { return subtitulo; }
+
+    /**
+     * Linhas do bloco de rótulo, de cima para baixo, já na ordem de exibição:
+     * subtítulo (se houver) e rótulo (se houver). O adaptador só empilha e desenha.
+     */
+    public java.util.List<String> getLinhasRotulo() {
+        java.util.List<String> linhas = new java.util.ArrayList<String>();
+        if (!subtitulo.isEmpty()) {
+            linhas.add(subtitulo);
+        }
+        if (rotulo != null && rotulo.trim().length() > 0) {
+            linhas.add(rotulo.trim());
+        }
+        return linhas;
+    }
+
+    public FiguraDiagrama comSubtitulo(String novoSubtitulo) {
+        return new FiguraDiagrama(tipo, x, y, largura, altura, rotulo, valorReferencia,
+                exibirQuantidadeInterna, posicaoRotulo, exibirLupa, chavePapelSemantico,
+                novoSubtitulo);
+    }
 }
