@@ -4,7 +4,7 @@ import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.AreaDiagrama;
 import gerard.campoaditivo.diagrama.modelo.DirecaoDeslocamentoDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
-import gerard.campoaditivo.diagrama.modelo.PontoDiagrama;
+import gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
 import gerard.campoaditivo.modelo.DefinicaoDiagramaAditivo;
@@ -48,6 +48,9 @@ public class GeradorCenaDiagramaAditivo {
     private static final int FOLGA_ABAIXO_DO_SEGMENTO = 30;
     private static final int DESLOCAMENTO_TRACO_CHAVE = 18;
     private static final int DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO = 110;
+    private static final int LARGURA_DICA_PADRAO = 376;
+    private static final int LARGURA_DICA_LATERAL = 300;
+    private static final int MARGEM_LATERAL_DICA = 24;
 
     /**
      * Âncora (centro) do seletor de operação (Soma/Subtração) na geometria da cena, ou
@@ -58,7 +61,7 @@ public class GeradorCenaDiagramaAditivo {
      *
      * @param entreEstadoETransformacao segunda operação de Composição de Transformações
      */
-    public PontoDiagrama ancoraSeletorOperacao(CenaDiagramaAditivo cena, TipoSituacaoAditiva tipo,
+    public AncoraSeletorOperacao ancoraSeletorOperacao(CenaDiagramaAditivo cena, TipoSituacaoAditiva tipo,
             boolean entreEstadoETransformacao) {
         if (cena == null || cena.getFiguras().size() < 3) {
             return null;
@@ -67,8 +70,8 @@ public class GeradorCenaDiagramaAditivo {
         FiguraDiagrama f1 = cena.getFiguras().get(1);
         FiguraDiagrama f2 = cena.getFiguras().get(2);
         if (entreEstadoETransformacao) {
-            return new PontoDiagrama(f2.getX() - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO,
-                    f2.getY() + f2.getAltura() / 2);
+            return new AncoraSeletorOperacao(f2.getX() - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO,
+                    f2.getY() + f2.getAltura() / 2, LARGURA_DICA_PADRAO);
         }
         boolean relacoes = tipo == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO
                 || tipo == TipoSituacaoAditiva.COMPOSICAO_RELACOES;
@@ -79,14 +82,20 @@ public class GeradorCenaDiagramaAditivo {
             if (conector.temAlvo()) {
                 // Chave vertical: o traço real fica à direita do x armazenado.
                 meioX += DESLOCAMENTO_TRACO_CHAVE;
-                return new PontoDiagrama((meioX + conector.getXAlvo()) / 2,
-                        (meioY + conector.getYAlvo()) / 2 - ELEVACAO_ACIMA_DO_SEGMENTO);
+                return new AncoraSeletorOperacao((meioX + conector.getXAlvo()) / 2,
+                        (meioY + conector.getYAlvo()) / 2 - ELEVACAO_ACIMA_DO_SEGMENTO,
+                        LARGURA_DICA_PADRAO);
             }
-            return new PontoDiagrama(meioX, meioY + FOLGA_ABAIXO_DO_SEGMENTO);
+            return new AncoraSeletorOperacao(meioX, meioY + FOLGA_ABAIXO_DO_SEGMENTO,
+                    LARGURA_DICA_PADRAO);
         }
-        return new PontoDiagrama(
-                (f0.getX() + f0.getLargura() / 2 + f1.getX() + f1.getLargura() / 2) / 2,
-                Math.min(f0.getY(), f1.getY()) - ELEVACAO_ACIMA_DO_SEGMENTO);
+        // Entre as duas transformações de cima: o seletor fica sobre o vão entre elas e a
+        // dica de erro vai para a região livre à direita da segunda, para não cobrir figuras.
+        int xSeletor = (f0.getX() + f0.getLargura() / 2 + f1.getX() + f1.getLargura() / 2) / 2;
+        int direita = f1.getX() + f1.getLargura() + MARGEM_LATERAL_DICA;
+        return new AncoraSeletorOperacao(xSeletor,
+                Math.min(f0.getY(), f1.getY()) - ELEVACAO_ACIMA_DO_SEGMENTO,
+                LARGURA_DICA_LATERAL, direita + LARGURA_DICA_LATERAL / 2);
     }
 
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */

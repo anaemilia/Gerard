@@ -103,7 +103,7 @@ public final class TesteMensagensOperacaoPersonagensCurados {
         List<ElementoVergnaud> elementos = elementosComRotulosNaoSemanticos();
         SeletorOperacaoRelacaoAluno seletor = new SeletorOperacaoRelacaoAluno();
         seletor.ativar(caso.tipo, situacao,
-                new gerard.campoaditivo.diagrama.modelo.PontoDiagrama(0, 0),
+                new gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao(0, 0, 376),
                 AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,
                 localizacao);
 

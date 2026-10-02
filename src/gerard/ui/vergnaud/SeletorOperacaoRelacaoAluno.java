@@ -4,7 +4,7 @@ import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
 import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
-import gerard.campoaditivo.diagrama.modelo.PontoDiagrama;
+import gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.representacao.texto.RealizadorTextoExplicacaoOperacaoRelacao;
@@ -69,12 +69,15 @@ public final class SeletorOperacaoRelacaoAluno {
     // reduzido de 92 (espaço em excesso reportado pela usuária) para o
     // mínimo que ainda separa os textos.
     private static final int ESPACAMENTO_BOTOES = 70;
-    private static final int LARGURA_EXPLICACAO = 360;
+    private static final int LARGURA_EXPLICACAO_PADRAO = 360;
+    private static final int MARGEM_CAIXA_EXPLICACAO = 16;
     private static final int ESPACO_BOTAO_SINAL = 4;
     private static final int ESPACO_ENTRE_SINAL_E_NOME = 1;
     private static final int ESPACO_ROTULO_EXPLICACAO = 10;
 
     private boolean ativo;
+    private int larguraExplicacao = LARGURA_EXPLICACAO_PADRAO;
+    private int xCentroExplicacao;
     private Rectangle areaSoma;
     private Rectangle areaSubtracao;
     private int centroX;
@@ -138,7 +141,7 @@ public final class SeletorOperacaoRelacaoAluno {
      * medida entre si, nenhum liga os papéis de transformação entre si.
      */
     public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,
-            PontoDiagrama ancora,
+            AncoraSeletorOperacao ancora,
             AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {
         desativar();
         if (!aplicavel(tipo) || situacao == null || ancora == null) {
@@ -165,6 +168,9 @@ public final class SeletorOperacaoRelacaoAluno {
         // aqui só se desenham os dois botões em torno da âncora.
         centroX = ancora.getX();
         centroY = ancora.getY();
+        xCentroExplicacao = ancora.getXCentroDica();
+        larguraExplicacao = ancora.getLarguraDica() > MARGEM_CAIXA_EXPLICACAO
+                ? ancora.getLarguraDica() - MARGEM_CAIXA_EXPLICACAO : LARGURA_EXPLICACAO_PADRAO;
 
         areaSoma = new Rectangle(centroX - ESPACAMENTO_BOTOES / 2 - RAIO_BOTAO,
                 centroY - RAIO_BOTAO, RAIO_BOTAO * 2, RAIO_BOTAO * 2);
@@ -187,6 +193,7 @@ public final class SeletorOperacaoRelacaoAluno {
         }
         centroX += dx;
         centroY += dy;
+        xCentroExplicacao += dx;
         if (areaSoma != null) {
             areaSoma.translate(dx, dy);
         }
@@ -261,7 +268,7 @@ public final class SeletorOperacaoRelacaoAluno {
 
             if (mostrarExplicacao && textoExplicacaoCorreta != null && !textoExplicacaoCorreta.isEmpty()) {
                 int baseRotulos = Math.max(baseRotuloSoma, baseRotuloSubtracao);
-                desenharExplicacao(g, centroX, baseRotulos + ESPACO_ROTULO_EXPLICACAO);
+                desenharExplicacao(g, xCentroExplicacao, baseRotulos + ESPACO_ROTULO_EXPLICACAO);
             }
         } finally {
             g.dispose();
@@ -313,10 +320,10 @@ public final class SeletorOperacaoRelacaoAluno {
         Font fonte = new Font("Arial", Font.PLAIN, 12);
         g.setFont(fonte);
         FontMetrics fm = g.getFontMetrics();
-        List<String> linhas = quebrarLinhas(textoExplicacaoCorreta, fm, LARGURA_EXPLICACAO);
+        List<String> linhas = quebrarLinhas(textoExplicacaoCorreta, fm, larguraExplicacao);
         int alturaLinha = fm.getHeight();
         int alturaCaixa = alturaLinha * linhas.size() + 14;
-        int larguraCaixa = LARGURA_EXPLICACAO + 16;
+        int larguraCaixa = larguraExplicacao + MARGEM_CAIXA_EXPLICACAO;
         int caixaX = x - larguraCaixa / 2;
         int caixaY = y;
 

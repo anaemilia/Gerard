@@ -9203,13 +9203,13 @@ public class Main extends JFrame {
                     localizacao);
         }
 
-        private gerard.campoaditivo.diagrama.modelo.PontoDiagrama ancoraSeletorOperacaoDaCena(
+        private gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao ancoraSeletorOperacaoDaCena(
                 boolean entreEstadoETransformacao) {
-            gerard.campoaditivo.diagrama.modelo.PontoDiagrama ancora =
+            gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao ancora =
                     geradorCenaDiagrama.ancoraSeletorOperacao(
                             cenaDiagramaAtual, tipoSituacaoSelecionada, entreEstadoETransformacao);
             return ancora == null ? null
-                    : ancora.deslocado(deslocamentoCentroXAplicadoDiagramaVergnaud,
+                    : ancora.deslocada(deslocamentoCentroXAplicadoDiagramaVergnaud,
                             deslocamentoCentroYAplicadoDiagramaVergnaud);
         }
 
