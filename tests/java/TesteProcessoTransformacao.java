@@ -45,8 +45,8 @@ public final class TesteProcessoTransformacao {
                 new SeletorRepresentacaoComplementar();
         confirmar(seletor.selecionar(
                 TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, false)
-                == TipoRepresentacaoComplementar.GENERICA,
-                "transformação de medidas sem repertório próprio mantém painel vazio");
+                == TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA,
+                "transformação de medidas seleciona historinha independentemente do acervo");
         confirmar(seletor.selecionar(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, false)
                 == TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA,

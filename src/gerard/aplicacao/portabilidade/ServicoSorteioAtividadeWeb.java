@@ -834,6 +834,9 @@ public final class ServicoSorteioAtividadeWeb {
         // então não entra aqui.
         if (categoriaSelecionada != null) {
             estado.put("ajuda_contextual", projetarAjudaContextual(estado.get("modelagem")));
+            estado.put("ajuda_visual_acionada", Boolean.valueOf(ProjetorAjudaVisualWeb.deveAcionar(
+                    contextoAtual == null ? null : contextoAtual.getSituacao(),
+                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual())));
             // Historinhas passivas: repertório da PRÓPRIA categoria, só na escalada no
             // limite (ver ProjetorAjudaVisualWeb); categoria sem repertório => lista vazia.
             estado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(
@@ -842,6 +845,7 @@ public final class ServicoSorteioAtividadeWeb {
         } else {
             estado.remove("ajuda_contextual");
             estado.remove("ajuda_visual");
+            estado.remove("ajuda_visual_acionada");
         }
         // A curadoria bruta contém a resposta da incógnita e nunca integra o
         // contrato público do participante, mesmo após a classificação.

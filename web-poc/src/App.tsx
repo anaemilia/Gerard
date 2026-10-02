@@ -470,10 +470,8 @@ export default function App() {
     && "papel_aguardando_sinal" in estado.modelagem
     ? estado.modelagem
     : undefined;
-  // Historinha passiva: o servidor entrega o repertório da PRÓPRIA categoria e só na
-  // escalada no limite (3ª tentativa rejeitada); lista vazia quando a categoria não tem
-  // historinhas (ex.: Transformação de Medidas). Sem memória no cliente: o restaurar
-  // volta o domínio ao estado inicial e a historinha some junto.
+  // O servidor decide o acionamento independentemente do acervo e entrega o
+  // conteúdo disponível da própria categoria. Restaurar limpa a decisão no domínio.
   const historinhasAjudaVisual = estado?.ajuda_visual ?? [];
   const codigoIdiomaSituacao = estado?.idiomas_situacao?.find((idioma) => idioma.atual)?.codigo;
 
@@ -659,7 +657,7 @@ export default function App() {
         </section>
         <aside className="response-panel" aria-label="Área complementar">
           <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
-          {historinhasAjudaVisual.length > 0 &&
+          {estado?.ajuda_visual_acionada && historinhasAjudaVisual.length > 0 &&
             <HistorinhaPassiva historinhas={historinhasAjudaVisual}
               codigoIdioma={codigoIdiomaSituacao} />}
           {cenaMaterialConcreto && <section className="material-concreto" aria-label="Material concreto">

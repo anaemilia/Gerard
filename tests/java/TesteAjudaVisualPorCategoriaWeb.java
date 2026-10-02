@@ -55,6 +55,16 @@ public final class TesteAjudaVisualPorCategoriaWeb {
         }
         int verificadas = 0;
         for (SituacaoProblemaAditiva situacao : new RepositorioSituacoesAditivas().listarValidadas()) {
+            boolean relativo = SemanticaCuradaSituacao.possuiNumeroRelativo(situacao);
+            exigir(!ProjetorAjudaVisualWeb.deveAcionar(situacao, false), "antes do limite não aciona");
+            exigir(ProjetorAjudaVisualWeb.deveAcionar(situacao, true) == relativo,
+                    "decisão independente do acervo: " + situacao.getId());
+            if (relativo) {
+                exigir(new gerard.campoaditivo.representacao.SeletorRepresentacaoComplementar()
+                        .selecionar(situacao.getTipo(), false, relativo)
+                        == gerard.campoaditivo.representacao.TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA,
+                        "número relativo seleciona historinha mesmo sem acervo");
+            }
             exigir(ProjetorAjudaVisualWeb.projetar(situacao, false).isEmpty(), "sem limite não há historinha");
             int esperadas = SemanticaCuradaSituacao.possuiNumeroRelativo(situacao)
                     ? situacao.getTipo().selecionarRepertorioAjudaVisual().getHistorinhas().size() : 0;

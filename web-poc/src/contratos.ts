@@ -62,6 +62,7 @@ export type EstadoClassificacao = Readonly<{
   // escalada no limite; vazio quando a categoria não tem repertório (ex.: Transformação
   // de Medidas). "referencia" é opaca (HistorinhaAjudaVisual): o adaptador web a resolve.
   ajuda_visual?: readonly HistorinhaAjudaVisualWeb[];
+  ajuda_visual_acionada?: boolean;
   confirmacao_valor_papel?: string | null;
   cena?: CenaDiagrama;
   // Mesmo formato de CenaDiagrama, gerado pelo mesmo gerador de cena

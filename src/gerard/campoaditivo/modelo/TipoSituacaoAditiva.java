@@ -87,10 +87,15 @@ public enum TipoSituacaoAditiva {
         return repertorioAjudaVisual;
     }
 
-    /** Decisão de 2026-10-02: repertório próprio, só com número relativo e três rejeições. */
+    /** Política independente da disponibilidade de conteúdo (decisão de 2026-10-02). */
+    public boolean deveAcionarHistorinha(boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
+        return possuiNumeroRelativo && escaladaNoLimite;
+    }
+
+    /** Resolve o repertório depois da decisão; lista vazia não revoga o acionamento. */
     public RepertorioAjudaVisual selecionarRepertorioAjudaVisual(
             boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
-        return possuiNumeroRelativo && escaladaNoLimite
+        return deveAcionarHistorinha(possuiNumeroRelativo, escaladaNoLimite)
                 ? repertorioAjudaVisual : RepertorioAjudaVisual.vazio();
     }
 

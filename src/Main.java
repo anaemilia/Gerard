@@ -8946,7 +8946,8 @@ public class Main extends JFrame {
 
         private TipoRepresentacaoComplementar obterTipoRepresentacaoComplementarAtual() {
             return seletorRepresentacaoComplementar.selecionar(
-                    tipoSituacaoSelecionada, false);
+                    tipoSituacaoSelecionada, false,
+                    SemanticaCuradaSituacao.possuiNumeroRelativo(situacaoProblemaAtual));
         }
 
         /**
@@ -8966,9 +8967,7 @@ public class Main extends JFrame {
          * 2026-08-08: "não mexa no diagrama de Vergnaud").
          */
         private boolean ehRepresentacaoComplementarGenerica() {
-            return seletorRepresentacaoComplementar.selecionar(
-                    tipoSituacaoSelecionada,
-                    false)
+            return obterTipoRepresentacaoComplementarAtual()
                     == TipoRepresentacaoComplementar.GENERICA;
         }
 

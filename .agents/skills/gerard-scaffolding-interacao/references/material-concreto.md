@@ -30,8 +30,13 @@ categorias que ainda possuem material concreto.
 Decisão posterior da usuária em 2026-10-02: a regra das historinhas é geral
 para situações com números relativos, inclusive positivos e incógnitos:
 exibir somente o repertório da própria categoria após três rejeições
-consecutivas do mesmo item. Sem repertório próprio, o painel permanece vazio;
-nunca emprestar historinhas de outra categoria. O gatilho existente da
+consecutivas do mesmo item. Correção explícita posterior da usuária na mesma
+data: a decisão de acionar historinha depende somente da ocorrência de número
+relativo e das três rejeições, nunca da disponibilidade do repertório. Acervo
+vazio é uma pendência de conteúdo posterior à decisão; não revoga o acionamento.
+O contrato web publica `ajuda_visual_acionada` separadamente da lista de conteúdo.
+A representação materializa o conteúdo disponível da própria categoria.
+O gatilho existente da
 incógnita é conservado. Para escolha de operação, a tentativa acompanha os
 resultados factuais do mesmo seletor, sem duplicar action_id, sem alterar C/E
 e sem bloquear o seletor. Acerto antes do limite encerra a sequência; apoio

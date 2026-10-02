@@ -28,18 +28,24 @@ public final class SeletorRepresentacaoComplementar {
 
     public TipoRepresentacaoComplementar selecionar(TipoSituacaoAditiva tipo,
                                                      boolean cenaComposta) {
+        return selecionar(tipo, cenaComposta, tipo != null
+                && tipo != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
+                && tipo != TipoSituacaoAditiva.COMPARACAO_MEDIDAS);
+    }
+
+    public TipoRepresentacaoComplementar selecionar(TipoSituacaoAditiva tipo,
+            boolean cenaComposta, boolean possuiNumeroRelativo) {
+        if (!cenaComposta && tipo != null && possuiNumeroRelativo) {
+            return TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA;
+        }
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.COLECOES_COMPOSICAO;
         }
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.BARRAS_COMPARACAO;
         }
-        if (!cenaComposta && tipo != null && tipo.possuiAjudaVisual()) {
-            return TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA;
-        }
         // Decisão da usuária (2026-10-01): representações com funil não
-        // participam mais da atividade. Sem repertório próprio, o painel
-        // reservado permanece vazio; não se empresta conteúdo de outra categoria.
+        // participam mais da atividade. O acervo não determina a representação.
         return TipoRepresentacaoComplementar.GENERICA;
     }
 }

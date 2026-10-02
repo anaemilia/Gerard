@@ -3,7 +3,9 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE??'playwright');
 const dir='tmp/confirmacao-morangos';fs.mkdirSync(dir,{recursive:true});
-const browser=await chromium.launch();const page=await browser.newPage({viewport:{width:1500,height:1000}});
+const testarSim=process.env.GERARD_TESTAR_SIM==='1';
+const situacaoAlvo=testarSim?'PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040':'PO_TRANSFORMACAO_MEDIDAS_frutas_93128185';
+const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_EXECUTABLE});const page=await browser.newPage({viewport:{width:1500,height:1000}});
 let estado;const chamadas=[];
 page.on('response',async r=>{if(!r.url().includes('/api/'))return;try{const j=await r.json(),e=j.estado??(j.modo?j:null);if(e?.modo)estado=e;if(r.request().method()==='POST')chamadas.push({url:r.url(),pedido:r.request().postData(),resposta:j});}catch{}});
 async function pausa(){await page.waitForTimeout(350);}
@@ -14,20 +16,39 @@ try{
  await page.goto('http://localhost:8092');await page.waitForSelector('button[aria-label="Sortear Medidas"]');
  for(let i=0;i<160;i++){
   await clicar(page.locator('button[aria-label="Sortear Medidas"]'));
-  if(estado?.situacao_id!=='PO_TRANSFORMACAO_MEDIDAS_frutas_93128185')continue;
+  if(estado?.situacao_id!==situacaoAlvo)continue;
   await clicar(page.locator('button[aria-label="Transformação de medidas"]'));
-  if(estado?.situacao_id==='PO_TRANSFORMACAO_MEDIDAS_frutas_93128185'&&estado.modelagem)break;
+  if(estado?.situacao_id===situacaoAlvo&&estado.modelagem)break;
  }
- if(estado?.situacao_id!=='PO_TRANSFORMACAO_MEDIDAS_frutas_93128185')throw new Error('exemplar não sorteado');
+ if(estado?.situacao_id!==situacaoAlvo)throw new Error('exemplar não sorteado');
  for(const [e,i]of estado.cena.elementos_texto.filter(e=>e.papel_id).map((e,i)=>[e,i])){
   const f=estado.cena.figuras.find(f=>f.chave_papel_semantico===e.papel_id);
   const a=await centro(page.locator('.enunciado-elemento-semantico').nth(i)),b=await centro(page.locator(`[data-figura-id="${f.id}"]`));
   await page.mouse.move(a.x,a.y);await page.mouse.down();for(let k=1;k<=18;k++)await page.mouse.move(a.x+(b.x-a.x)*k/18,a.y+(b.y-a.y)*k/18);await page.mouse.up();await pausa();
-  const sinal=page.locator('.valor-figura-sinal-tip input[aria-label="negativo"]');if(await sinal.count())await clicar(sinal);
+  const sinal=page.locator(`.valor-figura-sinal-tip input[aria-label="${testarSim?'positivo':'negativo'}"]`);if(await sinal.count())await clicar(sinal);
  }
- const f=estado.cena.figuras.find(f=>f.chave_papel_semantico==='papel.estadoFinal');
+ const f=estado.cena.figuras.find(f=>f.chave_papel_semantico===(testarSim?'papel.estadoInicial':'papel.estadoFinal'));
  const p=await centro(page.locator(`[data-figura-id="${f.id}"]`));await page.mouse.dblclick(p.x,p.y);await pausa();
  const input=page.locator(`[id="valor-${f.id}"]`);await input.fill('1');
+ if(testarSim){
+  await input.press('Enter');await pausa();
+  exigir(await page.locator('.valor-figura-confirmacao').count()===1,'pergunta após valor errado');
+  await clicar(page.locator('.valor-figura-confirmacao input').first());
+  const confirmacao=chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).at(-1).resposta;
+  exigir(confirmacao.rejeicoes_consecutivas===2,'Sim conta a segunda tentativa');
+  for(const valor of (process.env.GERARD_TESTAR_DECISAO==='1'?['2']:['2','3','4','6'])){
+   await page.mouse.dblclick(p.x,p.y);await pausa();await input.fill(valor);await input.press('Enter');await pausa();
+   const resultado=chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).at(-1).resposta;
+   console.log('VALOR='+valor+' CONTAGEM='+resultado.rejeicoes_consecutivas+' LIMITE='+resultado.limite_atingido+' DIAGNOSTICO='+resultado.diagnostico);
+   exigir(resultado.rejeicoes_consecutivas===3&&resultado.limite_atingido,'limite do domínio permanece em três');
+   exigir(estado.ajuda_visual_acionada===true,'historinha acionada em TM mesmo com acervo vazio');
+   exigir(!resultado.aceita&&!estado.modelagem.concluida,'erro não aceito nem tratado como conclusão');
+  }
+  await page.screenshot({path:dir+'/lucas_limite.png'});
+  await page.mouse.dblclick(p.x,p.y);await pausa();await input.fill('5');await input.press('Enter');await page.waitForTimeout(1500);
+  exigir(estado.modelagem.concluida===true,'Lucas conclui com valor correto');
+  await page.screenshot({path:dir+'/lucas_concluida.png'});
+ }else{
  await page.route('**/api/acoes/posicionar',async route=>{
   const response=await route.fetch();await page.waitForTimeout(600);await route.fulfill({response});
  });
@@ -56,4 +77,8 @@ try{
   const editor=page.locator(`[id="valor-${f.id}"]`);await editor.fill('7');await editor.press('Enter');await page.waitForTimeout(1100);
  }
  exigir(estado.modelagem.concluida===true,'conclusão real com valor correto');await page.screenshot({path:dir+'/concluida.png'});
+ }
 }finally{fs.writeFileSync(dir+'/sequencia-http.json',JSON.stringify(chamadas,null,2));await browser.close();}
+
+
+

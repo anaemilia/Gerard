@@ -28,6 +28,11 @@ public final class ProjetorAjudaVisualWeb {
     private ProjetorAjudaVisualWeb() {
     }
 
+    public static boolean deveAcionar(SituacaoProblemaAditiva situacao, boolean escaladaNoLimite) {
+        return situacao != null && situacao.getTipo().deveAcionarHistorinha(
+                SemanticaCuradaSituacao.possuiNumeroRelativo(situacao), escaladaNoLimite);
+    }
+
     public static List<Object> projetar(SituacaoProblemaAditiva situacao,
             boolean escaladaNoLimite) {
         return situacao == null ? new ArrayList<Object>()
