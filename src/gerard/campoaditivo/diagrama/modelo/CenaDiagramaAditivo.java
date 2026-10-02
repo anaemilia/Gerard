@@ -24,6 +24,8 @@ public class CenaDiagramaAditivo {
     // gerador, em vez de cada um recalcular "posso mostrar o botão de
     // editar?" por conta própria.
     private final boolean permiteEditarNarrativa;
+    // Ajuda visual (historinha) já decidida pelo backend; a cena só a carrega.
+    private final gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual ajudaVisual;
 
     public CenaDiagramaAditivo(String titulo, String descricao, List<FiguraDiagrama> figuras, List<ConectorDiagrama> conectores) {
         this(titulo, descricao, figuras, conectores, EstadoFeedbackDiagrama.NEUTRO);
@@ -33,7 +35,7 @@ public class CenaDiagramaAditivo {
             List<FiguraDiagrama> figuras, List<ConectorDiagrama> conectores,
             EstadoFeedbackDiagrama estadoFeedback) {
         this(titulo, descricao, figuras, conectores, estadoFeedback,
-                Collections.<SegmentoTextoSemantico>emptyList(), null, false);
+                Collections.<SegmentoTextoSemantico>emptyList(), null, false, null);
     }
 
     private CenaDiagramaAditivo(String titulo, String descricao,
@@ -41,7 +43,8 @@ public class CenaDiagramaAditivo {
             EstadoFeedbackDiagrama estadoFeedback,
             List<SegmentoTextoSemantico> elementosTexto,
             VocabularioTextoNarrativo vocabularioTexto,
-            boolean permiteEditarNarrativa) {
+            boolean permiteEditarNarrativa,
+            gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual ajudaVisual) {
         this.titulo = titulo;
         this.descricao = descricao;
         this.figuras = new ArrayList<FiguraDiagrama>(figuras);
@@ -52,6 +55,8 @@ public class CenaDiagramaAditivo {
                 elementosTexto == null ? Collections.<SegmentoTextoSemantico>emptyList() : elementosTexto);
         this.vocabularioTexto = vocabularioTexto;
         this.permiteEditarNarrativa = permiteEditarNarrativa;
+        this.ajudaVisual = ajudaVisual == null
+                ? gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual.vazio() : ajudaVisual;
     }
 
     public String getTitulo() { return titulo; }
@@ -62,6 +67,13 @@ public class CenaDiagramaAditivo {
     public List<SegmentoTextoSemantico> getElementosTexto() { return Collections.unmodifiableList(elementosTexto); }
     public VocabularioTextoNarrativo getVocabularioTexto() { return vocabularioTexto; }
     public boolean isPermiteEditarNarrativa() { return permiteEditarNarrativa; }
+    public gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual getAjudaVisual() { return ajudaVisual; }
+
+    /** Nova cena que carrega a ajuda visual que o backend decidiu (possivelmente vazia). */
+    public CenaDiagramaAditivo comAjudaVisual(gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual decidida) {
+        return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estadoFeedback,
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, decidida);
+    }
 
     /**
      * Nova cena em que cada figura traz o subtítulo já decidido por quem o conhece
@@ -75,12 +87,12 @@ public class CenaDiagramaAditivo {
             novas.add(figura.comSubtitulo(subtitulo));
         }
         return new CenaDiagramaAditivo(titulo, descricao, novas, conectores, estadoFeedback,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
     }
 
     public CenaDiagramaAditivo comEstadoFeedback(EstadoFeedbackDiagrama estado) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estado,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
     }
 
     /**
@@ -92,6 +104,6 @@ public class CenaDiagramaAditivo {
     public CenaDiagramaAditivo comElementosTexto(List<SegmentoTextoSemantico> elementosTexto,
             VocabularioTextoNarrativo vocabularioTexto, boolean permiteEditarNarrativa) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estadoFeedback,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
     }
 }

@@ -14,15 +14,15 @@ export function arquivosHistorinha(referencia: string, codigoIdioma: string | un
 }
 
 /**
- * Historinha passiva (sem interação, semântica nem conhecimento próprio): exibe a do
- * repertório da categoria que corresponde à situação atual e, se nenhuma corresponder, a
- * primeira. O servidor decide se e quais existem (`ajuda_visual`); aqui só se exibe.
+ * Historinha passiva (sem interação, semântica nem conhecimento próprio): exibe a primeira
+ * entrada de `ajuda_visual`. O backend decide se existe e qual é (a da própria situação, se
+ * houver); o cliente não escolhe entre alternativas, só renderiza a projeção da API.
  */
 export function HistorinhaPassiva({ historinhas, codigoIdioma }: {
   historinhas: readonly HistorinhaAjudaVisualWeb[];
   codigoIdioma: string | undefined;
 }) {
-  const escolhida = historinhas.find((item) => item.da_situacao_atual) ?? historinhas[0];
+  const escolhida = historinhas[0];
   const [indice, setIndice] = useState(0);
   useEffect(() => { setIndice(0); }, [escolhida?.referencia, codigoIdioma]);
   if (!escolhida) return null;

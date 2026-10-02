@@ -62,6 +62,30 @@ O que **pode** ficar no adaptador: pixels, fonte, espaçamento entre linhas
 derivado das métricas, animação, cursor, foco, efeitos de interação — a
 realização de algo que a cena já trouxe.
 
+## Decisão no backend, consumida por Swing e React pela mesma projeção
+
+Toda decisão que afeta a tela é tomada no **backend** e chega aos dois clientes pela
+**mesma projeção da API**. Swing e React *consomem* essa projeção; nenhum dos dois
+decide, escolhe entre alternativas, filtra nem aplica regra própria.
+
+Cadeia obrigatória: **objeto rico decide → decisor de aplicação reúne os fatos →
+gerador de cena carrega o resultado na cena → API projeta → Swing e React renderizam.**
+
+Exemplo (ajuda visual / historinha, 2026-10-02):
+- Objeto rico: `RepertorioAjudaVisual.paraSituacao` (narrativa da própria situação, se
+  existir; senão as da categoria) e `TipoSituacaoAditiva.deveAcionarHistorinha`.
+- Decisor de aplicação: `gerard.aplicacao.DecisorAjudaVisual` — única fonte da decisão.
+- Cena: `CenaDiagramaAditivo.getAjudaVisual()`, via `GeradorCenaDiagramaAditivo.comAjudaVisual`.
+- Projeção: `ProjetorAjudaVisualWeb.projetar(cena)` — lista de `{identificador, referencia}`.
+- Clientes: o desktop (`Main` + `PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao`)
+  e o React (`HistorinhaPassiva`) apresentam a **primeira** entrada. Nenhum escolhe a
+  narrativa: o antigo `find(da_situacao_atual) ?? [0]` no cliente era decisão fora do
+  backend e foi removido.
+
+Sinais de violação: o cliente tem `find`/`filter`/`if` que escolhe entre itens que o
+backend enviou; um cliente chama o domínio direto em vez da projeção; desktop e web
+mostram coisas diferentes para a mesma situação.
+
 ## Perguntas antes de mexer na tela
 
 1. Estou mudando *quem decide* algo (regra) ou só como a cena *mostra* o que já
@@ -82,8 +106,8 @@ realização de algo que a cena já trouxe.
 
 ## Dívida conhecida ao registrar esta skill (2026-10-02)
 
-- `Main.aplicarSubtitulosPersonagensNoDiagramaVergnaud` busca o personagem em
-  `SemanticaCuradaSituacao` e o atribui ao elemento sem passar pela cena.
+- (Resolvido em 2026-10-02) O subtítulo do personagem e a ajuda visual agora passam pela
+  cena (`comSubtitulos`, `comAjudaVisual`).
 - `Main.deveExibirDiagramaComplementar` combina o bloqueio local do papel com o
   seletor; a decisão deveria vir pronta do objeto rico (a tentativa) e a cena
   apenas projetá-la.

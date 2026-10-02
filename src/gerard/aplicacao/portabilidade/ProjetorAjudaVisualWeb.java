@@ -1,9 +1,10 @@
 package gerard.aplicacao.portabilidade;
 
-import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.aplicacao.DecisorAjudaVisual;
+import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
-import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.dominio.campoaditivo.ajuda.HistorinhaAjudaVisual;
+import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Projeta para o cliente web o repertório de historinhas (representação passiva de
  * ajuda visual) <b>da própria categoria</b>: quem possui o repertório é
- * {@link TipoSituacaoAditiva#selecionarRepertorioAjudaVisual()}, e uma categoria sem
+ * {@code TipoSituacaoAditiva.selecionarRepertorioAjudaVisual()}, e uma categoria sem
  * repertório (ex.: Transformação de Medidas) projeta lista vazia — o cliente não
  * escolhe nem fixa o conteúdo de outra categoria.
  *
@@ -29,34 +30,30 @@ public final class ProjetorAjudaVisualWeb {
     }
 
     public static boolean deveAcionar(SituacaoProblemaAditiva situacao, boolean escaladaNoLimite) {
-        return situacao != null && situacao.getTipo().deveAcionarHistorinha(
-                SemanticaCuradaSituacao.possuiNumeroRelativo(situacao), escaladaNoLimite);
+        return DecisorAjudaVisual.acionada(situacao, escaladaNoLimite);
     }
 
-    public static List<Object> projetar(SituacaoProblemaAditiva situacao,
-            boolean escaladaNoLimite) {
-        return situacao == null ? new ArrayList<Object>()
-                : projetar(situacao.getTipo(), situacao.getId(),
-                        SemanticaCuradaSituacao.possuiNumeroRelativo(situacao), escaladaNoLimite);
+    /** Ajuda visual decidida pelo backend para a situação neste momento (mesma fonte da cena). */
+    public static List<Object> projetar(SituacaoProblemaAditiva situacao, boolean escaladaNoLimite) {
+        return projetar(DecisorAjudaVisual.decidir(situacao, escaladaNoLimite));
     }
 
-    private static List<Object> projetar(TipoSituacaoAditiva categoria, String situacaoId,
-            boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
+    /**
+     * Ajuda visual que a cena carrega. É o que Swing e React consomem: cada cliente só
+     * apresenta a primeira entrada (já a narrativa certa); nenhum escolhe entre elas.
+     */
+    public static List<Object> projetar(CenaDiagramaAditivo cena) {
+        return cena == null ? new ArrayList<Object>() : projetar(cena.getAjudaVisual());
+    }
+
+    private static List<Object> projetar(RepertorioAjudaVisual repertorio) {
         List<Object> resultado = new ArrayList<Object>();
-        if (categoria == null) {
-            return resultado;
-        }
-        for (HistorinhaAjudaVisual historinha
-                : categoria.selecionarRepertorioAjudaVisual(
-                        possuiNumeroRelativo, escaladaNoLimite).getHistorinhas()) {
+        for (HistorinhaAjudaVisual historinha : repertorio.getHistorinhas()) {
             Map<String, Object> item = new LinkedHashMap<String, Object>();
             item.put("identificador", historinha.getIdentificador());
             item.put("referencia", historinha.getReferenciaConteudo());
-            item.put("da_situacao_atual", Boolean.valueOf(
-                    historinha.getIdSituacaoCurada().equals(situacaoId)));
             resultado.add(item);
         }
         return resultado;
     }
-
 }

@@ -99,6 +99,13 @@ public enum TipoSituacaoAditiva {
                 ? repertorioAjudaVisual : RepertorioAjudaVisual.vazio();
     }
 
+    /** Como o anterior, já restrito à narrativa da situação em curso, se existir uma própria. */
+    public RepertorioAjudaVisual selecionarRepertorioAjudaVisual(
+            boolean possuiNumeroRelativo, boolean escaladaNoLimite, String idSituacaoCurada) {
+        return selecionarRepertorioAjudaVisual(possuiNumeroRelativo, escaladaNoLimite)
+                .paraSituacao(idSituacaoCurada);
+    }
+
     public boolean possuiAjudaVisual() {
         return !repertorioAjudaVisual.estaVazio();
     }

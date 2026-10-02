@@ -28,10 +28,17 @@ public final class TesteLimiteHistorinhasOperacao {
         exigir(tentativa.estaNoLimiteAjudaVisual(), "conclusão conserva ajuda já liberada");
         tentativa.restaurar(TipoRestauracaoModelagem.DIAGRAMA_COMPLETO, OrigemAcao.ORIGEM_USUARIO);
         exigir(!tentativa.estaNoLimiteAjudaVisual(), "restauração encerra ajuda");
+        // Regra de 2026-10-02: restaurar reabre a primeira modelagem, que volta a contar rejeições.
         tentativa.constituir(escolha(false, false));
         tentativa.constituir(escolha(false, false));
         tentativa.constituir(escolha(false, false));
-        exigir(!tentativa.estaNoLimiteAjudaVisual(), "exploração não conta rejeições");
+        exigir(tentativa.estaNoLimiteAjudaVisual(), "após restaurar, a primeira modelagem reaberta conta rejeições");
+        TentativaModelagemAditiva concluida = new TentativaModelagemAditiva("exploracao");
+        concluida.encerrarPorConclusao();
+        concluida.constituir(escolha(false, false));
+        concluida.constituir(escolha(false, false));
+        concluida.constituir(escolha(false, false));
+        exigir(!concluida.estaNoLimiteAjudaVisual(), "exploração (após a conclusão) não conta rejeições");
         System.out.println("APROVADO: limite, deduplicação, seletores, acerto, restauração e exploração.");
     }
     private static ResultadoEscolhaOperacaoModelagem escolha(boolean correta, boolean segunda) {

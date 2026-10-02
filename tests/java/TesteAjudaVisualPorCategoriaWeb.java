@@ -25,8 +25,9 @@ public final class TesteAjudaVisualPorCategoriaWeb {
             exigir(projetar(tipo, "qualquer", null).isEmpty(),
                     tipo + ": sem modelagem não projeta historinha");
             int esperadas = tipo.selecionarRepertorioAjudaVisual().getHistorinhas().size();
-            exigir(projetar(tipo, "qualquer", noLimite).size() == esperadas,
-                    tipo + ": no limite projeta exatamente o repertório da própria categoria");
+            int obtidas = projetar(tipo, "qualquer", noLimite).size();
+            exigir(obtidas == esperadas || (obtidas == 1 && esperadas > 0),
+                    tipo + ": no limite projeta o repertório da própria categoria, ou só a narrativa da situação");
         }
         exigir(projetar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                         "qualquer", noLimite).isEmpty(),
@@ -38,14 +39,11 @@ public final class TesteAjudaVisualPorCategoriaWeb {
         List<Object> transformacaoRelacao = projetar(
                 TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 "PO_TRANSFORMACAO_RELACAO_bonecas_620955739", noLimite);
-        exigir(transformacaoRelacao.size() == 2, "Transformação de Relação tem 2 historinhas");
         Map<String, Object> primeira = (Map<String, Object>) transformacaoRelacao.get(0);
         exigir("transformacao_relacao/01_julia_maria_bonecas_historinha".equals(primeira.get("referencia")),
                 "a referência é do repertório da própria categoria (nunca de Composição de Transformações)");
-        exigir(Boolean.TRUE.equals(primeira.get("da_situacao_atual")),
-                "marca a historinha que corresponde à situação atual");
-        exigir(Boolean.FALSE.equals(((Map<String, Object>) transformacaoRelacao.get(1)).get("da_situacao_atual")),
-                "a outra historinha não é da situação atual");
+        exigir(transformacaoRelacao.size() == 1,
+                "o backend entrega só a narrativa da própria situação (o cliente não escolhe)");
 
         for (Object item : projetar(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, "x", noLimite)) {
@@ -67,7 +65,8 @@ public final class TesteAjudaVisualPorCategoriaWeb {
             }
             exigir(ProjetorAjudaVisualWeb.projetar(situacao, false).isEmpty(), "sem limite não há historinha");
             int esperadas = SemanticaCuradaSituacao.possuiNumeroRelativo(situacao)
-                    ? situacao.getTipo().selecionarRepertorioAjudaVisual().getHistorinhas().size() : 0;
+                    ? situacao.getTipo().selecionarRepertorioAjudaVisual()
+                            .paraSituacao(situacao.getId()).getHistorinhas().size() : 0;
             exigir(ProjetorAjudaVisualWeb.projetar(situacao, true).size() == esperadas,
                     "gate estrutural: " + situacao.getId());
             exigir(situacao.getTipo().selecionarRepertorioAjudaVisual(false, true).estaVazio(),

@@ -1,6 +1,7 @@
 package gerard.aplicacao.portabilidade;
 
 import gerard.aplicacao.ContextoCarregamentoAtividade;
+import gerard.aplicacao.DecisorAjudaVisual;
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas.Grupo;
@@ -788,13 +789,16 @@ public final class ServicoSorteioAtividadeWeb {
         estado.put("dica_proximo_passo", categoriaSelecionada == null
                 ? AjudaContextualWeb.textoDicaProximoPasso()
                 : null);
+        Map<String, Object> cenaDaAjudaVisual = null;
         boolean revelar = categoriaSelecionada != null
                 || tentativaClassificacao.estaEncerrada();
         if (revelar) {
             estado.put("categoria", contextoAtual.getSituacao().getTipo().name());
             List<Object> acoesParaCena = listaDeAcoes(estado.get("acoes_disponiveis"));
             Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena,
-                    estado.get("modelagem"), visibilidadeEixoPorPapel);
+                    estado.get("modelagem"), visibilidadeEixoPorPapel,
+                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual());
+            cenaDaAjudaVisual = cenaProjetada;
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
             // pelo mesmo gerador de cena da cena abstrata — ver
@@ -839,9 +843,9 @@ public final class ServicoSorteioAtividadeWeb {
                     escopoTentativa.getTentativa().estaNoLimiteAjudaVisual())));
             // Historinhas passivas: repertório da PRÓPRIA categoria, só na escalada no
             // limite (ver ProjetorAjudaVisualWeb); categoria sem repertório => lista vazia.
-            estado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(
-                    contextoAtual == null ? null : contextoAtual.getSituacao(),
-                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual()));
+            // Vem da cena (mesma decisão do backend consumida pelo desktop).
+            estado.put("ajuda_visual", cenaDaAjudaVisual == null
+                    ? new java.util.ArrayList<Object>() : cenaDaAjudaVisual.get("ajuda_visual"));
         } else {
             estado.remove("ajuda_contextual");
             estado.remove("ajuda_visual");
@@ -996,7 +1000,8 @@ public final class ServicoSorteioAtividadeWeb {
 
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
-            Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel) {
+            Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel,
+            boolean escaladaNoLimite) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
         boolean estadoInicialDecomposto =
                 !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
@@ -1007,11 +1012,15 @@ public final class ServicoSorteioAtividadeWeb {
                 && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("concluida"));
         cena = gerador.comElementosTextoNarrativa(cena,
                 contexto.getEnunciadoExibido(), contexto.getInterpretacao(), concluida);
+        // A ajuda visual (historinha) faz parte da cena: o backend decide e a cena a carrega.
+        cena = gerador.comAjudaVisual(cena,
+                DecisorAjudaVisual.decidir(contexto.getSituacao(), escaladaNoLimite));
         Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();
         resultado.put("elementos_texto", projetarElementosTexto(cena, valoresPorChave));
         resultado.put("vocabulario_texto", projetarVocabularioTexto(cena));
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
+        resultado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(cena));
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
         CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada relacaoExploratoria =

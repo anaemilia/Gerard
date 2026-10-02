@@ -108,6 +108,31 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
         return criarSeDisponivel(repertorio, formato, tamanhoApresentacao, false);
     }
 
+    /**
+     * Cria o painel a partir da ajuda visual projetada pela API (a mesma que o React
+     * consome): cada item traz {@code identificador} e {@code referencia}. O painel só
+     * resolve as referências em imagens; não escolhe entre narrativas.
+     */
+    public static PainelAjudaNarrativaVisualCategoria criarPassivoDaProjecao(
+            java.util.List<Object> ajudaVisual,
+            FormatoAjudaNarrativaVisual formato,
+            Dimension tamanhoApresentacao) {
+        if (ajudaVisual == null || ajudaVisual.isEmpty()) {
+            return null;
+        }
+        List<HistorinhaAjudaVisual> historinhas = new ArrayList<HistorinhaAjudaVisual>();
+        for (Object item : ajudaVisual) {
+            java.util.Map<?, ?> mapa = (java.util.Map<?, ?>) item;
+            historinhas.add(new HistorinhaAjudaVisual(
+                    String.valueOf(mapa.get("identificador")), "projecao",
+                    String.valueOf(mapa.get("referencia"))));
+        }
+        return criarSeDisponivel(
+                RepertorioAjudaVisual.criar("projecao:" + historinhas.get(0).getIdentificador(),
+                        historinhas.toArray(new HistorinhaAjudaVisual[0])),
+                formato, tamanhoApresentacao, false);
+    }
+
     private static PainelAjudaNarrativaVisualCategoria criarSeDisponivel(
             RepertorioAjudaVisual repertorio,
             FormatoAjudaNarrativaVisual formato,

@@ -82,9 +82,12 @@ public class GeradorCenaDiagramaAditivo {
             if (conector.temAlvo()) {
                 // Chave vertical: o traço real fica à direita do x armazenado.
                 meioX += DESLOCAMENTO_TRACO_CHAVE;
+                // A dica de erro vai para a região livre à direita da relação final, para
+                // não cobrir os círculos.
                 return new AncoraSeletorOperacao((meioX + conector.getXAlvo()) / 2,
                         (meioY + conector.getYAlvo()) / 2 - ELEVACAO_ACIMA_DO_SEGMENTO,
-                        LARGURA_DICA_PADRAO);
+                        LARGURA_DICA_LATERAL,
+                        f2.getX() + f2.getLargura() + MARGEM_LATERAL_DICA + LARGURA_DICA_LATERAL / 2);
             }
             return new AncoraSeletorOperacao(meioX, meioY + FOLGA_ABAIXO_DO_SEGMENTO,
                     LARGURA_DICA_PADRAO);
@@ -96,6 +99,16 @@ public class GeradorCenaDiagramaAditivo {
         return new AncoraSeletorOperacao(xSeletor,
                 Math.min(f0.getY(), f1.getY()) - ELEVACAO_ACIMA_DO_SEGMENTO,
                 LARGURA_DICA_LATERAL, direita + LARGURA_DICA_LATERAL / 2);
+    }
+
+    /**
+     * Projeta na cena a ajuda visual (historinha) que o backend decidiu
+     * ({@code gerard.aplicacao.DecisorAjudaVisual}). O gerador só a carrega; desktop e web a
+     * realizam sem escolher entre narrativas.
+     */
+    public CenaDiagramaAditivo comAjudaVisual(CenaDiagramaAditivo cena,
+            gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual decidida) {
+        return cena == null ? null : cena.comAjudaVisual(decidida);
     }
 
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */

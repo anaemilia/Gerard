@@ -686,6 +686,7 @@ public class Main extends JFrame {
         JButton botaoAjudaVergnaud;
         JButton botaoAjudaComplementar;
         PainelAjudaNarrativaVisualCategoria painelHistorinhasComplementar;
+        String chaveHistorinhasComplementar = "";
         Dimension tamanhoHistorinhasComplementar;
         JPopupMenu menuAjudaContextualAtivo;
         ScaffoldingAjudaContextual.Area areaAjudaContextualAtiva;
@@ -8989,14 +8990,19 @@ public class Main extends JFrame {
         }
 
         private void exibirHistorinhasNoPainelComplementar(Rectangle area) {
-            RepertorioAjudaVisual repertorio = tipoSituacaoSelecionada
-                    .selecionarRepertorioAjudaVisual(
-                            SemanticaCuradaSituacao.possuiNumeroRelativo(situacaoProblemaAtual),
-                            tentativaModelagemAtual.estaNoLimiteAjudaVisual());
-            if (repertorio.estaVazio()) {
+            // O backend decide a ajuda visual (DecisorAjudaVisual), a cena a carrega e a API
+            // a projeta; Swing só a renderiza — a mesma projeção que o React consome.
+            cenaDiagramaAtual = geradorCenaDiagrama.comAjudaVisual(cenaDiagramaAtual,
+                    gerard.aplicacao.DecisorAjudaVisual.decidir(
+                            situacaoProblemaAtual,
+                            tentativaModelagemAtual.estaNoLimiteAjudaVisual()));
+            java.util.List<Object> ajudaVisual =
+                    gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb.projetar(cenaDiagramaAtual);
+            if (ajudaVisual.isEmpty()) {
                 ocultarHistorinhasDoPainelComplementar();
                 return;
             }
+            String chaveProjecao = ajudaVisual.toString();
             int margem = 10;
             Rectangle conteudo = new Rectangle(
                     area.x + margem,
@@ -9007,16 +9013,17 @@ public class Main extends JFrame {
                     conteudo.width,
                     Math.max(1, conteudo.height - 38));
             if (painelHistorinhasComplementar == null
-                    || !repertorio.getChave().equals(painelHistorinhasComplementar.getChaveRepertorio())
+                    || !chaveProjecao.equals(chaveHistorinhasComplementar)
                     || !tamanhoImagem.equals(tamanhoHistorinhasComplementar)) {
                 if (painelHistorinhasComplementar != null) {
                     remove(painelHistorinhasComplementar);
                 }
                 painelHistorinhasComplementar =
-                        PainelAjudaNarrativaVisualCategoria.criarPassivoSeDisponivel(
-                                repertorio,
+                        PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao(
+                                ajudaVisual,
                                 FormatoAjudaNarrativaVisual.ANIMACAO,
                                 tamanhoImagem);
+                chaveHistorinhasComplementar = chaveProjecao;
                 tamanhoHistorinhasComplementar = new Dimension(tamanhoImagem);
                 if (painelHistorinhasComplementar != null) {
                     add(painelHistorinhasComplementar);

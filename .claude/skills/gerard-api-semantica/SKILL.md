@@ -32,6 +32,14 @@ da atividade.
 - Não aceite fallbacks semânticos no cliente quando um campo estiver ausente.
 - Mudanças incompatíveis exigem nova versão e período explícito de compatibilidade.
 
+## O cliente não decide (regra complementar)
+
+A API entrega listas e estados **já decididos**. O cliente não escolhe entre alternativas
+(ex.: qual historinha mostrar), não filtra por conta própria e não usa fallback semântico
+(`find(...) ?? itens[0]`). Se há uma escolha a fazer, ela é feita pelo objeto rico, reunida
+por um decisor de aplicação e publicada na projeção. Desktop (Swing) e web (React) consomem
+a **mesma** projeção. Ver `gerard-tela-via-gerador-de-cena`.
+
 ## Avaliação de maturidade
 
 Avalie separadamente:

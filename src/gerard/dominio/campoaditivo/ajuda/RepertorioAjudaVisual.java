@@ -54,4 +54,22 @@ public final class RepertorioAjudaVisual {
     public boolean estaVazio() {
         return historinhas.isEmpty();
     }
+
+    /**
+     * Narrativas apropriadas à situação em curso: se alguma foi feita para ela
+     * (idSituacaoCurada igual), só ela; senão, o repertório da categoria inteiro.
+     * A escolha pertence a este objeto; Swing e React apenas mostram o resultado.
+     */
+    public RepertorioAjudaVisual paraSituacao(String idSituacaoCurada) {
+        if (idSituacaoCurada != null) {
+            for (HistorinhaAjudaVisual historinha : historinhas) {
+                if (idSituacaoCurada.equals(historinha.getIdSituacaoCurada())) {
+                    return new RepertorioAjudaVisual(
+                            chave + ":" + historinha.getIdentificador(),
+                            Collections.singletonList(historinha));
+                }
+            }
+        }
+        return this;
+    }
 }
