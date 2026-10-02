@@ -87,6 +87,13 @@ public enum TipoSituacaoAditiva {
         return repertorioAjudaVisual;
     }
 
+    /** Decisão de 2026-10-02: repertório próprio, só com número relativo e três rejeições. */
+    public RepertorioAjudaVisual selecionarRepertorioAjudaVisual(
+            boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
+        return possuiNumeroRelativo && escaladaNoLimite
+                ? repertorioAjudaVisual : RepertorioAjudaVisual.vazio();
+    }
+
     public boolean possuiAjudaVisual() {
         return !repertorioAjudaVisual.estaVazio();
     }

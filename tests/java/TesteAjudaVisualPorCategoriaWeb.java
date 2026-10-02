@@ -1,5 +1,8 @@
 import gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
+import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
+import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
+import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,22 +20,22 @@ public final class TesteAjudaVisualPorCategoriaWeb {
         Map<String, Object> foraDoLimite = modelagem(false);
 
         for (TipoSituacaoAditiva tipo : TipoSituacaoAditiva.values()) {
-            exigir(ProjetorAjudaVisualWeb.projetar(tipo, "qualquer", foraDoLimite).isEmpty(),
+            exigir(projetar(tipo, "qualquer", foraDoLimite).isEmpty(),
                     tipo + ": fora do limite da escalada não projeta historinha");
-            exigir(ProjetorAjudaVisualWeb.projetar(tipo, "qualquer", null).isEmpty(),
+            exigir(projetar(tipo, "qualquer", null).isEmpty(),
                     tipo + ": sem modelagem não projeta historinha");
             int esperadas = tipo.selecionarRepertorioAjudaVisual().getHistorinhas().size();
-            exigir(ProjetorAjudaVisualWeb.projetar(tipo, "qualquer", noLimite).size() == esperadas,
+            exigir(projetar(tipo, "qualquer", noLimite).size() == esperadas,
                     tipo + ": no limite projeta exatamente o repertório da própria categoria");
         }
-        exigir(ProjetorAjudaVisualWeb.projetar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+        exigir(projetar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
                         "qualquer", noLimite).isEmpty(),
                 "Transformação de Medidas não tem historinhas: nada é exibido");
-        exigir(ProjetorAjudaVisualWeb.projetar(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
+        exigir(projetar(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                         "qualquer", noLimite).isEmpty(),
                 "Composição de Medidas não tem historinhas (usa material concreto)");
 
-        List<Object> transformacaoRelacao = ProjetorAjudaVisualWeb.projetar(
+        List<Object> transformacaoRelacao = projetar(
                 TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 "PO_TRANSFORMACAO_RELACAO_bonecas_620955739", noLimite);
         exigir(transformacaoRelacao.size() == 2, "Transformação de Relação tem 2 historinhas");
@@ -44,13 +47,35 @@ public final class TesteAjudaVisualPorCategoriaWeb {
         exigir(Boolean.FALSE.equals(((Map<String, Object>) transformacaoRelacao.get(1)).get("da_situacao_atual")),
                 "a outra historinha não é da situação atual");
 
-        for (Object item : ProjetorAjudaVisualWeb.projetar(
+        for (Object item : projetar(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, "x", noLimite)) {
             String referencia = String.valueOf(((Map<String, Object>) item).get("referencia"));
             exigir(referencia.startsWith("composicao_transformacoes/"),
                     "Composição de Transformações usa só as suas historinhas: " + referencia);
         }
-        System.out.println("APROVADO: cada categoria projeta o próprio repertório de historinhas, só no limite.");
+        int verificadas = 0;
+        for (SituacaoProblemaAditiva situacao : new RepositorioSituacoesAditivas().listarValidadas()) {
+            exigir(ProjetorAjudaVisualWeb.projetar(situacao, false).isEmpty(), "sem limite não há historinha");
+            int esperadas = SemanticaCuradaSituacao.possuiNumeroRelativo(situacao)
+                    ? situacao.getTipo().selecionarRepertorioAjudaVisual().getHistorinhas().size() : 0;
+            exigir(ProjetorAjudaVisualWeb.projetar(situacao, true).size() == esperadas,
+                    "gate estrutural: " + situacao.getId());
+            exigir(situacao.getTipo().selecionarRepertorioAjudaVisual(false, true).estaVazio(),
+                    "sem número relativo não há historinhas");
+            verificadas++;
+        }
+        exigir(verificadas > 0, "curadoria carregada");
+        System.out.println("APROVADO: repertório próprio e limite em " + verificadas + " situações curadas.");
+    }
+
+    private static List<Object> projetar(TipoSituacaoAditiva tipo, String id, Map<String, Object> modelagem) {
+        for (SituacaoProblemaAditiva situacao : new RepositorioSituacoesAditivas().listarValidadas()) {
+            if (situacao.getTipo() == tipo && ("qualquer".equals(id) || "x".equals(id) || id.equals(situacao.getId()))) {
+                return ProjetorAjudaVisualWeb.projetar(situacao,
+                        modelagem != null && Boolean.TRUE.equals(modelagem.get("escalada_no_limite")));
+            }
+        }
+        throw new AssertionError("situação não encontrada: " + tipo + " / " + id);
     }
 
     private static Map<String, Object> modelagem(boolean escalada) {

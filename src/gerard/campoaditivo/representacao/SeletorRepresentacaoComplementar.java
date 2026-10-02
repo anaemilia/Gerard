@@ -14,9 +14,9 @@ public final class SeletorRepresentacaoComplementar {
      *        TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md). O material
      *        concreto (quadradinhos e barras) só aparece nesse momento, como
      *        último recurso de apoio, não durante a modelagem normal (decisão
-     *        de 2026-08-07). As historinhas que substituem os funis são uma
-     *        representação da categoria e não usam esse gatilho (decisão de
-     *        2026-10-01).
+     *        de 2026-08-07). Historinhas da própria categoria também exigem
+     *        três rejeições consecutivas e ocorrência de número relativo
+     *        (decisão de 2026-10-02); a categoria seleciona seu repertório.
      *        Quem chama decide o que conta como "chegou no limite" —
      *        este método só aplica a regra de visibilidade dado esse fato.
      */
@@ -34,14 +34,12 @@ public final class SeletorRepresentacaoComplementar {
         if (!cenaComposta && tipo == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
             return TipoRepresentacaoComplementar.BARRAS_COMPARACAO;
         }
-        if (!cenaComposta && (tipo == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                || tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES)) {
-            return TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES;
+        if (!cenaComposta && tipo != null && tipo.possuiAjudaVisual()) {
+            return TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA;
         }
         // Decisão da usuária (2026-10-01): representações com funil não
-        // participam mais da atividade. Em TRANSFORMACAO_MEDIDAS e
-        // COMPOSICAO_TRANSFORMACOES, os funis foram substituídos pelas
-        // historinhas existentes.
+        // participam mais da atividade. Sem repertório próprio, o painel
+        // reservado permanece vazio; não se empresta conteúdo de outra categoria.
         return TipoRepresentacaoComplementar.GENERICA;
     }
 }

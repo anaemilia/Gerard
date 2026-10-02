@@ -146,6 +146,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         estado.put("segunda_etapa_habilitada", Boolean.valueOf(segundaHabilitada));
         boolean concluida = (!primeiraAtiva || primeiraCorreta) && (!segundaAtiva || segundaCorreta);
         estado.put("concluida", Boolean.valueOf(concluida));
+        estado.put("escalada_no_limite", Boolean.valueOf(
+                escopo.getTentativa().estaNoLimiteAjudaVisual()));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
         // os papéis com valor curado não vêm pré-preenchidos; escolher a
         // operação só libera depois deles estarem posicionados. Papéis sem

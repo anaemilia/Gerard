@@ -5419,9 +5419,9 @@ public class Main extends JFrame {
                 // fixo do enunciado.
                 desenharAreaDiagrama(g2);
                 desenharElementos(g2);
-                if (deveExibirDiagramaComplementar()) {
-                    desenharDiagramaVenn(g2);
-                }
+                desenharDiagramaVenn(g2);
+            } else {
+                ocultarHistorinhasDoPainelComplementar();
             }
             marcadorOrigemArraste.desenhar(g2);
             // O eixo dos inteiros e um painel flutuante de apoio e deve
@@ -8939,9 +8939,9 @@ public class Main extends JFrame {
                     == TipoRepresentacaoComplementar.PROCESSO_COMPOSICAO_TRANSFORMACOES;
         }
 
-        private boolean ehHistorinhasComposicaoTransformacoes() {
+        private boolean ehHistorinhasCategoria() {
             return obterTipoRepresentacaoComplementarAtual()
-                    == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES;
+                    == TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA;
         }
 
         private TipoRepresentacaoComplementar obterTipoRepresentacaoComplementarAtual() {
@@ -8974,10 +8974,18 @@ public class Main extends JFrame {
 
         private boolean ehRepresentacaoComplementarSemUnidades() {
             return ehRepresentacaoComplementarGenerica()
-                    || ehHistorinhasComposicaoTransformacoes();
+                    || ehHistorinhasCategoria();
         }
 
         private void exibirHistorinhasNoPainelComplementar(Rectangle area) {
+            RepertorioAjudaVisual repertorio = tipoSituacaoSelecionada
+                    .selecionarRepertorioAjudaVisual(
+                            SemanticaCuradaSituacao.possuiNumeroRelativo(situacaoProblemaAtual),
+                            tentativaModelagemAtual.estaNoLimiteAjudaVisual());
+            if (repertorio.estaVazio()) {
+                ocultarHistorinhasDoPainelComplementar();
+                return;
+            }
             int margem = 10;
             Rectangle conteudo = new Rectangle(
                     area.x + margem,
@@ -8988,14 +8996,14 @@ public class Main extends JFrame {
                     conteudo.width,
                     Math.max(1, conteudo.height - 38));
             if (painelHistorinhasComplementar == null
+                    || !repertorio.getChave().equals(painelHistorinhasComplementar.getChaveRepertorio())
                     || !tamanhoImagem.equals(tamanhoHistorinhasComplementar)) {
                 if (painelHistorinhasComplementar != null) {
                     remove(painelHistorinhasComplementar);
                 }
                 painelHistorinhasComplementar =
                         PainelAjudaNarrativaVisualCategoria.criarPassivoSeDisponivel(
-                                TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
-                                        .selecionarRepertorioAjudaVisual(),
+                                repertorio,
                                 FormatoAjudaNarrativaVisual.ANIMACAO,
                                 tamanhoImagem);
                 tamanhoHistorinhasComplementar = new Dimension(tamanhoImagem);
@@ -9547,21 +9555,15 @@ public class Main extends JFrame {
         }
 
         private void desenharDiagramaVenn(Graphics2D g2) {
-            if (!deveExibirDiagramaComplementar()) {
-                ocultarHistorinhasDoPainelComplementar();
-                return;
-            }
-            Rectangle area = obterAreaDiagramaAditivo();
-            if (ehHistorinhasComposicaoTransformacoes()) {
-                desenharCard(g2, area.x, area.y, area.width, area.height, 18);
-                if (botaoAjudaComplementar != null) {
-                    botaoAjudaComplementar.setVisible(false);
-                    botaoAjudaComplementar.setEnabled(false);
-                }
-                exibirHistorinhasNoPainelComplementar(area);
+            if (ehHistorinhasCategoria()) {
+                exibirHistorinhasNoPainelComplementar(obterAreaDiagramaAditivo());
                 return;
             }
             ocultarHistorinhasDoPainelComplementar();
+            if (!deveExibirDiagramaComplementar()) {
+                return;
+            }
+            Rectangle area = obterAreaDiagramaAditivo();
             boolean composicaoMedidas = ehDiagramaVennComposicaoMedidas();
             boolean comparacaoMedidas = ehGraficoBarrasComparacao();
             boolean processoTransformacao = ehProcessoTransformacaoMedidas();
@@ -9570,10 +9572,9 @@ public class Main extends JFrame {
              * Categorias sem representação complementar ativa caem no
              * fallback GENERICA (círculos vazios + setas, sem conteúdo
              * manipulável). Isso inclui as Relações (decisão de 2026-08-08)
-             * sem material próprio. Transformação de Medidas e Composição de
-             * Transformações já retornaram acima, materializadas pelas
-             * historinhas. O painel reservado e o diagrama de Vergnaud não
-             * mudam.
+             * sem material próprio. Categorias com repertório de historinhas
+             * já retornaram acima. O painel reservado e o diagrama de
+             * Vergnaud não mudam.
              * O estado (sincronizarDiagramaVennComRepresentacoes) continua
              * sendo recalculado normalmente abaixo, só o desenho/controles
              * são suprimidos.

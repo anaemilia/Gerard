@@ -142,6 +142,8 @@ public final class ServicoAtividadeWebComposicaoRelacoes
         // && operacaoCorreta) -- só faltava replicar aqui.
         boolean incognitaOk = papelDesconhecido == null || papelDesconhecido.estaPreenchido();
         estado.put("concluida", Boolean.valueOf(correta && incognitaOk));
+        estado.put("escalada_no_limite", Boolean.valueOf(
+                escopo.getTentativa().estaNoLimiteAjudaVisual()));
         // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
         // relação 1 e relação 2 não vêm pré-preenchidas; escolher a operação
         // só libera depois delas estarem posicionadas. A incógnita é

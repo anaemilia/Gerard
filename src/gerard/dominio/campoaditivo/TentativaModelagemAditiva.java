@@ -24,6 +24,10 @@ public final class TentativaModelagemAditiva {
      * restauração não o desfaz (só uma nova tentativa/situação o faz).
      */
     private boolean encerradaPorConclusao;
+    private final java.util.Map<String, Integer> rejeicoesOperacao =
+            new java.util.LinkedHashMap<String, Integer>();
+    private final Set<String> operacoesAcompanhadas = new LinkedHashSet<String>();
+    private boolean ajudaVisualOperacaoNoLimite;
     private final Set<PapelQuantitativo> participantes =
             java.util.Collections.newSetFromMap(
                     new java.util.IdentityHashMap<PapelQuantitativo, Boolean>());
@@ -76,7 +80,38 @@ public final class TentativaModelagemAditiva {
         if (registro == null || encerradaPorConclusao) {
             return java.util.Optional.empty();
         }
+        if (registro instanceof gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) {
+            acompanharEscolhaOperacao(
+                    (gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) registro);
+        }
         return java.util.Optional.of(registro);
+    }
+
+    private void acompanharEscolhaOperacao(
+            gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem registro) {
+        if (!operacoesAcompanhadas.add(registro.getActionId())) {
+            return;
+        }
+        String alvo = registro.getAlvoSemantico();
+        Integer anterior = rejeicoesOperacao.get(alvo);
+        int quantidade = registro.foiCorreta() ? 0 : (anterior == null ? 1 : anterior + 1);
+        rejeicoesOperacao.put(alvo, quantidade);
+        if (quantidade >= PapelQuantitativo.LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS) {
+            ajudaVisualOperacaoNoLimite = true;
+        }
+    }
+
+    /** Fato da tentativa, sem alterar bloqueio, avaliação ou registros dos participantes. */
+    public boolean estaNoLimiteAjudaVisual() {
+        if (ajudaVisualOperacaoNoLimite) {
+            return true;
+        }
+        for (PapelQuantitativo papel : participantes) {
+            if (papel.estaBloqueadoPorLimiteTentativas()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getTentativaId() {
@@ -89,6 +124,9 @@ public final class TentativaModelagemAditiva {
         if (tipo == null) {
             throw new IllegalArgumentException("tipo de restauração não pode ser nulo");
         }
+        rejeicoesOperacao.clear();
+        operacoesAcompanhadas.clear();
+        ajudaVisualOperacaoNoLimite = false;
         OrigemAcao origemEfetiva = origem == null
                 ? OrigemAcao.ORIGEM_USUARIO : origem;
         Set<String> papeis = new LinkedHashSet<String>();

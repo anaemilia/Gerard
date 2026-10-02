@@ -45,11 +45,11 @@ public final class TesteProcessoTransformacao {
                 new SeletorRepresentacaoComplementar();
         confirmar(seletor.selecionar(
                 TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, false)
-                == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES,
-                "transformação de medidas deve selecionar historinha no lugar do funil");
+                == TipoRepresentacaoComplementar.GENERICA,
+                "transformação de medidas sem repertório próprio mantém painel vazio");
         confirmar(seletor.selecionar(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, false)
-                == TipoRepresentacaoComplementar.HISTORINHAS_COMPOSICAO_TRANSFORMACOES,
+                == TipoRepresentacaoComplementar.HISTORINHAS_CATEGORIA,
                 "composição de transformações deve selecionar as historinhas no lugar dos funis");
         confirmar(!seletor.deveExibir(
                 true, TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, false),

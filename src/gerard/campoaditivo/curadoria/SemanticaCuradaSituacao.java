@@ -171,6 +171,16 @@ public final class SemanticaCuradaSituacao {
         return null;
     }
 
+    /** O domínio do papel identifica números relativos, inclusive positivos e incógnitos. */
+    public static boolean possuiNumeroRelativo(SituacaoProblemaAditiva situacao) {
+        for (PapelCurado papel : mapear(situacao, null)) {
+            if (papel.isExigidoNaModelagem() && CATALOGO_PAPEIS.papelPermiteSinal(papel.getChave())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Consulta portátil para clientes que podem apresentar um valor curado. */
     public static Integer buscarValorInteiroVisivel(SituacaoProblemaAditiva situacao,
             ServicoLocalizacao localizacao, String chave) {

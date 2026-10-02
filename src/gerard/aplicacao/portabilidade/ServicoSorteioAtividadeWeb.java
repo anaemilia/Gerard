@@ -836,9 +836,9 @@ public final class ServicoSorteioAtividadeWeb {
             estado.put("ajuda_contextual", projetarAjudaContextual(estado.get("modelagem")));
             // Historinhas passivas: repertório da PRÓPRIA categoria, só na escalada no
             // limite (ver ProjetorAjudaVisualWeb); categoria sem repertório => lista vazia.
-            estado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(categoriaSelecionada,
-                    contextoAtual == null ? null : contextoAtual.getSituacao().getId(),
-                    estado.get("modelagem")));
+            estado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(
+                    contextoAtual == null ? null : contextoAtual.getSituacao(),
+                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual()));
         } else {
             estado.remove("ajuda_contextual");
             estado.remove("ajuda_visual");
