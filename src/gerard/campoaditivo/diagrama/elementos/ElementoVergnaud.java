@@ -153,7 +153,10 @@ public class ElementoVergnaud implements ElementoComLupa {
                 g2.setColor(erro ? gerard.ui.UITemaGerard.COR_ERRO
                         : gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
                 g2.drawString(textoRotulo, rx, ry);
-                yBaseAcima = ry - fmRotulo.getDescent() - 8;
+                // O subtítulo fica acima do TOPO do rótulo (linha de base menos
+                // a altura da fonte), não acima da linha de base: senão as duas
+                // linhas se sobrepõem.
+                yBaseAcima = ry - fmRotulo.getAscent() - 4;
             }
             if (subtitulo != null && subtitulo.trim().length() > 0) {
                 String textoSubtitulo = subtitulo.trim();
