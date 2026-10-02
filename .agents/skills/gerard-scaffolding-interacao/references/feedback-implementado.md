@@ -35,6 +35,13 @@ As convenções verificadas em `gerard/ui/UITemaGerard.java` são:
 
 ## Feedback de sucesso
 
+Correção web de 2026-10-02, após relato da usuária de erro → Sim → ações
+sem retorno: o cliente materializa a mensagem de limite já decidida e
+localizada pelo servidor tanto na proposta quanto na confirmação. Esse
+aviso permanece até resposta correta, restauração ou novo sorteio; não é
+descartado pelo temporizador dos avisos de posicionamento. A disponibilidade
+de historinhas não participa dessa decisão nem altera a contagem do domínio.
+
 Verificação web em 2026-10-02, autorizada pela usuária para corrigir a
 confirmação de valor: envio repetido de Enter não constitui outra proposta;
 o passo Sim/Não é preservado durante o envio e em falha HTTP. O adaptador

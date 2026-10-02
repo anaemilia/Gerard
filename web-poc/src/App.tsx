@@ -68,6 +68,8 @@ export default function App() {
   const [avisoSinal, setAvisoSinal] = useState<{ figuraId: string; mensagem: string } | null>(null);
   const [avisoPosicionamento, setAvisoPosicionamento] =
     useState<{ figuraId: string; mensagem: string } | null>(null);
+  const [avisoLimite, setAvisoLimite] =
+    useState<{ figuraId: string; mensagem: string } | null>(null);
   const [chatAberto, setChatAberto] = useState(false);
   const [explicacaoCategoriaVista, setExplicacaoCategoriaVista] = useState<string | null>(null);
   const [menuIdiomaAberto, setMenuIdiomaAberto] = useState(false);
@@ -145,6 +147,7 @@ export default function App() {
     setOcupado(true);
     try {
       receberSnapshot(await api.executar(controle));
+      setAvisoLimite(null);
       setAtividadeIniciada(true);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
@@ -156,6 +159,7 @@ export default function App() {
     setOcupado(true);
     try {
       receberSnapshot(await api.reiniciar());
+      setAvisoLimite(null);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -226,10 +230,13 @@ export default function App() {
     try {
       const resultado = await api.posicionar(controle, valor);
       if (resultado.aceita) {
+        setAvisoLimite(null);
         receberSnapshot(resultado.estado);
         setSinalPendenteIncognita(null);
         enviarEventoRepresentacional({ tipo: "CONFIRMACAO_ENVIADA" });
       } else if (resultado.limite_atingido) {
+        setAvisoLimite(resultado.chave_mensagem
+          ? { figuraId: figura.id, mensagem: resultado.chave_mensagem } : null);
         // Limite de rejeições atingido: como no desktop
         // (processarLimiteTentativasAtingido), não há nova pergunta; o
         // snapshot do servidor traz a escalada (material concreto).
@@ -291,6 +298,10 @@ export default function App() {
           proposta.papelId, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
         estadoServidor = resultado.estado;
+        if (limiteAtingido && resultado.chave_mensagem && representacoes.elementoEmEdicao) {
+          setAvisoLimite({ figuraId: representacoes.elementoEmEdicao,
+            mensagem: resultado.chave_mensagem });
+        }
       } catch (erro) { console.error(erro); return; }
       finally { envioValorEmCurso.current = false; setOcupado(false); }
     }
@@ -640,6 +651,8 @@ export default function App() {
             aoNegarValor={aoNegarValor} />}
           {avisoPosicionamento && <AvisoPosicionamentoFigura
             figuraId={avisoPosicionamento.figuraId} mensagem={avisoPosicionamento.mensagem} />}
+          {avisoLimite && <AvisoPosicionamentoFigura
+            figuraId={avisoLimite.figuraId} mensagem={avisoLimite.mensagem} />}
           {estado.cena?.figuras.filter((figura) => figura.lupa_habilitada && figura.eixo)
             .map((figura) => {
               const valorExibido = cenaExibida?.figuras

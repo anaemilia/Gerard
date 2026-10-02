@@ -42,11 +42,18 @@ try{
    console.log('VALOR='+valor+' CONTAGEM='+resultado.rejeicoes_consecutivas+' LIMITE='+resultado.limite_atingido+' DIAGNOSTICO='+resultado.diagnostico);
    exigir(resultado.rejeicoes_consecutivas===3&&resultado.limite_atingido,'limite do domínio permanece em três');
    exigir(estado.ajuda_visual_acionada===true,'historinha acionada em TM mesmo com acervo vazio');
+   exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===1,
+     'terceira rejeição materializa o feedback do servidor');
    exigir(!resultado.aceita&&!estado.modelagem.concluida,'erro não aceito nem tratado como conclusão');
   }
   await page.screenshot({path:dir+'/lucas_limite.png'});
+  await page.waitForTimeout(4500);
+  exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===1,
+    'feedback de limite permanece disponível');
   await page.mouse.dblclick(p.x,p.y);await pausa();await input.fill('5');await input.press('Enter');await page.waitForTimeout(1500);
   exigir(estado.modelagem.concluida===true,'Lucas conclui com valor correto');
+  exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===0,
+    'resposta correta limpa o feedback de limite');
   await page.screenshot({path:dir+'/lucas_concluida.png'});
  }else{
  await page.route('**/api/acoes/posicionar',async route=>{
