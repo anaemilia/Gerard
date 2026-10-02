@@ -13,6 +13,8 @@ public class ServicoLocalizacao {
     private static final ServicoLocalizacao INSTANCIA = new ServicoLocalizacao();
 
     private final Map<IdiomaInterface, Map<String, String>> mensagens;
+    private final java.util.List<Runnable> observadoresIdioma =
+            new java.util.concurrent.CopyOnWriteArrayList<Runnable>();
     private IdiomaInterface idiomaAtual;
 
     private ServicoLocalizacao() {
@@ -27,7 +29,20 @@ public class ServicoLocalizacao {
 
     public void definirIdioma(IdiomaInterface idioma) {
         if (idioma != null) {
+            boolean mudou = this.idiomaAtual != idioma;
             this.idiomaAtual = idioma;
+            if (mudou) {
+                for (Runnable observador : observadoresIdioma) {
+                    observador.run();
+                }
+            }
+        }
+    }
+
+    /** Avisa quem materializa textos fora deste serviço (ex.: controles do toolkit gráfico). */
+    public void adicionarObservadorIdioma(Runnable observador) {
+        if (observador != null) {
+            observadoresIdioma.add(observador);
         }
     }
 

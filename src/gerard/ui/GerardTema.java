@@ -52,6 +52,7 @@ public final class GerardTema {
                 "ToolBar.background", "control", "window", "menu"}) {
             UIManager.put(chave, cor(fundo));
         }
+        gerard.ui.swing.LocalizacaoControlesSwing.instalar();
         UIManager.put("RootPane.background", cor(janela));
         UIManager.put("Button.background", cor(fundo));
 
