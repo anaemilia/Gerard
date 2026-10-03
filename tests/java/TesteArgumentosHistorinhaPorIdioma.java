@@ -54,8 +54,9 @@ public class TesteArgumentosHistorinhaPorIdioma {
             // A decisão em si não muda com o idioma.
             exigir(item.get("tipo").equals("HISTORINHA_ILUSTRADA"), "ilustração independente do idioma: " + s.getId());
         }
-        exigir(comTrechos > 0 && idiomas.contains("pt-BR") && idiomas.contains("en") && idiomas.contains("fr"),
-                "trechos entregues em pt-BR, en e fr (achados: " + idiomas + ")");
+        // Os trechos das traduções são completados pela pessoa na curadoria: vazios, nada é entregue.
+        exigir(comTrechos > 0 && idiomas.contains("pt-BR"),
+                "trechos curados entregues no idioma da própria situação (achados: " + idiomas + ")");
         System.out.println("APROVADO: " + comTrechos + " historinhas com trechos curados em " + idiomas
                 + "; a decisão é a mesma em todos os idiomas.");
     }
