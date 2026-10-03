@@ -35,5 +35,7 @@ export function HistorinhaPassiva({ historinhas, codigoIdioma }: {
   return <div className="historinha-passiva" aria-label="Historinha">
     <img src={arquivos[Math.min(indice, arquivos.length - 1)]} alt="" aria-hidden="true"
       onError={() => setIndice((atual) => (atual + 1 < arquivos.length ? atual + 1 : atual))} />
+    {escolhida.trechos && escolhida.trechos.length > 0 &&
+      <ol className="historinha-trechos">{escolhida.trechos.map((trecho, i) => <li key={i}>{trecho}</li>)}</ol>}
   </div>;
 }

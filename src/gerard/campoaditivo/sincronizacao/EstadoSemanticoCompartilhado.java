@@ -95,6 +95,8 @@ public final class EstadoSemanticoCompartilhado {
     private long versao = 0L;
     private int indiceResolvidoAutomaticamente = -1;
 
+    private java.util.function.BooleanSupplier recalculoDaIncognitaAdmitido = () -> true;
+
     public EstadoSemanticoCompartilhado() {
         limpar(null);
     }
@@ -193,6 +195,18 @@ public final class EstadoSemanticoCompartilhado {
         return snapshot();
     }
 
+    /**
+     * Porta de leitura que diz se o sistema pode RECALCULAR a incógnita depois que o participante
+     * já a preencheu. Antes da conclusão correta, recalculá-la substituiria a resposta rejeitada
+     * pelo valor certo e concluiria a modelagem sem que o participante o tenha informado; depois
+     * da conclusão (exploração), o recálculo mantém as representações consistentes. O estado não
+     * conhece a tentativa: quem a possui informa a decisão. Sem informação, vale o padrão antigo.
+     */
+    public synchronized void definirAdmissaoRecalculoDaIncognita(
+            java.util.function.BooleanSupplier admissao) {
+        this.recalculoDaIncognitaAdmitido = admissao == null ? () -> true : admissao;
+    }
+
     public synchronized Snapshot snapshot() {
         return new Snapshot(tipo,
                 new ValorNumerico[] { valores[0], valores[1], valores[2] },
@@ -230,6 +244,10 @@ public final class EstadoSemanticoCompartilhado {
             return;
         }
         Integer valorAntes = valores[indice] == null ? null : valores[indice].valorOuNull();
+        if (indice == indiceIncognitaProtegida && valorAntes != null
+                && !recalculoDaIncognitaAdmitido.getAsBoolean()) {
+            return;
+        }
         ValorNumerico calculado = conversorValores.criarCalculadoOuNull(
                 tipo, indice, valor);
         if (calculado != null) {

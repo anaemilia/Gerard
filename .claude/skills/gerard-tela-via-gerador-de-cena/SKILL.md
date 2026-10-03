@@ -120,3 +120,7 @@ mostram coisas diferentes para a mesma situação.
   o cliente só materializa.
 - `gerard-posicionamento-relativo`: a geometria concreta deriva da geometria real.
 - `gerard-consistencia-estado` e `gerard-identidade-visual`.
+
+## O idioma não decide; só fornece o texto
+
+Decisão de existir, de qual apoio e de qual ilustração nunca depende do idioma da interface ou da situação: a tradução herda a decisão da versão original (`versao_origem_id`). O idioma entra apenas como parâmetro de um método polimórfico de **renderização** do renderizador da categoria dentro do criador de cena (`RenderizadorDiagramaAditivo.argumentosHistorinha(situacao, idioma)`), que entrega à cena o texto correto (trechos curados `fragmento_texto_1..6` do idioma) como argumento da historinha. Sem texto curado no idioma, a lista é vazia: não se inventa texto.

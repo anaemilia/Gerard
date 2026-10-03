@@ -44,6 +44,8 @@ export type IdiomaSituacaoWeb = Readonly<{ codigo: string; nome: string; atual: 
 export type HistorinhaAjudaVisualWeb = Readonly<{
   tipo: "HISTORINHA_ILUSTRADA" | "HISTORINHA_TEXTUAL";
   identificador: string; referencia?: string; texto?: string;
+  /** Textos da historinha no idioma da situação (a animação não grava texto). */
+  trechos?: readonly string[]; idioma?: string;
 }>;
 export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |

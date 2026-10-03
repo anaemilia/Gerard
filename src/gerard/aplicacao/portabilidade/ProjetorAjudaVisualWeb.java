@@ -44,10 +44,16 @@ public final class ProjetorAjudaVisualWeb {
      * renderiza a primeira entrada pelo seu {@code tipo}; nenhum escolhe entre elas.
      */
     public static List<Object> projetar(CenaDiagramaAditivo cena) {
-        return cena == null ? new ArrayList<Object>() : projetar(cena.getApoiosVisuais());
+        return cena == null ? new ArrayList<Object>()
+                : projetar(cena.getApoiosVisuais(), cena.getArgumentosHistorinha());
     }
 
     private static List<Object> projetar(List<ApoioVisual> apoios) {
+        return projetar(apoios, null);
+    }
+
+    private static List<Object> projetar(List<ApoioVisual> apoios,
+            gerard.campoaditivo.diagrama.modelo.ArgumentosHistorinhaCena argumentos) {
         List<Object> resultado = new ArrayList<Object>();
         for (ApoioVisual apoio : apoios) {
             Map<String, Object> item = new LinkedHashMap<String, Object>();
@@ -55,6 +61,10 @@ public final class ProjetorAjudaVisualWeb {
             item.put("identificador", apoio.getIdentificador());
             if (apoio instanceof ApoioHistorinhaIlustrada) {
                 item.put("referencia", ((ApoioHistorinhaIlustrada) apoio).getReferenciaConteudo());
+                if (argumentos != null && argumentos.possuiTrechos()) {
+                    item.put("idioma", argumentos.getIdioma());
+                    item.put("trechos", new ArrayList<String>(argumentos.getTrechos()));
+                }
             } else if (apoio instanceof ApoioHistorinhaTextual) {
                 item.put("texto", ((ApoioHistorinhaTextual) apoio).getTexto());
             }

@@ -35,9 +35,13 @@ public class TesteAjudaVisualPorCategoriaWeb {
                 continue;
             }
             Map<String, Object> apoio = (Map<String, Object>) apoios.get(0);
+            // O idioma não decide: a tradução herda a ilustração da versão original.
+            String idIlustracao = "traducao".equalsIgnoreCase(situacao.getTipoVersao())
+                    && situacao.getVersaoOrigemId() != null && !situacao.getVersaoOrigemId().trim().isEmpty()
+                    ? situacao.getVersaoOrigemId().trim() : id;
             boolean propria = false;
             for (HistorinhaAjudaVisual h : tipo.selecionarRepertorioAjudaVisual().getHistorinhas()) {
-                propria |= h.getIdSituacaoCurada().equals(id);
+                propria |= h.getIdSituacaoCurada().equals(idIlustracao);
             }
             if (propria) {
                 exigir(ApoioVisual.TIPO_HISTORINHA_ILUSTRADA.equals(apoio.get("tipo"))
@@ -52,7 +56,8 @@ public class TesteAjudaVisualPorCategoriaWeb {
             }
             verificadas++;
         }
-        exigir(verificadas > 0 && textuais > 0 && ilustradas > 0, "curadoria carregada com os dois tipos de apoio");
+        exigir(verificadas > 0 && ilustradas == verificadas && textuais == 0,
+                "toda situação com número relativo/transformação, em qualquer idioma, tem a ilustração da sua situação");
         System.out.println("APROVADO: " + verificadas + " situações com apoio (" + ilustradas
                 + " ilustradas, " + textuais + " de texto) decididas no backend.");
     }

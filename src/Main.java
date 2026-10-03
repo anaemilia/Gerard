@@ -999,6 +999,13 @@ public class Main extends JFrame {
         ArrayList<ElementoVergnaud> elementosVergnaud = new ArrayList<ElementoVergnaud>();
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
         final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
+        { estadoSemanticoCompartilhado.definirAdmissaoRecalculoDaIncognita(
+                new java.util.function.BooleanSupplier() {
+                    public boolean getAsBoolean() {
+                        return tentativaModelagemAtual != null
+                                && tentativaModelagemAtual.estaEncerradaPorConclusao();
+                    }
+                }); }
         final PoliticaSincronizacaoEstadoFinal politicaSincronizacaoEstadoFinal =
                 new PoliticaSincronizacaoEstadoFinal();
          final ResolvedorValorEsperadoIncognita resolvedorValorEsperadoIncognita =
@@ -8995,7 +9002,9 @@ public class Main extends JFrame {
             cenaDiagramaAtual = geradorCenaDiagrama.comApoiosVisuais(cenaDiagramaAtual,
                     gerard.aplicacao.DecisorAjudaVisual.decidir(
                             situacaoProblemaAtual,
-                            tentativaModelagemAtual.estaNoLimiteAjudaVisual()));
+                            tentativaModelagemAtual.estaNoLimiteAjudaVisual()),
+                    tipoSituacaoSelecionada, situacaoProblemaAtual,
+                    situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getCodigoIdioma());
             java.util.List<Object> ajudaVisual =
                     gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb.projetar(cenaDiagramaAtual);
             if (ajudaVisual.isEmpty()) {

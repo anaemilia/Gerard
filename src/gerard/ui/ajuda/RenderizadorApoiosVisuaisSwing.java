@@ -18,6 +18,11 @@ public final class RenderizadorApoiosVisuaisSwing {
 
     /** Componente da primeira entrada da projeção, ou {@code null} se não há apoio. */
     public static JComponent criar(List<Object> projecao, Dimension tamanho) {
+        JComponent conteudo = criarConteudo(projecao, tamanho);
+        return conteudo == null ? null : new PainelAparicaoGradual(conteudo);
+    }
+
+    private static JComponent criarConteudo(List<Object> projecao, Dimension tamanho) {
         if (projecao == null || projecao.isEmpty()) {
             return null;
         }
@@ -27,8 +32,21 @@ public final class RenderizadorApoiosVisuaisSwing {
             return new PainelHistorinhaTextual(String.valueOf(primeiro.get("texto")), tamanho);
         }
         if (ApoioVisual.TIPO_HISTORINHA_ILUSTRADA.equals(tipo)) {
-            return PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao(
-                    projecao.subList(0, 1), FormatoAjudaNarrativaVisual.ANIMACAO, tamanho);
+            // A animação não grava texto: os trechos (no idioma da situação) vêm da projeção.
+            java.util.List<?> trechos = primeiro.get("trechos") instanceof java.util.List
+                    ? (java.util.List<?>) primeiro.get("trechos") : java.util.Collections.emptyList();
+            int alturaTrechos = PainelTrechosHistorinha.alturaPara(trechos.size());
+            Dimension tamanhoAnimacao = new Dimension(tamanho.width, Math.max(1, tamanho.height - alturaTrechos));
+            JComponent animacao = PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao(
+                    projecao.subList(0, 1), FormatoAjudaNarrativaVisual.ANIMACAO, tamanhoAnimacao);
+            if (animacao == null || trechos.isEmpty()) {
+                return animacao;
+            }
+            javax.swing.JPanel conjunto = new javax.swing.JPanel(new java.awt.BorderLayout());
+            conjunto.setOpaque(false);
+            conjunto.add(animacao, java.awt.BorderLayout.CENTER);
+            conjunto.add(new PainelTrechosHistorinha(trechos), java.awt.BorderLayout.SOUTH);
+            return conjunto;
         }
         return null;
     }

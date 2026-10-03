@@ -111,6 +111,24 @@ public class GeradorCenaDiagramaAditivo {
         return cena == null ? null : cena.comApoiosVisuais(decididos);
     }
 
+    /**
+     * Carrega na cena os apoios decididos e os textos da historinha no idioma pedido. Os textos
+     * vêm do renderizador da categoria (método polimórfico que recebe o idioma); o gerador só os
+     * repassa: o idioma não participa da decisão do apoio.
+     */
+    public CenaDiagramaAditivo comApoiosVisuais(CenaDiagramaAditivo cena,
+            java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> decididos,
+            TipoSituacaoAditiva tipo, gerard.campoaditivo.modelo.SituacaoProblemaAditiva situacao,
+            String idioma) {
+        if (cena == null) {
+            return null;
+        }
+        RenderizadorDiagramaAditivo renderizador = fabrica.obter(tipo);
+        return cena.comApoiosVisuais(decididos, renderizador == null
+                ? gerard.campoaditivo.diagrama.modelo.ArgumentosHistorinhaCena.VAZIO
+                : renderizador.argumentosHistorinha(situacao, idioma));
+    }
+
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */
     public CenaDiagramaAditivo comFeedback(CenaDiagramaAditivo cena,
             EstadoFeedbackDiagrama estado) {

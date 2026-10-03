@@ -31,6 +31,13 @@ public final class DecisorAjudaVisual {
         }
         return PoliticaApoioVisual.decidir(situacao.getTipo(),
                 SemanticaCuradaSituacao.possuiNumeroRelativo(situacao), escaladaNoLimite,
-                situacao.getId(), situacao.getEnunciado());
+                situacao.getId(), idDaSituacaoIlustrada(situacao), situacao.getEnunciado());
+    }
+
+    /** A tradução herda a ilustração da versão original: o idioma não muda a decisão. */
+    static String idDaSituacaoIlustrada(SituacaoProblemaAditiva situacao) {
+        String origem = situacao.getVersaoOrigemId();
+        boolean traducao = "traducao".equalsIgnoreCase(situacao.getTipoVersao());
+        return traducao && origem != null && !origem.trim().isEmpty() ? origem.trim() : situacao.getId();
     }
 }
