@@ -1054,15 +1054,6 @@ public class TelaCuradoriaSituacoes extends JPanel {
         JLabel avisoSalvamento = new JLabel("As alterações serão salvas automaticamente ao fechar.");
         avisoSalvamento.setFont(GerardFontes.sans(false, 11f));
         avisoSalvamento.setForeground(UITemaGerard.COR_TEXTO_SECUNDARIO);
-        JButton editarNarrativaRica = new GerardButton("Narrativa rica...");
-        editarNarrativaRica.setEnabled(!versaoTraducaoSomenteTexto);
-        editarNarrativaRica.setToolTipText(versaoTraducaoSomenteTexto
-                ? "A narrativa rica pertence à versão original vinculada."
-                : "Declarar participantes, objetos, eventos e correspondências semânticas.");
-        editarNarrativaRica.getAccessibleContext().setAccessibleName(
-                "Editar narrativa rica da situação-problema");
-        editarNarrativaRica.getAccessibleContext().setAccessibleDescription(
-                "Abre o editor de participantes, objetos, estados, eventos e correspondências declarados pelo pesquisador.");
         JButton fechar = new GerardButton("Salvar e fechar", GerardButton.Estilo.PRIMARIO);
 
         final Runnable fecharESalvar = new Runnable() {
@@ -1210,35 +1201,6 @@ public class TelaCuradoriaSituacoes extends JPanel {
                     "Tradução", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        editarNarrativaRica.addActionListener(e -> {
-            controladorSinais.normalizarCamposExibidos();
-            aplicarCamposDaCuradoriaDetalhada(linha, campoValidada, areaEnunciado, campoId, campoIdiomaVersao, campoSituacaoGrupoId, campoTipoVersao, campoVersaoOrigemId, campoFonte, campoSubtipo, campoPersonagem1, campoPersonagem2, campoPersonagem3,
-                    campoEstadoInicial, campoTransformacao, campoEstadoFinal, campoQuantidade1, campoQuantidade2,
-                    campoResultado, campoReferido, campoReferendo, campoValorRelativo, controladorSinais, campoTermoDesconhecido, campoRepresentacao, campoObservacoes,
-                    campoFragmentoTexto1, campoFragmentoTexto2, campoFragmentoTexto3, campoFragmentoTexto4, campoFragmentoTexto5, campoFragmentoTexto6,
-                    campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,
-                    campoEstadoInicialParte1, campoEstadoInicialParte1Personagem,
-                    campoEstadoInicialParte2, campoEstadoInicialParte2Personagem);
-            if (linha.id == null || linha.id.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        dialogo,
-                        "Informe o id da situação antes de editar a narrativa rica.",
-                        "Narrativa rica",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            modelo.atualizarLinha(linhaModelo);
-            SituacaoProblemaAditiva situacaoParaNarrativa =
-                    modelo.paraSituacao(linhaModelo);
-            boolean narrativaSalva = new DialogoCuradoriaNarrativaRica(
-                    dialogo, situacaoParaNarrativa,
-                    repositorioNarrativaRica).exibir(dialogo);
-            if (narrativaSalva) {
-                avisoSalvamento.setText(
-                        "Narrativa rica salva; a situação tabular será salva ao fechar.");
-            }
-        });
-
         fechar.addActionListener(e -> fecharESalvar.run());
         dialogo.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -1246,7 +1208,6 @@ public class TelaCuradoriaSituacoes extends JPanel {
             }
         });
         botoes.add(avisoSalvamento);
-        botoes.add(editarNarrativaRica);
         botoes.add(fechar);
         conteudo.add(botoes, BorderLayout.SOUTH);
 
