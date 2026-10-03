@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383",
+  "titulo": "Geisa e a caixa de chocolates",
+  "titulo_final": "Composição das transformações",
+  "legendas": [
+    "Geisa tinha uma caixa com 25 chocolates.",
+    "Ontem, ela comeu 2 chocolates.",
+    "Hoje, ela comeu mais 5.",
+    "A caixa ficou com menos chocolates."
+  ],
+  "equacao": "(−2) + (−5) = −7",
+  "conclusao": "25 + (−7) = 18 chocolates.",
+  "categoria": "COMPOSICAO_TRANSFORMACOES",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/13_geisa_e_a_caixa_de_chocolates_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.48,
+    0.48,
+    0.48,
+    0.48
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/composicao_transformacoes/05_geisa_e_a_caixa_de_chocolates_historinha"
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/02_maria_e_as_figurinhas_historinha.gif",
+    "bytes": 6666465,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/03_maria_na_feira_historinha.gif",
+    "bytes": 6004302,
+    "quadros": 71,
+    "duracao_ms": 11650
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_93128185",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/04_nadia_e_os_morangos_historinha.gif",
+    "bytes": 6537983,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_balas_2108939476",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/05_leandro_e_as_balas_historinha.gif",
+    "bytes": 6487469,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_bolas_163355672",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/06_paulo_e_as_bolas_historinha.gif",
+    "bytes": 6323505,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040",
+    "categoria": "TRANSFORMACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/transformacao_medidas/07_lucas_e_as_figurinhas_do_tio_historinha.gif",
+    "bytes": 6548836,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_bolas_487868670",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/01_paulo_e_jose_historinha.gif",
+    "bytes": 6509902,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_carrinhos_1292854684",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/02_marcus_e_jardel_historinha.gif",
+    "bytes": 6908180,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_667564143",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/03_ingrid_e_ligianne_historinha.gif",
+    "bytes": 6548351,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_cds_1222854862",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/04_jammes_e_gisele_historinha.gif",
+    "bytes": 6515188,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_2123535490",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/05_claudia_e_joana_historinha.gif",
+    "bytes": 6641309,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_1527166754",
+    "categoria": "COMPARACAO_MEDIDAS",
+    "gif": "src/gerard/recursos/ajuda/comparacao_medidas/06_claudenice_e_nadia_historinha.gif",
+    "bytes": 6204949,
+    "quadros": 84,
+    "duracao_ms": 11580
+  },
+  {
+    "situacao": "PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383",
+    "categoria": "COMPOSICAO_TRANSFORMACOES",
+    "gif": "src/gerard/recursos/ajuda/composicao_transformacoes/05_geisa_e_a_caixa_de_chocolates_historinha.gif",
+    "bytes": 6258522,
+    "quadros": 84,
+    "duracao_ms": 11580
+  }
+]

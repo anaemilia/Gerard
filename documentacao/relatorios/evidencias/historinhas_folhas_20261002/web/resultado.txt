@@ -1,0 +1,37 @@
+[OK] sorteou PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160
+[OK] sem historinha antes do limite
+[OK] contagem 1 Maria e as figurinhas
+[OK] animação somente na terceira rejeição Maria e as figurinhas 1
+[OK] contagem 2 Maria e as figurinhas
+[OK] animação somente na terceira rejeição Maria e as figurinhas 2
+[OK] contagem 3 Maria e as figurinhas
+[OK] animação somente na terceira rejeição Maria e as figurinhas 3
+[OK] backend selecionou animação própria Maria e as figurinhas
+[OK] GIF correto carregado Maria e as figurinhas
+[OK] sorteou PO_TRANSFORMACAO_MEDIDAS_frutas_93128185
+[OK] sem historinha antes do limite
+[OK] contagem 1 Nádia e os morangos
+[OK] animação somente na terceira rejeição Nádia e os morangos 1
+[OK] contagem 2 Nádia e os morangos
+[OK] animação somente na terceira rejeição Nádia e os morangos 2
+[OK] contagem 3 Nádia e os morangos
+[OK] animação somente na terceira rejeição Nádia e os morangos 3
+[OK] backend selecionou animação própria Nádia e os morangos
+[OK] GIF correto carregado Nádia e os morangos
+[OK] sorteou PO_COMPARACAO_MEDIDAS_bolas_487868670
+[OK] sem historinha antes do limite
+[OK] contagem 1 Paulo e José
+[OK] animação somente na terceira rejeição Paulo e José 1
+[OK] contagem 2 Paulo e José
+[OK] animação somente na terceira rejeição Paulo e José 2
+[OK] contagem 3 Paulo e José
+[OK] animação somente na terceira rejeição Paulo e José 3
+[OK] backend selecionou animação própria Paulo e José
+[OK] GIF correto carregado Paulo e José
+[OK] sorteou PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383
+[OK] sem historinha antes do limite
+REPETINDO ARRASTE papel.estadoFinal 3
+[OK] limitação apenas na curadoria conhecida da Geisa
+[OK] Geisa: API publica estado final conhecido 16, sem incógnita editável
+PENDÊNCIA GEISA: a curadoria/API impede propor a incógnita nesta situação; dados preservados.
+APROVADO: três situações novas com três rejeições reais e GIF próprio carregado; limitação da Geisa registrada sem alterar curadoria.

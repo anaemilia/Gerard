@@ -74,7 +74,9 @@ try{
       ??estado.modelagem.acoes_disponiveis.find(a=>a.id==='PROPOR_VALOR_PAPEL')?.corpo?.papel_id;
     if(alvo){const f=figura(alvo);const p=await centro(page.locator(`[data-figura-id="${f.id}"]`));await page.mouse.dblclick(p.x,p.y);await pausa();
       const resposta=respostaDaRelacao(alvo,c);
-      const input=page.locator(`[id="valor-${f.id}"]`);await input.fill(String(Math.abs(resposta)));await input.press('Enter');await pausa();await sinal(resposta<0);
+      const input=page.locator(`[id="valor-${f.id}"]`);await input.fill(String(Math.abs(resposta)));await pausa();
+      const enviada=page.waitForResponse(r=>r.url().endsWith('/api/acoes/posicionar')&&r.request().method()==='POST');
+      await input.press('Enter');await pausa();await sinal(resposta<0);await (await enviada).finished();await pausa();
     }
     exigir(estado.modelagem.concluida===true,tipo+' conclusão real');
     exigir(await page.locator('.historinha-passiva').count()===1,tipo+' conserva historinha na conclusão');

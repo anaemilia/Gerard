@@ -84,7 +84,11 @@ public enum TipoSituacaoAditiva {
                     new HistorinhaAjudaVisual(
                             "vovo_rosas_duas_perdas",
                             "PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114",
-                            "composicao_transformacoes/04_vovo_rosas_historinha"))),
+                            "composicao_transformacoes/04_vovo_rosas_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "geisa_e_a_caixa_de_chocolates",
+                            "PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383",
+                            "composicao_transformacoes/05_geisa_e_a_caixa_de_chocolates_historinha"))),
     TRANSFORMACAO_RELACAO(
             "tipo.transformacao_relacao", "TR",
             RepertorioAjudaVisual.criar(

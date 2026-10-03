@@ -1,0 +1,25 @@
+SITUACAO=PO_TRANSFORMACAO_RELACAO_bonecas_620955739
+[OK] TRANSFORMACAO_RELACAO antes do limite vazio
+[OK] TRANSFORMACAO_RELACAO historinha na rejeição 1
+[OK] TRANSFORMACAO_RELACAO historinha na rejeição 2
+[OK] TRANSFORMACAO_RELACAO historinha na rejeição 3
+[OK] TRANSFORMACAO_RELACAO referência da própria categoria
+[OK] TRANSFORMACAO_RELACAO conclusão real
+[OK] TRANSFORMACAO_RELACAO conserva historinha na conclusão
+[OK] TRANSFORMACAO_RELACAO restauração oculta historinha
+SITUACAO=PO_COMPOSICAO_RELACOES_idades_642701604
+[OK] COMPOSICAO_RELACOES antes do limite vazio
+[OK] COMPOSICAO_RELACOES historinha na rejeição 1
+[OK] COMPOSICAO_RELACOES historinha na rejeição 2
+[OK] COMPOSICAO_RELACOES historinha na rejeição 3
+[OK] COMPOSICAO_RELACOES referência da própria categoria
+[OK] COMPOSICAO_RELACOES conclusão real
+[OK] COMPOSICAO_RELACOES conserva historinha na conclusão
+[OK] COMPOSICAO_RELACOES restauração oculta historinha
+SITUACAO=PO_COMPOSICAO_TRANSFORMACOES_bolas_509261012
+[OK] COMPOSICAO_TRANSFORMACOES antes do limite vazio
+[OK] COMPOSICAO_TRANSFORMACOES historinha na rejeição 1
+[OK] COMPOSICAO_TRANSFORMACOES historinha na rejeição 2
+[OK] COMPOSICAO_TRANSFORMACOES historinha na rejeição 3
+[OK] COMPOSICAO_TRANSFORMACOES referência da própria categoria
+[FALHA] COMPOSICAO_TRANSFORMACOES conclusão real
