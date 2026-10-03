@@ -57,3 +57,14 @@ mouse real no desktop e web com zero rejeições e painel complementar vazio.
 Isso verifica o gatilho existente, sem criar outra regra. O histórico do
 print antigo 04 não pôde ser reconstruído. Evidências e limites em
 `documentacao/relatorios/RELATORIO_COMPOSICAO_MATERIAL_CONCRETO_2026-10-02.md`.
+
+Regra geral consolidada pela usuária em 2026-10-02 (substitui a leitura "só o repertório da
+própria categoria"): **onde houver número relativo ou transformação, há historinha com o
+texto da situação-problema**, após três rejeições consecutivas. Se existe ilustração
+cadastrada para a própria situação (`idSituacaoCurada`), ela é o apoio; senão, a historinha é
+o **texto da própria situação** (fonte curada, nada composto livremente). O backend decide
+(`PoliticaApoioVisual` no domínio, `DecisorAjudaVisual` na aplicação), a cena carrega uma
+lista de `ApoioVisual` tipados (`HISTORINHA_ILUSTRADA`, `HISTORINHA_TEXTUAL`) e a API os
+projeta; Swing (`RenderizadorApoiosVisuaisSwing`) e React (`HistorinhaPassiva`) renderizam a
+primeira entrada pelo tipo. Isso vale para todas as categorias, sem tratamento por categoria.
+A ausência de ilustração deixa de ser painel vazio. Ver `gerard-tela-via-gerador-de-cena`.

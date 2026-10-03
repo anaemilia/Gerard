@@ -71,16 +71,18 @@ decide, escolhe entre alternativas, filtra nem aplica regra própria.
 Cadeia obrigatória: **objeto rico decide → decisor de aplicação reúne os fatos →
 gerador de cena carrega o resultado na cena → API projeta → Swing e React renderizam.**
 
-Exemplo (ajuda visual / historinha, 2026-10-02):
-- Objeto rico: `RepertorioAjudaVisual.paraSituacao` (narrativa da própria situação, se
-  existir; senão as da categoria) e `TipoSituacaoAditiva.deveAcionarHistorinha`.
+Exemplo (apoio visual / historinha, 2026-10-02) — regra geral, sem tratamento por categoria:
+- Domínio: `PoliticaApoioVisual` — onde há número relativo ou transformação, após o limite,
+  o apoio é a ilustração da própria situação (se houver) ou a historinha com o texto dela.
 - Decisor de aplicação: `gerard.aplicacao.DecisorAjudaVisual` — única fonte da decisão.
-- Cena: `CenaDiagramaAditivo.getAjudaVisual()`, via `GeradorCenaDiagramaAditivo.comAjudaVisual`.
-- Projeção: `ProjetorAjudaVisualWeb.projetar(cena)` — lista de `{identificador, referencia}`.
-- Clientes: o desktop (`Main` + `PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao`)
-  e o React (`HistorinhaPassiva`) apresentam a **primeira** entrada. Nenhum escolhe a
-  narrativa: o antigo `find(da_situacao_atual) ?? [0]` no cliente era decisão fora do
-  backend e foi removido.
+- Cena: `CenaDiagramaAditivo.getApoiosVisuais()` (lista de `ApoioVisual` tipados), carregada por
+  `GeradorCenaDiagramaAditivo.comApoiosVisuais`.
+- Projeção: `ProjetorAjudaVisualWeb.projetar(cena)` — itens com `tipo` e `referencia`/`texto`.
+- Clientes: Swing (`RenderizadorApoiosVisuaisSwing`) e React (`HistorinhaPassiva`)
+  renderizam a **primeira** entrada pelo `tipo`. Nenhum escolhe a narrativa: o antigo
+  `find(da_situacao_atual) ?? [0]` no cliente era decisão fora do backend e foi removido.
+- Novo tipo de apoio = novo `ApoioVisual` no domínio + um ramo de renderização por cliente;
+  a regra de quando aparece continua só na política.
 
 Sinais de violação: o cliente tem `find`/`filter`/`if` que escolhe entre itens que o
 backend enviou; um cliente chama o domínio direto em vez da projeção; desktop e web

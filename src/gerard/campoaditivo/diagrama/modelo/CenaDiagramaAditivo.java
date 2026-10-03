@@ -24,8 +24,8 @@ public class CenaDiagramaAditivo {
     // gerador, em vez de cada um recalcular "posso mostrar o botão de
     // editar?" por conta própria.
     private final boolean permiteEditarNarrativa;
-    // Ajuda visual (historinha) já decidida pelo backend; a cena só a carrega.
-    private final gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual ajudaVisual;
+    // Apoios visuais (historinhas) já decididos pelo backend; a cena só os carrega.
+    private final java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> apoiosVisuais;
 
     public CenaDiagramaAditivo(String titulo, String descricao, List<FiguraDiagrama> figuras, List<ConectorDiagrama> conectores) {
         this(titulo, descricao, figuras, conectores, EstadoFeedbackDiagrama.NEUTRO);
@@ -44,7 +44,7 @@ public class CenaDiagramaAditivo {
             List<SegmentoTextoSemantico> elementosTexto,
             VocabularioTextoNarrativo vocabularioTexto,
             boolean permiteEditarNarrativa,
-            gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual ajudaVisual) {
+            java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> apoiosVisuais) {
         this.titulo = titulo;
         this.descricao = descricao;
         this.figuras = new ArrayList<FiguraDiagrama>(figuras);
@@ -55,8 +55,9 @@ public class CenaDiagramaAditivo {
                 elementosTexto == null ? Collections.<SegmentoTextoSemantico>emptyList() : elementosTexto);
         this.vocabularioTexto = vocabularioTexto;
         this.permiteEditarNarrativa = permiteEditarNarrativa;
-        this.ajudaVisual = ajudaVisual == null
-                ? gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual.vazio() : ajudaVisual;
+        this.apoiosVisuais = apoiosVisuais == null
+                ? java.util.Collections.<gerard.dominio.campoaditivo.ajuda.ApoioVisual>emptyList()
+                : java.util.Collections.unmodifiableList(new ArrayList<gerard.dominio.campoaditivo.ajuda.ApoioVisual>(apoiosVisuais));
     }
 
     public String getTitulo() { return titulo; }
@@ -67,12 +68,12 @@ public class CenaDiagramaAditivo {
     public List<SegmentoTextoSemantico> getElementosTexto() { return Collections.unmodifiableList(elementosTexto); }
     public VocabularioTextoNarrativo getVocabularioTexto() { return vocabularioTexto; }
     public boolean isPermiteEditarNarrativa() { return permiteEditarNarrativa; }
-    public gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual getAjudaVisual() { return ajudaVisual; }
+    public java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> getApoiosVisuais() { return apoiosVisuais; }
 
-    /** Nova cena que carrega a ajuda visual que o backend decidiu (possivelmente vazia). */
-    public CenaDiagramaAditivo comAjudaVisual(gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual decidida) {
+    /** Nova cena que carrega os apoios visuais que o backend decidiu (possivelmente nenhum). */
+    public CenaDiagramaAditivo comApoiosVisuais(java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> decididos) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estadoFeedback,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa, decidida);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, decididos);
     }
 
     /**
@@ -87,12 +88,12 @@ public class CenaDiagramaAditivo {
             novas.add(figura.comSubtitulo(subtitulo));
         }
         return new CenaDiagramaAditivo(titulo, descricao, novas, conectores, estadoFeedback,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, apoiosVisuais);
     }
 
     public CenaDiagramaAditivo comEstadoFeedback(EstadoFeedbackDiagrama estado) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estado,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, apoiosVisuais);
     }
 
     /**
@@ -104,6 +105,6 @@ public class CenaDiagramaAditivo {
     public CenaDiagramaAditivo comElementosTexto(List<SegmentoTextoSemantico> elementosTexto,
             VocabularioTextoNarrativo vocabularioTexto, boolean permiteEditarNarrativa) {
         return new CenaDiagramaAditivo(titulo, descricao, figuras, conectores, estadoFeedback,
-                elementosTexto, vocabularioTexto, permiteEditarNarrativa, ajudaVisual);
+                elementosTexto, vocabularioTexto, permiteEditarNarrativa, apoiosVisuais);
     }
 }

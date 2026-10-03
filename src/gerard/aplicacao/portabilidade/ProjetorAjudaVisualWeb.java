@@ -3,8 +3,9 @@ package gerard.aplicacao.portabilidade;
 import gerard.aplicacao.DecisorAjudaVisual;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
-import gerard.dominio.campoaditivo.ajuda.HistorinhaAjudaVisual;
-import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
+import gerard.dominio.campoaditivo.ajuda.ApoioHistorinhaIlustrada;
+import gerard.dominio.campoaditivo.ajuda.ApoioHistorinhaTextual;
+import gerard.dominio.campoaditivo.ajuda.ApoioVisual;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * Projeta para o cliente web o repertório de historinhas (representação passiva de
  * ajuda visual) <b>da própria categoria</b>: quem possui o repertório é
- * {@code TipoSituacaoAditiva.selecionarRepertorioAjudaVisual()}, e uma categoria sem
+ * a política de apoio visual, e uma categoria sem
  * repertório (ex.: Transformação de Medidas) projeta lista vazia — o cliente não
  * escolhe nem fixa o conteúdo de outra categoria.
  *
@@ -33,25 +34,30 @@ public final class ProjetorAjudaVisualWeb {
         return DecisorAjudaVisual.acionada(situacao, escaladaNoLimite);
     }
 
-    /** Ajuda visual decidida pelo backend para a situação neste momento (mesma fonte da cena). */
+    /** Apoios visuais decididos pelo backend para a situação neste momento (mesma fonte da cena). */
     public static List<Object> projetar(SituacaoProblemaAditiva situacao, boolean escaladaNoLimite) {
         return projetar(DecisorAjudaVisual.decidir(situacao, escaladaNoLimite));
     }
 
     /**
-     * Ajuda visual que a cena carrega. É o que Swing e React consomem: cada cliente só
-     * apresenta a primeira entrada (já a narrativa certa); nenhum escolhe entre elas.
+     * Apoios visuais que a cena carrega. É o que Swing e React consomem: cada cliente
+     * renderiza a primeira entrada pelo seu {@code tipo}; nenhum escolhe entre elas.
      */
     public static List<Object> projetar(CenaDiagramaAditivo cena) {
-        return cena == null ? new ArrayList<Object>() : projetar(cena.getAjudaVisual());
+        return cena == null ? new ArrayList<Object>() : projetar(cena.getApoiosVisuais());
     }
 
-    private static List<Object> projetar(RepertorioAjudaVisual repertorio) {
+    private static List<Object> projetar(List<ApoioVisual> apoios) {
         List<Object> resultado = new ArrayList<Object>();
-        for (HistorinhaAjudaVisual historinha : repertorio.getHistorinhas()) {
+        for (ApoioVisual apoio : apoios) {
             Map<String, Object> item = new LinkedHashMap<String, Object>();
-            item.put("identificador", historinha.getIdentificador());
-            item.put("referencia", historinha.getReferenciaConteudo());
+            item.put("tipo", apoio.getTipo());
+            item.put("identificador", apoio.getIdentificador());
+            if (apoio instanceof ApoioHistorinhaIlustrada) {
+                item.put("referencia", ((ApoioHistorinhaIlustrada) apoio).getReferenciaConteudo());
+            } else if (apoio instanceof ApoioHistorinhaTextual) {
+                item.put("texto", ((ApoioHistorinhaTextual) apoio).getTexto());
+            }
             resultado.add(item);
         }
         return resultado;

@@ -87,9 +87,16 @@ public enum TipoSituacaoAditiva {
         return repertorioAjudaVisual;
     }
 
+    /** Categorias cuja situação envolve uma transformação (aciona a ajuda visual por si). */
+    public boolean envolveTransformacao() {
+        return this == TRANSFORMACAO_MEDIDAS || this == COMPOSICAO_TRANSFORMACOES
+                || this == TRANSFORMACAO_RELACAO;
+    }
+
     /** Política independente da disponibilidade de conteúdo (decisão de 2026-10-02). */
     public boolean deveAcionarHistorinha(boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
-        return possuiNumeroRelativo && escaladaNoLimite;
+        return gerard.dominio.campoaditivo.ajuda.PoliticaApoioVisual.acionado(
+                this, possuiNumeroRelativo, escaladaNoLimite);
     }
 
     /** Resolve o repertório depois da decisão; lista vazia não revoga o acionamento. */
@@ -97,13 +104,6 @@ public enum TipoSituacaoAditiva {
             boolean possuiNumeroRelativo, boolean escaladaNoLimite) {
         return deveAcionarHistorinha(possuiNumeroRelativo, escaladaNoLimite)
                 ? repertorioAjudaVisual : RepertorioAjudaVisual.vazio();
-    }
-
-    /** Como o anterior, já restrito à narrativa da situação em curso, se existir uma própria. */
-    public RepertorioAjudaVisual selecionarRepertorioAjudaVisual(
-            boolean possuiNumeroRelativo, boolean escaladaNoLimite, String idSituacaoCurada) {
-        return selecionarRepertorioAjudaVisual(possuiNumeroRelativo, escaladaNoLimite)
-                .paraSituacao(idSituacaoCurada);
     }
 
     public boolean possuiAjudaVisual() {

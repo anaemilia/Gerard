@@ -1013,7 +1013,7 @@ public final class ServicoSorteioAtividadeWeb {
         cena = gerador.comElementosTextoNarrativa(cena,
                 contexto.getEnunciadoExibido(), contexto.getInterpretacao(), concluida);
         // A ajuda visual (historinha) faz parte da cena: o backend decide e a cena a carrega.
-        cena = gerador.comAjudaVisual(cena,
+        cena = gerador.comApoiosVisuais(cena,
                 DecisorAjudaVisual.decidir(contexto.getSituacao(), escaladaNoLimite));
         Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();

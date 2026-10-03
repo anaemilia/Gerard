@@ -685,7 +685,7 @@ public class Main extends JFrame {
         JButton botaoAjudaTexto;
         JButton botaoAjudaVergnaud;
         JButton botaoAjudaComplementar;
-        PainelAjudaNarrativaVisualCategoria painelHistorinhasComplementar;
+        javax.swing.JComponent painelHistorinhasComplementar;
         String chaveHistorinhasComplementar = "";
         Dimension tamanhoHistorinhasComplementar;
         JPopupMenu menuAjudaContextualAtivo;
@@ -8992,7 +8992,7 @@ public class Main extends JFrame {
         private void exibirHistorinhasNoPainelComplementar(Rectangle area) {
             // O backend decide a ajuda visual (DecisorAjudaVisual), a cena a carrega e a API
             // a projeta; Swing só a renderiza — a mesma projeção que o React consome.
-            cenaDiagramaAtual = geradorCenaDiagrama.comAjudaVisual(cenaDiagramaAtual,
+            cenaDiagramaAtual = geradorCenaDiagrama.comApoiosVisuais(cenaDiagramaAtual,
                     gerard.aplicacao.DecisorAjudaVisual.decidir(
                             situacaoProblemaAtual,
                             tentativaModelagemAtual.estaNoLimiteAjudaVisual()));
@@ -9019,10 +9019,7 @@ public class Main extends JFrame {
                     remove(painelHistorinhasComplementar);
                 }
                 painelHistorinhasComplementar =
-                        PainelAjudaNarrativaVisualCategoria.criarPassivoDaProjecao(
-                                ajudaVisual,
-                                FormatoAjudaNarrativaVisual.ANIMACAO,
-                                tamanhoImagem);
+                        gerard.ui.ajuda.RenderizadorApoiosVisuaisSwing.criar(ajudaVisual, tamanhoImagem);
                 chaveHistorinhasComplementar = chaveProjecao;
                 tamanhoHistorinhasComplementar = new Dimension(tamanhoImagem);
                 if (painelHistorinhasComplementar != null) {

@@ -24,9 +24,14 @@ export function HistorinhaPassiva({ historinhas, codigoIdioma }: {
 }) {
   const escolhida = historinhas[0];
   const [indice, setIndice] = useState(0);
-  useEffect(() => { setIndice(0); }, [escolhida?.referencia, codigoIdioma]);
+  useEffect(() => { setIndice(0); }, [escolhida?.referencia, escolhida?.texto, codigoIdioma]);
   if (!escolhida) return null;
-  const arquivos = arquivosHistorinha(escolhida.referencia, codigoIdioma);
+  if (escolhida.tipo === "HISTORINHA_TEXTUAL") {
+    return <div className="historinha-passiva historinha-textual" aria-label="Historinha">
+      <p>{escolhida.texto}</p>
+    </div>;
+  }
+  const arquivos = arquivosHistorinha(escolhida.referencia ?? "", codigoIdioma);
   return <div className="historinha-passiva" aria-label="Historinha">
     <img src={arquivos[Math.min(indice, arquivos.length - 1)]} alt="" aria-hidden="true"
       onError={() => setIndice((atual) => (atual + 1 < arquivos.length ? atual + 1 : atual))} />

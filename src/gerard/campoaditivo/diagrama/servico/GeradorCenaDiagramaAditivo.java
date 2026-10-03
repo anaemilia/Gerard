@@ -102,13 +102,13 @@ public class GeradorCenaDiagramaAditivo {
     }
 
     /**
-     * Projeta na cena a ajuda visual (historinha) que o backend decidiu
-     * ({@code gerard.aplicacao.DecisorAjudaVisual}). O gerador só a carrega; desktop e web a
-     * realizam sem escolher entre narrativas.
+     * Projeta na cena os apoios visuais (historinhas) que o backend decidiu
+     * ({@code gerard.aplicacao.DecisorAjudaVisual}). O gerador só os carrega; desktop e web
+     * os realizam sem escolher entre apoios.
      */
-    public CenaDiagramaAditivo comAjudaVisual(CenaDiagramaAditivo cena,
-            gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual decidida) {
-        return cena == null ? null : cena.comAjudaVisual(decidida);
+    public CenaDiagramaAditivo comApoiosVisuais(CenaDiagramaAditivo cena,
+            java.util.List<gerard.dominio.campoaditivo.ajuda.ApoioVisual> decididos) {
+        return cena == null ? null : cena.comApoiosVisuais(decididos);
     }
 
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */
