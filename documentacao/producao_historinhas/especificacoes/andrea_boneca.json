@@ -1,0 +1,20 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "gerada com Gamma generate_image em 2026-10-02; sem texto na imagem",
+  "folha": "../folhas/andrea_boneca_folha_gamma_2026-10-02.jpg",
+  "grade": [2, 3],
+  "paineis": [0, 2, 3, 5],
+  "titulo": "Andréa e a boneca",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Andréa guarda dinheiro para comprar uma boneca.",
+    "Sua tia chega para visitá-la.",
+    "A tia dá mais dinheiro a Andréa.",
+    "O dinheiro de Andréa aumentou."
+  ],
+  "equacao": "16 + (+5) = 21",
+  "conclusao": "Andréa ficou com 21 reais.",
+  "focos": [0.5, 0.5, 0.5, 0.5],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/01_andrea_boneca_historinha"
+}

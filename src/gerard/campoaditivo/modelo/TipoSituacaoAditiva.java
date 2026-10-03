@@ -5,7 +5,14 @@ import gerard.dominio.campoaditivo.ajuda.RepertorioAjudaVisual;
 
 public enum TipoSituacaoAditiva {
     COMPOSICAO_MEDIDAS("tipo.composicao_medidas", "CM"),
-    TRANSFORMACAO_MEDIDAS("tipo.transformacao_medidas", "TM"),
+    TRANSFORMACAO_MEDIDAS(
+            "tipo.transformacao_medidas", "TM",
+            RepertorioAjudaVisual.criar(
+                    "ajuda.visual.transformacao_medidas",
+                    new HistorinhaAjudaVisual(
+                            "andrea_boneca",
+                            "PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799",
+                            "transformacao_medidas/01_andrea_boneca_historinha"))),
     COMPARACAO_MEDIDAS("tipo.comparacao_medidas", "COP"),
     COMPOSICAO_TRANSFORMACOES(
             "tipo.composicao_transformacoes", "CT",
