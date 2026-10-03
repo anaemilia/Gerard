@@ -1,0 +1,124 @@
+{
+  "status": "RASCUNHO PARA REVISAO DA PESQUISADORA — legendas, equacoes e prompts derivados apenas do enunciado e dos numeros curados; nada foi gerado ainda (aguarda creditos do Gamma ou folhas prontas)",
+  "estilo_comum_do_prompt": "Children's picture-book illustration, warm earthy hand-painted style (ochre, terracotta, soft greens), Brazilian everyday setting. ONE image in 16:9 containing FOUR panels in a 2 columns x 2 rows grid, separated by thin white lines, reading order: top-left, top-right, bottom-left, bottom-right. The SAME characters appear in all four panels with identical clothes and faces. Absolutely NO text, NO letters, NO numbers, NO captions anywhere. Consistent characters across panels. Story: ",
+  "observacao_dados": "Situacao 13 (Geisa/chocolates): os campos curados estado_final=16 e resultado=3 nao conferem com o enunciado (25 - 2 - 5 = 18); o rascunho usa o calculo do enunciado e a curadoria precisa ser revista.",
+  "historias": [
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+      "titulo": "Maria e as figurinhas",
+      "prompt_historia": "MARIA, a girl about 10 with braids, and her MOTHER. 1: Maria sits at a table with a sticker album and a small pile of stickers. 2: her mother enters the room with more stickers in her hands. 3: the mother hands the stickers to Maria. 4: Maria happily places the new stickers in her album, a larger collection.",
+      "legendas": ["Maria faz coleção de figurinhas.", "Sua mãe chega com mais figurinhas.", "A mãe presenteia Maria.", "A coleção de Maria aumentou."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "32 + (+22) = 54",
+      "conclusao": "Maria tem 54 figurinhas agora."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840",
+      "titulo": "Maria na feira",
+      "prompt_historia": "MARIA, a woman in a sun hat, at a Brazilian street market (feira). 1: Maria arrives at the market holding her wallet with some money. 2: she looks at stalls of fruits and vegetables. 3: she pays a vendor and receives a bag of fruits and vegetables. 4: Maria leaves with the full shopping bag, holding her smaller wallet.",
+      "legendas": ["Maria vai à feira com dinheiro.", "Ela escolhe frutas e verduras.", "Maria paga pelas compras.", "O dinheiro de Maria diminuiu."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "25 + (−18) = 7",
+      "conclusao": "Maria ficou com R$ 7,00."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_93128185",
+      "titulo": "Nádia e os morangos",
+      "prompt_historia": "NÁDIA, a girl about 9 with a bob haircut, and her younger SISTER. 1: Nádia places a bowl with ten strawberries on the kitchen table. 2: her sister arrives curiously. 3: the sister eats some strawberries. 4: Nádia looks at the bowl with fewer strawberries left.",
+      "legendas": ["Nádia comprou dez morangos.", "Sua irmã chega à mesa.", "A irmã come três morangos.", "Sobraram menos morangos para Nádia."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "10 + (−3) = 7",
+      "conclusao": "Nádia ficou com 7 morangos."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_balas_2108939476",
+      "titulo": "Leandro e as balas",
+      "prompt_historia": "LEANDRO, a boy about 10 with short hair, and his younger BROTHER LUCAS. 1: Leandro shows a jar full of candies. 2: Leandro leaves the room and Lucas sneaks in. 3: Lucas takes candies from the jar. 4: Leandro returns and finds the jar with fewer candies.",
+      "legendas": ["Leandro tinha 10 balas.", "Lucas, seu irmão, entra escondido.", "Lucas pega algumas balas.", "Leandro encontra só 6 balas."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "10 + (−4) = 6",
+      "conclusao": "Lucas comeu 4 balas."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_bolas_163355672",
+      "titulo": "Paulo e as bolas",
+      "prompt_historia": "PAULO, a boy about 9 with curly hair and a red shirt, in a sunny yard. 1: in the morning Paulo plays with a few balls on the grass. 2: in the afternoon a friend arrives carrying more balls. 3: the friend gives the balls to Paulo. 4: Paulo smiles surrounded by many balls.",
+      "legendas": ["Pela manhã, Paulo tinha 6 bolas.", "À tarde, chega um amigo.", "Paulo ganha mais bolas.", "Agora Paulo tem mais bolas."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "6 + (+8) = 14",
+      "conclusao": "Paulo ficou com 14 bolas."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040",
+      "titulo": "Lucas e as figurinhas do tio",
+      "prompt_historia": "LUCAS, a boy about 9 with short dark hair, and his UNCLE, a friendly man with a beard. 1: Lucas sits with a few stickers and an album. 2: his uncle arrives with a pack of stickers. 3: the uncle gives the stickers to Lucas. 4: Lucas shows his album, now with many more stickers, to his uncle.",
+      "legendas": ["Lucas tinha algumas figurinhas.", "Seu tio chega com figurinhas.", "O tio dá 12 figurinhas a Lucas.", "Agora Lucas tem 17 figurinhas."],
+      "titulo_final": "Transformação de medidas",
+      "equacao": "5 + (+12) = 17",
+      "conclusao": "Lucas tinha 5 figurinhas antes."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_bolas_487868670",
+      "titulo": "Paulo e José",
+      "prompt_historia": "PAULO, a boy about 9 in a red shirt, and JOSÉ, a boy about 9 in a blue shirt, in a yard. 1: Paulo shows his few balls. 2: José arrives with a bigger bag of balls. 3: the two boys put their balls side by side to compare. 4: José's row of balls is longer than Paulo's.",
+      "legendas": ["Paulo tem 6 bolas.", "José chega com suas bolas.", "Os dois comparam as bolas.", "José tem 8 bolas a mais que Paulo."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "6 + (+8) = 14",
+      "conclusao": "José tem 14 bolas."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_carrinhos_1292854684",
+      "titulo": "Marcus e Jardel",
+      "prompt_historia": "MARCUS, a boy about 10 in a green shirt, and JARDEL, a boy about 10 in an orange shirt, collectors of miniature toy cars. 1: both boys sit on the floor with their car collections. 2: Marcus proudly shows his many cars. 3: Jardel shows his smaller collection. 4: the two collections side by side, Marcus's row clearly longer.",
+      "legendas": ["Marcus e Jardel colecionam carrinhos.", "Marcus tem 23 carrinhos.", "Jardel tem 11 carrinhos.", "Jardel tem 12 carrinhos a menos."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "23 + (−12) = 11",
+      "conclusao": "Jardel tem 12 carrinhos a menos que Marcus."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_667564143",
+      "titulo": "Ingrid e Ligianne",
+      "prompt_historia": "INGRID, a girl about 10 with a ponytail, and LIGIANNE, a girl about 10 with long hair. 1: Ligianne counts her banknotes. 2: Ingrid arrives and also shows her money. 3: they place their banknotes side by side. 4: Ingrid's stack of money is taller than Ligianne's.",
+      "legendas": ["Ligianne tem 27 reais.", "Ingrid mostra o seu dinheiro.", "As duas comparam as quantias.", "Ingrid tem 12 reais a mais que Ligianne."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "27 + (+12) = 39",
+      "conclusao": "Ingrid tem 39 reais."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_cds_1222854862",
+      "titulo": "Jammes e Gisele",
+      "prompt_historia": "JAMMES, a young woman with short hair, and GISELE, a young woman with long wavy hair, with music CDs in a room. 1: Jammes shows her stack of CDs. 2: Gisele shows her stack. 3: they put the stacks side by side. 4: Gisele's stack is taller than Jammes's.",
+      "legendas": ["Jammes tem 17 CDs.", "Gisele mostra a sua coleção.", "As duas comparam as pilhas.", "Jammes tem 12 CDs a menos que Gisele."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "17 + (+12) = 29",
+      "conclusao": "Gisele tem 29 CDs."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_2123535490",
+      "titulo": "Claudia e Joana",
+      "prompt_historia": "CLAUDIA, a girl about 11 with glasses, and JOANA, a girl about 11 with a braid. 1: Claudia counts her banknotes. 2: Joana arrives with her money. 3: they place their banknotes side by side. 4: Claudia's stack is taller than Joana's.",
+      "legendas": ["Claudia tem 15 reais.", "Joana mostra o seu dinheiro.", "As duas comparam as quantias.", "Claudia tem 7 reais a mais que Joana."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "8 + (+7) = 15",
+      "conclusao": "Joana tem 8 reais."
+    },
+    {
+      "id_situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_1527166754",
+      "titulo": "Claudenice e Nádia",
+      "prompt_historia": "CLAUDENICE, a girl about 11 with curly hair, and NÁDIA, a girl about 11 with a bob haircut. 1: Nádia counts a tall stack of banknotes. 2: Claudenice arrives with a smaller stack. 3: they place the stacks side by side. 4: Claudenice's stack is clearly shorter than Nádia's.",
+      "legendas": ["Nádia tem 27 reais.", "Claudenice mostra o seu dinheiro.", "As duas comparam as quantias.", "Claudenice tem 14 reais a menos."],
+      "titulo_final": "Comparação de medidas",
+      "equacao": "27 + (−14) = 13",
+      "conclusao": "Claudenice tem 13 reais."
+    },
+    {
+      "id_situacao": "PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383",
+      "titulo": "Geisa e a caixa de chocolates",
+      "prompt_historia": "GEISA, a woman about 30 with dark curly hair, in a kitchen with a box of chocolates. 1: Geisa opens a full box of chocolates. 2: yesterday, she eats a couple of chocolates (evening light). 3: today, she eats a few more (morning light). 4: Geisa looks at the box with fewer chocolates left.",
+      "legendas": ["Geisa tinha uma caixa com 25 chocolates.", "Ontem, ela comeu 2 chocolates.", "Hoje, ela comeu mais 5.", "A caixa ficou com menos chocolates."],
+      "titulo_final": "Composição das transformações",
+      "equacao": "(−2) + (−5) = −7",
+      "conclusao": "25 + (−7) = 18 chocolates."
+    }
+  ]
+}
