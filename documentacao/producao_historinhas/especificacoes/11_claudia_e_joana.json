@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_2123535490",
+  "titulo": "Claudia e Joana",
+  "titulo_final": "Comparação de medidas",
+  "legendas": [
+    "Claudia tem 15 reais.",
+    "Joana mostra o seu dinheiro.",
+    "As duas comparam as quantias.",
+    "Claudia tem 7 reais a mais que Joana."
+  ],
+  "equacao": "8 + (+7) = 15",
+  "conclusao": "Joana tem 8 reais.",
+  "categoria": "COMPARACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/11_claudia_e_joana_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.46,
+    0.49,
+    0.49,
+    0.49
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/comparacao_medidas/05_claudia_e_joana_historinha"
+}

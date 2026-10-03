@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_COMPARACAO_MEDIDAS_carrinhos_1292854684",
+  "titulo": "Marcus e Jardel",
+  "titulo_final": "Comparação de medidas",
+  "legendas": [
+    "Marcus e Jardel colecionam carrinhos.",
+    "Marcus tem 23 carrinhos.",
+    "Jardel tem 11 carrinhos.",
+    "Jardel tem 12 carrinhos a menos."
+  ],
+  "equacao": "23 + (−12) = 11",
+  "conclusao": "Jardel tem 12 carrinhos a menos que Marcus.",
+  "categoria": "COMPARACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/08_marcus_e_jardel_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.43,
+    0.44,
+    0.44,
+    0.45
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/comparacao_medidas/02_marcus_e_jardel_historinha"
+}

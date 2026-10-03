@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_COMPARACAO_MEDIDAS_dinheiro_1527166754",
+  "titulo": "Claudenice e Nádia",
+  "titulo_final": "Comparação de medidas",
+  "legendas": [
+    "Nádia tem 27 reais.",
+    "Claudenice mostra o seu dinheiro.",
+    "As duas comparam as quantias.",
+    "Claudenice tem 14 reais a menos."
+  ],
+  "equacao": "27 + (−14) = 13",
+  "conclusao": "Claudenice tem 13 reais.",
+  "categoria": "COMPARACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/12_claudenice_e_nadia_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.5,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/comparacao_medidas/06_claudenice_e_nadia_historinha"
+}

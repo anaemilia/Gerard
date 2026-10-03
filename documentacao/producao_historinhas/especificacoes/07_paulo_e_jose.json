@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_COMPARACAO_MEDIDAS_bolas_487868670",
+  "titulo": "Paulo e José",
+  "titulo_final": "Comparação de medidas",
+  "legendas": [
+    "Paulo tem 6 bolas.",
+    "José chega com suas bolas.",
+    "Os dois comparam as bolas.",
+    "José tem 8 bolas a mais que Paulo."
+  ],
+  "equacao": "6 + (+8) = 14",
+  "conclusao": "José tem 14 bolas.",
+  "categoria": "COMPARACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/07_paulo_e_jose_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.44,
+    0.43,
+    0.47,
+    0.48
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/comparacao_medidas/01_paulo_e_jose_historinha"
+}

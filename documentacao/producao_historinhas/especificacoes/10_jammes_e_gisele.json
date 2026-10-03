@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_COMPARACAO_MEDIDAS_cds_1222854862",
+  "titulo": "Jammes e Gisele",
+  "titulo_final": "Comparação de medidas",
+  "legendas": [
+    "Jammes tem 17 CDs.",
+    "Gisele mostra a sua coleção.",
+    "As duas comparam as pilhas.",
+    "Jammes tem 12 CDs a menos que Gisele."
+  ],
+  "equacao": "17 + (+12) = 29",
+  "conclusao": "Gisele tem 29 CDs.",
+  "categoria": "COMPARACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/10_jammes_e_gisele_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.47,
+    0.49,
+    0.5,
+    0.5
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/comparacao_medidas/04_jammes_e_gisele_historinha"
+}

@@ -37,7 +37,34 @@ public enum TipoSituacaoAditiva {
                             "lucas_e_as_figurinhas_do_tio",
                             "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040",
                             "transformacao_medidas/07_lucas_e_as_figurinhas_do_tio_historinha"))),
-    COMPARACAO_MEDIDAS("tipo.comparacao_medidas", "COP"),
+    COMPARACAO_MEDIDAS(
+            "tipo.comparacao_medidas", "COP",
+            RepertorioAjudaVisual.criar(
+                    "ajuda.visual.comparacao_medidas",
+                    new HistorinhaAjudaVisual(
+                            "paulo_e_jose",
+                            "PO_COMPARACAO_MEDIDAS_bolas_487868670",
+                            "comparacao_medidas/01_paulo_e_jose_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "marcus_e_jardel",
+                            "PO_COMPARACAO_MEDIDAS_carrinhos_1292854684",
+                            "comparacao_medidas/02_marcus_e_jardel_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "ingrid_e_ligianne",
+                            "PO_COMPARACAO_MEDIDAS_dinheiro_667564143",
+                            "comparacao_medidas/03_ingrid_e_ligianne_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "jammes_e_gisele",
+                            "PO_COMPARACAO_MEDIDAS_cds_1222854862",
+                            "comparacao_medidas/04_jammes_e_gisele_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "claudia_e_joana",
+                            "PO_COMPARACAO_MEDIDAS_dinheiro_2123535490",
+                            "comparacao_medidas/05_claudia_e_joana_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "claudenice_e_nadia",
+                            "PO_COMPARACAO_MEDIDAS_dinheiro_1527166754",
+                            "comparacao_medidas/06_claudenice_e_nadia_historinha"))),
     COMPOSICAO_TRANSFORMACOES(
             "tipo.composicao_transformacoes", "CT",
             RepertorioAjudaVisual.criar(
