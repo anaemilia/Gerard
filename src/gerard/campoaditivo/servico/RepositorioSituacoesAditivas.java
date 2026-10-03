@@ -130,6 +130,7 @@ public class RepositorioSituacoesAditivas {
 
         if (carregadas > 0) {
             migrarVinculosLegadosSeNecessario();
+            herdarValidacaoDasOriginais();
         }
         return carregadas > 0;
     }
@@ -207,6 +208,53 @@ public class RepositorioSituacoesAditivas {
             }
         }
         return resultado;
+    }
+
+    /**
+     * Regra da pesquisadora (2026-10-03): a validação de uma tradução depende apenas do campo
+     * validada do seu original; curar o original cura as traduções. O campo validada gravado na
+     * própria tradução não é consultado.
+     */
+    private void herdarValidacaoDasOriginais() {
+        java.util.Map<String, SituacaoProblemaAditiva> porId = new java.util.HashMap<String, SituacaoProblemaAditiva>();
+        for (SituacaoProblemaAditiva s : todasSituacoes) {
+            porId.put(s.getId(), s);
+        }
+        java.util.Map<String, SituacaoProblemaAditiva> substituicoes = new java.util.HashMap<String, SituacaoProblemaAditiva>();
+        for (SituacaoProblemaAditiva s : todasSituacoes) {
+            String origem = s.getVersaoOrigemId();
+            if (!"traducao".equalsIgnoreCase(s.getTipoVersao()) || origem == null || origem.trim().isEmpty()) {
+                continue;
+            }
+            SituacaoProblemaAditiva original = porId.get(origem.trim());
+            if (original != null && original.isValidada() != s.isValidada()) {
+                substituicoes.put(s.getId(), copiarComValidada(s, original.isValidada()));
+            }
+        }
+        if (substituicoes.isEmpty()) {
+            return;
+        }
+        List<SituacaoProblemaAditiva> antigas = new ArrayList<SituacaoProblemaAditiva>(todasSituacoes);
+        situacoes.clear();
+        todasSituacoes.clear();
+        for (SituacaoProblemaAditiva antiga : antigas) {
+            SituacaoProblemaAditiva herdada = substituicoes.get(antiga.getId());
+            adicionar(herdada == null ? antiga : herdada);
+        }
+    }
+
+    private SituacaoProblemaAditiva copiarComValidada(SituacaoProblemaAditiva s, boolean validada) {
+        return new SituacaoProblemaAditiva(s.getId(), s.getSituacaoGrupoId(), s.getTipoVersao(), s.getVersaoOrigemId(),
+                validada, s.getTipo(), s.getCodigoIdioma(),
+                s.getEnunciado(), s.getContexto(), s.getFonte(), s.getSubtipo(), s.getEstadoInicial(), s.getTransformacao(),
+                s.getSinalTransformacao(), s.getEstadoFinal(), s.getQuantidade1(), s.getQuantidade2(), s.getResultado(),
+                s.getReferido(), s.getReferendo(), s.getValorRelativo(), s.getSinalValorRelativo(), s.getTermoDesconhecido(),
+                s.getRepresentacaoVisual(), s.getObservacoes(), s.getPersonagem1(), s.getPersonagem2(), s.getPersonagem3(),
+                s.getFragmentoTexto1(), s.getFragmentoTexto2(), s.getFragmentoTexto3(),
+                s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6(), s.getOperacaoRelacao(),
+                s.getEstadoIntermediario(), s.getOperacaoEstadoTransformacao(),
+                s.getEstadoInicialParte1(), s.getEstadoInicialParte1Personagem(),
+                s.getEstadoInicialParte2(), s.getEstadoInicialParte2Personagem());
     }
 
     private SituacaoProblemaAditiva copiarComVinculo(SituacaoProblemaAditiva s, String grupo, String tipoVersao, String origem) {
