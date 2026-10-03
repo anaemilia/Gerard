@@ -34,6 +34,18 @@ ANTIGOS = RAIZ / "documentacao" / "producao_historinhas" / "_antigos"
 SELETOR = "[data-om-exportable-video-with-duration-secs]"
 ATRIBUTO = "data-om-exportable-video-with-duration-secs"
 EVENTO_SEEK = "data-om-seek-to-time-frame"
+# A imagem não grava texto algum: título, legendas e cartão final são entregues em tempo de execução
+# pelo renderizador (no idioma da situação). Oculta todo elemento que contém texto próprio.
+JS_OCULTAR_TEXTOS = """(sel) => {
+  const raiz = document.querySelector(sel);
+  const andador = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+  let no;
+  while ((no = andador.nextNode())) {
+    if (!no.textContent.trim()) continue;
+    const el = no.parentElement;
+    if (el && !['STYLE', 'SCRIPT'].includes(el.tagName)) el.style.visibility = 'hidden';
+  }
+}"""
 LARGURA_GIF, ALTURA_GIF = 640, 360
 INSTANTES_FIXOS = (1.5, 4.5, 7.8, 11.0)
 
@@ -95,7 +107,7 @@ def fazer_backup(gif: Path, ajuda: Path) -> List[Path]:
     return copiados
 
 
-def capturar_quadros(html: Path, pasta: Path, fps: int) -> Tuple[float, int]:
+def capturar_quadros(html: Path, pasta: Path, fps: int, com_texto: bool = False) -> Tuple[float, int]:
     from playwright.sync_api import sync_playwright  # importação tardia: só quem converte precisa dela
 
     with sync_playwright() as p:
@@ -115,6 +127,8 @@ def capturar_quadros(html: Path, pasta: Path, fps: int) -> Tuple[float, int]:
                 [SELETOR, t],
             )
             pagina.wait_for_timeout(50)
+            if not com_texto:
+                pagina.evaluate(JS_OCULTAR_TEXTOS, SELETOR)
             elemento.screenshot(path=str(pasta / ("f_%05d.png" % i)))
         navegador.close()
     return duracao, total
@@ -184,12 +198,12 @@ def criar_storyboard(gif: Path) -> Path:
     return destino
 
 
-def converter(html: Path, gif: Path, ffmpeg: str, fps: int) -> dict:
+def converter(html: Path, gif: Path, ffmpeg: str, fps: int, com_texto: bool = False) -> dict:
     tamanho_antigo = gif.stat().st_size
     fazer_backup(gif, AJUDA)
     with tempfile.TemporaryDirectory(prefix="html_para_gif_") as tmp:
         pasta = Path(tmp)
-        duracao, total = capturar_quadros(html, pasta, fps)
+        duracao, total = capturar_quadros(html, pasta, fps, com_texto)
         novo = pasta / "saida.gif"
         montar_gif(ffmpeg, pasta, fps, novo)
         shutil.copyfile(novo, gif)
@@ -205,6 +219,8 @@ def main() -> int:
     ap.add_argument("--ajuda-dir", type=Path, default=AJUDA)
     ap.add_argument("--fps", type=int, default=12)
     ap.add_argument("--ffmpeg")
+    ap.add_argument("--com-texto", action="store_true",
+                    help="mantém o texto gravado na imagem (padrão: sem texto; o texto é entregue em tempo de execução)")
     ap.add_argument("--somente", help="converte só NN_nome (sem _linha.html)")
     ap.add_argument("--listar", action="store_true", help="só lista a correspondência HTML -> GIF")
     ap.add_argument("--relatorio", type=Path, help="grava o relatório em JSON")
@@ -223,7 +239,7 @@ def main() -> int:
             erros.append({"html": html.name, "erro": "sem GIF antigo correspondente"})
             continue
         try:
-            r = converter(html, gif, ffmpeg, a.fps)
+            r = converter(html, gif, ffmpeg, a.fps, a.com_texto)
             resultados.append(r)
             print("OK  %-44s %6d KB -> %6d KB  (%.1f s, %d quadros)" % (
                 nome, r["tamanho_antigo_kb"], r["tamanho_novo_kb"], r["duracao_s"], r["quadros"]))
