@@ -491,8 +491,8 @@
                 <a href="{{ a.href }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:24px;font-size:15.5px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:44px;" style-hover="color:#173A8C;text-decoration:underline;">{{ a.cta }}<span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
               </div>
               <figure style="margin:0;order:{{ a.imgOrder }};">
-                <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
-                  <img src="{{ a.img }}" alt="{{ a.alt }}" style="display:block;width:100%;height:auto;">
+                <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
+                  <img src="{{ a.img }}" alt="{{ a.alt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ a.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ a.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if>
                 </div>
                 <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ a.caption }}</figcaption>
               </figure>
@@ -698,6 +698,47 @@
     </section>
     </sc-if>
 
+    <sc-if value="{{ show_historinhas }}" hint-placeholder-val="{{ false }}">
+    <section id="historinhas" data-screen-label="Historinhas" style="padding:clamp(40px,6vw,72px) 0 clamp(56px,8vw,104px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:24px;">
+        <div role="group" aria-label="Filtrar por classe de situação" style="display:flex;flex-wrap:wrap;gap:8px;">
+          <sc-for list="{{ histCats }}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.pressed }}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:inherit;font-size:15px;font-weight:500;cursor:pointer;">{{ c.label }}<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;">{{ c.n }}</span></button>
+          </sc-for>
+        </div>
+        <div>
+          <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;">
+            <div style="flex:1 1 100%;max-width:960px;margin:0 auto;width:100%;min-width:0;display:flex;flex-direction:column;gap:14px;">
+              <div style="position:relative;aspect-ratio:16 / 9;border:1px solid #D5DBE5;border-radius:14px;overflow:hidden;background:#F2F2F2;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
+                <iframe src="{{ histSrc }}" title="{{ histTitle }}" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                <div style="min-width:0;">
+                  <p style="margin:0 0 4px;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;font-weight:600;">{{ histCat }}</p>
+                  <h2 style="margin:0;font-size:clamp(22px,2.4vw,28px);line-height:1.2;color:#0E1726;">{{ histTitle }}</h2>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <button type="button" onClick="{{ histPrev }}" aria-label="Historinha anterior" style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:10px;cursor:pointer;color:#0E1726;" style-hover="background:#F2F6FE;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-left.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-left.svg) center/contain no-repeat;"></span></button>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#5B6577;min-width:64px;text-align:center;">{{ histPos }}</span>
+                  <button type="button" onClick="{{ histNext }}" aria-label="Próxima historinha" style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:10px;cursor:pointer;color:#0E1726;" style-hover="background:#F2F6FE;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-right.svg) center/contain no-repeat;"></span></button>
+                </div>
+              </div>
+            </div>
+            <ol aria-label="Historinhas" style="flex:1 1 100%;min-width:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px;">
+              <sc-for list="{{ histList }}" as="h" hint-placeholder-count="8">
+                <li style="border:1px solid #E4E8EF;border-radius:12px;overflow:hidden;background:#FFFFFF;">
+                  <button type="button" onClick="{{ h.pick }}" aria-current="{{ h.cur }}" style="width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 16px;min-height:56px;border:0;border-left:3px solid {{ h.bar }};background:{{ h.bg }};font:inherit;cursor:pointer;" style-hover="background:#F2F6FE;">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;padding-top:2px;">{{ h.no }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15.5px;font-weight:500;color:{{ h.fg }};">{{ h.t }}</span><span style="font-size:13.5px;color:#5B6577;">{{ h.c }}</span></span>
+                  </button>
+                </li>
+              </sc-for>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
     <sc-if value="{{ show_equipe }}" hint-placeholder-val="{{ true }}">
     <section id="equipe" data-screen-label="11 Equipe" style="padding:clamp(64px,9vw,112px) 0;">
       <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
@@ -803,7 +844,7 @@
               <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;"><sc-if value="{{ p.hasWeb }}" hint-placeholder-val="{{ false }}"><a href="{{ p.web }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir versão web</a></sc-if><sc-if value="{{ p.hasDl }}" hint-placeholder-val="{{ false }}"><a href="{{ p.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>{{ p.dlLabel }}</a></sc-if></div>
             </div>
             <figure style="margin:0;order:{{ p.imgOrder }};">
-              <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ p.img }}" alt="{{ p.alt }}" style="display:block;width:100%;height:auto;"></div>
+              <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ p.img }}" alt="{{ p.alt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ p.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ p.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
               <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ p.caption }}</figcaption>
             </figure>
           </article>
@@ -896,7 +937,7 @@
           </sc-for>
         </ol>
         <figure style="margin:24px 0 0;">
-          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"></div>
+          <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ seqHasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ seqStory }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
           <figcaption style="margin-top:12px;font-size:14.5px;line-height:1.55;color:#3D4759;"><strong style="font-weight:600;color:#0E1726;">{{ seqLabel }}</strong> · “{{ seqText }}”</figcaption>
         </figure>
       </div>
@@ -911,7 +952,7 @@
         <div style="display:grid;grid-template-columns:1fr;gap:40px;margin-top:40px;">
           <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="6">
             <figure style="margin:0;">
-              <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;"><img src="{{ g.img }}" alt="{{ g.title }}" loading="lazy" style="display:block;width:100%;height:auto;"></div>
+              <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;"><img src="{{ g.img }}" alt="{{ g.title }}" loading="lazy" style="display:block;width:100%;height:auto;"><sc-if value="{{ g.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ g.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
               <figcaption style="margin-top:12px;"><strong style="display:block;font-size:16px;font-weight:600;color:#0E1726;">{{ g.title }}</strong><span style="font-size:14.5px;line-height:1.55;color:#3D4759;">{{ g.body }}</span></figcaption>
             </figure>
           </sc-for>
@@ -967,7 +1008,7 @@
             <div style="display:grid;grid-template-columns:1fr;gap:40px;margin-top:24px;">
               <sc-for list="{{ g.shots }}" as="s" hint-placeholder-count="3">
                 <figure style="margin:0;">
-                  <a href="{{ s.img }}" target="_blank" rel="noopener" aria-label="Abrir em tamanho real: {{ s.title }}" style="display:block;border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;" style-hover="border-color:#1F56D6;"><img src="{{ s.img }}" alt="{{ s.title }}: {{ s.body }}" loading="lazy" style="display:block;width:100%;height:auto;"></a>
+                  <div style="position:relative;"><a href="{{ s.img }}" target="_blank" rel="noopener" aria-label="Abrir em tamanho real: {{ s.title }}" style="display:block;border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;" style-hover="border-color:#1F56D6;"><img src="{{ s.img }}" alt="{{ s.title }}: {{ s.body }}" loading="lazy" style="display:block;width:100%;height:auto;"></a><sc-if value="{{ s.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ s.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
                   <figcaption style="margin-top:10px;"><strong style="display:block;font-size:15.5px;font-weight:600;color:#0E1726;">{{ s.title }}</strong><span style="font-size:14px;line-height:1.55;color:#3D4759;">{{ s.body }}</span></figcaption>
                 </figure>
               </sc-for>
@@ -1098,7 +1139,33 @@ class Component extends DCLogic {
           h('span', { style: { fontSize: 13, fontWeight: 700, color: '#9DB8EE', letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Carregando o laboratório')),
         btn('Entrar ▸', () => this.closeIntro(), { marginTop: 4, padding: '14px 34px', borderRadius: 999, border: 'none', fontSize: 19, fontWeight: 900, color: '#3A2A00', background: 'linear-gradient(180deg,#FFF7D1 0%,#FFD95A 50%,#F5BC0E 51%,#FFCB2E 100%)', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.8),0 5px 0 #C48A00,0 14px 22px -8px rgba(0,0,0,0.5)', animation: 'gIntroFade .5s 3.5s both' })));
   }
-  renderVals() {
+  histVals() {
+    const ALL = [["01_andrea_boneca_linha.html","Andréa e a boneca","Transformação de medidas"],["01_carlos_joao_pedro_dinheiro_linha.html","Carlos, João e Pedro","Composição de relações"],["01_joao_bilas_linha.html","João e as duas partidas de bila","Composição das transformações"],["01_julia_maria_bonecas_linha.html","Julia, Maria e as bonecas","Transformação de relação"],["01_paulo_e_jose_linha.html","Paulo e José","Comparação de medidas"],["02_ana_bia_figurinhas_linha.html","Ana, Bia e as figurinhas","Transformação de relação"],["02_manuel_figurinhas_linha.html","Manuel e as figurinhas","Composição das transformações"],["02_marcus_e_jardel_linha.html","Marcus e Jardel","Comparação de medidas"],["02_maria_e_as_figurinhas_linha.html","Maria e as figurinhas","Transformação de medidas"],["02_maria_joao_carla_idades_linha.html","Maria, João e Carla","Composição de relações"],["03_geisa_chocolates_linha.html","Geisa e os chocolates","Composição das transformações"],["03_ingrid_e_ligianne_linha.html","Ingrid e Ligianne","Comparação de medidas"],["03_maria_na_feira_linha.html","Maria na feira","Transformação de medidas"],["04_jammes_e_gisele_linha.html","Jammes e Gisele","Comparação de medidas"],["04_nadia_e_os_morangos_linha.html","Nádia e os morangos","Transformação de medidas"],["04_vovo_rosas_linha.html","Vovó e as rosas","Composição das transformações"],["05_claudia_e_joana_linha.html","Claudia e Joana","Comparação de medidas"],["05_geisa_e_a_caixa_de_chocolates_linha.html","Geisa e a caixa de chocolates","Composição das transformações"],["05_leandro_e_as_balas_linha.html","Leandro e as balas","Transformação de medidas"],["06_claudenice_e_nadia_linha.html","Claudenice e Nádia","Comparação de medidas"],["06_paulo_e_as_bolas_linha.html","Paulo e as bolas","Transformação de medidas"],["07_lucas_e_as_figurinhas_do_tio_linha.html","Lucas e as figurinhas do tio","Transformação de medidas"]].map(([f, t, c]) => ({ f, t, c }));
+    const cats = ['Todas', 'Composição de medidas', 'Transformação de medidas', 'Comparação de medidas', 'Composição das transformações', 'Transformação de relação', 'Composição de relações'].filter(c => c === 'Todas' || ALL.some(x => x.c === c));
+    const cat = this.state.histCat || 'Todas';
+    const vis = ALL.filter(x => cat === 'Todas' || x.c === cat);
+    const curF = vis.some(x => x.f === this.state.histF) ? this.state.histF : vis[0].f;
+    const cur = ALL.find(x => x.f === curF);
+    return {
+      show_historinhas: this.state.page === 'historinhas',
+      histCats: cats.map(c => ({ label: c, n: c === 'Todas' ? ALL.length : ALL.filter(x => x.c === c).length, pressed: c === cat ? 'true' : 'false', bg: c === cat ? '#E3ECFD' : '#FFFFFF', fg: c === cat ? '#173A8C' : '#3D4759', bd: c === cat ? '#1F56D6' : '#D5DBE5', pick: () => this.setState({ histCat: c }) })),
+      histList: vis.map((x, i) => ({ ...x, no: String(i + 1).padStart(2, '0'), cur: x.f === curF ? 'true' : 'false', bg: x.f === curF ? '#F2F6FE' : 'transparent', fg: x.f === curF ? '#173A8C' : '#0E1726', bar: x.f === curF ? '#1F56D6' : 'transparent', pick: () => this.setState({ histF: x.f }) })),
+      histSrc: 'historinhas/' + curF, histTitle: cur.t, histCat: cur.c,
+      histPos: (vis.findIndex(x => x.f === curF) + 1) + ' de ' + vis.length,
+      histPrev: () => { const i = vis.findIndex(x => x.f === curF); this.setState({ histF: vis[(i - 1 + vis.length) % vis.length].f }); },
+      histNext: () => { const i = vis.findIndex(x => x.f === curF); this.setState({ histF: vis[(i + 1) % vis.length].f }); },
+    };
+  }
+  addStories(v) {
+    const ST = { '08_transformacao_concluida': '07_lucas_e_as_figurinhas_do_tio_linha.html', '09_comparacao_inicio': '03_ingrid_e_ligianne_linha.html', '10_comparacao_modelagem': '03_ingrid_e_ligianne_linha.html', '11_comparacao_erro': '03_ingrid_e_ligianne_linha.html' };
+    const find = (p) => { if (typeof p !== 'string') return null; const k = Object.keys(ST).find(k => p.includes(k + '.png') || p.includes(k + '-')); return k ? 'historinhas/' + ST[k] : null; };
+    const walk = (o, d) => { if (d > 4 || !o || typeof o !== 'object') return o; if (Array.isArray(o)) return o.map(x => walk(x, d + 1)); if (React.isValidElement(o)) return o; const r = {}; for (const k in o) r[k] = walk(o[k], d + 1); const st = find(o.img); if (st) { r.story = st; r.hasStory = true; } return r; };
+    Object.assign(v, this.histVals()); const out = {}; for (const k in v) out[k] = (Array.isArray(v[k]) || (v[k] && typeof v[k] === 'object' && !React.isValidElement(v[k]) && typeof v[k] !== 'function')) ? walk(v[k], 0) : v[k];
+    const ss = find(v.seqImg); out.seqStory = ss || ''; out.seqHasStory = !!ss;
+    return out;
+  }
+  renderVals() { return this.addStories(this._rv()); }
+  _rv() {
     const I = n => `https://unpkg.com/lucide-static@0.469.0/icons/${n}.svg`;
     const s = this.state;
     const pages = {
@@ -1108,6 +1175,7 @@ class Component extends DCLogic {
       'como-funciona': { t: 'Como funciona', h1: 'Da situação-problema ao acompanhamento da aprendizagem.', lead: 'O estudante representa e resolve; o sistema registra, analisa e responde. Veja cada etapa, as representações e a adaptatividade por trás delas.' },
       pesquisa: { t: 'Pesquisa', h1: 'Pesquisa científica desde 2006.', lead: 'Fundamentação teórica, projetos de pesquisa e extensão e a formação de professores que deram origem ao Gérard.' },
       publicacoes: { t: 'Publicações', h1: 'Publicações e produção científica.', lead: 'Artigos, trabalhos em anais, tese, capítulos, trabalho de conclusão de curso, registro de software e relatórios de pesquisa relacionados ao Gérard.' },
+      historinhas: { t: 'Historinhas', h1: 'Historinhas animadas.', lead: 'Cada situação-problema contada em quadros, com a operação na linha dos inteiros. Escolha uma historinha e use os controles para reproduzir, pausar ou avançar.' },
       telas: { t: 'Telas', h1: 'As telas do Gérard.', lead: 'Todas as telas da versão desktop, organizadas por classe de situação e por etapa: diagramar, construir, validar e pesquisar. Clique em uma tela para vê-la em tamanho real.' },
       demonstracao: { t: 'Demonstração', h1: 'Experimente o Gérard.', lead: 'Três demonstrações interativas para celular e as principais telas da versão desktop.' },
       equipe: { t: 'Equipe', h1: 'Quem faz o Gérard.', lead: 'Pesquisadores, desenvolvedores, estudantes e instituições envolvidos no projeto.' },
@@ -1156,7 +1224,7 @@ class Component extends DCLogic {
       { pillar: 'I', slug: 'analise-modelagem', accent: '#2563A8', tint: '#E8F0F9', mark: [1,0,0,1], icon: I('message-square-text'), name: 'Análise da modelagem', status: 'Nova', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'O estudante explica as decisões tomadas em cada tentativa; os protocolos de interação são registrados.', long: 'Após cada tentativa, o estudante justifica como interpretou a situação-problema e onde posicionou cada elemento semântico no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.', features: ['Papel semântico de cada elemento: referido, valor relativo, referendo', 'Dificuldade percebida e justificativa da conduta', 'Estratégia de modelagem descrita pelo estudante', 'Registro automático dos protocolos de interação e fotografia da modelagem'], img: 'imagens/analise-modelagem.png', alt: 'Tela Análise da modelagem.', caption: 'Análise da modelagem em uma situação de comparação de medidas.' },
       { pillar: 'I', slug: 'pesquisa', accent: '#173A8C', tint: '#E8EDF7', mark: [0,0,1,0], icon: I('microscope'), name: 'Pesquisa', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Log de interação, tabelas do estudo sob demanda e modelagem para investigar dependências.', long: 'Recursos para investigação científica: cada interação é registrada e as tabelas do estudo são reconstruídas sob demanda a partir do log bruto.', features: ['Análise da modelagem com explicação do estudante', 'Log bruto de interação', 'Tabelas do estudo sob demanda', 'Agente Modelador: PART e Apriori', 'Exportação para análise'], img: 'imagens/visaoPesquisador_nitida.png', alt: 'Visão do pesquisador.', caption: 'Visão do pesquisador: tabelas reconstruídas a partir do log.' },
     ].sort((a, b) => 'SIR'.indexOf(a.pillar) - 'SIR'.indexOf(b.pillar)).map((p, i) => ({ ...p, pillarName: { S: 'Situações', I: 'Invariantes operatórios', R: 'Representações' }[p.pillar], hasDl: !!p.hasDl, hasWeb: !!p.web, mark: p.mark.map(on => ({ bg: on ? p.accent : 'transparent' })), textOrder: i % 2, imgOrder: 1 - (i % 2) }));
-    const navDef = [['inicio','Início','#/'],['sobre','O Gérard','#/sobre'],['produtos','Produtos','#/produtos'],['como-funciona','Como funciona','#/como-funciona'],['telas','Telas','#/telas'],['pesquisa','Pesquisa','#/pesquisa'],['publicacoes','Publicações','#/publicacoes'],['equipe','Equipe','#/equipe']];
+    const navDef = [['inicio','Início','#/'],['sobre','O Gérard','#/sobre'],['produtos','Produtos','#/produtos'],['como-funciona','Como funciona','#/como-funciona'],['telas','Telas','#/telas'],['historinhas','Historinhas','#/historinhas'],['pesquisa','Pesquisa','#/pesquisa'],['publicacoes','Publicações','#/publicacoes'],['equipe','Equipe','#/equipe']];
     const P = pages[page];
     return {
       zoom: s.scale,
@@ -1289,11 +1357,11 @@ class Component extends DCLogic {
       telas: [
         { id: 'telas-composicao', kicker: 'Diagramar', title: 'Composição de medidas', body: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?', shots: [{ img: 'imagens/prints_gerard/01_composicao_inicio.png', title: 'Início', body: 'Enunciado com os valores marcados e o diagrama vazio.' }, { img: 'imagens/prints_gerard/02_composicao_modelagem.png', title: 'Modelagem', body: 'As partes recebem 12 e 25; o todo recebe a incógnita.' }, { img: 'imagens/prints_gerard/03_composicao_erro.png', title: 'Erro', body: 'Valor inconsistente em vermelho; o Gérard pergunta antes de validar.' }, { img: 'imagens/prints_gerard/04_composicao_concluida.png', title: 'Concluída', body: 'O todo é confirmado em azul: 37.' }] },
         { id: 'telas-transformacao', kicker: 'Diagramar', title: 'Transformação de medidas', body: 'Lucas ganhou 12 figurinhas de seu tio. Ele possui agora 17 figurinhas. Quantas ele tinha antes?', shots: [{ img: 'imagens/prints_gerard/05_transformacao_inicio.png', title: 'Início', body: 'Estado inicial, transformação e estado final ainda vazios.' }, { img: 'imagens/prints_gerard/06_transformacao_modelagem.png', title: 'Modelagem', body: '+12 na transformação, 17 no estado final e ? no estado inicial.' }, { img: 'imagens/prints_gerard/07_transformacao_erro.png', title: 'Erro', body: 'O estado inicial proposto não fecha a relação.' }, { img: 'imagens/prints_gerard/08_transformacao_concluida.png', title: 'Concluída', body: 'Estado inicial confirmado: 5.' }] },
-        { id: 'telas-comparacao', kicker: 'Diagramar', title: 'Comparação de medidas', body: 'Ingrid tem 12 reais a mais que Ligianne. Se Ligianne possui 27 reais, quantos reais Ingrid tem?', shots: [{ img: 'imagens/prints_gerard/09_comparacao_inicio.png', title: 'Início', body: 'Referido, referendo e valor relativo vazios.' }, { img: 'imagens/prints_gerard/10_comparacao_modelagem.png', title: 'Modelagem', body: '27 no referido, +12 no valor relativo e ? no referendo.' }, { img: 'imagens/prints_gerard/11_comparacao_erro.png', title: 'Erro', body: 'Valor do referendo inconsistente com a relação.' }, { img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Concluída', body: 'Referendo confirmado: 39.' }, { img: 'imagens/prints_gerard/13_comparacao_concluida_material_concreto.png', title: 'Material concreto', body: 'Quadradinhos e eixo tornam visível a diferença entre as medidas.' }] },
+        { id: 'telas-comparacao', kicker: 'Diagramar', title: 'Comparação de medidas', body: 'Ingrid tem 12 reais a mais que Ligianne. Se Ligianne possui 27 reais, quantos reais Ingrid tem?', shots: [{ img: 'imagens/prints_gerard/10_comparacao_modelagem.png', title: 'Modelagem', body: '27 no referido, +12 no valor relativo e ? no referendo.' }, { img: 'imagens/prints_gerard/11_comparacao_erro.png', title: 'Erro', body: 'Valor do referendo inconsistente com a relação.' }, { img: 'imagens/prints_gerard/13_comparacao_concluida_material_concreto.png', title: 'Concluída', body: 'Referendo confirmado: 39. Quadradinhos e eixo tornam visível a diferença entre as medidas.' }] },
         { id: 'telas-composicao-transformacoes', feature: { img: 'imagens/prints_gerard/lupa_eixo_inteiros.png', alt: 'Lupa da Transformação 1 aberta: o eixo x dos inteiros, de −5 a 5, com o ponto em −2; o círculo da transformação mostra −2.', kicker: 'O papel da lupa', title: 'A lupa abre o eixo dos inteiros', steps: [{ no: '1', text: 'Cada transformação tem uma lupa no canto do círculo. Ao clicar nela, o Gérard abre o painel “Eixo x – universo dos inteiros”.' }, { no: '02', text: 'O eixo separa inteiros negativos e positivos. O estudante arrasta o ponto de controle, ou clica no eixo, para escolher o valor da transformação.' }, { no: '03', text: 'Geisa comeu 2 chocolates ontem: é uma perda, então o ponto vai para −2, e o círculo da Transformação 1 passa a mostrar −2.' }, { no: '4', text: 'Assim, o sinal do número relativo é explicitado durante o processo de modelagem por meio da manipulação de um ponto de controle.' }] }, kicker: 'Diagramar', title: 'Composição de transformações', body: 'Geisa tinha uma caixa com 35 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?', shots: [{ img: 'imagens/prints_gerard/14_composicao_transformacoes_inicio.png', title: 'Início', body: 'Duas transformações sucessivas e a transformação final.' }, { img: 'imagens/prints_gerard/15_composicao_transformacoes_modelagem.png', title: 'Modelagem', body: 'As transformações se compõem numa transformação final.' }] },
         { id: 'telas-construir-validar', kicker: 'Construir e validar', title: 'Situações-problema a partir do diagrama', body: 'O caminho inverso: do diagrama preenchido ao enunciado, e a curadoria humana das situações.', shots: [{ img: 'imagens/prints_gerard/16_construir_situacao_problema.png', title: 'Construir', body: 'Blocos de texto organizados para compor uma situação compatível com o diagrama.' }, { img: 'imagens/prints_gerard/17_validar_curadoria.png', title: 'Validar', body: 'Curadoria por categoria de Vergnaud, idioma e contexto.' }] },
         { id: 'telas-apoio', kicker: 'Apoio e pesquisa', title: 'Chat, análise e visão do pesquisador', body: 'Ferramentas que acompanham a resolução e alimentam o estudo.', shots: [{ img: 'imagens/chat-gerard.png', title: 'Chat do Gérard', body: 'Ajuda por área: texto, diagrama de Vergnaud e diagrama complementar.' }, { img: 'imagens/analise-modelagem.png', title: 'Análise da modelagem', body: 'O estudante explica suas decisões; os protocolos são registrados.' }, { img: 'imagens/visaoPesquisador_nitida.png', title: 'Visão do pesquisador', body: 'Tabelas do estudo reconstruídas a partir do log de interação.' }] },
-        { id: 'telas-anterior', kicker: 'Interface anterior', title: 'Versão anterior da interface', body: 'Telas da interface anterior, com barra de botões em texto, mantidas como registro da evolução do Gérard.', shots: [{ img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Comparação de medidas', body: 'Diagrama, eixo dos inteiros e menu de apoio “E agora?”.' }, { img: 'imagens/prints_gerard/16_construir_situacao_problema.png', title: 'Construir situação-problema', body: 'Primeira versão da construção de enunciados por blocos.' }, { img: 'imagens/prints_gerard/17_validar_curadoria.png', title: 'Curadoria', body: 'Primeira versão da tabela de curadoria.' }] },
+        { id: 'telas-anterior', kicker: 'Interface anterior', title: 'Versão anterior da interface', body: 'Telas da interface anterior, com barra de botões em texto, mantidas como registro da evolução do Gérard.', shots: [{ img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Comparação de medidas', body: 'Diagrama, eixo dos inteiros e menu de apoio “E agora?”.' }, { img: 'imagens/prints_gerard/16_construir_situacao_problema.png', title: 'Construir situação-problema', body: 'Primeira versão da construção de enunciados por blocos.' }] },
       ].map(g => ({ ...g, anchor: '#' + g.id, hasFeature: !!g.feature, feature: g.feature || { steps: [] } })),
       gallery: [
         ['imagens/prints_gerard/16_construir_situacao_problema.png', 'Construir', 'O estudante organiza blocos de texto para compor uma situação-problema compatível com o diagrama preenchido.'],
