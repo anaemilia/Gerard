@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_93128185",
+  "titulo": "Nádia e os morangos",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Nádia comprou dez morangos.",
+    "Sua irmã chega à mesa.",
+    "A irmã come três morangos.",
+    "Sobraram menos morangos para Nádia."
+  ],
+  "equacao": "10 + (−3) = 7",
+  "conclusao": "Nádia ficou com 7 morangos.",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/03_nadia_e_os_morangos_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.43,
+    0.45,
+    0.46,
+    0.46
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/04_nadia_e_os_morangos_historinha"
+}

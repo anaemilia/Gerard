@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_bolas_163355672",
+  "titulo": "Paulo e as bolas",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Pela manhã, Paulo tinha 6 bolas.",
+    "À tarde, chega um amigo.",
+    "Paulo ganha mais bolas.",
+    "Agora Paulo tem mais bolas."
+  ],
+  "equacao": "6 + (+8) = 14",
+  "conclusao": "Paulo ficou com 14 bolas.",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/05_paulo_e_as_bolas_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.39,
+    0.48,
+    0.5,
+    0.5
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/06_paulo_e_as_bolas_historinha"
+}

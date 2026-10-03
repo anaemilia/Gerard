@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+  "titulo": "Maria e as figurinhas",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Maria faz coleção de figurinhas.",
+    "Sua mãe chega com mais figurinhas.",
+    "A mãe presenteia Maria.",
+    "A coleção de Maria aumentou."
+  ],
+  "equacao": "32 + (+22) = 54",
+  "conclusao": "Maria tem 54 figurinhas agora.",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/01_maria_e_as_figurinhas_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.45,
+    0.53,
+    0.51,
+    0.52
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/02_maria_e_as_figurinhas_historinha"
+}

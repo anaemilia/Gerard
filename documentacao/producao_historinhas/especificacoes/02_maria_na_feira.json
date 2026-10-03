@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840",
+  "titulo": "Maria na feira",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Maria vai à feira com dinheiro.",
+    "Ela escolhe frutas e verduras.",
+    "Maria paga pelas compras.",
+    "O dinheiro de Maria diminuiu."
+  ],
+  "equacao": "25 + (−18) = 7",
+  "conclusao": "Maria ficou com R$ 7,00.",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/02_maria_na_feira_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.31,
+    0.44,
+    0.47,
+    0.39
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/03_maria_na_feira_historinha"
+}

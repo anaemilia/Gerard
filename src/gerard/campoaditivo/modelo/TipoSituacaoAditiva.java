@@ -12,7 +12,31 @@ public enum TipoSituacaoAditiva {
                     new HistorinhaAjudaVisual(
                             "andrea_boneca",
                             "PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799",
-                            "transformacao_medidas/01_andrea_boneca_historinha"))),
+                            "transformacao_medidas/01_andrea_boneca_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "maria_e_as_figurinhas",
+                            "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160",
+                            "transformacao_medidas/02_maria_e_as_figurinhas_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "maria_na_feira",
+                            "PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840",
+                            "transformacao_medidas/03_maria_na_feira_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "nadia_e_os_morangos",
+                            "PO_TRANSFORMACAO_MEDIDAS_frutas_93128185",
+                            "transformacao_medidas/04_nadia_e_os_morangos_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "leandro_e_as_balas",
+                            "PO_TRANSFORMACAO_MEDIDAS_balas_2108939476",
+                            "transformacao_medidas/05_leandro_e_as_balas_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "paulo_e_as_bolas",
+                            "PO_TRANSFORMACAO_MEDIDAS_bolas_163355672",
+                            "transformacao_medidas/06_paulo_e_as_bolas_historinha"),
+                    new HistorinhaAjudaVisual(
+                            "lucas_e_as_figurinhas_do_tio",
+                            "PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040",
+                            "transformacao_medidas/07_lucas_e_as_figurinhas_do_tio_historinha"))),
     COMPARACAO_MEDIDAS("tipo.comparacao_medidas", "COP"),
     COMPOSICAO_TRANSFORMACOES(
             "tipo.composicao_transformacoes", "CT",

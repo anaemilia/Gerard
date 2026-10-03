@@ -59,7 +59,7 @@ public final class PainelHistorinhaTextual extends JPanel {
     private static List<String> quebrar(String texto, FontMetrics fm, int larguraMaxima) {
         List<String> linhas = new ArrayList<String>();
         StringBuilder atual = new StringBuilder();
-        for (String palavra : texto.split("\s+")) {
+        for (String palavra : texto.split("\\s+")) {
             String candidata = atual.length() == 0 ? palavra : atual + " " + palavra;
             if (atual.length() > 0 && fm.stringWidth(candidata) > larguraMaxima) {
                 linhas.add(atual.toString());

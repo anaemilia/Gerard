@@ -35,3 +35,19 @@ ou história em quadrinhos quando essas formas estiverem disponíveis no
 repertório local. História em quadrinhos é sintaxe visual de apresentação, não
 um sétimo código. A necessidade e a função da ajuda são decididas antes; a
 mídia preferida do perfil escolhe apenas a materialização.
+
+## Produção das historinhas ilustradas — estado verificado em 2026-10-03
+
+As folhas e os rascunhos autorizados ficam em
+`documentacao/producao_historinhas/`; cada especificação preserva título,
+legendas, equação e conclusão do rascunho. O montador existente produz GIF e
+storyboard. Para quadros panorâmicos, `larguras_recorte` permite preservar
+os participantes sem deformar a imagem, preenchendo a área restante com
+fundo desfocado; sua ausência mantém o enquadramento anterior.
+
+O vínculo entre situação curada e recurso pertence ao repertório de
+`TipoSituacaoAditiva`. Acrescentar mídia não altera o limite de rejeições
+nem sua decisão. Swing e web realizam o apoio já projetado pela cena/API.
+As 13 montagens desta etapa acrescentam seis vínculos em transformação de
+medidas, seis em comparação de medidas e um em composição de transformações.
+Inconsistências encontradas na curadoria são relatadas, sem correção automática.

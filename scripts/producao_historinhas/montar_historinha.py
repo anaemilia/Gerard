@@ -90,13 +90,24 @@ def recortar_paineis(folha: Image.Image, colunas: int, linhas: int):
     return caixas
 
 
-def enquadrar(painel, foco, progresso, direcao):
+def enquadrar(painel, foco, progresso, direcao, largura_minima=0.0):
     altura_crop = painel.height
-    largura_crop = min(int(round(altura_crop * LARGURA / ALTURA)), painel.width)
+    largura_crop = min(max(int(round(altura_crop * LARGURA / ALTURA)),
+                           int(round(limitar(largura_minima) * painel.width))), painel.width)
     centro = foco * painel.width + direcao * (progresso - 0.5) * painel.width * 0.025
     x0 = max(0, min(painel.width - largura_crop, int(round(centro - largura_crop / 2))))
     corte = painel.crop((x0, 0, x0 + largura_crop, altura_crop))
-    return corte.resize((LARGURA, ALTURA), Image.Resampling.LANCZOS)
+    if largura_minima <= 0:
+        return corte.resize((LARGURA, ALTURA), Image.Resampling.LANCZOS)
+    # Faixas panorâmicas: preservar o recorte editorial inteiro sem esticar
+    # nem excluir um participante. O fundo só preenche a área 16:9 restante.
+    fundo = corte.resize((LARGURA, ALTURA), Image.Resampling.LANCZOS).filter(
+        ImageFilter.GaussianBlur(radius=18))
+    fator = min(LARGURA / corte.width, ALTURA / corte.height)
+    frente = corte.resize((round(corte.width * fator), round(corte.height * fator)),
+                          Image.Resampling.LANCZOS)
+    fundo.paste(frente, ((LARGURA - frente.width) // 2, (ALTURA - frente.height) // 2))
+    return fundo
 
 
 def gradiente(img, opacidade):
@@ -109,8 +120,8 @@ def gradiente(img, opacidade):
     img.alpha_composite(camada)
 
 
-def cena(painel, titulo, legenda, prog, foco, direcao, op):
-    q = enquadrar(painel, foco, prog, direcao).convert("RGBA")
+def cena(painel, titulo, legenda, prog, foco, direcao, op, largura_minima=0.0):
+    q = enquadrar(painel, foco, prog, direcao, largura_minima).convert("RGBA")
     gradiente(q, op)
     camada = Image.new("RGBA", q.size, (0, 0, 0, 0))
     ImageDraw.Draw(camada).text((34, 27), titulo, font=FONTES["titulo"],
@@ -123,7 +134,8 @@ def cena(painel, titulo, legenda, prog, foco, direcao, op):
 
 
 def cena_final(painel, esp, prog):
-    fundo = enquadrar(painel, esp["focos"][3], 1.0, 1).filter(ImageFilter.GaussianBlur(radius=2.2))
+    fundo = enquadrar(painel, esp["focos"][3], 1.0, 1,
+                     esp.get("larguras_recorte", [0.0] * 4)[3]).filter(ImageFilter.GaussianBlur(radius=2.2))
     fundo = ImageEnhance.Brightness(fundo).enhance(0.62).convert("RGBA")
     e = suavizar(prog / 0.7)
     fundo.alpha_composite(Image.new("RGBA", fundo.size, (247, 246, 241, int(198 * e))))
@@ -141,11 +153,13 @@ def quadro(esp, paineis, t):
     i = min(3, int(t / DURACAO_CENA))
     local = t - i * DURACAO_CENA
     atual = cena(paineis[i], esp["titulo"], esp["legendas"][i], local / DURACAO_CENA,
-                 esp["focos"][i], 1 if i % 2 == 0 else -1, alpha_fade(local, DURACAO_CENA))
+                 esp["focos"][i], 1 if i % 2 == 0 else -1, alpha_fade(local, DURACAO_CENA),
+                 esp.get("larguras_recorte", [0.0] * 4)[i])
     if local > DURACAO_CENA - TRANSICAO and i < 3:
         p = suavizar((local - (DURACAO_CENA - TRANSICAO)) / TRANSICAO)
         prox = cena(paineis[i + 1], esp["titulo"], esp["legendas"][i + 1], 0.0, esp["focos"][i + 1],
-                    1 if (i + 1) % 2 == 0 else -1, p)
+                    1 if (i + 1) % 2 == 0 else -1, p,
+                    esp.get("larguras_recorte", [0.0] * 4)[i + 1])
         return Image.blend(atual, prox, p)
     return atual
 

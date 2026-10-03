@@ -1,0 +1,39 @@
+{
+  "id_situacao": "PO_TRANSFORMACAO_MEDIDAS_balas_2108939476",
+  "titulo": "Leandro e as balas",
+  "titulo_final": "Transformação de medidas",
+  "legendas": [
+    "Leandro tinha 10 balas.",
+    "Lucas, seu irmão, entra escondido.",
+    "Lucas pega algumas balas.",
+    "Leandro encontra só 6 balas."
+  ],
+  "equacao": "10 + (−4) = 6",
+  "conclusao": "Lucas comeu 4 balas.",
+  "categoria": "TRANSFORMACAO_MEDIDAS",
+  "origem_folha": "Folha gerada com image_gen e revisada em 2026-10-02; quatro quadros sem texto",
+  "folha": "../folhas/04_leandro_e_as_balas_folha.png",
+  "grade": [
+    1,
+    4
+  ],
+  "paineis": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "focos": [
+    0.44,
+    0.4,
+    0.48,
+    0.43
+  ],
+  "larguras_recorte": [
+    0.65,
+    0.65,
+    0.65,
+    0.65
+  ],
+  "saida": "../../../src/gerard/recursos/ajuda/transformacao_medidas/05_leandro_e_as_balas_historinha"
+}

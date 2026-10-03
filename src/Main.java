@@ -9028,6 +9028,9 @@ public class Main extends JFrame {
             }
             if (painelHistorinhasComplementar != null) {
                 painelHistorinhasComplementar.setBounds(conteudo);
+                // Criado durante a pintura: o layout dos filhos precisa ser
+                // realizado antes de desenhar a imagem que a cena projetou.
+                painelHistorinhasComplementar.doLayout();
                 painelHistorinhasComplementar.setVisible(true);
             }
         }

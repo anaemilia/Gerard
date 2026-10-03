@@ -65,8 +65,13 @@ public class TesteRobotHistorinhasCategoriasRelativas extends TesteRobotExplorac
                 verificar(tipo + ": historinha após " + n + " rejeição(ões)", historinhaVisivel(t) == (n == 3));
                 capturar(r, tipo + "_rejeicao_" + n);
             }
-            verificar(tipo + ": repertório próprio", t.painelHistorinhasComplementar != null
-                    && tipo.selecionarRepertorioAjudaVisual().getChave().equals(t.painelHistorinhasComplementar.getChaveRepertorio()));
+            String identificador = null;
+            for (gerard.dominio.campoaditivo.ajuda.HistorinhaAjudaVisual h : tipo.selecionarRepertorioAjudaVisual().getHistorinhas())
+                if (h.getIdSituacaoCurada().equals(t.situacaoProblemaAtual.getId())) identificador = h.getIdentificador();
+            verificar(tipo + ": ilustração própria projetada", identificador != null
+                    && t.painelHistorinhasComplementar instanceof gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria
+                    && ("projecao:" + identificador).equals(((gerard.ui.ajuda.PainelAjudaNarrativaVisualCategoria)
+                            t.painelHistorinhasComplementar).getChaveRepertorio()));
             clicarOperacao(r, t, t.seletorOperacaoRelacaoAluno, correta);
             if (t.seletorOperacaoEstadoTransformacaoAluno.estaAtivo()) {
                 clicarOperacao(r, t, t.seletorOperacaoEstadoTransformacaoAluno,
@@ -86,8 +91,8 @@ public class TesteRobotHistorinhasCategoriasRelativas extends TesteRobotExplorac
         }
         selecionarMouse(r, t, TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS);
         Thread.sleep(1000); fechar(r);
-        verificar("troca para categoria sem repertório limpa historinha", !historinhaVisivel(t));
-        capturar(r, "transformacao_sem_repertorio");
+        verificar("nova situação limpa historinha antes de rejeitar", !historinhaVisivel(t));
+        capturar(r, "transformacao_nova_situacao");
         System.out.println("RESUMO falhas=" + falhas); janela[0].dispose(); System.exit(falhas == 0 ? 0 : 1);
     }
     static boolean historinhaVisivel(Main.TelaGerard t) {
