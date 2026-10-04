@@ -34,6 +34,8 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
         ServicoAtividadeWebComposicaoTransformacoes servico =
                 new ServicoAtividadeWebComposicaoTransformacoes(
                         "tentativa.teste.composicao_transformacoes", situacao);
+        String alvoIncognita = new gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada()
+                .resolver(situacao).getChaveEfetiva();
         Map<String, Object> estadoInicial = servico.estadoAtual();
         exigir("COMPOSICAO_TRANSFORMACOES".equals(estadoInicial.get("categoria")),
                 "categoria deveria ser COMPOSICAO_TRANSFORMACOES.");
@@ -44,6 +46,9 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
             exigir(Boolean.FALSE.equals(papel.get("conhecido")) && papel.get("valor") == null,
                     "papel " + chave + " aguarda posicionamento");
             String id = String.valueOf(papel.get("id"));
+            if (id.equals(alvoIncognita)) {
+                continue;        // a incógnita não é pré-posicionada: engata e recebe o valor adiante
+            }
             servico.posicionarValorConhecido(id, id);
             // Toda transformação precisa de representação de sinal
             // (auditoria de acoplamento Main/web, 2026-09-19) — posicionar
@@ -72,6 +77,13 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
                 "atividade não deveria estar concluída no estado inicial.");
         exigir(estadoInicial.get("correta_entre_transformacoes") == null,
                 "correta_entre_transformacoes deveria ser null antes de responder.");
+
+        // --- a incógnita curada: engatar e propor o valor certo (conclusão só depois dela) ---
+        servico.engatarIncognita(alvoIncognita, alvoIncognita);
+        int valorIncognita = SemanticaCuradaSituacao.buscar(situacao, null, alvoIncognita).getValorInteiro();
+        Map<String, Object> aceitaIncognita = servico.proporValor(alvoIncognita, valorIncognita);
+        exigir(Boolean.TRUE.equals(aceitaIncognita.get("aceita")),
+                "a proposta curada deveria preencher a incógnita.");
 
         // --- segunda etapa antes da primeira: rejeitada ---
         boolean lancou = false;
@@ -135,8 +147,66 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
         exigir(estadoReiniciado.get("escolha_entre_estado_transformacao") == null,
                 "reiniciar deveria zerar escolha_entre_estado_transformacao.");
 
+        incognitaSemOperacaoCurada(validadas, "PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102");
+        incognitaSemOperacaoCurada(validadas, "PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114");
+
         System.out.println("APROVADO: ServicoAtividadeWebComposicaoTransformacoes cobre "
-                + "sequenciamento, acerto/erro nas duas etapas e reinício.");
+                + "sequenciamento, acerto/erro nas duas etapas, a incógnita sem operação curada e reinício.");
+    }
+
+    /**
+     * Sem operação curada, a atividade NÃO abre concluída: existe a incógnita, que precisa de
+     * tentativas do participante; três valores errados seguidos levam ao limite (historinha).
+     */
+    private static void incognitaSemOperacaoCurada(List<SituacaoProblemaAditiva> validadas, String id) {
+        SituacaoProblemaAditiva situacao = localizar(validadas, id);
+        ServicoAtividadeWebComposicaoTransformacoes servico =
+                new ServicoAtividadeWebComposicaoTransformacoes("tentativa.teste." + id, situacao);
+        String alvo = new gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada()
+                .resolver(situacao).getChaveEfetiva();
+        exigir(Boolean.FALSE.equals(servico.estadoAtual().get("concluida")),
+                id + ": não abre concluída (há uma incógnita a preencher).");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> inicial = servico.estadoAtual();
+        for (Object acaoObj : (List<?>) inicial.get("acoes_disponiveis")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> acao = (Map<String, Object>) acaoObj;
+            if ("POSICIONAR_CONHECIDO".equals(acao.get("id"))) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> corpo = (Map<String, Object>) acao.get("corpo");
+                String papel = String.valueOf(corpo.get("papel_id"));
+                exigir(!papel.equals(alvo), id + ": a incógnita não é oferecida como dado conhecido.");
+            }
+        }
+        for (Object acaoObj : (List<?>) inicial.get("acoes_disponiveis")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> acao = (Map<String, Object>) acaoObj;
+            if ("POSICIONAR_CONHECIDO".equals(acao.get("id"))) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> corpo = (Map<String, Object>) acao.get("corpo");
+                String papel = String.valueOf(corpo.get("papel_id"));
+                servico.posicionarValorConhecido(papel, papel);
+                if (papel.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
+                    int curado = SemanticaCuradaSituacao.buscar(situacao, null, papel).getValorInteiro();
+                    servico.escolherSinalNumeroRelativo(papel, curado < 0 ? "-" : "+");
+                }
+            }
+        }
+        servico.engatarIncognita(alvo, alvo);
+        Map<String, Object> ultima = null;
+        for (int i = 0; i < 3; i++) {
+            ultima = servico.proporValor(alvo, 900 + i);
+            exigir(Boolean.FALSE.equals(ultima.get("aceita")), id + ": valor errado é rejeitado.");
+            if (i < 2) {
+                servico.responderConfirmacaoValor(alvo, true, 900 + i);
+            }
+        }
+        exigir(Boolean.TRUE.equals(ultima.get("limite_atingido")), id + ": a 3ª rejeição atinge o limite.");
+        exigir(ultima.get("chave_mensagem") == null, id + ": no limite não há aviso.");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> estado = (Map<String, Object>) ultima.get("estado");
+        exigir(Boolean.FALSE.equals(estado.get("concluida")), id + ": valor errado não conclui.");
+        exigir(Boolean.TRUE.equals(estado.get("escalada_no_limite")), id + ": escalada no limite.");
     }
 
     private static SituacaoProblemaAditiva localizar(
