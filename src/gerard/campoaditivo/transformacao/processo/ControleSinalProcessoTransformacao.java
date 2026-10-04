@@ -25,8 +25,8 @@ public final class ControleSinalProcessoTransformacao {
     private static final Color FUNDO_MENOS_FOCADO = new Color(255, 242, 242);
     private static final Color AZUL = new Color(59, 130, 246);
     private static final Color AZUL_ESCURO = new Color(29, 78, 216);
-    private static final Color VERMELHO = new Color(220, 86, 86);
-    private static final Color VERMELHO_ESCURO = new Color(176, 48, 48);
+    private static final Color VERMELHO = gerard.ui.UITemaGerard.COR_ERRO;
+    private static final Color VERMELHO_ESCURO = gerard.ui.UITemaGerard.COR_ERRO_TEXTO;
     private static final Color FUNDO_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_FUNDO_DESABILITADO;
     private static final Color BORDA_DESABILITADA = gerard.ui.CoresRepresentacaoGerard.CONTROLE_BORDA_DESABILITADA;
     private static final Color SINAL_DESABILITADO = gerard.ui.CoresRepresentacaoGerard.CONTROLE_SINAL_DESABILITADO;

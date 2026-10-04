@@ -82,6 +82,21 @@ for f in clientes:
 exigir("argumentosHistorinha" in codigo(SRC / "gerard/campoaditivo/diagrama/servico/RenderizadorDiagramaAditivo.java"),
        "R6: o método polimórfico argumentosHistorinha(situacao, idioma) existe no renderizador da categoria")
 
+# R7 — o vermelho de erro tem um só dono por plataforma (UITemaGerard no Swing) e o web espelha o mesmo valor.
+soltos = []
+for f in arquivos("*.java"):
+    if f.name in ("UITemaGerard.java", "CoresRepresentacaoGerard.java", "TelaCuradoriaSituacoes.java"):
+        continue
+    if re.search(r"VERMELHO(_ESCURO)?\s*=\s*new\s+Color", codigo(f)):
+        soltos.append(f.relative_to(RAIZ).as_posix())
+exigir(not soltos, "R7: nenhum vermelho de erro/sinal definido fora do UITemaGerard (soltos: %s)" % soltos)
+tema = (SRC / "gerard/ui/UITemaGerard.java").read_text(encoding="utf-8")
+css = (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8")
+swing = re.search(r"COR_ERRO = new Color\(0x(..), 0x(..), 0x(..)\)", tema)
+web = re.search(r"--erro:#([0-9a-fA-F]{6})", css)
+exigir(bool(swing and web) and ("".join(swing.groups()).lower() == web.group(1).lower()),
+       "R7: --erro do web igual ao COR_ERRO do Swing")
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))
