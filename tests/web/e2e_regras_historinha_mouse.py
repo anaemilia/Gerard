@@ -72,6 +72,20 @@ def catalogo():
     return por_id, sorted(alvo)
 
 
+def esperar(pg, condicao, limite_ms=20000):
+    """Espera a resposta do servidor que torna a condição verdadeira (o site publicado tem latência)."""
+    espera = 0
+    while espera < limite_ms:
+        try:
+            if condicao():
+                return True
+        except KeyError:
+            pass
+        pg.wait_for_timeout(250)
+        espera += 250
+    return False
+
+
 def rodar(pg, alvo, por_id):
     s = por_id[alvo]
     raiz = alvo if s["tipo_versao"] == "original" else s["versao_origem_id"]
@@ -96,13 +110,15 @@ def rodar(pg, alvo, por_id):
     else:
         return ["situação não sorteada"], {}
     if raiz != alvo:                                   # tradução: troca o idioma pelo botão da situação
+        esperar(pg, lambda: pg.locator('button[aria-label^="Alterar o idioma desta situação-problema"]').count() > 0)
         clicar(pg.locator('button[aria-label^="Alterar o idioma desta situação-problema"]'))
         nome = next(i["nome"] for i in estado["e"]["idiomas_situacao"] if i["codigo"] == s["idioma"])
         clicar(pg.locator("button", has_text=nome).last)
-        pg.wait_for_timeout(500)
+        esperar(pg, lambda: estado["e"]["situacao_id"] == alvo)
         if estado["e"]["situacao_id"] != alvo:
             return ["troca de idioma não levou a " + alvo], {}
     clicar(pg.locator('button[aria-label="%s"]' % BOTAO_CATEGORIA[tipo]))
+    esperar(pg, lambda: estado["e"].get("cena") and estado["e"].get("categoria"))   # latência de rede (site publicado)
     e = estado["e"]
 
     # posiciona os dados do enunciado (e engata a incógnita) arrastando cada elemento até sua caixa
@@ -115,9 +131,10 @@ def rodar(pg, alvo, por_id):
         for k in range(1, 19):
             pg.mouse.move(ax + (bx - ax) * k / 18, ay + (by - ay) * k / 18)
         pg.mouse.up(); pg.wait_for_timeout(350)
-        sinal = pg.locator('.valor-figura-sinal-tip input[aria-label="positivo"]')
+        sinal = pg.locator('.valor-figura-sinal-tip input[aria-label="%s"]' % sinal_correto(s, el["papel_id"]))
         if sinal.count():
             clicar(sinal.first)
+            pg.wait_for_timeout(300)
     numeros_antes = pg.locator(".enunciado-elemento-semantico").all_inner_texts()
 
     historinha = lambda: pg.locator(".historinha-passiva").count()   # noqa: E731
@@ -163,6 +180,21 @@ def rodar(pg, alvo, por_id):
     return falhas, {"apoio": apoio.get("tipo"), "referencia": apoio.get("referencia"), "idioma": s["idioma"]}
 
 
+def sinal_correto(s, papel):
+    """Sinal curado do número relativo do papel (o participante que acerta o sinal não é questionado)."""
+    def neg(valor, sinal=""):
+        return sinal == "negativo" or str(valor).strip().startswith("-")
+    campos = {"papel.transformacao1": ("quantidade_1", ""), "papel.transformacao2": ("quantidade_2", ""),
+              "papel.transformacaoFinal": ("resultado", ""), "papel.transformacao": ("transformacao", "sinal_transformacao"),
+              "papel.diferenca": ("valor_relativo", "sinal_valor_relativo"), "papel.relacao1": ("quantidade_1", ""),
+              "papel.relacao2": ("quantidade_2", ""), "papel.relacaoFinal": ("resultado", ""),
+              "papel.relacaoInicial": ("estado_inicial", "")}
+    campo, campo_sinal = campos.get(papel, ("", ""))
+    if not campo:
+        return "positivo"
+    return "negativo" if neg(s.get(campo, ""), s.get(campo_sinal, "") if campo_sinal else "") else "positivo"
+
+
 def s_incognita(s):
     mapa = {"todo": "papel.todo", "quantidade_2": "papel.parte2", "estado_final": "papel.estadoFinal",
             "transformação": "papel.transformacao", "estado_inicial": "papel.estadoInicial",
@@ -183,10 +215,13 @@ def main():
         pg = nav.new_page(viewport={"width": 1500, "height": 1000})
         pg.on("response", ao_responder)
         for alvo in alvos:
-            try:
-                falhas, info = rodar(pg, alvo, por_id)
-            except Exception as erro:  # noqa: BLE001
-                falhas, info = ["ERRO: %s: %s" % (type(erro).__name__, str(erro)[:140])], {}
+            falhas, info = None, {}
+            for tentativa in range(2):      # latência do servidor publicado: uma nova tentativa antes de acusar
+                try:
+                    falhas, info = rodar(pg, alvo, por_id)
+                    break
+                except Exception as erro:  # noqa: BLE001
+                    falhas, info = ["ERRO: %s: %s" % (type(erro).__name__, str(erro)[:140])], {}
             ok = not falhas
             total_falhas += 0 if ok else 1
             print(("[OK]    " if ok else "[FALHA] ") + alvo, info.get("apoio") or "", "; ".join(falhas))
