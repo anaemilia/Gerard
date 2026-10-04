@@ -215,7 +215,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
                 ? registroOperacao.getActionId() : UUID.randomUUID().toString());
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("diagnostico", aceita ? null : escolhaAluno.name());
-        resultado.put("chave_mensagem", aceita ? null : resolverExplicacao(
+        resultado.put("chave_mensagem", aceita || escopo.getTentativa().estaNoLimiteAjudaVisual() ? null : resolverExplicacao(
                 TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES,
                 seletorConvertido, escolhaCorreta));
         resultado.put("estado", estadoAtual());

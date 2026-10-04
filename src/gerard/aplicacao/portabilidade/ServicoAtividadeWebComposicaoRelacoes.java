@@ -270,7 +270,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes
                 ? registroOperacao.getActionId() : UUID.randomUUID().toString());
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("diagnostico", aceita ? null : escolhaAluno.name());
-        resultado.put("chave_mensagem", aceita ? null : resolverExplicacao(
+        resultado.put("chave_mensagem", aceita || escopo.getTentativa().estaNoLimiteAjudaVisual() ? null : resolverExplicacao(
                 TipoSituacaoAditiva.COMPOSICAO_RELACOES,
                 TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, escolhaCorreta));
         resultado.put("estado", estadoAtual());

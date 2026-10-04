@@ -241,7 +241,7 @@ public final class ServicoAtividadeWebTransformacaoRelacao
                 ? registroOperacao.getActionId() : UUID.randomUUID().toString());
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("diagnostico", aceita ? null : escolhaAluno.name());
-        resultado.put("chave_mensagem", aceita ? null : resolverExplicacaoOperacao(escolhaCorreta));
+        resultado.put("chave_mensagem", aceita || escopo.getTentativa().estaNoLimiteAjudaVisual() ? null : resolverExplicacaoOperacao(escolhaCorreta));
         resultado.put("estado", estadoAtual());
         return resultado;
     }
