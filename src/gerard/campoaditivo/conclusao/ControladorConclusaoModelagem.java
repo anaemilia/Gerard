@@ -3,7 +3,13 @@ package gerard.campoaditivo.conclusao;
 import java.util.Collection;
 import java.util.List;
 
-/** Mantém o ciclo de conclusão e impede a repetição contínua do tip. */
+/**
+ * Dono do ciclo VISUAL do azul no desktop: avalia o diagrama corrente (incompleto, concluído, deixou de
+ * estar concluído), controla o destaque e impede a repetição contínua do tip. Não decide a FASE da
+ * atividade: o que está concluído aqui pode voltar a incompleto durante a exploração, enquanto a fase
+ * (modelagem/exploratória) pertence à tentativa, que o observa por {@link gerard.dominio.campoaditivo.FonteDeConclusao}
+ * e se encerra uma única vez ({@code TentativaModelagemAditiva.encerrarSeConcluida}).
+ */
 public final class ControladorConclusaoModelagem
         implements gerard.dominio.campoaditivo.FonteDeConclusao {
     private final AvaliadorConclusaoModelagem avaliador =

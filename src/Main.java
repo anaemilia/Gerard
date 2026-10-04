@@ -4213,21 +4213,9 @@ public class Main extends JFrame {
             gerard.agente.modelousuario.ModeloUsuario modeloAtual = repositorioModeloUsuario.obter(idUsuario);
             gerard.agente.modelousuario.MidiaPreferida midia =
                     modeloAtual == null ? null : modeloAtual.getPerfilAprendizagem().getMidiaPreferida();
-            if (midia == null) {
-                midia = gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL;
-            }
-            final RepertorioAjudaVisual repertorioAjudaVisual =
-                    categoriaReal.selecionarRepertorioAjudaVisual();
-            final FormatoAjudaNarrativaVisual formatoNarrativa =
-                    midia == gerard.agente.modelousuario.MidiaPreferida.VIDEO
-                            ? FormatoAjudaNarrativaVisual.ANIMACAO
-                            : midia == gerard.agente.modelousuario.MidiaPreferida.HISTORIA_EM_QUADRINHOS
-                                    ? FormatoAjudaNarrativaVisual.HISTORIA_EM_QUADRINHOS
-                                    : null;
-            final PainelAjudaNarrativaVisualCategoria painelNarrativa =
-                    formatoNarrativa == null ? null
-                            : PainelAjudaNarrativaVisualCategoria.criarSeDisponivel(
-                                    repertorioAjudaVisual, formatoNarrativa);
+            final gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria explicacaoNarrativa =
+                    gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria.para(categoriaReal, midia);
+            final PainelAjudaNarrativaVisualCategoria painelNarrativa = explicacaoNarrativa.getPainel();
 
             final JDialog dialogo = new JDialog(
                     SwingUtilities.getWindowAncestor(this),
@@ -4253,8 +4241,7 @@ public class Main extends JFrame {
             corpo.add(intro);
             corpo.add(Box.createVerticalStrut(12));
 
-            boolean formatoPendente = midia != gerard.agente.modelousuario.MidiaPreferida.LINGUAGEM_NATURAL
-                    && painelNarrativa == null;
+            boolean formatoPendente = explicacaoNarrativa.isFormatoPendente();
             if (formatoPendente) {
                 JLabel avisoConstrucao = new JLabel("<html><body style='width: 320px'><i>"
                         + localizacao.texto("ui.dialog.categoryExplanation.midiaPendente") + "</i></body></html>");

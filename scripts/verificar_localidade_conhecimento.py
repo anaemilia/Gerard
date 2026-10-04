@@ -59,7 +59,7 @@ exigir(contar(main, r"tentativaModelagemAtual\s*\.\s*admite") == 0,
 
 # R3 — a decisão do apoio visual é do domínio/aplicação; nenhum cliente decide.
 exigir(contar(main, r"\bPoliticaApoioVisual\b") == 0, "R3: a Main não usa PoliticaApoioVisual (usa DecisorAjudaVisual)")
-DIVIDA_REPERTORIO_NA_MAIN = 1   # explicação da categoria por mídia preferida (outra funcionalidade); só diminui
+DIVIDA_REPERTORIO_NA_MAIN = 0   # a explicação da categoria passou a ter dono (ExplicacaoNarrativaDaCategoria)
 n = contar(main, r"\.selecionarRepertorioAjudaVisual\s*\(")
 exigir(n <= DIVIDA_REPERTORIO_NA_MAIN, "R3: seleção de repertório na Main <= %d (hoje %d)" % (DIVIDA_REPERTORIO_NA_MAIN, n))
 
