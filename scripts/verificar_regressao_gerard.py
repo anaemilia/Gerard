@@ -1475,9 +1475,13 @@ layout_transformacao = text('src/gerard/campoaditivo/transformacao/processo/Layo
 render_transformacao = text('src/gerard/campoaditivo/transformacao/processo/RenderizadorProcessoTransformacao.java')
 politica_processo = text('src/gerard/campoaditivo/transformacao/processo/PoliticaVisualProcessoTransformacao.java')
 layout_unidades_transformacao = text('src/gerard/campoaditivo/transformacao/processo/LayoutUnidadesProcessoTransformacao.java')
-check('PROCESSO_TRANSFORMACAO' in seletor_complementar
-      and 'TRANSFORMACAO_MEDIDAS' in seletor_complementar,
-      'transformação de medidas seleciona representação de processo própria')
+# Decisão vigente (2026-10-02): a transformação de medidas usa a historinha da categoria, e o texto
+# (no idioma da situação) é passado como argumento da cena — não há mais representação de processo própria.
+render_diagrama = text('src/gerard/campoaditivo/diagrama/servico/RenderizadorDiagramaAditivo.java')
+check('HISTORINHAS_CATEGORIA' in seletor_complementar
+      and 'possuiNumeroRelativo' in seletor_complementar
+      and 'argumentosHistorinha' in render_diagrama,
+      'transformação de medidas seleciona a historinha da categoria, com o texto passado como argumento')
 check('LayoutProcessoTransformacao' in text('src/gerard/campoaditivo/venn/servico/GeradorCenaDiagramaVenn.java')
       and 'criarCena' in layout_transformacao,
       'geometria do canal e das zonas fica fora da tela principal')
@@ -2289,16 +2293,30 @@ check('AtualizacaoConclusaoModelagem atualizacaoConclusao =\n'
       '                    == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA;' in main,
       'verificarConclusaoModelagem lê a transição já resolvida pelo controlador em vez de '
       'recalculá-la comparando com um campo anterior em Main')
-check('private void suspenderConclusaoDuranteManipulacao() {\n'
-      '            if (!controladorConclusaoModelagem.isConcluida()) return;\n'
-      '            controladorConclusaoModelagem.reiniciar();' in main,
+inicio_suspender = main.find('private void suspenderConclusaoDuranteManipulacao() {')
+fim_suspender = main.find('\n        }', inicio_suspender)
+corpo_suspender = main[inicio_suspender:fim_suspender]
+check('if (!controladorConclusaoModelagem.isConcluida()) return;' in corpo_suspender
+      and 'destaqueConclusaoSuspensoPorExploracao = true;' in corpo_suspender
+      and 'aplicadorDestaqueConclusaoDiagrama.aplicar(\n'
+          '                    false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,\n'
+          '                    quadradinhosVenn);' in corpo_suspender
+      and 'controladorConclusaoModelagem.reiniciar()' not in corpo_suspender,
       'suspenderConclusaoDuranteManipulacao guarda diretamente por '
-      'controladorConclusaoModelagem.isConcluida() — o controlador já sabe se está concluído, '
-      'Main não precisa mais de um campo-espelho próprio para essa mesma pergunta')
-check('private void reiniciarConclusaoModelagem() {\n'
-      '            controladorConclusaoModelagem.reiniciar();' in main,
-      'reiniciarConclusaoModelagem (nova situação/categoria) reinicia o controlador, que por si só '
-      'já limpa o estado "concluída anteriormente" — sem campo espelho para zerar em Main')
+      'controladorConclusaoModelagem.isConcluida(), marca a suspensão exploratória e retira '
+      'temporariamente o destaque visual — decisão de '
+      '2026-09-29: após o azul, manipulação é exploratória e não desfaz a conclusão no controlador, '
+      'então o método não deve mais reiniciá-lo (isso ficou reservado a reiniciarConclusaoModelagem, '
+      'quando uma nova situação/categoria é sorteada)')
+inicio_reiniciar = main.find('private void reiniciarConclusaoModelagem() {')
+fim_reiniciar = main.find('\n        }', inicio_reiniciar)
+corpo_reiniciar = main[inicio_reiniciar:fim_reiniciar]
+check('destaqueConclusaoSuspensoPorExploracao = false;' in corpo_reiniciar
+      and 'controladorConclusaoModelagem.reiniciar();' in corpo_reiniciar,
+      'reiniciarConclusaoModelagem (nova situação/categoria) reinicia de fato o controlador — que '
+      'por si só já limpa o estado "concluída anteriormente", sem campo-espelho para essa pergunta '
+      'em Main — e também limpa a suspensão exploratória do destaque, um estado de apresentação '
+      'distinto (decisão de 2026-09-29), não um segundo campo-espelho da mesma pergunta')
 check('SituacaoProblemaAditiva situacao' in seletor_papeis_conclusao
       and 'SemanticaCuradaSituacao' in seletor_papeis_conclusao
       and '.papelExigidoNaModelagem(situacao, localizacao, chave)' in seletor_papeis_conclusao
