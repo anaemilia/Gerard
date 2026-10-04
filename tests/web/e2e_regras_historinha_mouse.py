@@ -156,6 +156,8 @@ def rodar(pg, alvo, por_id):
             clicar(pg.locator('[role="button"][aria-label="%s"]' % errada).first)
             pg.wait_for_timeout(300)
     else:
+        esperar(pg, lambda: next(f for f in estado["e"]["cena"]["figuras"]
+                                 if f["chave_papel_semantico"] == s_incognita(s)).get("engatada"))   # engate chegou ao servidor
         fig = next(f for f in estado["e"]["cena"]["figuras"] if f["chave_papel_semantico"] == s_incognita(s))
         px, py = centro(pg.locator('[data-figura-id="%s"]' % fig["id"]))
         campo = pg.locator('[id="valor-%s"]' % fig["id"])
