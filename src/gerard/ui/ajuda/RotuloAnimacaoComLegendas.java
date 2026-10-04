@@ -94,15 +94,24 @@ final class RotuloAnimacaoComLegendas extends JLabel {
         }
     }
 
+    /** Área que a animação ocupa dentro do rótulo (o ícone é centralizado; a legenda fica DENTRO dela). */
+    java.awt.Rectangle areaDaAnimacao() {
+        javax.swing.Icon icone = getIcon();
+        int w = icone == null ? getWidth() : Math.min(icone.getIconWidth(), getWidth());
+        int h = icone == null ? getHeight() : Math.min(icone.getIconHeight(), getHeight());
+        return new java.awt.Rectangle((getWidth() - w) / 2, (getHeight() - h) / 2, w, h);
+    }
+
     private void desenhar(Graphics2D g2, String texto) {
         try {
+            java.awt.Rectangle area = areaDaAnimacao();
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             FontMetrics fm = g2.getFontMetrics();
-            int largura = Math.min(getWidth() - 2 * MARGEM, fm.stringWidth(texto) + 2 * MARGEM);
+            int largura = Math.min(area.width - 2 * MARGEM, fm.stringWidth(texto) + 2 * MARGEM);
             int altura = fm.getHeight() + 8;
-            int x = (getWidth() - largura) / 2;
-            int y = getHeight() - altura - MARGEM;
+            int x = area.x + (area.width - largura) / 2;
+            int y = area.y + area.height - altura - MARGEM;
             g2.setColor(new Color(255, 255, 255, 225));
             g2.fillRoundRect(x, y, largura, altura, 10, 10);
             g2.setColor(UITemaGerard.COR_TEXTO);

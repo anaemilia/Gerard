@@ -52,6 +52,14 @@ public class TesteMacacoHistorinhaNumeroRelativo {
     static Random sorte;
     static final Map<String, String[]> resultado = new LinkedHashMap<String, String[]>();
     static int falhas;
+    // desdobramentos de CADA clique: estado anterior para conferir o que o clique provocou
+    static String situacaoDoPasso = "";
+    static int rejeicoesDoPasso;
+    static String numerosDoPasso = "";
+    static int passos;
+    static boolean passoPorOperacao;
+    static int cliquesDeOperacao;
+    static final List<String> desdobramentos = new ArrayList<String>();
 
     public static void main(String[] a) throws Exception {
         saida = new File(a.length > 0 ? a[0] : "macaco_historinhas");
@@ -95,6 +103,11 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             if (!e.getKey().startsWith("CONTROLE")) { total++; if ("APARECEU".equals(v[3])) apareceu++; }
         }
         w.close();
+        PrintWriter wd = new PrintWriter(new File(saida, "desdobramentos_por_clique.tsv"), "UTF-8");
+        wd.println("situacao\tpasso\tacao\trejeicoes_antes\trejeicoes_depois\tno_limite\tpainel_visivel\tnumeros_iguais\tveredito");
+        for (String l : desdobramentos) wd.println(l);
+        wd.close();
+        System.out.println("CLIQUES verificados com desdobramentos: " + passos);
         System.out.println("RESUMO: historinha apareceu em " + apareceu + " de " + total + " situações; falhas=" + falhas);
         System.exit(falhas == 0 && apareceu == total ? 0 : 1);
     }
@@ -168,6 +181,11 @@ public class TesteMacacoHistorinhaNumeroRelativo {
         boolean acidente = false;
         String[] apoioDesktop = {"", "", ""};
         String numerosAntes = numerosDoEnunciado();
+        situacaoDoPasso = id;
+        numerosDoPasso = numerosAntes;
+        rejeicoesDoPasso = rejeicoes();
+        passoPorOperacao = porOperacao;
+        cliquesDeOperacao = 0;
         if (porOperacao) {
             acidente = macacoOperacao();
         } else {
@@ -200,6 +218,7 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             capturar(id);
             status = tinta > 0 ? "APARECEU" : "NAO_APARECEU";
             apoioDesktop = apoioNaTela();
+            if ("APARECEU".equals(status)) verificarLegendas(id, apoioDesktop[2]);
         }
         if (!"APARECEU".equals(status)) { falhas++; System.out.println("[FALHA] " + id + " => " + status); }
         else System.out.println("[OK] " + id);
@@ -254,15 +273,17 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             if (TesteRobotExploracaoAposConclusao.haDialogo()) {
                 tecla(KeyEvent.VK_ENTER);                       // "Sim": confirma o valor rejeitado
                 Thread.sleep(1500);
+                passo("confirmar Sim (Enter no diálogo)");
                 if (TesteRobotExploracaoAposConclusao.haDialogo()) digitarNoDialogo(valorErrado());
                 continue;
             }
             Point menu = opcaoDeSinalNaTela();
-            if (menu != null) { clicar(menu); Thread.sleep(1500); continue; }
+            if (menu != null) { clicar(menu); Thread.sleep(1500); passo("clicar no sinal"); continue; }
             digitarNaIncognita(valorErrado());
             Thread.sleep(1300);
+            passo("digitar valor errado na incógnita (Enter)");
             Point menu2 = opcaoDeSinalNaTela();
-            if (menu2 != null) { clicar(menu2); Thread.sleep(1500); }
+            if (menu2 != null) { clicar(menu2); Thread.sleep(1500); passo("clicar no sinal"); }
         }
         return TesteRobotExploracaoAposConclusao.atingida(t);
     }
@@ -290,9 +311,122 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             Rectangle area = new Rectangle((Rectangle) f.get(sel[0]));
             clicar(new Point(o.x + area.x + area.width / 2, o.y + area.y + area.height / 2));
             Thread.sleep(900);
+            cliquesDeOperacao++;
+            passo("clicar na operação errada (" + (erradaESoma ? "Soma" : "Subtração") + ")");
             TesteRobotExploracaoAposConclusao.fechar(r);
         }
         return TesteRobotExploracaoAposConclusao.atingida(t);
+    }
+
+    /**
+     * Desdobramentos do clique/gesto que acabou de acontecer: a rejeição consecutiva subiu no máximo 1;
+     * enquanto não está no limite NÃO há historinha na tela; os números do enunciado não mudaram; a
+     * tentativa não foi concluída por acidente. Cada passo vira uma linha em desdobramentos_por_clique.tsv.
+     */
+    static void passo(String acao) throws Exception {
+        int antes = rejeicoesDoPasso;
+        int depois = rejeicoes();
+        boolean limite = noLimite();
+        boolean painel = painelVisivel();
+        String numeros = numerosDoEnunciado();
+        boolean iguais = numeros.equals(numerosDoPasso);
+        String veredito = "OK";
+        if (depois > antes + 1) veredito = "rejeições saltaram " + antes + " -> " + depois;
+        else if (!limite && painel) veredito = "historinha visível antes do limite";
+        else if (!passoPorOperacao && limite && depois < 3) veredito = "limite sem 3 rejeições";
+        else if (passoPorOperacao && limite != (cliquesDeOperacao >= 3))   // seletor de operação: 1 clique errado = 1 rejeição
+            veredito = "limite " + limite + " com " + cliquesDeOperacao + " cliques errados";
+        else if (!iguais && !TesteRobotExploracaoAposConclusao.atingida(t)) veredito = "números do enunciado mudaram";
+        passos++;
+        if (!"OK".equals(veredito)) {
+            falhas++;
+            System.out.println("[FALHA] " + situacaoDoPasso + " passo " + passos + " (" + acao + "): " + veredito);
+        }
+        desdobramentos.add(situacaoDoPasso + "\t" + passos + "\t" + acao + "\t" + antes + "\t" + depois
+                + "\t" + limite + "\t" + painel + "\t" + iguais + "\t" + veredito);
+        rejeicoesDoPasso = depois;
+    }
+
+    /** Acha, no componente real da tela, o rótulo da animação com legendas. */
+    static java.awt.Component acharAnimacao(java.awt.Component c) {
+        if (c.getClass().getSimpleName().equals("RotuloAnimacaoComLegendas")) return c;
+        if (c instanceof java.awt.Container) {
+            for (java.awt.Component f : ((java.awt.Container) c).getComponents()) {
+                java.awt.Component a = acharAnimacao(f);
+                if (a != null) return a;
+            }
+        }
+        return null;
+    }
+
+    static double campo(Object o, String nome) throws Exception {
+        java.lang.reflect.Field f = o.getClass().getDeclaredField(nome);
+        f.setAccessible(true);
+        return f.getDouble(o);
+    }
+
+    /**
+     * Legenda DENTRO da animação, em captura real da tela: durante um laço inteiro, a legenda ativa (lida do
+     * cronograma do próprio componente) é um dos trechos projetados, há texto desenhado na faixa inferior da
+     * imagem a cada amostra, e todos os trechos aparecem. Sem trechos: nenhuma legenda existe.
+     */
+    @SuppressWarnings("unchecked")
+    static void verificarLegendas(String id, String trechosProjetados) throws Exception {
+        final java.awt.Component[] rot = new java.awt.Component[1];
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+            rot[0] = t.painelHistorinhasComplementar == null ? null : acharAnimacao(t.painelHistorinhasComplementar); }});
+        if (rot[0] == null) {
+            if (trechosProjetados.isEmpty()) return;     // historinha textual: sem animação
+            falhas++; System.out.println("[FALHA] " + id + ": sem componente de animação"); return;
+        }
+        java.lang.reflect.Field fl = rot[0].getClass().getDeclaredField("legendas");
+        java.lang.reflect.Field fi = rot[0].getClass().getDeclaredField("inicioNanos");
+        fl.setAccessible(true); fi.setAccessible(true);
+        List<Object> legendas = (List<Object>) fl.get(rot[0]);
+        if (trechosProjetados.isEmpty()) {
+            if (!legendas.isEmpty()) { falhas++; System.out.println("[FALHA] " + id + ": legenda sem trecho curado"); }
+            return;
+        }
+        List<String> esperados = java.util.Arrays.asList(trechosProjetados.split(java.util.regex.Pattern.quote(" | ")));
+        double duracao = campo(rot[0], "duracao");
+        if (legendas.size() != esperados.size() || duracao <= 0) {
+            falhas++; System.out.println("[FALHA] " + id + ": cronograma ausente/incompleto (" + legendas.size() + ")"); return;
+        }
+        java.lang.reflect.Field ft = legendas.get(0).getClass().getDeclaredField("texto");
+        ft.setAccessible(true);
+        Set<String> vistas = new LinkedHashSet<String>();
+        int amostras = (int) Math.ceil(duracao) + 2, semTexto = 0;
+        for (int k = 0; k < amostras; k++) {
+            final Rectangle[] rc = new Rectangle[1];
+            SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+                Point l = rot[0].getLocationOnScreen();
+                // faixa inferior da PRÓPRIA animação (a legenda tem de estar dentro da imagem, não do painel)
+                Rectangle ic = new Rectangle(0, 0, rot[0].getWidth(), rot[0].getHeight());
+                javax.swing.Icon icone = ((javax.swing.JLabel) rot[0]).getIcon();
+                if (icone != null) {
+                    int w = Math.min(icone.getIconWidth(), rot[0].getWidth()), h = Math.min(icone.getIconHeight(), rot[0].getHeight());
+                    ic = new Rectangle((rot[0].getWidth() - w) / 2, (rot[0].getHeight() - h) / 2, w, h);
+                }
+                rc[0] = new Rectangle(l.x + ic.x, l.y + ic.y + ic.height * 2 / 3, ic.width, ic.height / 3); }});
+            BufferedImage img = r.createScreenCapture(rc[0]);
+            double tempo = ((System.nanoTime() - fi.getLong(rot[0])) / 1e9) % duracao;
+            String ativa = null;
+            for (Object lg : legendas) {
+                if (tempo >= campo(lg, "inicio") && tempo < campo(lg, "fim")) ativa = (String) ft.get(lg);
+            }
+            int escuros = 0;
+            int texto = gerard.ui.UITemaGerard.COR_TEXTO.getRGB() & 0xFFFFFF;
+            for (int y = 0; y < img.getHeight(); y++)
+                for (int x = 0; x < img.getWidth(); x++)
+                    if (distancia(img.getRGB(x, y) & 0xFFFFFF, texto) < 60) escuros++;
+            if (ativa != null) { vistas.add(ativa); if (escuros < 40) semTexto++; }
+            if (k == 1) ImageIO.write(img, "png", new File(saida, "legenda_" + id + ".png"));
+            Thread.sleep(1000);
+        }
+        boolean ok = vistas.containsAll(esperados) && semTexto == 0;
+        if (!ok) falhas++;
+        System.out.println((ok ? "[OK]    " : "[FALHA] ") + "legendas dentro da animação " + id + ": vistas=" + vistas.size()
+                + "/" + esperados.size() + " amostras sem texto desenhado=" + semTexto);
     }
 
     static void controleNegativo() throws Exception {
