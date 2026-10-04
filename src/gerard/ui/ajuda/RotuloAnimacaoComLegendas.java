@@ -67,7 +67,7 @@ final class RotuloAnimacaoComLegendas extends JLabel {
     @Override
     public void addNotify() {
         super.addNotify();
-        inicioNanos = System.nanoTime();
+        inicioNanos = 0;     // o laço começa na primeira pintura do GIF (ver paintComponent)
         if (!legendas.isEmpty()) {
             relogio.start();
         }
@@ -84,6 +84,10 @@ final class RotuloAnimacaoComLegendas extends JLabel {
         super.paintComponent(g);
         if (legendas.isEmpty() || duracao <= 0.0) {
             return;
+        }
+        if (inicioNanos == 0) {
+            // O GIF só começa a animar quando é desenhado pela primeira vez: é daí que se conta o laço.
+            inicioNanos = System.nanoTime();
         }
         double t = ((System.nanoTime() - inicioNanos) / 1e9) % duracao;
         for (Legenda legenda : legendas) {
