@@ -302,3 +302,7 @@ Cada nova extração continua exigindo autorização explícita e validação do
 protocolo afetado. O ratchet autoriza somente a verificação frequente; ele
 não autoriza refatorações automáticas nem substitui os testes funcionais e
 Robot exigidos por `gerard-consistencia-estado`.
+
+## Decisão de fase não mora na Main (nem espalhada)
+
+Saber em que fase está a atividade (primeira modelagem, conclusão, exploração) é conhecimento do proprietário semântico da tentativa (`TentativaModelagemAditiva`), publicado por uma referência estável (`TentativaCorrente`: `admiteRegistroFactual()`, `admiteExploracao()`). Logger, publicador de gestos, estado compartilhado e sincronizador do enunciado recebem **referências de método** dessa porta; a `Main` apenas as liga (`tentativaCorrente::admiteExploracao`) e informa a tentativa corrente ao carregar a situação. É proibido escrever lambdas ou classes anônimas com `tentativa… != null && …estaEncerradaPorConclusao()` na `Main` ou em qualquer cliente: cada cópia dessa decisão é uma decisão pulverizada. Há duas fases (`FaseDaTentativa`): **modelagem** (dados curados e papéis preenchidos não mudam; tudo é registrado) e **exploratória** (começa no diagrama azul; recalcula para manter as representações consistentes; nada é registrado). Reiniciar ou sortear começa uma nova modelagem. A conclusão observada por qualquer representação passa por um único ponto, `TentativaModelagemAditiva.encerrarSeConcluida(FonteDeConclusao)`; cada plataforma só implementa como observa o azul.

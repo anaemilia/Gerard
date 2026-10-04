@@ -10,4 +10,8 @@ public interface SincronizadorElementosSemanticosTexto {
             Iterable<? extends ElementoSemanticoTexto> elementos,
             EstadoSemanticoCompartilhado.Snapshot snapshot,
             MapeadorPapelSemanticoTexto mapeador);
+
+    /** Admissão de atualização dos números do enunciado (ver implementação base). */
+    default void definirAdmissaoAtualizacao(java.util.function.BooleanSupplier admissao) {
+    }
 }

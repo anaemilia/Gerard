@@ -54,6 +54,20 @@ public final class TentativaModelagemAditiva {
     }
 
     /**
+     * Ponto único em que a conclusão observada por uma representação encerra a tentativa. Só a
+     * primeira conclusão encerra; observar a conclusão de novo (exploração) não faz nada.
+     *
+     * @return verdadeiro se esta chamada encerrou a tentativa
+     */
+    public boolean encerrarSeConcluida(FonteDeConclusao fonte, PapelQuantitativo... papeisParticipantes) {
+        if (encerradaPorConclusao || fonte == null || !fonte.isConcluida()) {
+            return false;
+        }
+        encerrarPorConclusao(papeisParticipantes);
+        return true;
+    }
+
+    /**
      * Registra um papel como participante desta tentativa. Quem cria os
      * papéis (desktop ou web) só os incorpora; o encerramento pela conclusão
      * alcança todos os participantes, inclusive os incorporados depois dele.
@@ -78,7 +92,21 @@ public final class TentativaModelagemAditiva {
      * publicador de gestos, porta web) apenas consulta este fato.
      */
     public boolean admiteRegistroFactual() {
-        return !encerradaPorConclusao;
+        return getFase() == FaseDaTentativa.MODELAGEM;
+    }
+
+    /** Fase em que a atividade está: modelagem até o azul, exploratória depois dele. */
+    public FaseDaTentativa getFase() {
+        return encerradaPorConclusao ? FaseDaTentativa.EXPLORATORIA : FaseDaTentativa.MODELAGEM;
+    }
+
+    /**
+     * A fase de exploração só existe depois da conclusão correta (diagrama azul): é quando os
+     * valores e os números do enunciado podem ser recalculados para manter as representações
+     * consistentes. Antes disso, os dados curados nunca mudam.
+     */
+    public boolean admiteExploracao() {
+        return getFase() == FaseDaTentativa.EXPLORATORIA;
     }
 
     /**

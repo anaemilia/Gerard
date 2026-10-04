@@ -9,12 +9,24 @@ import gerard.campoaditivo.sincronizacao.EstadoSemanticoCompartilhado;
 public abstract class SincronizadorElementosSemanticosTextoAbstrato
         implements SincronizadorElementosSemanticosTexto {
 
+    private java.util.function.BooleanSupplier atualizacaoAdmitida = () -> true;
+
+    /**
+     * Os números do enunciado são os dados curados da situação e só podem mudar depois da
+     * conclusão correta (exploração, diagrama azul). Quem possui a tentativa informa a decisão;
+     * sem informação, vale o padrão antigo.
+     */
+    public final void definirAdmissaoAtualizacao(java.util.function.BooleanSupplier admissao) {
+        this.atualizacaoAdmitida = admissao == null ? () -> true : admissao;
+    }
+
     @Override
     public final void sincronizar(
             Iterable<? extends ElementoSemanticoTexto> elementos,
             EstadoSemanticoCompartilhado.Snapshot snapshot,
             MapeadorPapelSemanticoTexto mapeador) {
-        if (elementos == null || snapshot == null || mapeador == null) {
+        if (elementos == null || snapshot == null || mapeador == null
+                || !atualizacaoAdmitida.getAsBoolean()) {
             return;
         }
         for (ElementoSemanticoTexto elemento : elementos) {

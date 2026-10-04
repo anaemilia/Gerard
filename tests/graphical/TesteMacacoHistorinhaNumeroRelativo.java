@@ -87,10 +87,11 @@ public class TesteMacacoHistorinhaNumeroRelativo {
 
         int apareceu = 0, total = 0;
         PrintWriter w = new PrintWriter(new File(saida, "resultado_macaco.tsv"), "UTF-8");
-        w.println("situacao\tcategoria\tcaminho\trejeicoes_no_limite\tstatus\tapoio");
+        w.println("situacao\tcategoria\tcaminho\trejeicoes_no_limite\tstatus\tapoio\treferencia\ttrechos");
         for (Map.Entry<String, String[]> e : resultado.entrySet()) {
             String[] v = e.getValue();
-            w.println(e.getKey() + "\t" + v[0] + "\t" + v[1] + "\t" + v[2] + "\t" + v[3] + "\t" + v[4]);
+            w.println(e.getKey() + "\t" + v[0] + "\t" + v[1] + "\t" + v[2] + "\t" + v[3] + "\t" + v[4]
+                    + "\t" + (v.length > 5 ? v[5] : "") + "\t" + (v.length > 6 ? v[6] : ""));
             if (!e.getKey().startsWith("CONTROLE")) { total++; if ("APARECEU".equals(v[3])) apareceu++; }
         }
         w.close();
@@ -165,6 +166,8 @@ public class TesteMacacoHistorinhaNumeroRelativo {
         String caminho = porOperacao ? "operacao" : "valor";
         System.out.println("== " + id + " (" + caminho + ")");
         boolean acidente = false;
+        String[] apoioDesktop = {"", "", ""};
+        String numerosAntes = numerosDoEnunciado();
         if (porOperacao) {
             acidente = macacoOperacao();
         } else {
@@ -178,6 +181,12 @@ public class TesteMacacoHistorinhaNumeroRelativo {
         }
         int rej = rejeicoes();
         boolean limite = noLimite();
+        String numerosDepois = numerosDoEnunciado();
+        if (!numerosAntes.equals(numerosDepois)) {
+            falhas++;
+            System.out.println("[FALHA] números do enunciado mudaram antes da conclusão em " + id
+                    + ": " + numerosAntes + " -> " + numerosDepois);
+        }
         String status;
         if (acidente) {
             Thread.sleep(1500);
@@ -190,10 +199,46 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             int tinta = tintaDoPainelDireito();
             capturar(id);
             status = tinta > 0 ? "APARECEU" : "NAO_APARECEU";
+            apoioDesktop = apoioNaTela();
         }
         if (!"APARECEU".equals(status)) { falhas++; System.out.println("[FALHA] " + id + " => " + status); }
         else System.out.println("[OK] " + id);
-        resultado.put(id, new String[]{tipo, caminho, String.valueOf(rej), status, esperado});
+        resultado.put(id, new String[]{tipo, caminho, String.valueOf(rej), status,
+                apoioDesktop[0].length() > 0 ? apoioDesktop[0] : esperado, apoioDesktop[1], apoioDesktop[2]});
+    }
+
+    /** Números exibidos no enunciado (dados curados, sem a incógnita): só podem mudar após a conclusão. */
+    static String numerosDoEnunciado() throws Exception {
+        final StringBuilder b = new StringBuilder();
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+            for (ElementoTextoMovel e : t.elementosTexto) {
+                if (e.possuiVinculoSemantico() && !e.representaIncognitaOriginal()) b.append(e.valor).append('|');
+            }
+            for (gerard.campoaditivo.diagrama.elementos.ItemTextoArrastavel i : t.itensArrastaveis) {
+                if (!i.estaNoDiagrama() && i.possuiVinculoSemantico() && !i.representaIncognitaOriginal()) {
+                    b.append(i.valor).append('|');
+                }
+            } }});
+        return b.toString();
+    }
+
+    /** Apoio que a tela do desktop recebeu da projeção: {tipo, referência, trechos}. */
+    static String[] apoioNaTela() throws Exception {
+        final String[] v = {"", "", ""};
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+            java.util.List<Object> proj = ProjetorAjudaVisualWeb.projetar(t.cenaDiagramaAtual);
+            if (!proj.isEmpty()) {
+                Map<?, ?> m = (Map<?, ?>) proj.get(0);
+                v[0] = String.valueOf(m.get("tipo"));
+                v[1] = m.get("referencia") == null ? "" : String.valueOf(m.get("referencia"));
+                Object tr = m.get("trechos");
+                if (tr instanceof java.util.List) {
+                    StringBuilder b = new StringBuilder();
+                    for (Object o : (java.util.List<?>) tr) { if (b.length() > 0) b.append(" | "); b.append(o); }
+                    v[2] = b.toString();
+                }
+            } }});
+        return v;
     }
 
     /** Macaco no caminho de valor/sinal: nunca acerta; devolve true se concluiu por acidente. */

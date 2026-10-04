@@ -666,10 +666,12 @@ public final class ServicoSorteioAtividadeWeb {
                 ? atividadeModelagem.estadoAtual()
                 : atividadeEscolhaOperacao != null
                         ? atividadeEscolhaOperacao.estadoAtual() : null;
-        if (estado != null && Boolean.TRUE.equals(estado.get("concluida"))
-                && !escopoTentativa.getTentativa().estaEncerradaPorConclusao()) {
-            escopoTentativa.getTentativa().encerrarPorConclusao();
-        }
+        final boolean concluidaNaWeb = estado != null && Boolean.TRUE.equals(estado.get("concluida"));
+        escopoTentativa.getTentativa().encerrarSeConcluida(new gerard.dominio.campoaditivo.FonteDeConclusao() {
+            public boolean isConcluida() {
+                return concluidaNaWeb;
+            }
+        });
     }
 
     private void exigirClassificacaoAtiva() {
@@ -797,7 +799,8 @@ public final class ServicoSorteioAtividadeWeb {
             List<Object> acoesParaCena = listaDeAcoes(estado.get("acoes_disponiveis"));
             Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena,
                     estado.get("modelagem"), visibilidadeEixoPorPapel,
-                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual());
+                    escopoTentativa.getTentativa().estaNoLimiteAjudaVisual(),
+                    escopoTentativa.getTentativa().admiteExploracao());
             cenaDaAjudaVisual = cenaProjetada;
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
@@ -1001,15 +1004,14 @@ public final class ServicoSorteioAtividadeWeb {
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
             Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel,
-            boolean escaladaNoLimite) {
+            boolean escaladaNoLimite, boolean faseExploratoria) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
         boolean estadoInicialDecomposto =
                 !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
         CenaDiagramaAditivo cena = gerador.gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
                 contexto.getDefinicao(), new int[] {0, 0, 0}, estadoInicialDecomposto);
-        boolean concluida = modelagem instanceof Map
-                && Boolean.TRUE.equals(((Map<?, ?>) modelagem).get("concluida"));
+        boolean concluida = faseExploratoria;
         cena = gerador.comElementosTextoNarrativa(cena,
                 contexto.getEnunciadoExibido(), contexto.getInterpretacao(), concluida);
         // A ajuda visual (historinha) faz parte da cena: o backend decide e a cena a carrega.

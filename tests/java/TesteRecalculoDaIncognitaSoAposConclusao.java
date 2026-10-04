@@ -30,7 +30,24 @@ public final class TesteRecalculoDaIncognitaSoAposConclusao {
                 0, EstadoSemanticoCompartilhado.Origem.ARRASTE, 2, true);
         exigir(s.valorOuZero(2) == 12, "após a conclusão a exploração recalcula a incógnita (12), veio "
                 + s.valorOuZero(2));
-        System.out.println("APROVADO: recálculo da incógnita só após a conclusão.");
+
+        // Dado do enunciado: Leandro 10 + (?) = 6; a proposta errada +499 para a transformação não pode
+        // reescrever o estado final conhecido (6 -> 509) antes da conclusão.
+        final boolean[] concluida2 = {false};
+        EstadoSemanticoCompartilhado estado2 = new EstadoSemanticoCompartilhado();
+        estado2.definirAdmissaoRecalculoDaIncognita(() -> concluida2[0]);
+        EstadoSemanticoCompartilhado.Snapshot t1 = estado2.atualizar(
+                TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                new Integer[] {10, null, 6}, new boolean[] {true, false, true},
+                2, EstadoSemanticoCompartilhado.Origem.ARRASTE, 1, true);
+        t1 = estado2.atualizar(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
+                new Integer[] {10, 499, 6}, new boolean[] {true, true, true},
+                1, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO, 1, true);
+        exigir(t1.valorOuZero(2) == 6, "antes da conclusão o dado conhecido (6) não é reescrito, veio "
+                + t1.valorOuZero(2));
+        exigir(t1.valorOuZero(0) == 10, "o outro dado (10) permanece");
+        System.out.println("APROVADO: nenhum recálculo de papel com valor antes da conclusão; "
+                + "a exploração, depois dela, recalcula.");
     }
 
     private static void exigir(boolean ok, String msg) { if (!ok) throw new AssertionError(msg); }

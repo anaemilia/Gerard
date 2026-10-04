@@ -723,8 +723,11 @@ public class Main extends JFrame {
          * sorteada). Proprietário do encerramento pela conclusão: depois do
          * azul, toda modificação é exploratória (decisão de 2026-09-29).
          */
+        private final gerard.dominio.campoaditivo.TentativaCorrente tentativaCorrente =
+                new gerard.dominio.campoaditivo.TentativaCorrente();
         private gerard.dominio.campoaditivo.TentativaModelagemAditiva tentativaModelagemAtual =
                 new gerard.dominio.campoaditivo.TentativaModelagemAditiva("");
+        { tentativaCorrente.definir(tentativaModelagemAtual); }
         private String papelDaTentativaAtual;
         // O Modelador escreve o Modelo do Usuário e publica regras; a sessão
         // congela uma fotografia no login e entrega apenas a projeção pedida
@@ -864,12 +867,7 @@ public class Main extends JFrame {
                 new ExecutorAjudaIncognita(
                         materializadorDecisaoAjuda, registradorEventosAjuda);
         final java.util.function.BooleanSupplier admissaoRegistroFactual =
-                new java.util.function.BooleanSupplier() {
-                    public boolean getAsBoolean() {
-                        return tentativaModelagemAtual == null
-                                || tentativaModelagemAtual.admiteRegistroFactual();
-                    }
-                };
+                tentativaCorrente::admiteRegistroFactual;
         { loggerInteracaoGerard.definirAdmissaoRegistroDoSujeito(admissaoRegistroFactual); }
         final PublicadorGestoInteracao publicadorGestosInteracao =
                 new gerard.interacao.PublicadorGestoAdmitido(
@@ -1000,12 +998,7 @@ public class Main extends JFrame {
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
         final EstadoSemanticoCompartilhado estadoSemanticoCompartilhado = new EstadoSemanticoCompartilhado();
         { estadoSemanticoCompartilhado.definirAdmissaoRecalculoDaIncognita(
-                new java.util.function.BooleanSupplier() {
-                    public boolean getAsBoolean() {
-                        return tentativaModelagemAtual != null
-                                && tentativaModelagemAtual.estaEncerradaPorConclusao();
-                    }
-                }); }
+                tentativaCorrente::admiteExploracao); }
         final PoliticaSincronizacaoEstadoFinal politicaSincronizacaoEstadoFinal =
                 new PoliticaSincronizacaoEstadoFinal();
          final ResolvedorValorEsperadoIncognita resolvedorValorEsperadoIncognita =
@@ -1018,6 +1011,8 @@ public class Main extends JFrame {
                 new ProjetorValoresComparacaoComplementar();
         final SincronizadorElementosSemanticosTexto sincronizadorElementosSemanticosTexto =
                 new SincronizadorElementosSemanticosTextoAditivo();
+        { sincronizadorElementosSemanticosTexto.definirAdmissaoAtualizacao(
+                tentativaCorrente::admiteExploracao); }
         final CoordenadorSincronizacaoRepresentacoes coordenadorSincronizacaoRepresentacoes =
                 new CoordenadorSincronizacaoRepresentacoes();
         final CapturadorValoresVergnaud capturadorValoresVergnaud =
@@ -1208,7 +1203,6 @@ public class Main extends JFrame {
         // passo do arrasto.
         EstadoSemanticoCompartilhado.Snapshot logConsistenciaAutomaticaPendenteArrasteComparacao;
         EstadoSemanticoCompartilhado.Origem origemLogConsistenciaAutomaticaPendenteArrasteComparacao;
-        boolean suprimirPersistenciaExploracaoEixoConcluida;
 
         boolean rastreamentoCaminhoAtivo = false;
         int rastreamentoInicioX;
@@ -5153,6 +5147,7 @@ public class Main extends JFrame {
         private void finalizarCarregamentoSituacao() {
             tentativaModelagemAtual = new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
                     loggerInteracaoGerard.getTentativaAtualId());
+            tentativaCorrente.definir(tentativaModelagemAtual);
             reiniciarTentativasEscolhaSinalAtual();
             atualizarContextoAdaptativoIncognitaAtual();
 
@@ -5733,8 +5728,7 @@ public class Main extends JFrame {
             if (botaoEditarNarrativa == null) {
                 return;
             }
-            boolean modelagemConcluida = controladorConclusaoModelagem != null
-                    && controladorConclusaoModelagem.isConcluida();
+            boolean modelagemConcluida = tentativaCorrente.admiteExploracao();
             boolean editando = controladorEditorNarrativa != null;
             // Quem decide se a edição é permitida é o gerador de cena (mesmo
             // sinal que o protótipo web deveria ler), não um cálculo local
@@ -5799,8 +5793,7 @@ public class Main extends JFrame {
             }
             gerard.interpretacao.modelo.ResultadoInterpretacao interpretacaoParaTexto =
                     textoProblemaEhMensagemSistema ? null : resultadoInterpretacao;
-            boolean modelagemConcluida = controladorConclusaoModelagem != null
-                    && controladorConclusaoModelagem.isConcluida();
+            boolean modelagemConcluida = tentativaCorrente.admiteExploracao();
             // Uma só cena (efêmera, não guardada em campo) descreve o que o
             // editor precisa — palavras e vocabulário — em vez de dois
             // acessos separados ao gerador (ver
@@ -7122,8 +7115,9 @@ public class Main extends JFrame {
             // A tentativa (proprietária) já foi encerrada por uma conclusão
             // anterior: voltar a concluir é exploração, não nova conclusão.
             boolean tentativaJaEncerrada = tentativaModelagemAtual.estaEncerradaPorConclusao();
-            if (acabouDeConcluirPlenamente && !tentativaJaEncerrada) {
-                tentativaModelagemAtual.encerrarPorConclusao(tentativasIncognitaAtual);
+            if (acabouDeConcluirPlenamente) {
+                tentativaModelagemAtual.encerrarSeConcluida(
+                        controladorConclusaoModelagem, tentativasIncognitaAtual);
             }
             if (!concluida) {
                 aplicadorDestaqueConclusaoDiagrama.aplicar(
@@ -8607,8 +8601,8 @@ public class Main extends JFrame {
         private void registrarLogConsistenciaAutomaticaSeHouve(
                 EstadoSemanticoCompartilhado.Snapshot snapshot,
                 EstadoSemanticoCompartilhado.Origem origem) {
-            if (suprimirPersistenciaExploracaoEixoConcluida) {
-                return;
+            if (!tentativaCorrente.admiteRegistroFactual()) {
+                return;      // exploração depois do azul não gera registro (decisão da tentativa)
             }
             if (snapshot == null) {
                 return;
@@ -12246,7 +12240,6 @@ public class Main extends JFrame {
             ElementoVergnaud numeroRelativo = painel.elemento;
             int valor = painel.grafico.getValorNavegavel();
             Integer valorAnterior = obterValorNumericoDoElemento(numeroRelativo);
-            boolean exploracaoAposConclusao = controladorConclusaoModelagem.isConcluida();
             if (!valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valor)) {
                 int seguro = politicaRestauracaoValorRelativo
                         .escolherValorSeguro(valorAnterior, valor);
@@ -12261,33 +12254,26 @@ public class Main extends JFrame {
                 repaint();
                 return;
             }
-            if (!exploracaoAposConclusao) {
-                registrarLogUsuario(
-                        "Navegar no eixo x das Relações (painel próprio do papel)",
-                        "-",
-                        "Eixo x navegável",
-                        "Ponto de controle do eixo",
-                        "Quantificar o papel da relação e manter consistência entre representações",
-                        "OBJ4",
-                        "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
-                        "EIXO_X_RELACOES",
-                        "valorRelativo=" + valor
-                );
-            }
+            registrarLogUsuario(
+                    "Navegar no eixo x das Relações (painel próprio do papel)",
+                    "-",
+                    "Eixo x navegável",
+                    "Ponto de controle do eixo",
+                    "Quantificar o papel da relação e manter consistência entre representações",
+                    "OBJ4",
+                    "Ao alterar o eixo, o círculo da relação e os valores dependentes do diagrama devem ser atualizados.",
+                    "EIXO_X_RELACOES",
+                    "valorRelativo=" + valor
+            );
             aplicarValorRelativoNoDiagrama(numeroRelativo, null, valor);
             ItemTextoArrastavel itemIncognita = encontrarItemSobreElemento(numeroRelativo);
             boolean liberadoParaPropagar = confirmarAoFinalizar
                     ? confirmarValorIncognitaAceito(itemIncognita)
                     : !incognitaAguardandoConfirmacaoDeValor(itemIncognita);
             if (liberadoParaPropagar) {
-                suprimirPersistenciaExploracaoEixoConcluida = exploracaoAposConclusao;
-                try {
-                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                            numeroRelativo,
-                            EstadoSemanticoCompartilhado.Origem.EIXO_X);
-                } finally {
-                    suprimirPersistenciaExploracaoEixoConcluida = false;
-                }
+                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                        numeroRelativo,
+                        EstadoSemanticoCompartilhado.Origem.EIXO_X);
             }
             if (confirmarAoFinalizar) {
                 verificarConclusaoModelagem();

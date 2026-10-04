@@ -4,7 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 /** Mantém o ciclo de conclusão e impede a repetição contínua do tip. */
-public final class ControladorConclusaoModelagem {
+public final class ControladorConclusaoModelagem
+        implements gerard.dominio.campoaditivo.FonteDeConclusao {
     private final AvaliadorConclusaoModelagem avaliador =
             new AvaliadorConclusaoModelagem();
     private FaseConclusaoModelagem fase = FaseConclusaoModelagem.INCOMPLETA;
@@ -45,6 +46,7 @@ public final class ControladorConclusaoModelagem {
         return AtualizacaoConclusaoModelagem.CONTINUA_INCOMPLETA;
     }
 
+    @Override
     public boolean isConcluida() {
         return fase == FaseConclusaoModelagem.CONCLUIDA;
     }
