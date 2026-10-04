@@ -9,6 +9,7 @@ Regras verificadas em cada situação (qualquer categoria, qualquer papel descon
   R4  os números do enunciado não mudam antes da conclusão (diagrama azul);
   R5  um valor/operação errado nunca conclui a modelagem;
   R6  traduções (en/fr) recebem a mesma decisão do original;
+  R8  quando a projeção traz legendas, o texto aparece DENTRO da animação (sobre a imagem) e todas passam no laço;
   R7  (SINAL_ERRADO=1) marcar um sinal errado no primeiro número relativo não bloqueia o seguimento.
 A mesma suíte roda sobre situações GENÉRICAS (tests/dados/gerar_situacoes_genericas.py) para validar a regra, e
 depois sobre as curadas como amostras de ajuste fino.
@@ -187,6 +188,24 @@ def rodar(pg, alvo, por_id):
     if (e.get("modelagem") or {}).get("concluida") or e.get("concluida"):
         falhas.append("R5: o erro concluiu a modelagem")
     apoio = (e.get("ajuda_visual") or [{}])[0]
+    legendas = [l["texto"] for l in apoio.get("legendas") or []]
+    if legendas:                                       # R8: legenda dentro da animação, todas no laço
+        vistas = set()
+        for k in range(int(apoio["duracao_s"] * 2) + 3):
+            area = pg.locator(".historinha-animacao img").bounding_box()
+            alvo_legenda = pg.locator(".historinha-animacao .historinha-legenda")
+            if alvo_legenda.count():
+                caixa = alvo_legenda.first.bounding_box()
+                dentro = caixa and area and caixa["x"] >= area["x"] - 1 and caixa["y"] >= area["y"] - 1 and                     caixa["x"] + caixa["width"] <= area["x"] + area["width"] + 1 and                     caixa["y"] + caixa["height"] <= area["y"] + area["height"] + 1
+                texto = alvo_legenda.first.inner_text()
+                if not dentro:
+                    falhas.append("R8: legenda fora da área da animação")
+                if not vistas:
+                    pg.screenshot(path=str(SAIDA / ("legenda_%s.png" % alvo)))
+                vistas.add(texto)
+            pg.wait_for_timeout(500)
+        if vistas != set(legendas):
+            falhas.append("R8: legendas vistas %r != projetadas %r" % (sorted(vistas), legendas))
     return falhas, {"apoio": apoio.get("tipo"), "referencia": apoio.get("referencia"), "idioma": s["idioma"]}
 
 
