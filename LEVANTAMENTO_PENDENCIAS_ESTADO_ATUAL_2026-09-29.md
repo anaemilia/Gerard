@@ -162,6 +162,19 @@ alteração arquitetural, decisão pedagógica, exclusão ou versionamento.
     argumento. Estado atual: a escolha da ilustração já é independente do idioma
     (traduções herdam a da versão original); falta o método polimórfico por
     idioma e a injeção do texto traduzido em tempo de execução.
+    **Atualização 2026-10-04 — resolvido no mecanismo:** o método polimórfico
+    `argumentosHistorinha(situacao, idioma)` existe no renderizador da categoria;
+    o GIF não grava texto; os trechos curados (`fragmento_texto_1..6`, no idioma
+    da situação) dividem a duração real do laço do GIF (lida do próprio arquivo,
+    `DuracaoAnimacaoHistorinha`) e a projeção da API leva `duracao_s` e `legendas`.
+    O Swing (`RotuloAnimacaoComLegendas`) e o React (`HistorinhaPassiva`) pintam a
+    legenda ativa DENTRO da animação. Verificado por mouse real: web (R8, 3 situações
+    com trechos no site publicado) e desktop (macaco com desdobramentos por clique,
+    7 situações, 27 cliques). **Pendente, dependente da pesquisadora:** preencher os
+    trechos das 15 situações originais sem trechos e das 44 traduções (en/fr) na
+    curadoria (lista em `documentacao/relatorios/historinhas_e_trechos_curados_2026-10-04.tsv`);
+    sem trecho curado não há legenda (Regra 1). Limite conhecido: o cronograma é
+    uma divisão igual do laço, não marcação por cena.
 
 ## Artefatos não rastreados — decisão de versionamento pendente
 
