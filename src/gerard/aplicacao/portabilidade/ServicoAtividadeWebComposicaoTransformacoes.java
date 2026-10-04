@@ -77,6 +77,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     // null quando a situação não tem incógnita curada resolvível.
     private PapelQuantitativo papelDesconhecido;
     private boolean incognitaEngatada;
+    // Papéis que têm elemento (token) próprio no enunciado; null = desconhecido (todos arrastáveis).
+    private java.util.Set<String> papeisComElementoNoEnunciado;
     private OpcaoOperacaoCuradoria escolhaEntreTransformacoes;
     private OpcaoOperacaoCuradoria escolhaEntreEstadoTransformacao;
     // Papel conhecido que precisa de representação de sinal (ver
@@ -423,6 +425,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
             posicionarConhecido(papel);
         }
+        completarDerivadosPorConsistencia();
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
@@ -521,9 +524,50 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         }
     }
 
-    /** Conhecido = tem valor curado e não é a incógnita (esta nunca é pré-posicionada). */
+    /**
+     * Informa quais papéis têm elemento arrastável no enunciado. Papéis exigidos pela modelagem
+     * que NÃO têm elemento (ex.: o estado inicial de uma situação com estado inicial decomposto,
+     * ou a transformação resultante quando o enunciado só traz as duas transformações) não podem
+     * ser posicionados pelo participante: como no desktop (consistência entre representações),
+     * recebem o valor derivado dos componentes quando estes são posicionados.
+     */
+    public synchronized void definirPapeisComElementoNoEnunciado(java.util.Set<String> chaves) {
+        this.papeisComElementoNoEnunciado = chaves;
+    }
+
+    private boolean ehDerivado(PapelQuantitativo papel) {
+        return papeisComElementoNoEnunciado != null
+                && !papeisComElementoNoEnunciado.contains(papel.getChave());
+    }
+
+    /** Preenche, a partir dos componentes já posicionados, os papéis derivados (sem elemento no enunciado). */
+    private void completarDerivadosPorConsistencia() {
+        ContextoAcao contexto = new ContextoAcao("sessao.web.local", "usuario.web.local", tentativaId,
+                situacao.getId(), "diagrama.vergnaud.web");
+        if (transformacaoFinal != papelDesconhecido && !transformacaoFinal.estaPreenchido()
+                && temValorCurado(transformacaoFinal) && ehDerivado(transformacaoFinal)
+                && transformacao1.estaPreenchido() && transformacao2.estaPreenchido()) {
+            int soma = transformacao1.valorAtual().valorOuNull() + transformacao2.valorAtual().valorOuNull();
+            transformacaoFinal.posicionar(new NumeroInteiro(soma), OrigemAcao.ORIGEM_SISTEMA, contexto);
+        }
+        if (estadoInicial != papelDesconhecido && !estadoInicial.estaPreenchido()
+                && temValorCurado(estadoInicial) && ehDerivado(estadoInicial)
+                && estadoInicialParte1.estaPreenchido() && estadoInicialParte2.estaPreenchido()) {
+            int soma = estadoInicialParte1.valorAtual().valorOuNull() + estadoInicialParte2.valorAtual().valorOuNull();
+            estadoInicial.posicionar(new NumeroNatural(soma), OrigemAcao.ORIGEM_SISTEMA, contexto);
+        }
+    }
+
+    /**
+     * Dado a posicionar = tem valor curado, não é a incógnita (esta nunca é pré-posicionada) e a
+     * modelagem o exige (mesma função de domínio que o desktop usa para saber quando conclui:
+     * papéis derivados, sem elemento próprio no enunciado, como o estado inicial de uma situação
+     * com estado inicial decomposto, não são arrastáveis e por isso não bloqueiam a modelagem).
+     */
     private boolean ehConhecido(PapelQuantitativo papel) {
-        return temValorCurado(papel) && papel != papelDesconhecido;
+        return temValorCurado(papel) && papel != papelDesconhecido && !ehDerivado(papel)
+                && gerard.campoaditivo.curadoria.SemanticaCuradaSituacao.papelExigidoNaModelagem(
+                        situacao, ServicoLocalizacao.getInstancia(), papel.getChave());
     }
 
     /**
@@ -553,6 +597,7 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
                 papel.getChave(), sinal, base, participantes(), escopo);
         papelAguardandoSinal = null;
         valorCuradoAguardandoSinal = null;
+        completarDerivadosPorConsistencia();
         Map<String, Object> resultado = mapa();
         resultado.put("schema", SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));

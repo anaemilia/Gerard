@@ -264,11 +264,14 @@ public final class ServicoSorteioAtividadeWeb {
                     contextoAtual.getSituacao(), escopoTentativa,
                     portaQuestionamento);
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            atividadeEscolhaOperacao =
+            ServicoAtividadeWebComposicaoTransformacoes composicaoTransformacoes =
                     new ServicoAtividadeWebComposicaoTransformacoes(
                             "tentativa.web." + contextoAtual.getSituacao().getId(),
                             contextoAtual.getSituacao(), escopoTentativa,
                     portaQuestionamento);
+            composicaoTransformacoes.definirPapeisComElementoNoEnunciado(
+                    papeisComElementoNoEnunciado(contextoAtual));
+            atividadeEscolhaOperacao = composicaoTransformacoes;
         } else if (escolhida == TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             atividadeEscolhaOperacao =
                     new ServicoAtividadeWebComposicaoRelacoes(
@@ -276,6 +279,19 @@ public final class ServicoSorteioAtividadeWeb {
                             contextoAtual.getSituacao(), escopoTentativa,
                     portaQuestionamento);
         }
+    }
+
+    /** Papéis que têm elemento arrastável no enunciado desta situação (fonte: a cena de texto). */
+    private static java.util.Set<String> papeisComElementoNoEnunciado(ContextoCarregamentoAtividade contexto) {
+        java.util.Set<String> chaves = new java.util.HashSet<String>();
+        for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento
+                : new GeradorCenaDiagramaAditivo().gerarElementosTexto(
+                        contexto.getEnunciadoExibido(), contexto.getInterpretacao())) {
+            if (segmento.possuiVinculoSemantico()) {
+                chaves.add(segmento.getChavePapelSemantico());
+            }
+        }
+        return chaves;
     }
 
     public synchronized boolean possuiAtividadeModelagemAtiva() {
