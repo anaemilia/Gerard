@@ -64,6 +64,20 @@ public final class ProjetorAjudaVisualWeb {
                 if (argumentos != null && argumentos.possuiTrechos()) {
                     item.put("idioma", argumentos.getIdioma());
                     item.put("trechos", new ArrayList<String>(argumentos.getTrechos()));
+                    if (!argumentos.getLegendas().isEmpty()) {
+                        // Cronograma das legendas DENTRO da animação (um laço de duracao_s segundos).
+                        item.put("duracao_s", Double.valueOf(argumentos.getDuracaoSegundos()));
+                        List<Object> legendas = new ArrayList<Object>();
+                        for (gerard.campoaditivo.diagrama.modelo.ArgumentosHistorinhaCena.Legenda legenda
+                                : argumentos.getLegendas()) {
+                            Map<String, Object> l = new LinkedHashMap<String, Object>();
+                            l.put("texto", legenda.getTexto());
+                            l.put("inicio_s", Double.valueOf(legenda.getInicioSegundos()));
+                            l.put("fim_s", Double.valueOf(legenda.getFimSegundos()));
+                            legendas.add(l);
+                        }
+                        item.put("legendas", legendas);
+                    }
                 }
             } else if (apoio instanceof ApoioHistorinhaTextual) {
                 item.put("texto", ((ApoioHistorinhaTextual) apoio).getTexto());

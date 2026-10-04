@@ -124,9 +124,19 @@ public class GeradorCenaDiagramaAditivo {
             return null;
         }
         RenderizadorDiagramaAditivo renderizador = fabrica.obter(tipo);
-        return cena.comApoiosVisuais(decididos, renderizador == null
+        gerard.campoaditivo.diagrama.modelo.ArgumentosHistorinhaCena argumentos = renderizador == null
                 ? gerard.campoaditivo.diagrama.modelo.ArgumentosHistorinhaCena.VAZIO
-                : renderizador.argumentosHistorinha(situacao, idioma));
+                : renderizador.argumentosHistorinha(situacao, idioma);
+        // Os textos entram DENTRO da animação: o cronograma depende da duração real do laço.
+        for (gerard.dominio.campoaditivo.ajuda.ApoioVisual apoio : decididos) {
+            if (apoio instanceof gerard.dominio.campoaditivo.ajuda.ApoioHistorinhaIlustrada) {
+                argumentos = argumentos.comDuracao(DuracaoAnimacaoHistorinha.segundos(
+                        ((gerard.dominio.campoaditivo.ajuda.ApoioHistorinhaIlustrada) apoio)
+                                .getReferenciaConteudo()));
+                break;
+            }
+        }
+        return cena.comApoiosVisuais(decididos, argumentos);
     }
 
     /** Produz uma nova cena com feedback sem distribuir estado pelos componentes. */

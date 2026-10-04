@@ -73,7 +73,7 @@ for nome in ("PoliticaApoioVisual.java", "DecisorAjudaVisual.java"):
 # R5 — clientes só renderizam a projeção, por tipo; nada de categoria/id de situação.
 proibidos = r"COMPOSICAO_|TRANSFORMACAO_|COMPARACAO_|\"PO_|\"IN_|\"FR_|TipoSituacaoAditiva"
 clientes = [RAIZ / "web-poc/src/HistorinhaPassiva.tsx"] + arquivos("Renderizador*Swing.java", SRC / "gerard/ui/ajuda") \
-    + arquivos("PainelTrechosHistorinha.java", SRC / "gerard/ui/ajuda") \
+    + arquivos("RotuloAnimacaoComLegendas.java", SRC / "gerard/ui/ajuda") \
     + arquivos("PainelHistorinhaTextual.java", SRC / "gerard/ui/ajuda")
 for f in clientes:
     exigir(not re.search(proibidos, codigo(f)), "R5: %s não decide por categoria/id" % f.name)

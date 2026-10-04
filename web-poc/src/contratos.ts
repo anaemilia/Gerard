@@ -46,6 +46,8 @@ export type HistorinhaAjudaVisualWeb = Readonly<{
   identificador: string; referencia?: string; texto?: string;
   /** Textos da historinha no idioma da situação (a animação não grava texto). */
   trechos?: readonly string[]; idioma?: string;
+  /** Cronograma das legendas DENTRO da animação, calculado pelo backend (um laço = duracao_s). */
+  duracao_s?: number; legendas?: readonly Readonly<{ texto: string; inicio_s: number; fim_s: number }>[];
 }>;
 export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |

@@ -34,7 +34,7 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
     private final String chaveRepertorio;
     private final FormatoAjudaNarrativaVisual formato;
     private final List<ImageIcon> historias;
-    private final JLabel imagem;
+    private final RotuloAnimacaoComLegendas imagem;
     private final JLabel indicador;
     private final JButton anterior;
     private final JButton proxima;
@@ -57,8 +57,7 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
                 BorderFactory.createEmptyBorder(8, 8, 6, 8)));
         setAlignmentX(LEFT_ALIGNMENT);
 
-        imagem = new JLabel(historias.get(0));
-        imagem.setHorizontalAlignment(SwingConstants.CENTER);
+        imagem = new RotuloAnimacaoComLegendas(historias.get(0));
         imagem.setPreferredSize(tamanhoApresentacao);
         add(imagem, BorderLayout.CENTER);
 
@@ -127,10 +126,15 @@ public final class PainelAjudaNarrativaVisualCategoria extends JPanel {
                     String.valueOf(mapa.get("identificador")), "projecao",
                     String.valueOf(mapa.get("referencia"))));
         }
-        return criarSeDisponivel(
+        PainelAjudaNarrativaVisualCategoria painel = criarSeDisponivel(
                 RepertorioAjudaVisual.criar("projecao:" + historinhas.get(0).getIdentificador(),
                         historinhas.toArray(new HistorinhaAjudaVisual[0])),
                 formato, tamanhoApresentacao, false);
+        if (painel != null) {
+            // As legendas ficam DENTRO da animação, com o cronograma que a API projetou.
+            painel.imagem.definirCronograma((java.util.Map<?, ?>) ajudaVisual.get(0));
+        }
+        return painel;
     }
 
     private static PainelAjudaNarrativaVisualCategoria criarSeDisponivel(

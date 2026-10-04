@@ -43,6 +43,18 @@ public class TesteArgumentosHistorinhaPorIdioma {
             } else {
                 exigir(curados.equals(item.get("trechos")), "trechos curados do idioma da situação: " + s.getId());
                 exigir(s.getCodigoIdioma().equals(item.get("idioma")), "idioma do argumento: " + s.getId());
+                // As legendas ficam DENTRO da animação: cronograma contínuo que cobre um laço inteiro.
+                double duracao = ((Number) item.get("duracao_s")).doubleValue();
+                List<Map<String, Object>> legendas = (List<Map<String, Object>>) item.get("legendas");
+                exigir(duracao > 0.0 && legendas.size() == curados.size(), "cronograma das legendas: " + s.getId());
+                double anterior = 0.0;
+                for (int i = 0; i < legendas.size(); i++) {
+                    exigir(curados.get(i).equals(legendas.get(i).get("texto")), "legenda " + i + " = trecho curado: " + s.getId());
+                    exigir(Math.abs(((Number) legendas.get(i).get("inicio_s")).doubleValue() - anterior) < 1e-9,
+                            "legendas contíguas: " + s.getId());
+                    anterior = ((Number) legendas.get(i).get("fim_s")).doubleValue();
+                }
+                exigir(Math.abs(anterior - duracao) < 1e-9, "a última legenda termina com o laço: " + s.getId());
                 comTrechos++;
                 idiomas.add(s.getCodigoIdioma());
             }
