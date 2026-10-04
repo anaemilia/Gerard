@@ -7114,7 +7114,7 @@ public class Main extends JFrame {
                     == AtualizacaoConclusaoModelagem.CONCLUIDA_AGORA;
             // A tentativa (proprietária) já foi encerrada por uma conclusão
             // anterior: voltar a concluir é exploração, não nova conclusão.
-            boolean tentativaJaEncerrada = tentativaModelagemAtual.estaEncerradaPorConclusao();
+            boolean tentativaJaEncerrada = tentativaCorrente.admiteExploracao();
             if (acabouDeConcluirPlenamente) {
                 tentativaModelagemAtual.encerrarSeConcluida(
                         controladorConclusaoModelagem, tentativasIncognitaAtual);
