@@ -1,0 +1,4 @@
+situacao	passo	acao	rejeicoes_antes	rejeicoes_depois	no_limite	painel_visivel	numeros_iguais	veredito
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	1	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	2	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	3	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK

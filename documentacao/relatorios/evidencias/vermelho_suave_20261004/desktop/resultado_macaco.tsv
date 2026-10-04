@@ -1,0 +1,4 @@
+situacao	categoria	caminho	rejeicoes_no_limite	status	apoio	referencia	trechos
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	COMPOSICAO_TRANSFORMACOES	valor	3	APARECEU	HISTORINHA_ILUSTRADA	composicao_transformacoes/04_vovo_rosas_historinha	Vovó possui 2 rosas brancas | e 3 rosas amarelas | Deu 1 rosa branca | e 1 rosa amarela | para a sua netinha | Com quantas rosas vovó ficou
+PO_TRANSFORMACAO_RELACAO_bonecas_620955739	TRANSFORMACAO_RELACAO	operacao	0	APARECEU	HISTORINHA_ILUSTRADA	transformacao_relacao/01_julia_maria_bonecas_historinha	Julia tem 3 bonecas a mais que Maria. | A mãe de Maria comprou mais 5 bonecas para ela | Quantas bonecas Maria ficou a mais que Julia?
+PO_COMPOSICAO_RELACOES_idades_642701604	COMPOSICAO_RELACOES	operacao	0	APARECEU	HISTORINHA_ILUSTRADA	composicao_relacoes/02_maria_joao_carla_idades_historinha	Maria é 4 anos mais velha que João | João é 2 anos mais velho que Carla | Qual é a diferença de idade entre Maria e Carla?
