@@ -173,8 +173,8 @@ alteração arquitetural, decisão pedagógica, exclusão ou versionamento.
     7 situações, 27 cliques). **Pendente, dependente da pesquisadora:** preencher os
     trechos das 15 situações originais sem trechos e das 44 traduções (en/fr) na
     curadoria (lista em `documentacao/relatorios/historinhas_e_trechos_curados_2026-10-04.tsv`);
-    sem trecho curado não há legenda (Regra 1). Limite conhecido: o cronograma é
-    uma divisão igual do laço, não marcação por cena.
+    sem trecho curado não há legenda (Regra 1). Decisão da pesquisadora (2026-10-04): o
+    cronograma é a divisão em tempos iguais do laço, sem marcação por cena.
 
 ## Artefatos não rastreados — decisão de versionamento pendente
 
