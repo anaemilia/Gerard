@@ -3,7 +3,6 @@ package gerard.ui.vergnaud;
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
 import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
-import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;
 import gerard.campoaditivo.diagrama.modelo.AncoraSeletorOperacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;

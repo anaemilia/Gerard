@@ -1799,6 +1799,7 @@ for lang in ('pt', 'en', 'es', 'fr'):
 
 print('== Item 22 (2026-08-18): seletor soma/subtração no diagrama do aluno ==')
 seletor_op = text('src/gerard/ui/vergnaud/SeletorOperacaoRelacaoAluno.java')
+posicao_seletor = text('src/gerard/campoaditivo/diagrama/servico/PosicaoSeletorOperacaoDiagrama.java')
 avaliacao_op = text('src/gerard/campoaditivo/curadoria/sinal/AvaliacaoEscolhaOperacaoRelacao.java')
 realizador_texto_op = text(
     'src/gerard/campoaditivo/representacao/texto/RealizadorTextoExplicacaoOperacaoRelacao.java')
@@ -1863,13 +1864,10 @@ check(main.count('seletorOperacaoRelacaoAluno.desativar();') >= 2,
       'seletor é desativado nos mesmos pontos de reset de estado que já desativam paineisEixosRelacoes, '
       'para não sobreviver a uma troca de situação/categoria')
 check('seletorOperacaoRelacaoAluno.ativar(\n'
-      '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
-      '                    conectoresVergnaud,\n'
-      '                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao\n'
-      '                            .TipoOperacaoSeletor.ENTRE_TRANSFORMACOES,\n'
-      '                    localizacao);' in main,
-      'seletor é (re)ativado ao final de inicializarDiagramaVergnaud, com os elementos e conectores já '
-      'posicionados/centralizados na tela — mesma fonte de coordenadas do resto do diagrama')
+      '                    tipoSituacaoSelecionada, situacaoProblemaAtual,\n'
+      '                    ancoraSeletorOperacaoDaCena(false),' in main,
+      'seletor é (re)ativado ao final de inicializarDiagramaVergnaud com a âncora que a cena calculou — '
+      'a Main só aplica o deslocamento e realiza o seletor (2c2ca4c)')
 check('seletorOperacaoRelacaoAluno.desenhar(g2, localizacao);' in main,
       'seletor é desenhado a cada repaint, junto com os painéis de eixo e lupas — mesmo ponto de pintura')
 check('public ResultadoEscolhaOperacaoModelagem processarEscolha(' in seletor_op
@@ -1888,19 +1886,17 @@ for chave in (
 
 print('== Item 22b (2026-08-23): posição do seletor relativa à geometria real do diagrama ==')
 check('public void ativar(TipoSituacaoAditiva tipo, SituacaoProblemaAditiva situacao,\n'
-      '            List<ElementoVergnaud> elementos, List<ConectorVergnaud> conectores,\n'
+      '            AncoraSeletorOperacao ancora,\n'
       '            AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor papel, ServicoLocalizacao localizacao) {' in seletor_op
-      and 'import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;' in seletor_op,
-      'ativar() recebe também os conectores do diagrama — a posição deixa de vir só dos 3 elementos '
-      'e passa a usar a mesma geometria que o diagrama já desenha (parâmetro papel acrescentado no '
-      'Item 30, para diferenciar as duas operações de Composição de Transformações)')
-check('int meioX = (conectorParaRelacaoFinal.x1 + conectorParaRelacaoFinal.x2) / 2;' in seletor_op
-      and 'int meioY = (conectorParaRelacaoFinal.y1 + conectorParaRelacaoFinal.y2) / 2;' in seletor_op
-      and 'conectorParaRelacaoFinal.temAlvo()' in seletor_op,
+      and 'import gerard.campoaditivo.diagrama.elementos.ConectorVergnaud;' not in seletor_op,
+      'ativar() recebe a âncora pronta da cena e não conhece conectores nem elementos do diagrama — a '
+      'geometria tem um só dono (PosicaoSeletorOperacaoDiagrama)')
+check('int meioX = (conectorParaRelacaoFinal.getX1() + conectorParaRelacaoFinal.getX2()) / 2;' in posicao_seletor
+      and 'int meioY = (conectorParaRelacaoFinal.getY1() + conectorParaRelacaoFinal.getY2()) / 2;' in posicao_seletor
+      and 'conectorParaRelacaoFinal.temAlvo()' in posicao_seletor,
       '"a localização de soma e subtração tem que ser em relação ao diagrama" — em Transformação de '
       'Relação e Composição de Relações a posição vem do próprio segmento (seta ou haste da chave) que '
-      'o diagrama já desenha em direção à relação final, não de um centróide genérico desalinhado do '
-      'layout real (bug reportado: colisão com a lupa da Relação 2 em Composição de Relações)')
+      'o diagrama já desenha em direção à relação final (PosicaoSeletorOperacaoDiagrama.relacao)')
 check('public void reposicionar(int dx, int dy)' in seletor_op
       and 'centroX += dx;' in seletor_op and 'centroY += dy;' in seletor_op
       and 'areaSoma.translate(dx, dy);' in seletor_op and 'areaSubtracao.translate(dx, dy);' in seletor_op,
@@ -1911,14 +1907,13 @@ check('seletorOperacaoRelacaoAluno.reposicionar(dx, dy);' in main,
       'translada o seletor, no mesmo bloco que já translada elementosVergnaud e conectoresVergnaud')
 
 print('== Item 22c (2026-08-23): acima do segmento (não sobre) e botões mais próximos ==')
-check('centroY -= ELEVACAO_ACIMA_DO_SEGMENTO;' in seletor_op,
+check('return new Centro(cx, cy - ELEVACAO_ACIMA_DO_SEGMENTO);' in posicao_seletor,
       '"era para ser em cima e não sobre" — o seletor fica elevado acima do segmento/haste em vez de '
       'centralizado sobre ele')
-check('meioX += DESLOCAMENTO_TRACO_CHAVE;' in seletor_op
-      and 'DESLOCAMENTO_TRACO_CHAVE = 18' in seletor_op,
-      'o ponto usado para centralizar o seletor na Composição de Relações agora corresponde ao traço '
-      'vertical real desenhado por ConectorVergnaud.desenharChaveVertical (x+18), não ao x1 bruto do '
-      'conector — sem essa correção o rótulo "Soma" caía em cima da linha vertical da chave')
+check('meioX += DESLOCAMENTO_TRACO_CHAVE;' in posicao_seletor
+      and 'DESLOCAMENTO_TRACO_CHAVE = 18' in posicao_seletor,
+      'o ponto usado para centralizar o seletor na Composição de Relações corresponde ao traço vertical '
+      'real desenhado por ConectorVergnaud.desenharChaveVertical (x+18), não ao x1 bruto do conector')
 check('ESPACAMENTO_BOTOES = 70' in seletor_op,
       'espaço entre os botões Soma e Subtração reduzido (estava com espaço em excesso, reportado pela '
       'usuária) — mantido o suficiente para os dois rótulos não se tocarem')
@@ -2130,9 +2125,10 @@ check('JComboBox<OpcaoOperacaoCuradoria> campoOperacaoRelacao, JTextField campoE
 # (campoEstadoInicialParte1/1Personagem/2/2Personagem, ver auditoria de
 # acoplamento), então a chamada não termina mais em ");" logo após
 # campoOperacaoEstadoTransformacao — termina em "," seguido dos 4 novos args.
-check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,') >= 3,
-      'todos os fluxos que materializam os campos da curadoria passam o novo '
-      'campoOperacaoEstadoTransformacao')
+check(cur.count('campoOperacaoRelacao, campoEstadoIntermediario, campoOperacaoEstadoTransformacao,') >= 2
+      and 'JComboBox<OpcaoOperacaoCuradoria> campoOperacaoEstadoTransformacao,' in cur,
+      'os fluxos que materializam os campos da curadoria passam o campoOperacaoEstadoTransformacao '
+      '(duas chamadas: salvar e traduzir)')
 check('linha.operacaoEstadoTransformacao = operacaoEstadoTransformacao.getValorCanonico();' in cur
       and 'Integer estadoFinalCalculado = operacaoEstadoTransformacao.aplicar(\n'
       '                            estadoInicialValor, transformacaoResultanteValor);' in cur,
@@ -2156,15 +2152,14 @@ check('String operacaoCurada = papelEstadoTransformacao\n'
       '                : situacao.getOperacaoRelacao();' in avaliacao_op,
       'cada instância lê o campo curado correspondente ao seu papel — a resposta certa nunca se mistura '
       'entre as duas operações')
-check('centroX = left(e2) - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO;\n'
-      '            centroY = centroY(e2);' in seletor_op,
+check('return new Centro(transformacaoFinal.getX() - DESLOCAMENTO_ESQUERDA_ESTADO_TRANSFORMACAO,\n'
+      '                centroY(transformacaoFinal));' in posicao_seletor,
       '"radiobutton de operações entre estado inicial e transformação do lado esquerdo do círculo '
-      'inferior" — segunda operação fica à esquerda de e2 (transformação resultante)')
-check('centroX = (centroX(e0) + centroX(e1)) / 2;\n'
-      '                centroY = Math.min(top(e0), top(e1)) - ELEVACAO_ACIMA_DO_SEGMENTO;' in seletor_op,
+      'inferior" — segunda operação fica à esquerda da transformação resultante')
+check('int cx = (centroX(t1) + centroX(t2)) / 2;' in posicao_seletor
+      and 'int cy = Math.min(t1.getY(), t2.getY()) - ELEVACAO_ACIMA_DO_SEGMENTO;' in posicao_seletor,
       '"radiobutton de soma e subtração entre tranformação a cima dos dois círculos superiores" — primeira '
-      'operação (entre transformação_1 e transformação_2) fica acima de e0/e1 (t1/t2), não mais no vão '
-      'abaixo deles como antes do Item 30')
+      'operação (entre transformação_1 e transformação_2) fica acima dos dois círculos superiores')
 check('if (tipo == TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO) {'
       in realizador_texto_op
       and 'operacao.explicacao.composicaoTransformacoes.estadoInicialTransformacao.soma'
@@ -2178,13 +2173,13 @@ check('final SeletorOperacaoRelacaoAluno seletorOperacaoEstadoTransformacaoAluno
 check(main.count('seletorOperacaoEstadoTransformacaoAluno.desativar();') >= 2,
       'a segunda instância é desativada nos mesmos pontos de reset que a primeira')
 check('seletorOperacaoEstadoTransformacaoAluno.ativar(\n'
-      '                    tipoSituacaoSelecionada, situacaoProblemaAtual, elementosVergnaud,\n'
-      '                    conectoresVergnaud,\n'
+      '                    tipoSituacaoSelecionada, situacaoProblemaAtual,\n'
+      '                    ancoraSeletorOperacaoDaCena(true),\n'
       '                    gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao\n'
       '                            .TipoOperacaoSeletor.ENTRE_ESTADO_E_TRANSFORMACAO,\n'
       '                    localizacao);' in main,
-      'a segunda instância é ativada com o papel ENTRE_ESTADO_E_TRANSFORMACAO, junto com a primeira '
-      '(ENTRE_TRANSFORMACOES) em inicializarDiagramaVergnaud')
+      'a segunda instância é ativada com o papel ENTRE_ESTADO_E_TRANSFORMACAO e a âncora da cena, junto '
+      'com a primeira (ENTRE_TRANSFORMACOES) em inicializarDiagramaVergnaud')
 check('seletorOperacaoEstadoTransformacaoAluno.desenhar(g2, localizacao);' in main,
       'a segunda instância é desenhada a cada repaint, junto com a primeira')
 check('seletorOperacaoEstadoTransformacaoAluno.reposicionar(dx, dy);' in main,
@@ -2649,9 +2644,9 @@ rascunho_narrativa_rica = text(
     'src/gerard/campoaditivo/curadoria/RascunhoCuradoriaNarrativaRica.java')
 teste_montador_narrativa = text(
     'tests/java/TesteMontadorCuradoriaNarrativaRica.java')
-check('new JButton("Narrativa rica...")' in cur
-      and 'editarNarrativaRica.setEnabled(!versaoTraducaoSomenteTexto);' in cur,
-      'a curadoria original oferece o editor rico e traduções não criam uma semântica paralela')
+check('Narrativa rica...' not in cur and 'editarNarrativaRica' not in cur,
+      'a tela de curadoria não oferece mais o botão do editor rico (removido em 2026-09-30); a narrativa '
+      'rica segue só como sidecar versionado')
 check(all(f'abas.addTab("{rotulo}"' in dialogo_narrativa_rica for rotulo in (
           'Participantes', 'Famílias', 'Objetos', 'Estado inicial',
           'Eventos', 'Estado final', 'Correspondências')),
@@ -2712,8 +2707,8 @@ check('construtor compatível persiste candidata por padrão' in teste_persisten
       and 'serviço aplica a promoção editorial explícita' in teste_persistencia_narrativa
       and 'sidecar v1 sem status permanece candidato' in teste_persistencia_narrativa,
       'o harness cobre candidatura padrão, promoção, consumo e compatibilidade retroativa')
-check('Informe o id da situação antes de editar a narrativa rica.' in cur,
-      'a tela impede abrir um sidecar sem identidade nominal da situação')
+check('Informe o id da situação antes de editar a narrativa rica.' not in cur,
+      'sem o editor rico na tela, não há mensagem de sidecar sem identidade nominal na curadoria')
 check('Somente um ato explícito do pesquisador no editor pode registrar'
           in curadoria_persistencia_situacao_rica
       and 'essa promoção é bloqueada enquanto a conversão\nproduzir qualquer diagnóstico'
