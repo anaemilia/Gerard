@@ -635,10 +635,11 @@ export default function App() {
             aoEditarValor={iniciarEdicaoValor}
             figuraDestacadaId={figuraDestacadaId}
             aoAlternarEixo={(figura) => void alternarEixo(figura)}
+            avisoSinal={avisoSinal}
             seletorSinal={sinalPendenteIncognita || modelagemComSinal?.papel_aguardando_sinal ? {
               papelId: sinalPendenteIncognita?.papelId
                 ?? modelagemComSinal!.papel_aguardando_sinal!,
-              mensagemDivergente: avisoSinal?.mensagem ?? null,
+              mensagemDivergente: null,
               aoEscolher: (papelId, figuraId, sinal) => sinalPendenteIncognita
                 ? escolherSinalIncognita(sinal)
                 : void escolherSinal(papelId, figuraId, sinal),

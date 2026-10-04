@@ -8,7 +8,8 @@ Regras verificadas em cada situação (qualquer categoria, qualquer papel descon
   R3  no limite não há aviso algum (nem "Você tentou várias vezes..." nem a explicação da operação);
   R4  os números do enunciado não mudam antes da conclusão (diagrama azul);
   R5  um valor/operação errado nunca conclui a modelagem;
-  R6  traduções (en/fr) recebem a mesma decisão do original.
+  R6  traduções (en/fr) recebem a mesma decisão do original;
+  R7  (SINAL_ERRADO=1) marcar um sinal errado no primeiro número relativo não bloqueia o seguimento.
 A mesma suíte roda sobre situações GENÉRICAS (tests/dados/gerar_situacoes_genericas.py) para validar a regra, e
 depois sobre as curadas como amostras de ajuste fino.
 
@@ -28,6 +29,7 @@ TSV = Path(sys.argv[3])
 FILTRO = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] != "-" else None
 IDIOMA = sys.argv[5] if len(sys.argv) > 5 else None
 sorte = random.Random(11)
+SINAL_ERRADO = bool(__import__("os").environ.get("SINAL_ERRADO"))
 
 GRUPO = {"COMPOSICAO_MEDIDAS": "Medidas", "TRANSFORMACAO_MEDIDAS": "Medidas", "COMPARACAO_MEDIDAS": "Medidas",
          "COMPOSICAO_TRANSFORMACOES": "Relações", "TRANSFORMACAO_RELACAO": "Relações", "COMPOSICAO_RELACOES": "Relações"}
@@ -123,6 +125,7 @@ def rodar(pg, alvo, por_id):
 
     # posiciona os dados do enunciado (e engata a incógnita) arrastando cada elemento até sua caixa
     elementos = [x for x in e["cena"]["elementos_texto"] if x.get("papel_id")]
+    errou_sinal = False
     for i, el in enumerate(elementos):
         fig = next(f for f in estado["e"]["cena"]["figuras"] if f["chave_papel_semantico"] == el["papel_id"])
         ax, ay = centro(pg.locator(".enunciado-elemento-semantico").nth(i))
@@ -131,8 +134,13 @@ def rodar(pg, alvo, por_id):
         for k in range(1, 19):
             pg.mouse.move(ax + (bx - ax) * k / 18, ay + (by - ay) * k / 18)
         pg.mouse.up(); pg.wait_for_timeout(350)
-        sinal = pg.locator('.valor-figura-sinal-tip input[aria-label="%s"]' % sinal_correto(s, el["papel_id"]))
+        escolhido = sinal_correto(s, el["papel_id"])
+        if SINAL_ERRADO and not errou_sinal:        # R7: marcar um sinal errado nunca bloqueia o seguimento
+            escolhido = "negativo" if escolhido == "positivo" else "positivo"
+        sinal = pg.locator('.valor-figura-sinal-tip input[aria-label="%s"]' % escolhido)
         if sinal.count():
+            if SINAL_ERRADO and not errou_sinal:
+                errou_sinal = True
             clicar(sinal.first)
             pg.wait_for_timeout(300)
     numeros_antes = pg.locator(".enunciado-elemento-semantico").all_inner_texts()

@@ -63,7 +63,7 @@ function GrupoQuadradinhosCenaGerard({ figura, ehAlvo, ocupado, aoAjustar, texto
 }
 
 export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, aoAjustarQuadradinho,
-    textoAdicionarQuadradinho, textoRemoverQuadradinho, aoAlternarEixo, seletorSinal }: {
+    textoAdicionarQuadradinho, textoRemoverQuadradinho, aoAlternarEixo, seletorSinal, avisoSinal }: {
   figura: FiguraCena;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
   destacada?: boolean;
@@ -76,6 +76,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
     papelId: string; mensagemDivergente: string | null;
     aoEscolher: (papelId: string, figuraId: string, sinal: "+" | "-") => void;
   };
+  avisoSinal?: { figuraId: string; mensagem: string } | null;
 }) {
   if (figura.tipo === "GRUPO_QUADRADINHOS") {
     const interacaoAjustar = figura.interacoes_permitidas.find(
@@ -134,7 +135,11 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
     <LupaCenaGerard figura={figura} aoAlternarEixo={aoAlternarEixo} />
   </g>{deveMostrarSeletorSinal && seletorSinal && <EscolhaSinalFigura
       figuraId={figura.id} papelNome={figura.rotulo} ocupado={Boolean(ocupado)}
-      mensagemDivergente={seletorSinal.mensagemDivergente}
+      mensagemDivergente={null}
       aoEscolherSinal={(sinal) => seletorSinal.aoEscolher(
-        figura.chave_papel_semantico, figura.id, sinal)} />}</>;
+        figura.chave_papel_semantico, figura.id, sinal)} />}
+    {avisoSinal && avisoSinal.figuraId === figura.id && <EscolhaSinalFigura
+      figuraId={figura.id} papelNome={figura.rotulo} ocupado={Boolean(ocupado)}
+      mensagemDivergente={avisoSinal.mensagem}
+      aoEscolherSinal={() => undefined} />}</>;
 }

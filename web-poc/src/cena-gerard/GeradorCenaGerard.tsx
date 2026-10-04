@@ -8,7 +8,7 @@ import type { PosicaoVisual } from "../estadoRepresentacoes";
 /** Materializa em SVG a cena completamente especificada pela API do Gérard. */
 export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, figuraDestacadaId,
     seletorOperacao, ocupado, aoAjustarQuadradinho, textoAdicionarQuadradinho, textoRemoverQuadradinho,
-    aoAlternarEixo, seletorSinal }: {
+    aoAlternarEixo, seletorSinal, avisoSinal }: {
   cena: CenaDiagrama;
   posicoesEmEdicao?: Readonly<Record<string, PosicaoVisual>>;
   aoEditarValor?: (figura: FiguraCena, interacao: InteracaoPermitidaFigura) => void;
@@ -28,6 +28,8 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
     papelId: string; mensagemDivergente: string | null;
     aoEscolher: (papelId: string, figuraId: string, sinal: "+" | "-") => void;
   };
+  /** Aviso (não bloqueante) de sinal divergente: pertence à figura em que o sinal foi escolhido. */
+  avisoSinal?: { figuraId: string; mensagem: string } | null;
 }) {
   const v = cena.viewport;
   // width/height explícitos = o tamanho real que o gerador de cena desenhou
@@ -54,7 +56,8 @@ export function GeradorCenaGerard({ cena, posicoesEmEdicao = {}, aoEditarValor, 
         ocupado={ocupado} aoAjustarQuadradinho={aoAjustarQuadradinho}
         textoAdicionarQuadradinho={textoAdicionarQuadradinho}
         textoRemoverQuadradinho={textoRemoverQuadradinho}
-        aoAlternarEixo={aoAlternarEixo} seletorSinal={seletorSinal} />;
+        aoAlternarEixo={aoAlternarEixo} seletorSinal={seletorSinal}
+        avisoSinal={avisoSinal} />;
     })}
     {seletorOperacao && cena.seletor_operacao
       && <SeletorOperacaoDiagramaGerard pontos={cena.seletor_operacao} {...seletorOperacao} />}
