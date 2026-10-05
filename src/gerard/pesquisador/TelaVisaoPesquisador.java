@@ -74,7 +74,7 @@ public class TelaVisaoPesquisador extends JDialog {
 
     // Paleta neutra compartilhada com o resto do app (ver UITemaGerard e a
     // skill gerard-identidade-visual): cor só para feedbacks/significados
-    // (COR_ERRO = vermelho, convenção cultural de erro). O que não carrega
+    // (o vermelho de erro é do feedback de erro; esta tela de análise não o usa). O que não carrega
     // informação — fundo, texto, bordas, destaque estrutural, série "primária"
     // de gráficos sem significado próprio — fica no tom neutro quente do
     // tema, em vez do azul/vermelho decorativos que esta tela usava antes.
@@ -85,7 +85,6 @@ public class TelaVisaoPesquisador extends JDialog {
     private static final Color COR_BORDA = UITemaGerard.COR_BORDA;
     private static final Color COR_PRIMARIA = UITemaGerard.COR_PRIMARIA;
     private static final Color COR_DESTAQUE = UITemaGerard.COR_DESTAQUE;
-    private static final Color COR_ERRO = UITemaGerard.COR_ERRO;
 
     private final List<EventoLogGerard> eventos;
     private final EstatisticasLogGerard estatisticas;
@@ -172,7 +171,7 @@ public class TelaVisaoPesquisador extends JDialog {
         cards.add(Box.createHorizontalStrut(10));
         cards.add(criarCard(t("pesq.card.interfaceActions"), String.valueOf(estatisticas.totalPorAgente("C")), t("pesq.card.agentC")));
         cards.add(Box.createHorizontalStrut(10));
-        cards.add(criarCard(t("pesq.card.errors"), String.valueOf(estatisticas.totalErros()), t("pesq.card.ceE"), COR_ERRO));
+        cards.add(criarCard(t("pesq.card.errors"), String.valueOf(estatisticas.totalErros()), t("pesq.card.ceE")));
         cards.add(Box.createHorizontalStrut(10));
         cards.add(criarCard(t("pesq.card.problems"), String.valueOf(estatisticas.totalProblemas()), t("pesq.card.sessionProblem")));
 
@@ -1849,10 +1848,8 @@ public class TelaVisaoPesquisador extends JDialog {
     }
 
     /**
-     * @param corValor cor do número do cartão — neutra (COR_TEXTO) para
-     *        contagens sem significado próprio; COR_ERRO só para o cartão
-     *        de Erros, o único aqui que carrega um sinal (ver
-     *        gerard-identidade-visual: cor reservada a feedbacks/significados).
+     * @param corValor cor do número do cartão — neutra (COR_TEXTO): a análise do pesquisador mostra
+     *        contagens, não feedback de erro (regra geral: vermelho só no erro).
      */
     private JPanel criarCard(String titulo, String valor, String subtitulo, Color corValor) {
         JPanel card = new JPanel(new BorderLayout(2, 2));
