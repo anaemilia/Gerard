@@ -1470,15 +1470,8 @@ public class Main extends JFrame {
         }
 
 
-        private static final int LARGURA_ICONE_CATEGORIA = 92;
-        private static final int ALTURA_ICONE_CATEGORIA = 84;
-        private static final int LARGURA_SEPARADOR_ATALHO = 32;
-        private static final int LARGURA_BOTAO_PROXIMO_PASSO = 54;
-        private static final int ALTURA_BOTAO_PROXIMO_PASSO = 54;
         /** Botão de sorteio (Medidas/Relações), colado ao lado de cada grupo — mesmo tamanho dos botões de ícone do cabeçalho (criarBotaoIconeCabecalho). */
-        private static final int LARGURA_BOTAO_SORTEIO = 34;
         /** Espaço entre o último ícone de um grupo (ou o botão de sorteio) e o próximo elemento — fora da caixa delimitadora do grupo (areaGrupoMedidas/Relacoes), pra não parecer uma 4ª opção de resposta do quiz. */
-        private static final int GAP_BOTAO_SORTEIO = 16;
 
         /**
          * Faixa de atalhos de categoria, entre o cabeçalho e a área do
@@ -1507,11 +1500,11 @@ public class Main extends JFrame {
          * usado por faixaAtividadeModelador/botaoAjudaTexto.
          */
         private void criarPainelAtalhoCategoria() {
-            botaoAtalhoComposicao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, criarIconeCategoriaComposicao());
+            botaoAtalhoComposicao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.COMPOSICAO_MEDIDAS));
             add(botaoAtalhoComposicao);
-            botaoAtalhoTransformacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, criarIconeCategoriaTransformacao());
+            botaoAtalhoTransformacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS));
             add(botaoAtalhoTransformacao);
-            botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, criarIconeCategoriaComparacao());
+            botaoAtalhoComparacao = criarBotaoAtalhoCategoria(TipoSituacaoAditiva.COMPARACAO_MEDIDAS, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.COMPARACAO_MEDIDAS));
             add(botaoAtalhoComparacao);
 
             // Botão de sorteio do grupo Medidas, colado ao lado dos 3 ícones
@@ -1529,7 +1522,7 @@ public class Main extends JFrame {
             botaoFerramentaSortearMedidas.setToolTipText(localizacao.texto("ui.tooltip.random.measures"));
             add(botaoFerramentaSortearMedidas);
 
-            separadorAtalhoCategoria = criarSeparadorAtalhoCategoria();
+            separadorAtalhoCategoria = new gerard.ui.categoria.SeparadorAtalhoCategoria();
             add(separadorAtalhoCategoria);
 
             // Categoria completa (20 situações curadas,
@@ -1540,18 +1533,18 @@ public class Main extends JFrame {
             // desabilitada" que fazia sentido só enquanto o sorteio era
             // restrito ao grupo Medidas.
             botaoAtalhoComposicaoTransformacoes = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, criarIconeCategoriaComposicaoTransformacoes());
+                    TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES));
             add(botaoAtalhoComposicaoTransformacoes);
             // Mesma situação da anterior: categoria completa (8 situações
             // curadas, renderizador próprio — RenderizadorTransformacaoRelacao).
             botaoAtalhoTransformacaoRelacao = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, criarIconeCategoriaTransformacaoRelacao());
+                    TipoSituacaoAditiva.TRANSFORMACAO_RELACAO, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.TRANSFORMACAO_RELACAO));
             add(botaoAtalhoTransformacaoRelacao);
             // Irmã de TRANSFORMACAO_RELACAO no mesmo grupo "Relações"
             // (completa em código — RenderizadorComposicaoRelacoes, 8
             // situações curadas).
             botaoAtalhoComposicaoRelacoes = criarBotaoAtalhoCategoria(
-                    TipoSituacaoAditiva.COMPOSICAO_RELACOES, criarIconeCategoriaComposicaoRelacoes());
+                    TipoSituacaoAditiva.COMPOSICAO_RELACOES, gerard.ui.categoria.IconeCategoria.para(TipoSituacaoAditiva.COMPOSICAO_RELACOES));
             add(botaoAtalhoComposicaoRelacoes);
 
             // Botão de sorteio do grupo Relações — ver o comentário análogo
@@ -1565,7 +1558,7 @@ public class Main extends JFrame {
             botaoFerramentaSortearRelacoes.setToolTipText(localizacao.texto("ui.tooltip.random.relations"));
             add(botaoFerramentaSortearRelacoes);
 
-            botaoAtalhoProximoPasso = new JButton(criarIconeInterrogacaoAtalho());
+            botaoAtalhoProximoPasso = new JButton(new gerard.ui.categoria.IconeProximoPasso());
             botaoAtalhoProximoPasso.setFocusable(false);
             botaoAtalhoProximoPasso.setEnabled(false);
             botaoAtalhoProximoPasso.setOpaque(false);
@@ -1596,55 +1589,6 @@ public class Main extends JFrame {
             reposicionarPainelAtalhoCategoria();
         }
 
-        /** Divisor vertical fino entre os dois grupos de categoria — cor estrutural neutra, sem significado próprio. */
-        private JPanel criarSeparadorAtalhoCategoria() {
-            JPanel separador = new JPanel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                    int x = getWidth() / 2;
-                    g2.drawLine(x, 6, x, getHeight() - 6);
-                    g2.dispose();
-                }
-            };
-            separador.setOpaque(false);
-            return separador;
-        }
-
-        /**
-         * Ícone "?" para o atalho de "próximo passo" — mesmo estilo fino e
-         * neutro dos glifos de categoria (prepararTracoIconeCategoria), não
-         * o ícone escuro/preenchido de criarIconeInterrogacaoContextual (que
-         * é para os botões de ajuda já habilitados e situados junto ao
-         * conteúdo que explicam — este aqui é um placeholder desabilitado).
-         */
-        private Icon criarIconeInterrogacaoAtalho() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_BOTAO_PROXIMO_PASSO; }
-                public int getIconHeight() { return ALTURA_BOTAO_PROXIMO_PASSO; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        int diametro = 34;
-                        int cx = x + LARGURA_BOTAO_PROXIMO_PASSO / 2 - diametro / 2;
-                        int cy = y + ALTURA_BOTAO_PROXIMO_PASSO / 2 - diametro / 2;
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx, cy, diametro, diametro));
-                        g2.setFont(new Font("Arial", Font.PLAIN, 16));
-                        FontMetrics fm = g2.getFontMetrics();
-                        String simbolo = "?";
-                        int tx = x + LARGURA_BOTAO_PROXIMO_PASSO / 2 - fm.stringWidth(simbolo) / 2;
-                        int ty = y + ALTURA_BOTAO_PROXIMO_PASSO / 2 + (fm.getAscent() - fm.getDescent()) / 2;
-                        g2.drawString(simbolo, tx, ty);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
         /**
          * Centraliza horizontalmente o grupo (6 ícones + "próximo passo")
          * dentro da largura atual da tela. Chamado na criação (onde
@@ -1655,76 +1599,24 @@ public class Main extends JFrame {
             if (botaoAtalhoComposicao == null) {
                 return;
             }
-            int gapEntreIcones = 24;
-            int gapAntesBotao = 32;
-            int larguraTotal = LARGURA_ICONE_CATEGORIA * 6 + gapEntreIcones * 4
-                    + LARGURA_SEPARADOR_ATALHO
-                    + GAP_BOTAO_SORTEIO * 4 + LARGURA_BOTAO_SORTEIO * 2
-                    + gapAntesBotao + LARGURA_BOTAO_PROXIMO_PASSO;
-            int larguraTela = getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA;
-            int x = Math.max(18, (larguraTela - larguraTotal) / 2);
-            int centroFaixa = 45 + ALTURA_PAINEL_ATALHOS_CATEGORIA / 2;
-
-            botaoAtalhoComposicao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
-            botaoAtalhoTransformacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
-            botaoAtalhoComparacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA;
-
-            // Os dois botões de sorteio ficam colados um de cada lado do
-            // separador central, em vez de um "no meio" (entre o grupo e o
-            // separador) e o outro "na ponta" (sozinho depois do último
-            // ícone, com um vão grande até o botão de próximo passo) — essa
-            // segunda posição para Relações parecia solta/desalinhada
-            // (relatado pela usuária, 2026-08-07). Espelhados assim, os dois
-            // ficam visualmente simétricos em torno do separador, e nenhum
-            // fica pendurado sozinho na borda do painel.
-            x += GAP_BOTAO_SORTEIO;
-            botaoFerramentaSortearMedidas.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
-            x += LARGURA_BOTAO_SORTEIO + GAP_BOTAO_SORTEIO;
-
-            separadorAtalhoCategoria.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_SEPARADOR_ATALHO, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_SEPARADOR_ATALHO;
-
-            x += GAP_BOTAO_SORTEIO;
-            botaoFerramentaSortearRelacoes.setBounds(x, centroFaixa - LARGURA_BOTAO_SORTEIO / 2, LARGURA_BOTAO_SORTEIO, LARGURA_BOTAO_SORTEIO);
-            x += LARGURA_BOTAO_SORTEIO + GAP_BOTAO_SORTEIO;
-
-            botaoAtalhoComposicaoTransformacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
-            botaoAtalhoTransformacaoRelacao.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapEntreIcones;
-            botaoAtalhoComposicaoRelacoes.setBounds(x, centroFaixa - ALTURA_ICONE_CATEGORIA / 2, LARGURA_ICONE_CATEGORIA, ALTURA_ICONE_CATEGORIA);
-            x += LARGURA_ICONE_CATEGORIA + gapAntesBotao;
-
-            xCentroGrupoMedidas = (botaoAtalhoComposicao.getX() + botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) / 2;
-            xCentroGrupoRelacoes = (botaoAtalhoComposicaoTransformacoes.getX() + botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) / 2;
-
-            // Retângulo delimitador de cada grupo — padding menor em cima
-            // (4px) pra não encostar no rótulo semi-negrito logo acima
-            // (desenharRotulosGruposAtalhoCategoria), padding maior nos
-            // outros lados (10px).
-            int padLados = 10;
-            int padTopo = 4;
-            int padBaixo = 10;
-            areaGrupoMedidas = new Rectangle(
-                    botaoAtalhoComposicao.getX() - padLados,
-                    botaoAtalhoComposicao.getY() - padTopo,
-                    (botaoAtalhoComparacao.getX() + LARGURA_ICONE_CATEGORIA) - botaoAtalhoComposicao.getX() + padLados * 2,
-                    ALTURA_ICONE_CATEGORIA + padTopo + padBaixo);
-            areaGrupoRelacoes = new Rectangle(
-                    botaoAtalhoComposicaoTransformacoes.getX() - padLados,
-                    botaoAtalhoComposicaoTransformacoes.getY() - padTopo,
-                    (botaoAtalhoComposicaoRelacoes.getX() + LARGURA_ICONE_CATEGORIA) - botaoAtalhoComposicaoTransformacoes.getX() + padLados * 2,
-                    ALTURA_ICONE_CATEGORIA + padTopo + padBaixo);
-
-            // Posição padrão (ao lado dos ícones de categoria) só é aplicada
-            // de fato em reposicionarBotaoAtalhoProximoPasso — enquanto a
-            // categoria não foi confirmada, o botão fica ao lado do texto em
-            // vez de aqui (ver desenharTextoProblema/desenharTextoProblemaAdivinhacao).
-            xPadraoBotaoAtalhoProximoPasso = x;
-            yPadraoBotaoAtalhoProximoPasso = centroFaixa - ALTURA_BOTAO_PROXIMO_PASSO / 2;
+            gerard.ui.categoria.GeometriaBarraAtalhosCategoria geo =
+                    gerard.ui.categoria.GeometriaBarraAtalhosCategoria.calcular(
+                            getWidth() > 0 ? getWidth() : LARGURA_BASE_TELA, ALTURA_PAINEL_ATALHOS_CATEGORIA);
+            botaoAtalhoComposicao.setBounds(geo.composicao);
+            botaoAtalhoTransformacao.setBounds(geo.transformacao);
+            botaoAtalhoComparacao.setBounds(geo.comparacao);
+            botaoFerramentaSortearMedidas.setBounds(geo.sorteioMedidas);
+            separadorAtalhoCategoria.setBounds(geo.separador);
+            botaoFerramentaSortearRelacoes.setBounds(geo.sorteioRelacoes);
+            botaoAtalhoComposicaoTransformacoes.setBounds(geo.composicaoTransformacoes);
+            botaoAtalhoTransformacaoRelacao.setBounds(geo.transformacaoRelacao);
+            botaoAtalhoComposicaoRelacoes.setBounds(geo.composicaoRelacoes);
+            xCentroGrupoMedidas = geo.xCentroGrupoMedidas;
+            xCentroGrupoRelacoes = geo.xCentroGrupoRelacoes;
+            areaGrupoMedidas = geo.areaGrupoMedidas;
+            areaGrupoRelacoes = geo.areaGrupoRelacoes;
+            xPadraoBotaoAtalhoProximoPasso = geo.xPadraoProximoPasso;
+            yPadraoBotaoAtalhoProximoPasso = geo.yPadraoProximoPasso;
         }
 
         /**
@@ -1749,11 +1641,11 @@ public class Main extends JFrame {
             if (categoriaSelecionadaParaAtividade) {
                 botaoAtalhoProximoPasso.setBounds(
                         xPadraoBotaoAtalhoProximoPasso, yPadraoBotaoAtalhoProximoPasso,
-                        LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+                        gerard.ui.categoria.IconeProximoPasso.LARGURA, gerard.ui.categoria.IconeProximoPasso.ALTURA);
             } else {
                 int x = 27;
                 int y = 63 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
-                botaoAtalhoProximoPasso.setBounds(x, y, LARGURA_BOTAO_PROXIMO_PASSO, ALTURA_BOTAO_PROXIMO_PASSO);
+                botaoAtalhoProximoPasso.setBounds(x, y, gerard.ui.categoria.IconeProximoPasso.LARGURA, gerard.ui.categoria.IconeProximoPasso.ALTURA);
             }
             botaoAtalhoProximoPasso.setVisible(true);
         }
@@ -1811,283 +1703,6 @@ public class Main extends JFrame {
                 }
             });
             return botao;
-        }
-
-        private static final int CAIXA_ICONE_CATEGORIA = 16;
-
-        /**
-         * Réplica em escala de ícone de botão do mesmo vocabulário visual já
-         * usado em PainelComparacaoCategorias.MiniRepresentacao.desenharComposicaoVazia
-         * (duas caixas à esquerda, colchete, uma caixa à direita) — mesmas
-         * cores (COR_SUPERFICIE/COR_BORDA) e proporções relativas daquele
-         * método, mas redesenhado do zero: aquele pertence a uma classe
-         * aninhada duas vezes dentro de TelaGerard e depende de estado de
-         * instância dela (alvos, tamanhoCaixa()), então não dá para chamá-lo
-         * diretamente daqui.
-         */
-        private Icon criarIconeCategoriaComposicao() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 26, y + 22, false);
-                        desenharFormaIconeCategoria(g2, x + 26, y + 58, false);
-                        desenharFormaIconeCategoria(g2, x + 70, y + 40, false);
-
-                        int cy = y + 40;
-                        java.awt.geom.Path2D.Float chave = new java.awt.geom.Path2D.Float();
-                        chave.moveTo(x + 44, y + 14);
-                        chave.quadTo(x + 56, y + 22, x + 56, cy - 6);
-                        chave.quadTo(x + 56, cy, x + 62, cy);
-                        chave.quadTo(x + 56, cy, x + 56, cy + 6);
-                        chave.quadTo(x + 56, y + 58, x + 44, y + 66);
-                        g2.draw(chave);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /** Réplica em escala de ícone de botão de desenharTransformacaoVazia (caixa-seta-caixa, círculo acima) — ver criarIconeCategoriaComposicao. */
-        private Icon criarIconeCategoriaTransformacao() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 46, y + 16, true);
-                        desenharFormaIconeCategoria(g2, x + 18, y + 52, false);
-                        desenharFormaIconeCategoria(g2, x + 74, y + 52, false);
-
-                        int cy = y + 52;
-                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
-                        seta.moveTo(x + 26, cy);
-                        seta.lineTo(x + 63, cy);
-                        seta.moveTo(x + 66, cy);
-                        seta.lineTo(x + 57, cy - 7);
-                        seta.moveTo(x + 66, cy);
-                        seta.lineTo(x + 57, cy + 7);
-                        g2.draw(seta);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /** Réplica em escala de ícone de botão de desenharComparacaoVazia (caixa acima, seta para baixo, caixa abaixo, círculo ao lado) — ver criarIconeCategoriaComposicao. */
-        private Icon criarIconeCategoriaComparacao() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 40, y + 14, false);
-                        desenharFormaIconeCategoria(g2, x + 40, y + 66, false);
-                        desenharFormaIconeCategoria(g2, x + 72, y + 40, true);
-
-                        int cx = x + 40;
-                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
-                        seta.moveTo(cx, y + 23);
-                        seta.lineTo(cx, y + 58);
-                        seta.moveTo(cx, y + 20);
-                        seta.lineTo(cx - 7, y + 29);
-                        seta.moveTo(cx, y + 20);
-                        seta.lineTo(cx + 7, y + 29);
-                        g2.draw(seta);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /**
-         * Glifo de composição de transformações (estado → transf.1 → estado
-         * → transf.2 → estado, mais o arco por baixo ligando o primeiro e o
-         * último estado, com a transformação resultante/composta perto do
-         * arco) — mesma estrutura da figura de referência da usuária
-         * (2026-07-26), sem os valores numéricos (que ali eram só exemplo:
-         * +10/-6/+4), e confirmada linha a linha contra
-         * `RenderizadorComposicaoTransformacoes.criarCena`: t1/t2 acima das
-         * duas setas, "tr" (a transformação composta) perto do arco,
-         * exatamente como desenhado aqui.
-         *
-         * A usuária confirmou que esta figura pertence à categoria canônica
-         * `COMPOSICAO_TRANSFORMACOES`, que tem exatamente esta estrutura de arco.
-         *
-         * Categoria já existe (`TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES`,
-         * com 20 situações curadas e renderizador próprio), mas o grupo
-         * "Transformações" do menu "Categoria" a esconde atrás de "Em
-         * construção" — decisão explícita da usuária em 2026-07-26: este
-         * atalho abre a categoria mesmo assim.
-         */
-        private Icon criarIconeCategoriaComposicaoTransformacoes() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 16, y + 30, false);
-                        desenharFormaIconeCategoria(g2, x + 46, y + 30, false);
-                        desenharFormaIconeCategoria(g2, x + 76, y + 30, false);
-                        desenharFormaIconeCategoria(g2, x + 31, y + 12, true);
-                        desenharFormaIconeCategoria(g2, x + 61, y + 12, true);
-                        desenharFormaIconeCategoria(g2, x + 46, y + 70, true);
-
-                        java.awt.geom.Path2D.Float setas = new java.awt.geom.Path2D.Float();
-                        setas.moveTo(x + 24, y + 30);
-                        setas.lineTo(x + 38, y + 30);
-                        setas.moveTo(x + 38, y + 30);
-                        setas.lineTo(x + 33, y + 26);
-                        setas.moveTo(x + 38, y + 30);
-                        setas.lineTo(x + 33, y + 34);
-
-                        setas.moveTo(x + 54, y + 30);
-                        setas.lineTo(x + 68, y + 30);
-                        setas.moveTo(x + 68, y + 30);
-                        setas.lineTo(x + 63, y + 26);
-                        setas.moveTo(x + 68, y + 30);
-                        setas.lineTo(x + 63, y + 34);
-                        g2.draw(setas);
-
-                        java.awt.geom.Path2D.Float arco = new java.awt.geom.Path2D.Float();
-                        arco.moveTo(x + 16, y + 38);
-                        arco.curveTo(x + 22, y + 66, x + 70, y + 66, x + 74, y + 38);
-                        arco.moveTo(x + 74, y + 38);
-                        arco.lineTo(x + 67, y + 35);
-                        arco.moveTo(x + 74, y + 38);
-                        arco.lineTo(x + 72, y + 45);
-                        g2.draw(arco);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /**
-         * Glifo de transformação de uma relação (estado inicial → transf. →
-         * estado final, todos os três desenhados como círculo — mesma
-         * convenção de RenderizadorTransformacaoRelacao, onde relacaoGrande
-         * e transformacao usam TipoFiguraDiagrama.ELIPSE, diferente da
-         * Transformação de medidas comum, onde só a transformação é
-         * círculo). Categoria já existe
-         * (`TipoSituacaoAditiva.TRANSFORMACAO_RELACAO`, com dados curados e
-         * renderizador próprios), mas o grupo "Relações" do menu "Categoria"
-         * a esconde atrás de "Em construção" — mesma decisão da usuária em
-         * 2026-07-26 já aplicada à transformação composta acima: o atalho
-         * abre a categoria mesmo assim.
-         */
-        private Icon criarIconeCategoriaTransformacaoRelacao() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 46, y + 16, true);
-                        desenharFormaIconeCategoria(g2, x + 18, y + 52, true);
-                        desenharFormaIconeCategoria(g2, x + 74, y + 52, true);
-
-                        int cy = y + 52;
-                        java.awt.geom.Path2D.Float seta = new java.awt.geom.Path2D.Float();
-                        seta.moveTo(x + 26, cy);
-                        seta.lineTo(x + 63, cy);
-                        seta.moveTo(x + 66, cy);
-                        seta.lineTo(x + 57, cy - 7);
-                        seta.moveTo(x + 66, cy);
-                        seta.lineTo(x + 57, cy + 7);
-                        g2.draw(seta);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /**
-         * Glifo de composição de relações (duas relações à esquerda,
-         * colchete, uma relação total à direita — todas círculo, mesma
-         * convenção de RenderizadorComposicaoRelacoes, que usa relacaoGrande
-         * = ELIPSE para os três elementos e chaveVertical como conector).
-         * Mesma estrutura de criarIconeCategoriaComposicao (colchete), só
-         * trocando quadrado por círculo nas três formas. Categoria já
-         * existe (`TipoSituacaoAditiva.COMPOSICAO_RELACOES`, com dados
-         * curados e renderizador próprios), mas o grupo "Relações" do menu
-         * "Categoria" a esconde atrás de "Em construção" — mesma decisão da
-         * usuária em 2026-07-26 já aplicada às duas categorias anteriores: o
-         * atalho abre mesmo assim.
-         */
-        private Icon criarIconeCategoriaComposicaoRelacoes() {
-            return new Icon() {
-                public int getIconWidth() { return LARGURA_ICONE_CATEGORIA; }
-                public int getIconHeight() { return ALTURA_ICONE_CATEGORIA; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
-                    try {
-                        desenharFormaIconeCategoria(g2, x + 26, y + 22, true);
-                        desenharFormaIconeCategoria(g2, x + 26, y + 58, true);
-                        desenharFormaIconeCategoria(g2, x + 70, y + 40, true);
-
-                        int cy = y + 40;
-                        java.awt.geom.Path2D.Float chave = new java.awt.geom.Path2D.Float();
-                        chave.moveTo(x + 44, y + 14);
-                        chave.quadTo(x + 56, y + 22, x + 56, cy - 6);
-                        chave.quadTo(x + 56, cy, x + 62, cy);
-                        chave.quadTo(x + 56, cy, x + 56, cy + 6);
-                        chave.quadTo(x + 56, y + 58, x + 44, y + 66);
-                        g2.draw(chave);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
-        }
-
-        /**
-         * Uma forma (quadrado ou círculo) do glifo de categoria, centrada em
-         * (cx,cy) — mesmas cores de desenharFormaVazia (preenchimento
-         * COR_SUPERFICIE, contorno COR_BORDA): elemento estrutural sem
-         * significado próprio, não um sinal de feedback (ver
-         * gerard-identidade-visual).
-         */
-        private void desenharFormaIconeCategoria(Graphics2D g2, int cx, int cy, boolean circulo) {
-            int metade = CAIXA_ICONE_CATEGORIA / 2;
-            g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-            if (circulo) {
-                g2.fillOval(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
-            } else {
-                g2.fillRect(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
-            }
-            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-            if (circulo) {
-                g2.drawOval(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
-            } else {
-                g2.drawRect(cx - metade, cy - metade, CAIXA_ICONE_CATEGORIA, CAIXA_ICONE_CATEGORIA);
-            }
-        }
-
-        /** Estilo de traço compartilhado pelos 3 glifos de categoria: fino, com pontas e junções arredondadas (suave, não "grosseiro"). */
-        private Graphics2D prepararTracoIconeCategoria(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-            g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            return g2;
         }
 
         /** Indicador factual do único agente da arquitetura atual. */
@@ -3280,7 +2895,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         g2.setColor(COR_TEXTO_SECUNDARIO);
                         g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -3309,7 +2924,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         int diametro = tamanho - 4;
                         float ox = x + 2;
@@ -3464,7 +3079,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         g2.draw(new java.awt.geom.Ellipse2D.Float(x + 1, y + 1, tamanho - 2, tamanho - 2));
                         int cabecaDiam = tamanho / 3;
@@ -3520,7 +3135,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         int corpoLargura = 10;
                         int corpoAltura = 12;
@@ -3611,7 +3226,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         int ladoCaixa = 9;
                         int yCaixa = y + 10;
@@ -3650,7 +3265,7 @@ public class Main extends JFrame {
                 public int getIconHeight() { return tamanho; }
 
                 public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = prepararTracoIconeCategoria(g);
+                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
                     try {
                         g2.drawRoundRect(x + 2, y + 2, tamanho - 4, tamanho - 4, 6, 6);
                         int raioPonto = 2;
@@ -4115,41 +3730,13 @@ public class Main extends JFrame {
                     modeloAtual == null ? null : modeloAtual.getPerfilAprendizagem().getMidiaPreferida();
             gerard.ui.dialogos.DialogoExplicacaoCategoria.mostrar(this, localizacao, categoriaReal,
                     gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria.para(categoriaReal, midia),
-                    criarLinhaExplicacaoCategoria(categoriaReal, obterIconeParaCategoria(categoriaReal)),
+                    criarLinhaExplicacaoCategoria(categoriaReal, gerard.ui.categoria.IconeCategoria.para(categoriaReal)),
                     new java.util.function.Consumer<String>() {
                         public void accept(String detalhes) {
                             registrarFeedbackExibido("AG_EME",
                                     gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL, detalhes);
                         }
                     });
-        }
-
-        /**
-         * Mesmo ícone usado nos botões de atalho de categoria
-         * (criarPainelAtalhoCategoria), reaproveitado aqui para não duplicar
-         * o desenho — localidade do conhecimento: cada categoria só tem um
-         * ícone, definido em um lugar só (criarIconeCategoria*).
-         */
-        private Icon obterIconeParaCategoria(TipoSituacaoAditiva tipo) {
-            if (tipo == null) {
-                return criarIconeCategoriaComposicao();
-            }
-            switch (tipo) {
-                case COMPOSICAO_MEDIDAS:
-                    return criarIconeCategoriaComposicao();
-                case TRANSFORMACAO_MEDIDAS:
-                    return criarIconeCategoriaTransformacao();
-                case COMPARACAO_MEDIDAS:
-                    return criarIconeCategoriaComparacao();
-                case COMPOSICAO_TRANSFORMACOES:
-                    return criarIconeCategoriaComposicaoTransformacoes();
-                case TRANSFORMACAO_RELACAO:
-                    return criarIconeCategoriaTransformacaoRelacao();
-                case COMPOSICAO_RELACOES:
-                    return criarIconeCategoriaComposicaoRelacoes();
-                default:
-                    return criarIconeCategoriaComposicao();
-            }
         }
 
         /**

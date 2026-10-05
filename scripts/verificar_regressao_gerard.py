@@ -1609,7 +1609,7 @@ check('new RenderizadorTransformacaoMedidas()' not in fabrica_renderizadores
 print('== Correção 2026-08-17: reexplicação de categoria mostra só a categoria real ==')
 check('private void acionarTimeoutCategoria(TipoSituacaoAditiva categoriaReal)' in main
       and 'private void mostrarExplicacaoCategorias(TipoSituacaoAditiva categoriaReal)' in main
-      and 'private Icon obterIconeParaCategoria(TipoSituacaoAditiva tipo)' in main,
+      and 'gerard.ui.categoria.IconeCategoria.para(categoriaReal)' in main,   # o ícone da categoria real vem do glifo polimórfico
       'reexplicação de categoria (timeout após 3 erros) recebe a categoria real da situação sorteada '
       'em vez de assumir sempre as 3 de Medidas — bug relatado 2026-08-17 ("essa explicação aparece '
       'no terceiro erro da categoria de relações"), com print mostrando CM/TM/COP numa situação de '

@@ -140,6 +140,13 @@ presos = [k for k in ("ui.bug.description.tooltip", "ui.dialog.insertValueTitle"
                       "ui.dialog.categoryExplanation.intro") if k in (SRC / "Main.java").read_text(encoding="utf-8")]
 exigir(not presos, "R9: a Main não monta os diálogos genéricos (textos ainda na Main: %s)" % presos)
 
+# R10 — a faixa de atalhos de categoria: glifo por categoria e geometria têm dono fora da Main.
+main_txt = (SRC / "Main.java").read_text(encoding="utf-8")
+exigir(not re.search(r"Icon\s+criarIconeCategoria\w*\s*\(", main_txt) and "obterIconeParaCategoria" not in main_txt,
+       "R10: a Main não desenha glifos de categoria (IconeCategoria polimórfico em gerard.ui.categoria)")
+exigir("GeometriaBarraAtalhosCategoria.calcular(" in main_txt and "int gapEntreIcones" not in main_txt,
+       "R10: a geometria da faixa de atalhos vem de GeometriaBarraAtalhosCategoria, não da Main")
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))
