@@ -1,0 +1,313 @@
+situacao	passo	acao	rejeicoes_antes	rejeicoes_depois	no_limite	painel_visivel	numeros_iguais	veredito
+PO_TRANSFORMACAO_MEDIDAS_bolas_163355672	1	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_bolas_163355672	2	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_bolas_163355672	3	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160	4	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160	5	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160	6	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_93128185	7	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_93128185	8	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_93128185	9	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	10	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	11	clicar no sinal	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	12	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	13	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	14	clicar no sinal	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	15	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	16	clicar no sinal	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	17	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	18	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_balas_2108939476	19	clicar no sinal	2	3	true	true	true	OK
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	20	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	21	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	22	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840	23	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840	24	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_365604840	25	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	26	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	27	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	28	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_bolas_509261012	29	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_bolas_509261012	30	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_bolas_509261012	31	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	32	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	33	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	34	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	35	clicar no sinal	0	0	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	36	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	37	confirmar Sim (Enter no diálogo)	0	0	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	38	clicar no sinal	0	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	39	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	40	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	41	clicar no sinal	1	2	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	42	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	43	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102	44	clicar no sinal	2	3	true	true	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383	45	clicar na operação errada (Soma)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383	46	clicar na operação errada (Soma)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1269597383	47	clicar na operação errada (Soma)	0	0	true	true	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_400916186	48	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_400916186	49	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_400916186	50	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_1527166754	51	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_1527166754	52	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_1527166754	53	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	54	clicar no sinal	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	55	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	56	clicar no sinal	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	57	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	58	clicar no sinal	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	59	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	60	clicar no sinal	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	61	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	62	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	63	clicar no sinal	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	64	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	65	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_carrinhos_1292854684	66	clicar no sinal	2	3	true	true	true	OK
+PO_COMPARACAO_MEDIDAS_cds_1222854862	67	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_cds_1222854862	68	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_cds_1222854862	69	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	70	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	71	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	72	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_2123535490	73	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_2123535490	74	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_2123535490	75	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_667564143	76	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_667564143	77	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_dinheiro_667564143	78	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_bonecas_620955739	79	clicar na operação errada (Soma)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_bonecas_620955739	80	clicar na operação errada (Soma)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_bonecas_620955739	81	clicar na operação errada (Soma)	0	0	true	true	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	82	clicar no sinal	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	83	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	84	clicar no sinal	0	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	85	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	86	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	87	clicar no sinal	1	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	88	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	89	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	90	clicar no sinal	2	3	true	true	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	91	clicar no sinal	0	0	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	92	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	93	clicar no sinal	0	1	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	94	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	95	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	96	clicar no sinal	1	2	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	97	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	98	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_COMPOSICAO_RELACOES_dinheiro_161113042	99	clicar no sinal	2	3	true	true	true	OK
+PO_COMPOSICAO_RELACOES_idades_642701604	100	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_COMPOSICAO_RELACOES_idades_642701604	101	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+PO_COMPOSICAO_RELACOES_idades_642701604	102	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_120596356	103	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_120596356	104	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_120596356	105	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_2006515770	106	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_2006515770	107	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_figurinhas_2006515770	108	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_727332787	109	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_727332787	110	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_727332787	111	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_2124664773	112	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_2124664773	113	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_2124664773	114	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	115	clicar no sinal	0	0	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	116	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	117	clicar no sinal	0	0	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	118	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	119	clicar no sinal	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	120	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	121	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	122	clicar no sinal	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	123	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	124	clicar no sinal	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	125	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	126	clicar no sinal	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	127	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	128	clicar no sinal	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	129	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	130	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_balas_1673463544	131	clicar no sinal	2	3	true	true	true	OK
+IN_TRANSFORMACAO_MEDIDAS_bolas_567206280	132	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_bolas_567206280	133	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_bolas_567206280	134	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_525352606	135	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_525352606	136	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_525352606	137	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_49184360	138	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_49184360	139	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_49184360	140	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	141	clicar no sinal	0	0	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	142	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	143	clicar no sinal	0	1	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	144	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	145	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	146	clicar no sinal	1	2	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	147	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	148	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_figurinhas_298753118	149	clicar no sinal	2	3	true	true	true	OK
+IN_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_284762576	150	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_284762576	151	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_284762576	152	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_bolas_1019033918	153	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_bolas_1019033918	154	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_COMPOSICAO_TRANSFORMACOES_bolas_1019033918	155	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1699321159	156	clicar na operação errada (Soma)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1699321159	157	clicar na operação errada (Soma)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_1699321159	158	clicar na operação errada (Soma)	0	0	true	true	true	OK
+IN_COMPARACAO_MEDIDAS_cds_2006555005	159	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_cds_2006555005	160	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_cds_2006555005	161	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_74721514	162	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_74721514	163	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_74721514	164	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_bolas_1388429065	165	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_bolas_1388429065	166	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_bolas_1388429065	167	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_414982151	168	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_414982151	169	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_414982151	170	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	171	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	172	clicar no sinal	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	173	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	174	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	175	clicar no sinal	1	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	176	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	177	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_carrinhos_680661635	178	clicar no sinal	2	3	true	true	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_1211292523	179	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_1211292523	180	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPARACAO_MEDIDAS_dinheiro_1211292523	181	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	182	clicar no sinal	0	0	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	183	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	184	clicar no sinal	0	1	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	185	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	186	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	187	clicar no sinal	1	2	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	188	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	189	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_figurinhas_1241847048	190	clicar no sinal	2	3	true	true	true	OK
+IN_TRANSFORMACAO_RELACAO_bonecas_1433474852	191	clicar na operação errada (Soma)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_bonecas_1433474852	192	clicar na operação errada (Soma)	0	0	false	false	true	OK
+IN_TRANSFORMACAO_RELACAO_bonecas_1433474852	193	clicar na operação errada (Soma)	0	0	true	true	true	OK
+IN_COMPOSICAO_RELACOES_idades_803396257	194	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_COMPOSICAO_RELACOES_idades_803396257	195	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+IN_COMPOSICAO_RELACOES_idades_803396257	196	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	197	clicar no sinal	0	0	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	198	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	199	clicar no sinal	0	1	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	200	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	201	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	202	clicar no sinal	1	2	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	203	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	204	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+IN_COMPOSICAO_RELACOES_dinheiro_1274013472	205	clicar no sinal	2	3	true	true	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	206	clicar no sinal	0	0	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	207	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	208	confirmar Sim (Enter no diálogo)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	209	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	210	clicar no sinal	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	211	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	212	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	213	clicar no sinal	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	214	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	215	clicar no sinal	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	216	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	217	clicar no sinal	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	218	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	219	clicar no sinal	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	220	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	221	clicar no sinal	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	222	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	223	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_balas_1406833657	224	clicar no sinal	2	3	true	true	true	OK
+FR_TRANSFORMACAO_MEDIDAS_bolas_2030296152	225	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_bolas_2030296152	226	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_bolas_2030296152	227	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1501838093	228	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1501838093	229	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1501838093	230	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_238789438	231	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_238789438	232	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_e_verduras_238789438	233	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1939875172	234	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1939875172	235	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_figurinhas_1939875172	236	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_1765404383	237	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_1765404383	238	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_1765404383	239	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_1604626860	240	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_1604626860	241	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_MEDIDAS_frutas_1604626860	242	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	243	clicar no sinal	0	0	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	244	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	245	clicar no sinal	0	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	246	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	247	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	248	clicar no sinal	1	2	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	249	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	250	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_figurinhas_1095325411	251	clicar no sinal	2	3	true	true	true	OK
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	252	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	253	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_1386707023	254	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_450698522	255	clicar na operação errada (Soma)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_450698522	256	clicar na operação errada (Soma)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_chocolates_450698522	257	clicar na operação errada (Soma)	0	0	true	true	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_464948667	258	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_464948667	259	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_COMPOSTA_DOIS_PASSOS_guloseimas_464948667	260	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_bolas_1696962596	261	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_bolas_1696962596	262	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_COMPOSICAO_TRANSFORMACOES_bolas_1696962596	263	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+FR_COMPARACAO_MEDIDAS_bolas_642715490	264	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_bolas_642715490	265	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_bolas_642715490	266	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1566253774	267	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1566253774	268	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1566253774	269	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_cds_268242115	270	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_cds_268242115	271	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_cds_268242115	272	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	273	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	274	clicar no sinal	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	275	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	276	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	277	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	278	clicar no sinal	1	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	279	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	280	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	281	clicar no sinal	2	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	282	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_carrinhos_2108625552	283	clicar no sinal	2	3	true	true	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1556037952	284	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1556037952	285	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1556037952	286	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1582050380	287	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1582050380	288	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPARACAO_MEDIDAS_dinheiro_1582050380	289	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	290	clicar no sinal	0	0	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	291	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	292	clicar no sinal	0	1	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	293	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	294	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	295	clicar no sinal	1	2	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	296	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	297	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_figurinhas_491362201	298	clicar no sinal	2	3	true	true	true	OK
+FR_TRANSFORMACAO_RELACAO_bonecas_405276910	299	clicar na operação errada (Soma)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_bonecas_405276910	300	clicar na operação errada (Soma)	0	0	false	false	true	OK
+FR_TRANSFORMACAO_RELACAO_bonecas_405276910	301	clicar na operação errada (Soma)	0	0	true	true	true	OK
+FR_COMPOSICAO_RELACOES_idades_1667173613	302	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_COMPOSICAO_RELACOES_idades_1667173613	303	clicar na operação errada (Subtração)	0	0	false	false	true	OK
+FR_COMPOSICAO_RELACOES_idades_1667173613	304	clicar na operação errada (Subtração)	0	0	true	true	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	305	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	306	clicar no sinal	0	1	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	307	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	308	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	309	clicar no sinal	1	2	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	310	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	311	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+FR_COMPOSICAO_RELACOES_dinheiro_1876731889	312	clicar no sinal	2	3	true	true	true	OK
