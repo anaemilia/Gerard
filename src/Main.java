@@ -13844,129 +13844,22 @@ public class Main extends JFrame {
                     repaint();
                 }
 
-                /** Tamanho das caixas/círculos proporcional ao espaço real do painel. */
-                int tamanhoCaixa() {
-                    return Math.max(30, Math.min(70, Math.min(getWidth(), getHeight()) / 4));
-                }
-
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setStroke(new BasicStroke(1.4f));
-                    g2.setFont(new Font("Arial", Font.BOLD, Math.max(13, Math.min(26, tamanhoCaixa() / 3))));
                     alvos.clear();
                     // A representação da situação-problema é uma instância preenchida e interativa.
                     // A representação da categoria é uma referência estrutural: vazia, estática
-                    // e sem participação na sincronização ou no log de modelagem.
-                    if (formal) {
-                        if (categoria == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) desenharComposicaoVazia(g2);
-                        else if (categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) desenharTransformacaoVazia(g2);
-                        else desenharComparacaoVazia(g2);
-                    } else {
-                        if (categoria == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) desenharComposicao(g2);
-                        else if (categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) desenharTransformacao(g2);
-                        else desenharComparacao(g2);
-                    }
+                    // e sem participação na sincronização ou no log de modelagem. Quem desenha cada
+                    // categoria é o renderizador dela (gerard.ui.comparacao); a tela só o pergunta.
+                    gerard.ui.comparacao.QuadroMiniCategoria quadro =
+                            new gerard.ui.comparacao.QuadroMiniCategoria(getWidth(), getHeight(), alvos);
+                    g2.setFont(quadro.fonteDosValores());
+                    gerard.ui.comparacao.RenderizadorMiniCategoria.para(categoria)
+                            .desenhar(g2, quadro, formal ? null : modelo);
                     g2.dispose();
-                }
-
-                void desenharValor(Graphics2D g2, int x, int y, int valor, boolean circulo) {
-                    int tamanho = tamanhoCaixa();
-                    Rectangle r = new Rectangle(x - tamanho / 2, y - tamanho / 2, tamanho, tamanho); alvos.add(r);
-                    g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-                    if (circulo) g2.fillOval(r.x,r.y,r.width,r.height); else g2.fillRect(r.x,r.y,r.width,r.height);
-                    g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                    if (circulo) g2.drawOval(r.x,r.y,r.width,r.height); else g2.drawRect(r.x,r.y,r.width,r.height);
-                    String t=String.valueOf(valor); FontMetrics fm=g2.getFontMetrics();
-                    g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO);
-                    g2.drawString(t, x-fm.stringWidth(t)/2, y+fm.getAscent()/2-2);
-                }
-
-
-                void desenharFormaVazia(Graphics2D g2, int x, int y, boolean circulo) {
-                    int tamanho = tamanhoCaixa();
-                    g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-                    if (circulo) g2.fillOval(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
-                    else g2.fillRect(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
-                    g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                    if (circulo) g2.drawOval(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
-                    else g2.drawRect(x - tamanho/2, y - tamanho/2, tamanho, tamanho);
-                }
-
-                /** Fator de escala dos pequenos deslocamentos (folgas, pontas de seta)
-                 *  ao redor das caixas — mantém a mesma proporção visual de quando
-                 *  a caixa tinha 44px fixos, agora que tamanhoCaixa() varia. */
-                double escalaTraco() {
-                    return tamanhoCaixa() / 44.0;
-                }
-
-                void desenharComposicaoVazia(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int x1=w/4, x2=w/4, xt=3*w/4;
-                    desenharFormaVazia(g2,x1,h/3,false);
-                    desenharFormaVazia(g2,x2,2*h/3,false);
-                    desenharFormaVazia(g2,xt,h/2,false);
-                    double r = escalaTraco();
-                    int bx=w/2-(int)Math.round(12*r);
-                    g2.drawArc(bx,h/3-(int)Math.round(18*r),(int)Math.round(30*r),h/3+(int)Math.round(36*r),270,180);
-                }
-
-                void desenharTransformacaoVazia(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int y=2*h/3;
-                    desenharFormaVazia(g2,w/5,y,false);
-                    desenharFormaVazia(g2,w/2,h/3,true);
-                    desenharFormaVazia(g2,4*w/5,y,false);
-                    double r = escalaTraco();
-                    int gap=(int)Math.round(25*r), ponta=(int)Math.round(35*r), asa=(int)Math.round(6*r);
-                    g2.drawLine(w/5+gap,y,4*w/5-gap,y);
-                    g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y-asa); g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y+asa);
-                }
-
-                void desenharComparacaoVazia(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int x=w/2;
-                    desenharFormaVazia(g2,x,h/5,false);
-                    desenharFormaVazia(g2,x,h*4/5,false);
-                    desenharFormaVazia(g2,x+w/4,h/2,true);
-                    double r = escalaTraco();
-                    int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
-                    g2.drawLine(x,h/5+gap,x,h*4/5-gap);
-                    // Seta sai do quadrado de baixo para o de cima (2026-08-07,
-                    // mesma correção do ícone de atalho em criarIconeCategoriaComparacao).
-                    g2.drawLine(x,h/5+gap,x-asa,h/5+ponta); g2.drawLine(x,h/5+gap,x+asa,h/5+ponta);
-                }
-
-                void desenharComposicao(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int x1=w/4, x2=w/4, xt=3*w/4;
-                    desenharValor(g2,x1,h/3,modelo.getPrimeiraParcela(),false);
-                    desenharValor(g2,x2,2*h/3,modelo.getSegundaParcela(),false);
-                    desenharValor(g2,xt,h/2,modelo.getTotal(),false);
-                    double r = escalaTraco();
-                    int bx=w/2-(int)Math.round(12*r);
-                    g2.drawArc(bx,h/3-(int)Math.round(18*r),(int)Math.round(30*r),h/3+(int)Math.round(36*r),270,180);
-                }
-
-                void desenharTransformacao(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int y=2*h/3;
-                    desenharValor(g2,w/5,y,modelo.getPrimeiraParcela(),false);
-                    desenharValor(g2,w/2,h/3,modelo.getSegundaParcela(),true);
-                    desenharValor(g2,4*w/5,y,modelo.getTotal(),false);
-                    double r = escalaTraco();
-                    int gap=(int)Math.round(25*r), ponta=(int)Math.round(35*r), asa=(int)Math.round(6*r);
-                    g2.drawLine(w/5+gap,y,4*w/5-gap,y);
-                    g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y-asa); g2.drawLine(4*w/5-gap,y,4*w/5-ponta,y+asa);
-                }
-
-                void desenharComparacao(Graphics2D g2) {
-                    int w=getWidth(), h=getHeight(); int x=w/2;
-                    desenharValor(g2,x,h/5,modelo.getTotal(),false);
-                    desenharValor(g2,x,h*4/5,modelo.getPrimeiraParcela(),false);
-                    desenharValor(g2,x+w/4,h/2,modelo.getSegundaParcela(),true);
-                    double r = escalaTraco();
-                    int gap=(int)Math.round(24*r), ponta=(int)Math.round(34*r), asa=(int)Math.round(6*r);
-                    g2.drawLine(x,h/5+gap,x,h*4/5-gap);
-                    // Seta sai do quadrado de baixo para o de cima (2026-08-07,
-                    // mesma correção do ícone de atalho em criarIconeCategoriaComparacao).
-                    g2.drawLine(x,h/5+gap,x-asa,h/5+ponta); g2.drawLine(x,h/5+gap,x+asa,h/5+ponta);
                 }
 
                 private String solicitarValorInteiro(int valorAtual) {

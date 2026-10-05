@@ -125,6 +125,13 @@ exigir(not literais, "R7: nenhum vermelho literal fora da fonte única (achados:
 exigir("--erro:" not in (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8"),
        "R7: styles.css não define --erro (vem do CSS gerado)")
 
+# R8 — a tela "Comparar categorias" não decide por categoria: papel, texto e desenho têm dono fora da Main.
+exigir(not re.search(r"==\s*TipoSituacaoAditiva\.(COMPOSICAO|TRANSFORMACAO|COMPARACAO)_MEDIDAS\s*\)\s*desenhar", main)
+       and not re.search(r"void\s+desenhar(Composicao|Transformacao|Comparacao)(Vazia)?\s*\(Graphics2D", main),
+       "R8: a Main não desenha por categoria na tela Comparar categorias (renderizador polimórfico em gerard.ui.comparacao)")
+exigir("RenderizadorMiniCategoria.para(" in main and "CategoriasComparaveis." in main,
+       "R8: a tela de comparação delega desenho e papel/texto aos objetos donos")
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))
