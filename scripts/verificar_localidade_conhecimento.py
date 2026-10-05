@@ -129,8 +129,11 @@ exigir("--erro:" not in (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8"
 exigir(not re.search(r"==\s*TipoSituacaoAditiva\.(COMPOSICAO|TRANSFORMACAO|COMPARACAO)_MEDIDAS\s*\)\s*desenhar", main)
        and not re.search(r"void\s+desenhar(Composicao|Transformacao|Comparacao)(Vazia)?\s*\(Graphics2D", main),
        "R8: a Main não desenha por categoria na tela Comparar categorias (renderizador polimórfico em gerard.ui.comparacao)")
-exigir("RenderizadorMiniCategoria.para(" in main and "CategoriasComparaveis." in main,
+painel_comparacao = (SRC / "gerard/ui/comparacao/PainelComparacaoCategorias.java").read_text(encoding="utf-8")
+exigir("RenderizadorMiniCategoria.para(" in painel_comparacao and "CategoriasComparaveis." in painel_comparacao,
        "R8: a tela de comparação delega desenho e papel/texto aos objetos donos")
+exigir("class PainelComparacaoCategorias" not in main,
+       "R8: a tela Comparar categorias é classe própria (gerard.ui.comparacao), não parte da Main")
 
 print()
 if violacoes:
