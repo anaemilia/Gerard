@@ -13691,11 +13691,8 @@ public class Main extends JFrame {
             }
 
             final java.util.List<JLabel> rotulosSituacao = new ArrayList<JLabel>();
-            final TipoSituacaoAditiva[] categorias = new TipoSituacaoAditiva[] {
-                    TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
-                    TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS,
-                    TipoSituacaoAditiva.COMPARACAO_MEDIDAS
-            };
+            final TipoSituacaoAditiva[] categorias = gerard.aplicacao.CategoriasComparaveis.todas()
+                    .toArray(new TipoSituacaoAditiva[0]);
 
             void montarGrade() {
                 grade.removeAll();
@@ -13771,11 +13768,7 @@ public class Main extends JFrame {
             String textoSituacao(TipoSituacaoAditiva categoria, int linha) {
                 String romano = linha == 0 ? "I" : linha == 1 ? "II" : "III";
                 String titulo = localizacao.descricaoTipo(categoria);
-                String chave = categoria == TipoSituacaoAditiva.COMPOSICAO_MEDIDAS
-                        ? "ui.compare.problem.composition"
-                        : categoria == TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS
-                        ? "ui.compare.problem.transformation"
-                        : "ui.compare.problem.comparison";
+                String chave = gerard.aplicacao.CategoriasComparaveis.chaveTextoDoProblema(categoria);
                 String valorA = "<span style='color:#332E28;font-weight:bold'>" + modelo.getPrimeiraParcela() + "</span>";
                 String valorB = "<span style='color:#746E62;font-weight:bold'>" + modelo.getSegundaParcela() + "</span>";
                 String valorTotal = "<span style='color:#968E80;font-weight:bold'>" + modelo.getTotal() + "</span>";
@@ -14034,14 +14027,7 @@ public class Main extends JFrame {
 
                 private EstadoNumericoComparacaoCategorias.Papel
                         papelRepresentadoNoIndice(int indice) {
-                    if (categoria == TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
-                        if (indice == 0) return EstadoNumericoComparacaoCategorias.Papel.TOTAL;
-                        if (indice == 1) return EstadoNumericoComparacaoCategorias.Papel.PRIMEIRA_PARCELA;
-                        return EstadoNumericoComparacaoCategorias.Papel.SEGUNDA_PARCELA;
-                    }
-                    if (indice == 0) return EstadoNumericoComparacaoCategorias.Papel.PRIMEIRA_PARCELA;
-                    if (indice == 1) return EstadoNumericoComparacaoCategorias.Papel.SEGUNDA_PARCELA;
-                    return EstadoNumericoComparacaoCategorias.Papel.TOTAL;
+                    return gerard.aplicacao.CategoriasComparaveis.papelNoIndice(categoria, indice);
                 }
 
                 private int valorAtual(
