@@ -2848,7 +2848,7 @@ public class TelaCuradoriaSituacoes extends JPanel {
                 case COMPOSICAO_TRANSFORMACOES:
                     return new Color(194, 65, 12);
                 case TRANSFORMACAO_RELACAO:
-                    return new Color(190, 18, 60);
+                    return gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
                 case COMPOSICAO_RELACOES:
                     return new Color(77, 124, 15);
                 default:

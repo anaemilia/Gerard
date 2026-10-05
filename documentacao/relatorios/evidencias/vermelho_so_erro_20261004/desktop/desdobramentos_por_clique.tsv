@@ -1,0 +1,7 @@
+situacao	passo	acao	rejeicoes_antes	rejeicoes_depois	no_limite	painel_visivel	numeros_iguais	veredito
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	1	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	2	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114	3	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	4	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	5	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	6	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK

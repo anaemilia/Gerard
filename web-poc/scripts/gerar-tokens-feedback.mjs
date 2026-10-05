@@ -13,9 +13,9 @@ const fonte = candidatos.find(existsSync);
 if (!fonte) throw new Error("feedback.properties não encontrado");
 const cores = Object.fromEntries(readFileSync(fonte, "utf8").split(/\r?\n/)
   .filter((l) => l.trim() && !l.startsWith("#")).map((l) => l.split("=").map((s) => s.trim())));
-for (const k of ["erro", "erro_fundo", "erro_texto", "erro_claro"]) {
+for (const k of ["erro", "erro_fundo", "erro_texto"]) {
   if (!/^[0-9a-fA-F]{6}$/.test(cores[k] ?? "")) throw new Error(`cor inválida/ausente: ${k}`);
 }
 writeFileSync(resolve(aqui, "../tokens-feedback.css"),
   `/* GERADO por scripts/gerar-tokens-feedback.mjs a partir de feedback.properties. Não edite. */\n` +
-  `:root { --erro:#${cores.erro}; --erro-fundo:#${cores.erro_fundo}; --erro-texto:#${cores.erro_texto}; --erro-claro:#${cores.erro_claro}; }\n`);
+  `:root { --erro:#${cores.erro}; --erro-fundo:#${cores.erro_fundo}; --erro-texto:#${cores.erro_texto}; }\n`);

@@ -174,9 +174,6 @@ public final class UITemaGerard {
     /** Texto sobre fundo de erro. */
     public static final Color COR_ERRO_TEXTO = corDeFeedback("erro_texto");
 
-    /** Preenchimento suave do vermelho de erro (unidades e quadradinhos). */
-    public static final Color COR_ERRO_CLARO = corDeFeedback("erro_claro");
-
     /**
      * Cor reservada para feedback de ALERTA (aviso, não erro nem sucesso).
      * Sem consumidor conhecido nesta versão — token preparado junto com

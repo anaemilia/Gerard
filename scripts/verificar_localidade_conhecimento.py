@@ -96,9 +96,8 @@ exigir(not re.search(r"COR_ERRO\w*\s*=\s*new\s+Color", tema),
        "R7: UITemaGerard não tem hex de erro próprio (lê feedback.properties)")
 css_gerado = (RAIZ / "web-poc/tokens-feedback.css").read_text(encoding="utf-8")
 valores = dict(l.split("=", 1) for l in fonte.splitlines() if l.strip() and not l.startswith("#"))
-esperado = (":root { --erro:#%s; --erro-fundo:#%s; --erro-texto:#%s; --erro-claro:#%s; }"
-            % (valores["erro"].strip(), valores["erro_fundo"].strip(), valores["erro_texto"].strip(),
-               valores["erro_claro"].strip()))
+esperado = (":root { --erro:#%s; --erro-fundo:#%s; --erro-texto:#%s; }"
+            % (valores["erro"].strip(), valores["erro_fundo"].strip(), valores["erro_texto"].strip()))
 exigir(esperado in css_gerado, "R7: web-poc/tokens-feedback.css gerado a partir da mesma fonte (rode npm run tokens)")
 import colorsys
 
@@ -108,11 +107,11 @@ def avermelhado(r, g, b):
     return (h < 0.04 or h > 0.93) and s > 0.18 and v > 0.35
 
 
-# Vermelho é sempre erro: nenhum literal avermelhado no Swing (fora do tema e da paleta de categorias da
-# curadoria) nem no web (fora do CSS gerado).
+# REGRA GERAL: vermelho só no erro. Nenhum literal avermelhado no Swing (fora do UITemaGerard) nem no web
+# (fora do CSS gerado); o resto usa a paleta do Gérard.
 literais = []
 for f in arquivos("*.java"):
-    if f.name in ("UITemaGerard.java", "TelaCuradoriaSituacoes.java"):
+    if f.name == "UITemaGerard.java":
         continue
     for m in re.finditer(r"new\s+Color\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)", codigo(f)):
         if avermelhado(*map(int, m.groups())):
