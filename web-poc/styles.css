@@ -272,7 +272,7 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 .scene-quadradinhos-moldura { fill:var(--superficie); stroke:var(--borda); stroke-width:1.5; stroke-dasharray:4 3; }
 .quadradinhos-grupo { display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
 .quadradinhos-grade { display:flex; flex-flow:column-reverse wrap; align-content:flex-start; gap:3px; max-height:220px; min-width:18px; }
-.quadradinho { width:15px; height:15px; border-radius:3px; background:#d29aa4; border:1px solid #56747e; }
+.quadradinho { width:15px; height:15px; border-radius:3px; background:var(--erro-claro); border:1px solid #56747e; }
 .quadradinhos-controles { display:flex; align-items:center; gap:10px; }
 .quadradinhos-controles button { min-width:44px; min-height:44px; border:1px solid var(--borda-controle); border-radius:var(--raio-controle); background:var(--superficie); color:var(--texto); font-size:1.1rem; font-weight:600; }
 .quadradinhos-controles button:hover:not(:disabled) { border-color:var(--azul-600); color:var(--azul-800); }

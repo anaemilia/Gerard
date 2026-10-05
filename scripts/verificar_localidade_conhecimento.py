@@ -96,9 +96,33 @@ exigir(not re.search(r"COR_ERRO\w*\s*=\s*new\s+Color", tema),
        "R7: UITemaGerard não tem hex de erro próprio (lê feedback.properties)")
 css_gerado = (RAIZ / "web-poc/tokens-feedback.css").read_text(encoding="utf-8")
 valores = dict(l.split("=", 1) for l in fonte.splitlines() if l.strip() and not l.startswith("#"))
-esperado = (":root { --erro:#%s; --erro-fundo:#%s; --erro-texto:#%s; }"
-            % (valores["erro"].strip(), valores["erro_fundo"].strip(), valores["erro_texto"].strip()))
+esperado = (":root { --erro:#%s; --erro-fundo:#%s; --erro-texto:#%s; --erro-claro:#%s; }"
+            % (valores["erro"].strip(), valores["erro_fundo"].strip(), valores["erro_texto"].strip(),
+               valores["erro_claro"].strip()))
 exigir(esperado in css_gerado, "R7: web-poc/tokens-feedback.css gerado a partir da mesma fonte (rode npm run tokens)")
+import colorsys
+
+
+def avermelhado(r, g, b):
+    h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+    return (h < 0.04 or h > 0.93) and s > 0.18 and v > 0.35
+
+
+# Vermelho é sempre erro: nenhum literal avermelhado no Swing (fora do tema e da paleta de categorias da
+# curadoria) nem no web (fora do CSS gerado).
+literais = []
+for f in arquivos("*.java"):
+    if f.name in ("UITemaGerard.java", "TelaCuradoriaSituacoes.java"):
+        continue
+    for m in re.finditer(r"new\s+Color\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)", codigo(f)):
+        if avermelhado(*map(int, m.groups())):
+            literais.append(f.name + ":" + m.group(0))
+for f in [RAIZ / "web-poc/styles.css"] + sorted((RAIZ / "web-poc/src").rglob("*.ts*")):
+    for m in re.finditer(r"#([0-9a-fA-F]{6})\b", f.read_text(encoding="utf-8")):
+        v = m.group(1)
+        if avermelhado(int(v[0:2], 16), int(v[2:4], 16), int(v[4:6], 16)):
+            literais.append(f.name + ":#" + v)
+exigir(not literais, "R7: nenhum vermelho literal fora da fonte única (achados: %s)" % literais)
 exigir("--erro:" not in (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8"),
        "R7: styles.css não define --erro (vem do CSS gerado)")
 

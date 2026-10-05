@@ -21,7 +21,7 @@ public final class RenderizadorProcessoTransformacao {
     private static final Color FUNDO_ESTADO = gerard.ui.UITemaGerard.COR_SUPERFICIE;
     private static final Color BORDA_ESTADO_NEUTRA = gerard.ui.UITemaGerard.COR_BORDA;
     private static final Color TEXTO_ETAPA_NEUTRA = gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
-    private static final Color RETIRADA = new Color(166, 72, 72);
+    private static final Color RETIRADA = gerard.ui.UITemaGerard.COR_ERRO;
     private static final Color TEXTO = gerard.ui.UITemaGerard.COR_TEXTO;
     private static final Color TEXTO_SECUNDARIO = gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO;
 
