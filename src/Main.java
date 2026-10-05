@@ -6094,151 +6094,89 @@ public class Main extends JFrame {
         private boolean confirmarValorIncognitaAceito(ItemTextoArrastavel item,
                 gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao,
                 boolean registrarAcaoDoProtocoloTexto) {
-            if (registrarAcaoDoProtocoloTexto) {
-                return confirmarValorIncognitaTexto(item, identidadeAcao);
-            }
-            if (item == null || !item.representaIncognitaOriginal()
-                    || !item.isPreenchidoPeloProtocoloMouseTexto()) {
-                return true;
-            }
-            String papelAlvo = obterPapelIncognitaAtual();
-            garantirTentativasIncognitaAtual(papelAlvo);
-            atualizarContextoAdaptativoIncognitaAtual();
-            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
-            if (incognita == null) {
-                return true;
-            }
-            if (identidadeAcao == null) {
-                identidadeAcao = tentativasIncognitaAtual.iniciarAcaoInstrumental(
-                        gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
-            }
-
-            registrarPapeisDadoModificadosSeHouver();
-            ContextoAcaoInstrumental contextoInstrumental =
-                    new ContextoAcaoInstrumental(
-                            "Quantificar a incógnita",
-                            "Editor numérico",
-                            "Item do diagrama",
-                            "Informar valor numérico para o papel designado como incógnita",
-                            papelAlvo,
-                            "EDICAO_ITEM",
-                            "valor=" + (item.valor == null ? "" : item.valor),
-                            "Valor numérico informado para a incógnita",
-                            participantesSemanticosDaSituacaoAtual());
-            RegistroAcaoInstrumental registro = servicoAvaliacaoAcaoIncognita.avaliarAcao(
-                    incognita, identidadeAcao,
-                    gerard.dominio.atividade.TarefaInteracao.QUANTIFICAR,
-                    situacaoProblemaAtual, localizacao, papelAlvo,
-                    estadoSemanticoCompartilhado.snapshot(),
-                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
-                    item.valor, contextoInstrumental);
-            persistirAcaoDaTentativa(registro, null);
-
-            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
-                    registro.getResultadoTentativa().isPresent()
-                            ? registro.getResultadoTentativa().get() : null;
-            if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
-                aplicarFeedbackVisualErroDiagrama();
-            }
-            ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
-            if (registro.foiErrada() && resultadoTentativa != null
-                    && registro.getDiagnostico().isPresent()) {
-                resultadoAjuda = executorAjudaIncognita.executar(
-                        contextoIncognitaAtual,
-                        registro.getDiagnostico().get(),
-                        resultadoTentativa.getRejeicoesConsecutivas(),
-                        new ContextoRegistroAjuda(
-                                registro.getActionId(),
-                                registro.getRejectionSequenceId()));
-            }
-            if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
-                limparFeedbackVisualErroDiagrama();
-                return true;
-            }
-            if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
-                return false;
-            }
-            if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
-                // 3ª rejeição consecutiva do mesmo item: encerra a ação e
-                // bloqueia novas tentativas (ver registrarTentativaIncognita),
-                // sem diálogo — ver processarLimiteTentativasAtingido.
-                processarLimiteTentativasAtingido(resultadoTentativa);
-                return false;
-            }
-            String nomePapel = localizacao.texto(papelAlvo);
-            String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
-            int opcao = JOptionPane.showConfirmDialog(
-                    this, pergunta, localizacao.texto("ui.dialog.confirm"),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            registrarFeedbackExibido("AG_EMLQ",
-                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "pergunta de confirmação de valor divergente");
-            registrarRespostaConfirmacaoValorIncognita(
-                    incognita, opcao, papelAlvo, item.valor);
-            return false;
+            return gerard.aplicacao.FluxoConfirmacaoValorIncognita.executar(
+                    new AlvoConfirmacaoValor(item),
+                    registrarAcaoDoProtocoloTexto
+                            ? gerard.aplicacao.ProtocoloValorIncognita.TEXTO
+                            : gerard.aplicacao.ProtocoloValorIncognita.QUANTIFICAR,
+                    identidadeAcao);
         }
 
         /**
-         * Primeiro fluxo adaptativo distribuído completo. A tela entrega os
-         * fatos observáveis do protocolo TEXTO à incógnita; o proprietário
-         * semântico avalia, diagnostica, atualiza a sequência e constitui um
-         * único registro. A infraestrutura apenas persiste o registro,
-         * encaminha o mesmo caso ao Modelador e materializa a ajuda que o
-         * próprio proprietário selecionou a partir da fotografia do login e
-         * das regras publicadas.
+         * Primeiro fluxo adaptativo distribuído completo. A tela entrega os fatos observáveis do protocolo à
+         * incógnita; o proprietário semântico avalia, diagnostica, atualiza a sequência e constitui um único
+         * registro. A infraestrutura apenas persiste o registro, encaminha o mesmo caso ao Modelador e
+         * materializa a ajuda que o próprio proprietário selecionou a partir da fotografia do login e das regras
+         * publicadas. A ORDEM e os desvios são de FluxoConfirmacaoValorIncognita; aqui ficam só os passos que
+         * dependem da tela e da sessão.
          */
-        private boolean confirmarValorIncognitaTexto(
-                ItemTextoArrastavel item,
-                gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidadeAcao) {
-            if (item == null || !item.representaIncognitaOriginal()
-                    || !item.isPreenchidoPeloProtocoloMouseTexto()) {
-                return true;
+        private final class AlvoConfirmacaoValor implements gerard.aplicacao.FluxoConfirmacaoValorIncognita.Alvo {
+            private final ItemTextoArrastavel item;
+
+            AlvoConfirmacaoValor(ItemTextoArrastavel item) {
+                this.item = item;
             }
 
-            String papelAlvo = obterPapelIncognitaAtual();
-            garantirTentativasIncognitaAtual(papelAlvo);
-            atualizarContextoAdaptativoIncognitaAtual();
-            IncognitaQuantitativa incognita = obterIncognitaSemanticaAtual();
-            if (incognita == null) {
-                return true;
+            public boolean ehIncognitaPreenchidaPeloProtocolo() {
+                return item != null && item.representaIncognitaOriginal() && item.isPreenchidoPeloProtocoloMouseTexto();
             }
-            if (identidadeAcao == null) {
-                identidadeAcao = tentativasIncognitaAtual.iniciarAcaoInstrumental(
+
+            public String prepararPapelDaIncognita() {
+                String papelAlvo = obterPapelIncognitaAtual();
+                garantirTentativasIncognitaAtual(papelAlvo);
+                atualizarContextoAdaptativoIncognitaAtual();
+                return papelAlvo;
+            }
+
+            public IncognitaQuantitativa incognitaAtual() {
+                return obterIncognitaSemanticaAtual();
+            }
+
+            public gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel iniciarAcaoDoUsuario() {
+                return tentativasIncognitaAtual.iniciarAcaoInstrumental(
                         gerard.dominio.campoaditivo.OrigemAcao.ORIGEM_USUARIO);
             }
 
-            registrarPapeisDadoModificadosSeHouver();
-            ContextoAcaoInstrumental contextoInstrumental =
-                    new ContextoAcaoInstrumental(
-                            "Substituir incógnita por número",
-                            "Caixa de texto editável",
-                            "Item arrastável no diagrama",
-                            "Informar valor numérico para o papel designado como incógnita",
-                            papelAlvo,
-                            "EDICAO_ITEM",
-                            "valor=" + (item.valor == null ? "" : item.valor),
-                            "Valor numérico informado para a incógnita",
-                            participantesSemanticosDaSituacaoAtual());
-            RegistroAcaoInstrumental registro = servicoAvaliacaoAcaoIncognita.avaliarAcao(
-                    incognita, identidadeAcao,
-                    gerard.dominio.atividade.TarefaInteracao.TEXTO,
-                    situacaoProblemaAtual, localizacao, papelAlvo,
-                    estadoSemanticoCompartilhado.snapshot(),
-                    obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
-                    item.valor, contextoInstrumental);
-            gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa =
-                    registro.getResultadoTentativa().isPresent()
-                            ? registro.getResultadoTentativa().get() : null;
+            public void registrarPapeisDadoModificadosSeHouver() {
+                Main.TelaGerard.this.registrarPapeisDadoModificadosSeHouver();
+            }
 
-            persistirAcaoDaTentativa(registro, null);
+            public RegistroAcaoInstrumental avaliar(gerard.aplicacao.ProtocoloValorIncognita protocolo,
+                    IncognitaQuantitativa incognita,
+                    gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel identidade, String papelAlvo) {
+                ContextoAcaoInstrumental contextoInstrumental = new ContextoAcaoInstrumental(
+                        protocolo.getTarefa(),
+                        protocolo.getInstrumentoOrganizacao(),
+                        protocolo.getInstrumentoArtefato(),
+                        "Informar valor numérico para o papel designado como incógnita",
+                        papelAlvo,
+                        "EDICAO_ITEM",
+                        "valor=" + (item.valor == null ? "" : item.valor),
+                        "Valor numérico informado para a incógnita",
+                        participantesSemanticosDaSituacaoAtual());
+                return servicoAvaliacaoAcaoIncognita.avaliarAcao(
+                        incognita, identidade, protocolo.getTarefaDeInteracao(),
+                        situacaoProblemaAtual, localizacao, papelAlvo,
+                        estadoSemanticoCompartilhado.snapshot(),
+                        obterIndiceIncognitaProtegidaNoEstadoCompartilhado(),
+                        item.valor, contextoInstrumental);
+            }
 
-            if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
+            public void persistir(RegistroAcaoInstrumental registro) {
+                persistirAcaoDaTentativa(registro, null);
+            }
+
+            public void aplicarFeedbackVisualErro() {
                 aplicarFeedbackVisualErroDiagrama();
             }
-            ResultadoExecucaoAjudaIncognita resultadoAjuda = null;
-            if (registro.foiErrada() && resultadoTentativa != null
-                    && registro.getDiagnostico().isPresent()) {
-                resultadoAjuda = executorAjudaIncognita.executar(
+
+            public void limparFeedbackVisualErro() {
+                limparFeedbackVisualErroDiagrama();
+            }
+
+            public ResultadoExecucaoAjudaIncognita executarAjuda(RegistroAcaoInstrumental registro,
+                    gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa) {
+                return executorAjudaIncognita.executar(
                         contextoIncognitaAtual,
                         registro.getDiagnostico().get(),
                         resultadoTentativa.getRejeicoesConsecutivas(),
@@ -6247,33 +6185,31 @@ public class Main extends JFrame {
                                 registro.getRejectionSequenceId()));
             }
 
-            if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
-                limparFeedbackVisualErroDiagrama();
-                return true;
-            }
-            if (resultadoAjuda != null && resultadoAjuda.foiMaterializada()) {
-                return false;
-            }
-            if (resultadoTentativa != null && resultadoTentativa.isLimiteAtingidoAgora()) {
-                // Ver processarLimiteTentativasAtingido (sem diálogo).
-                processarLimiteTentativasAtingido(resultadoTentativa);
-                return false;
+            public void processarLimiteTentativasAtingido(
+                    gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel resultadoTentativa) {
+                Main.TelaGerard.this.processarLimiteTentativasAtingido(resultadoTentativa);
             }
 
-            String nomePapel = localizacao.texto(papelAlvo);
-            String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
-            int opcao = JOptionPane.showConfirmDialog(
-                    this, pergunta, localizacao.texto("ui.dialog.confirm"),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            registrarFeedbackExibido("AG_EMLQ",
-                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "pergunta de confirmação de valor divergente",
-                    registro.getActionId(), registro.getRejectionSequenceId());
-            registrarRespostaConfirmacaoValorIncognita(
-                    incognita, opcao, papelAlvo, item.valor);
-            return false;
+            public void perguntarConfirmacao(gerard.aplicacao.ProtocoloValorIncognita protocolo,
+                    RegistroAcaoInstrumental registro, IncognitaQuantitativa incognita, String papelAlvo) {
+                String nomePapel = localizacao.texto(papelAlvo);
+                String pergunta = localizacao.formatar("ui.question.valueMismatch", nomePapel);
+                int opcao = JOptionPane.showConfirmDialog(
+                        Main.TelaGerard.this, pergunta, localizacao.texto("ui.dialog.confirm"),
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (protocolo.feedbackCarregaIdentificadores()) {
+                    registrarFeedbackExibido("AG_EMLQ",
+                            gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                            "pergunta de confirmação de valor divergente",
+                            registro.getActionId(), registro.getRejectionSequenceId());
+                } else {
+                    registrarFeedbackExibido("AG_EMLQ",
+                            gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                            "pergunta de confirmação de valor divergente");
+                }
+                registrarRespostaConfirmacaoValorIncognita(incognita, opcao, papelAlvo, item.valor);
+            }
         }
-
 
         /**
          * Lista referências semânticas da situação, nunca novos registros de
@@ -6426,14 +6362,19 @@ public class Main extends JFrame {
                 tentativaModelagemAtual.encerrarSeConcluida(
                         controladorConclusaoModelagem, tentativasIncognitaAtual);
             }
-            if (!concluida) {
+            // O que fazer com o destaque e o feedback é decisão de DecisaoFeedbackConclusao (tabela de
+            // verdade pura); aqui só se materializa, na ordem: remover, restaurar em silêncio, cancelar, iniciar.
+            gerard.campoaditivo.conclusao.DecisaoFeedbackConclusao decisao =
+                    gerard.campoaditivo.conclusao.DecisaoFeedbackConclusao.decidir(
+                            concluida, acabouDeConcluirPlenamente, tentativaJaEncerrada,
+                            destaqueConclusaoSuspensoPorExploracao,
+                            controladorConclusaoModelagem.deveApresentarTip());
+            if (decisao.removerDestaque()) {
                 aplicadorDestaqueConclusaoDiagrama.aplicar(
                         false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                         quadradinhosVenn);
             }
-
-            if (concluida && ((acabouDeConcluirPlenamente && tentativaJaEncerrada)
-                    || destaqueConclusaoSuspensoPorExploracao)) {
+            if (decisao.restaurarDestaqueEmSilencio()) {
                 // Exploração após a conclusão: o destaque volta em silêncio,
                 // sem nova sinalização, tip ou registro.
                 destaqueConclusaoSuspensoPorExploracao = false;
@@ -6441,10 +6382,9 @@ public class Main extends JFrame {
                         true, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                         quadradinhosVenn);
             }
-            if (!concluida) {
+            if (decisao.cancelarFeedbackPendente()) {
                 sequenciadorFeedbackConclusao.cancelar();
-            } else if (acabouDeConcluirPlenamente && !tentativaJaEncerrada
-                    && controladorConclusaoModelagem.deveApresentarTip()) {
+            } else if (decisao.iniciarFeedbackDeSucesso()) {
                 // A conclusão primeiro restaura a cena neutra. O azul só é
                 // aplicado depois pelo sequenciador de feedback de sucesso.
                 limparFeedbackVisualErroDiagrama();

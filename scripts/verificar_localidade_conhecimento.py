@@ -154,6 +154,14 @@ exigir("FluxoEscolhaSinalNumeroRelativo.executar(" in main_txt and not re.search
 exigir(main_txt.count("avaliarEscolhaSinalNumeroRelativo(") <= 2,
        "R11: a avaliação da escolha de sinal é chamada num só ponto (hoje %d)" % main_txt.count("avaliarEscolhaSinalNumeroRelativo("))
 
+# R12 — confirmação do valor da incógnita e feedback de conclusão: a sequência e a decisão têm dono fora da Main.
+main_d = (SRC / "Main.java").read_text(encoding="utf-8")
+exigir("FluxoConfirmacaoValorIncognita.executar(" in main_d and "private boolean confirmarValorIncognitaTexto(" not in main_d
+       and main_d.count("servicoAvaliacaoAcaoIncognita.avaliarAcao(") == 1,
+       "R12: a Main não repete a sequência da confirmação do valor (um só ponto de avaliação, FluxoConfirmacaoValorIncognita)")
+exigir("DecisaoFeedbackConclusao.decidir(" in main_d and "tentativaJaEncerrada &&" not in main_d,
+       "R12: a decisão do feedback de conclusão é de DecisaoFeedbackConclusao; a Main só materializa")
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))

@@ -155,15 +155,17 @@ print('== Estrutura atual ==')
 main=text('src/Main.java'); repo=text('src/gerard/campoaditivo/servico/RepositorioSituacoesAditivas.java')
 
 print('== P4.1: fluxo TEXTO distribuído da incógnita ==')
-inicio_fluxo_texto=main.find('private boolean confirmarValorIncognitaTexto(')
+inicio_fluxo_texto=main.find('private final class AlvoConfirmacaoValor ')   # os passos da tela; a ordem é de FluxoConfirmacaoValorIncognita
 fim_fluxo_texto=main.find('private java.util.List<String> participantesSemanticosDaSituacaoAtual()',
                           inicio_fluxo_texto)
 fluxo_texto=(main[inicio_fluxo_texto:fim_fluxo_texto]
              if inicio_fluxo_texto >= 0 and fim_fluxo_texto > inicio_fluxo_texto
              else '')
 check(bool(fluxo_texto),'fluxo TEXTO distribuído localizado na Main')
+protocolo_valor=text('src/gerard/aplicacao/ProtocoloValorIncognita.java')
 check('servicoAvaliacaoAcaoIncognita.avaliarAcao(' in fluxo_texto
-      and 'TarefaInteracao.TEXTO' in fluxo_texto,
+      and 'protocolo.getTarefaDeInteracao()' in fluxo_texto
+      and 'TarefaInteracao.TEXTO' in protocolo_valor,
       'proprietário semântico avalia a ação TEXTO')
 servico_avaliacao_incognita=text('src/gerard/aplicacao/ServicoAvaliacaoAcaoIncognita.java')
 check('incognita.avaliarAcao(' in servico_avaliacao_incognita
@@ -1105,7 +1107,7 @@ check('registrarRespostaConfirmacaoValorRejeitado' in papel_q
       and 'CONFIRMOU_VALOR_REJEITADO' in papel_q and 'RETIROU_VALOR_REJEITADO' in papel_q
       and 'avaliarRespostaConfirmacao(' in incog_q,
       'proprietário semântico constitui a resposta Sim/Não como tentativa da sequência')
-check(main.count('registrarRespostaConfirmacaoValorIncognita(') == 3
+check(main.count('registrarRespostaConfirmacaoValorIncognita(') == 2   # definição + o único ponto da pergunta (AlvoConfirmacaoValor)
       and 'JOptionPane.YES_OPTION' in main,
       'desktop registra a resposta das duas perguntas ui.question.valueMismatch')
 check('incognita.avaliarRespostaConfirmacao(' in resposta_web
