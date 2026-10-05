@@ -81,7 +81,7 @@ final class RotuloAnimacaoComLegendas extends JLabel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        desenharAnimacaoEscalada(g);      // escala a cada quadro: a animação segue viva em qualquer tamanho
         if (legendas.isEmpty() || duracao <= 0.0) {
             return;
         }
@@ -98,12 +98,35 @@ final class RotuloAnimacaoComLegendas extends JLabel {
         }
     }
 
-    /** Área que a animação ocupa dentro do rótulo (o ícone é centralizado; a legenda fica DENTRO dela). */
+    /**
+     * Área que a animação ocupa dentro do rótulo: a maior que cabe sem distorcer (ocupa toda a área de
+     * renderização, para cima ou para baixo); a legenda fica DENTRO dela.
+     */
     java.awt.Rectangle areaDaAnimacao() {
         javax.swing.Icon icone = getIcon();
-        int w = icone == null ? getWidth() : Math.min(icone.getIconWidth(), getWidth());
-        int h = icone == null ? getHeight() : Math.min(icone.getIconHeight(), getHeight());
+        if (icone == null || icone.getIconWidth() <= 0 || icone.getIconHeight() <= 0) {
+            return new java.awt.Rectangle(0, 0, getWidth(), getHeight());
+        }
+        double escala = Math.min((double) getWidth() / icone.getIconWidth(),
+                (double) getHeight() / icone.getIconHeight());
+        int w = Math.max(1, (int) Math.round(icone.getIconWidth() * escala));
+        int h = Math.max(1, (int) Math.round(icone.getIconHeight() * escala));
         return new java.awt.Rectangle((getWidth() - w) / 2, (getHeight() - h) / 2, w, h);
+    }
+
+    private void desenharAnimacaoEscalada(Graphics g) {
+        javax.swing.Icon icone = getIcon();
+        if (!(icone instanceof ImageIcon)) {
+            return;
+        }
+        java.awt.Rectangle a = areaDaAnimacao();
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.drawImage(((ImageIcon) icone).getImage(), a.x, a.y, a.width, a.height, this);
+        } finally {
+            g2.dispose();
+        }
     }
 
     private void desenhar(Graphics2D g2, String texto) {

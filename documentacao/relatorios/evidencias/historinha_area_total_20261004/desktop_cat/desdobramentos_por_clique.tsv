@@ -1,0 +1,19 @@
+situacao	passo	acao	rejeicoes_antes	rejeicoes_depois	no_limite	painel_visivel	numeros_iguais	veredito
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	1	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	2	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	3	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	4	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	5	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	6	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	7	digitar valor errado na incógnita (Enter)	0	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	8	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_COMPARACAO_MEDIDAS_bolas_487868670	9	confirmar Sim (Enter no diálogo)	1	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	10	clicar no sinal	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	11	digitar valor errado na incógnita (Enter)	0	0	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	12	clicar no sinal	0	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	13	confirmar Sim (Enter no diálogo)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	14	digitar valor errado na incógnita (Enter)	1	1	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	15	clicar no sinal	1	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	16	confirmar Sim (Enter no diálogo)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	17	digitar valor errado na incógnita (Enter)	2	2	false	false	true	OK
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	18	clicar no sinal	2	3	true	true	true	OK

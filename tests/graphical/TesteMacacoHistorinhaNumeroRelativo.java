@@ -401,12 +401,12 @@ public class TesteMacacoHistorinhaNumeroRelativo {
             SwingUtilities.invokeAndWait(new Runnable() { public void run() {
                 Point l = rot[0].getLocationOnScreen();
                 // faixa inferior da PRÓPRIA animação (a legenda tem de estar dentro da imagem, não do painel)
-                Rectangle ic = new Rectangle(0, 0, rot[0].getWidth(), rot[0].getHeight());
-                javax.swing.Icon icone = ((javax.swing.JLabel) rot[0]).getIcon();
-                if (icone != null) {
-                    int w = Math.min(icone.getIconWidth(), rot[0].getWidth()), h = Math.min(icone.getIconHeight(), rot[0].getHeight());
-                    ic = new Rectangle((rot[0].getWidth() - w) / 2, (rot[0].getHeight() - h) / 2, w, h);
-                }
+                Rectangle ic;
+                try {
+                    java.lang.reflect.Method m = rot[0].getClass().getDeclaredMethod("areaDaAnimacao");
+                    m.setAccessible(true);
+                    ic = (Rectangle) m.invoke(rot[0]);       // área real da animação, já escalada
+                } catch (Exception e) { throw new IllegalStateException(e); }
                 rc[0] = new Rectangle(l.x + ic.x, l.y + ic.y + ic.height * 2 / 3, ic.width, ic.height / 3); }});
             BufferedImage img = r.createScreenCapture(rc[0]);
             double tempo = ((System.nanoTime() - fi.getLong(rot[0])) / 1e9) % duracao;

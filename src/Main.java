@@ -8993,15 +8993,10 @@ public class Main extends JFrame {
                 return;
             }
             String chaveProjecao = ajudaVisual.toString();
-            int margem = 10;
-            Rectangle conteudo = new Rectangle(
-                    area.x + margem,
-                    area.y + margem,
-                    Math.max(1, area.width - 2 * margem),
-                    Math.max(1, area.height - 2 * margem));
+            // A historinha ocupa toda a área de renderização; a legenda vai dentro da animação.
+            Rectangle conteudo = new Rectangle(area);
             Dimension tamanhoImagem = new Dimension(
-                    conteudo.width,
-                    Math.max(1, conteudo.height - 38));
+                    Math.max(1, conteudo.width), Math.max(1, conteudo.height));
             if (painelHistorinhasComplementar == null
                     || !chaveProjecao.equals(chaveHistorinhasComplementar)
                     || !tamanhoImagem.equals(tamanhoHistorinhasComplementar)) {

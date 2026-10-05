@@ -1,0 +1,5 @@
+situacao	categoria	caminho	rejeicoes_no_limite	status	apoio	referencia	trechos
+PO_TRANSFORMACAO_MEDIDAS_dinheiro_e_brinquedos_188709799	TRANSFORMACAO_MEDIDAS	valor	3	APARECEU	HISTORINHA_ILUSTRADA	transformacao_medidas/01_andrea_boneca_historinha	Andréa tinha economizado 16 reais | Sua tia deu-lhe mais 5 reais | Com quanto Andréa ficou?
+PO_TRANSFORMACAO_MEDIDAS_figurinhas_1775031040	TRANSFORMACAO_MEDIDAS	valor	3	APARECEU	HISTORINHA_ILUSTRADA	transformacao_medidas/07_lucas_e_as_figurinhas_do_tio_historinha	Lucas ganhou 12 figurinhas de seu tio | Ele possui agora 17 figurinhas | Quantas figurinhas ele tinha antes de ganhar as figurinhas do tio?
+PO_COMPARACAO_MEDIDAS_bolas_487868670	COMPARACAO_MEDIDAS	valor	3	APARECEU	HISTORINHA_ILUSTRADA	comparacao_medidas/01_paulo_e_jose_historinha	Paulo tem 6 bolas | José tem 8 bolas a mais que Paulo. | Quantas bolas tem José?
+PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032	TRANSFORMACAO_RELACAO	valor	3	APARECEU	HISTORINHA_ILUSTRADA	transformacao_relacao/02_ana_bia_figurinhas_historinha	Ana tem 5 figurinhas a mais que Bia. | Depois Ana ganhou mais 4 figurinhas | Quantas figurinhas a mais Ana passou a ter que Bia?

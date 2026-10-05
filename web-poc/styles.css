@@ -148,10 +148,11 @@ button.help-mark:hover,button.help-mark[aria-expanded="true"] { background:var(-
 @media (prefers-reduced-motion: reduce) { .historinha-passiva { animation:none; } }
 .historinha-textual { padding:28px; box-sizing:border-box; border:1px solid var(--borda, #d9dde3); border-radius:14px; background:var(--superficie, #fff); }
 .historinha-textual p { margin:0; font-size:1.35rem; font-weight:700; line-height:1.45; color:inherit; }
-.historinha-passiva { flex-direction:column; }
-.historinha-animacao { position:relative; display:flex; max-width:100%; max-height:100%; min-height:0; }
+.historinha-passiva { flex-direction:column; container-type:size; }
+/* A animação ocupa toda a área de renderização (16:9, sem distorcer): a maior caixa 16:9 que cabe. */
+.historinha-animacao { position:relative; display:flex; width:min(100cqw, calc(100cqh * 16 / 9)); aspect-ratio:16 / 9; min-height:0; }
 .historinha-legenda { position:absolute; left:50%; bottom:12px; transform:translateX(-50%); max-width:calc(100% - 24px); margin:0; padding:4px 12px; border-radius:10px; background:rgba(255,255,255,.88); color:#1f2933; font-size:15px; text-align:center; }
-.historinha-passiva img { display:block; max-width:100%; max-height:100%; object-fit:contain; }
+.historinha-passiva img { display:block; width:100%; height:100%; object-fit:contain; }
 .diagram-panel > .help-mark-wrap,.response-panel > .help-mark-wrap { position:absolute; top:10px; right:10px; z-index:4; }
 .diagram-panel > .diagram-restore-wrap { left:10px; right:auto; }
 .diagram-panel > .help-mark-wrap .help-menu,.response-panel > .help-mark-wrap .help-menu,
