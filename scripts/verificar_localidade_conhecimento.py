@@ -147,6 +147,13 @@ exigir(not re.search(r"Icon\s+criarIconeCategoria\w*\s*\(", main_txt) and "obter
 exigir("GeometriaBarraAtalhosCategoria.calcular(" in main_txt and "int gapEntreIcones" not in main_txt,
        "R10: a geometria da faixa de atalhos vem de GeometriaBarraAtalhosCategoria, não da Main")
 
+# R11 — escolha de sinal do número relativo: a sequência é de FluxoEscolhaSinalNumeroRelativo e o aviso persistente
+# tem objeto próprio; a Main não repete a sequência nem guarda o estado do aviso em campos soltos.
+exigir("FluxoEscolhaSinalNumeroRelativo.executar(" in main_txt and not re.search(r"(item|elemento|texto|mostrar)SinalDivergentePersistente\b", main_txt),
+       "R11: a Main delega a sequência da escolha de sinal e não guarda o aviso divergente em campos soltos")
+exigir(main_txt.count("avaliarEscolhaSinalNumeroRelativo(") <= 2,
+       "R11: a avaliação da escolha de sinal é chamada num só ponto (hoje %d)" % main_txt.count("avaliarEscolhaSinalNumeroRelativo("))
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))

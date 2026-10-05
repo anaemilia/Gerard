@@ -983,16 +983,10 @@ public class Main extends JFrame {
          * número relativo — mesma família do aviso de limite de quantidade
          * acima, mas independente dele: "deixe na tela até que seja
          * corrigido" (a usuária achou o tooltip anterior, de 2600ms,
-         * sumindo rápido demais). itemSinalDivergentePersistente é usado
-         * quando o menu foi aberto a partir de um item já solto no
-         * diagrama; elementoSinalDivergentePersistente, quando foi aberto a
-         * partir do próprio círculo/retângulo (sem item associado) — nunca
-         * os dois ao mesmo tempo.
+         * sumindo rápido demais). O estado (âncora no item OU no elemento,
+         * texto e visibilidade) é de AvisoSinalDivergente.
          */
-        ItemTextoArrastavel itemSinalDivergentePersistente = null;
-        ElementoVergnaud elementoSinalDivergentePersistente = null;
-        boolean mostrarSinalDivergentePersistente = false;
-        String textoSinalDivergentePersistente = "";
+        final gerard.ui.sinal.AvisoSinalDivergente avisoSinalDivergente = new gerard.ui.sinal.AvisoSinalDivergente();
         ArrayList<QuadradinhoVenn> quadradinhosCorrespondentesComparacao = new ArrayList<QuadradinhoVenn>();
         ArrayList<ElementoVergnaud> elementosVergnaud = new ArrayList<ElementoVergnaud>();
         ArrayList<ConectorVergnaud> conectoresVergnaud = new ArrayList<ConectorVergnaud>();
@@ -7341,13 +7335,7 @@ public class Main extends JFrame {
             // de um ou de outro.
             boolean usarSinalDivergentePersistente = !usarQuestionamentoPersistente
                     && !usarLimiteQuantidadePersistente
-                    && mostrarSinalDivergentePersistente
-                    && (itemSinalDivergentePersistente != null
-                            ? itensArrastaveis.contains(itemSinalDivergentePersistente)
-                            : (elementoSinalDivergentePersistente != null
-                                    && elementosVergnaud.contains(elementoSinalDivergentePersistente)))
-                    && textoSinalDivergentePersistente != null
-                    && textoSinalDivergentePersistente.trim().length() > 0;
+                    && avisoSinalDivergente.estaVisivel(itensArrastaveis, elementosVergnaud);
 
             // AG_AE — mesma família de anotação persistente das duas acima,
             // mas com uma checagem extra: se o papel foi resolvido (ou o
@@ -7387,7 +7375,7 @@ public class Main extends JFrame {
                     : (usarLimiteQuantidadePersistente
                             ? textoLimiteQuantidadeQuestionado
                             : (usarSinalDivergentePersistente
-                                    ? textoSinalDivergentePersistente
+                                    ? avisoSinalDivergente.getTexto()
                                     : (usarDicaPosicionamentoPersistente
                                             ? localizacao.formatar("ui.hint.stepPlacement", fraseDicaPosicionamento)
                                             : textoAnotacaoMouseOver)));
@@ -7432,15 +7420,9 @@ public class Main extends JFrame {
                 baseX = areaControle.x + areaControle.width;
                 baseY = Math.max(50, areaControle.y + areaControle.height / 2);
             } else if (usarSinalDivergentePersistente) {
-                if (itemSinalDivergentePersistente != null) {
-                    baseX = itemSinalDivergentePersistente.x + itemSinalDivergentePersistente.largura;
-                    baseY = Math.max(50, itemSinalDivergentePersistente.y
-                            + itemSinalDivergentePersistente.altura / 2);
-                } else {
-                    baseX = elementoSinalDivergentePersistente.x + elementoSinalDivergentePersistente.largura;
-                    baseY = Math.max(50, elementoSinalDivergentePersistente.y
-                            + elementoSinalDivergentePersistente.altura / 2);
-                }
+                java.awt.Point ancoraAviso = avisoSinalDivergente.ancora();
+                baseX = ancoraAviso.x;
+                baseY = ancoraAviso.y;
             } else if (usarDicaPosicionamentoPersistente) {
                 baseX = elementoDicaPosicionamentoPersistente.x
                         + elementoDicaPosicionamentoPersistente.largura;
@@ -11927,10 +11909,7 @@ public class Main extends JFrame {
                 });
             }
 
-            itemSinalDivergentePersistente = itemAncora;
-            elementoSinalDivergentePersistente = itemAncora == null ? elementoAncora : null;
-            textoSinalDivergentePersistente = mensagem;
-            mostrarSinalDivergentePersistente = true;
+            avisoSinalDivergente.exibir(itemAncora, elementoAncora, mensagem);
             mostrarAnotacaoMouseOver = false;
             repaint();
         }
@@ -11944,15 +11923,9 @@ public class Main extends JFrame {
          * o reexibe já com a mensagem atual).
          */
         private void limparSinalDivergentePersistente() {
-            if (mostrarSinalDivergentePersistente
-                    || itemSinalDivergentePersistente != null
-                    || elementoSinalDivergentePersistente != null) {
+            if (avisoSinalDivergente.limpar()) {
                 scaffoldingFeedbackMultissensorialErro.pararTremor();
             }
-            mostrarSinalDivergentePersistente = false;
-            textoSinalDivergentePersistente = "";
-            itemSinalDivergentePersistente = null;
-            elementoSinalDivergentePersistente = null;
         }
 
         private void restaurarValorRelativoPositivoSeguro(
@@ -11966,40 +11939,7 @@ public class Main extends JFrame {
 
         private void solicitarSinalNumeroRelativoParaTexto(final ElementoVergnaud elemento) {
             final String base = scaffoldingNumeroRelativo.removerSinal(elemento.textoEditavel);
-            scaffoldingNumeroRelativo.mostrarMenuEscolhaSinal(
-                    this,
-                    new Rectangle(elemento.x, elemento.y, elemento.largura, elemento.altura),
-                    base,
-                    new ScaffoldingNumeroRelativo.AcaoSinalNumeroRelativo() {
-                        public void sinalEscolhido(String sinal) {
-                            limparSinalDivergentePersistente();
-                            int valorRelativoCandidato = calcularValorRelativo(base, sinal);
-                            if (!valorRelativoPreservaQuantidadesNaoNegativas(
-                                    elemento, valorRelativoCandidato)) {
-                                restaurarValorRelativoPositivoSeguro(
-                                        elemento, null, base);
-                                informarBloqueioQuantidadeNegativa();
-                                repaint();
-                                return;
-                            }
-                            elemento.textoEditavel = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
-                            String chavePapelSinal = obterChavePapelDoNumeroRelativo(elemento);
-                            RegistroAcaoEscolhaSinalPapelQuantitativo registroSinal =
-                                    avaliarEscolhaSinalNumeroRelativo(
-                                            chavePapelSinal, sinal, base);
-                            if (registroSinal != null && registroSinal.foiErrada()) {
-                                informarSuspeitaSinalIncorretoNumeroRelativo(null, elemento, sinal);
-                            }
-                            if (registroSinal == null) {
-                                registrarEscolhaSinalSemCriterio(base, sinal);
-                            }
-                            sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                                    elemento, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO);
-                            verificarConclusaoModelagem();
-                            repaint();
-                        }
-                    }
-            );
+            mostrarMenuSinalNumeroRelativo(elemento, new AlvoEscolhaSinal(elemento, null, false), base);
         }
 
         private void solicitarSinalNumeroRelativoParaItem(final ItemTextoArrastavel item, ElementoVergnaud numeroRelativo, boolean permitirTrocaDeSinal) {
@@ -12017,57 +11957,94 @@ public class Main extends JFrame {
                 return;
             }
             final String base = scaffoldingNumeroRelativo.removerSinal(item.valor);
-            final ElementoVergnaud numeroRelativoFinal = numeroRelativo;
+            mostrarMenuSinalNumeroRelativo(numeroRelativo, new AlvoEscolhaSinal(numeroRelativo, item, ocultarSinalPositivo), base);
+        }
+
+        /** Abre o menu de sinal ao lado do número relativo; a escolha segue a sequência única de FluxoEscolhaSinalNumeroRelativo. */
+        private void mostrarMenuSinalNumeroRelativo(ElementoVergnaud numeroRelativo,
+                final gerard.aplicacao.FluxoEscolhaSinalNumeroRelativo.Alvo alvo, final String base) {
             scaffoldingNumeroRelativo.mostrarMenuEscolhaSinal(
                     this,
                     new Rectangle(numeroRelativo.x, numeroRelativo.y, numeroRelativo.largura, numeroRelativo.altura),
                     base,
                     new ScaffoldingNumeroRelativo.AcaoSinalNumeroRelativo() {
                         public void sinalEscolhido(String sinal) {
-                            limparSinalDivergentePersistente();
-                            int valorRelativoCandidato = calcularValorRelativo(base, sinal);
-                            if (!valorRelativoPreservaQuantidadesNaoNegativas(
-                                    numeroRelativoFinal, valorRelativoCandidato)) {
-                                restaurarValorRelativoPositivoSeguro(
-                                        numeroRelativoFinal, item, base);
-                                informarBloqueioQuantidadeNegativa();
-                                repaint();
-                                return;
-                            }
-                            // No circulo da relacao o sinal precisa permanecer explicito,
-                            // inclusive quando o positivo for escolhido apos preenchimento.
-                            item.valor = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
-                            if (ocultarSinalPositivo
-                                    && item.representaIncognitaOriginal()) {
-                                item.registrarPreenchimentoPeloProtocoloMouseTexto();
-                            }
-                            String chavePapelSinal = obterChavePapelDoNumeroRelativo(numeroRelativoFinal);
-                            RegistroAcaoEscolhaSinalPapelQuantitativo registroSinal =
-                                    avaliarEscolhaSinalNumeroRelativo(
-                                            chavePapelSinal, sinal, base);
-                            if (registroSinal != null && registroSinal.foiErrada()) {
-                                informarSuspeitaSinalIncorretoNumeroRelativo(item, numeroRelativoFinal, sinal);
-                            }
-                            if (registroSinal == null) {
-                                registrarEscolhaSinalSemCriterio(base, sinal);
-                            }
-                            ajustarTamanhoDoItem(item);
-                            centralizarItemNoNumeroRelativoSeNecessario(item);
-                            // Pergunta de confirmação (nudge) se o valor divergir do
-                            // curado; "Não" só adia a propagação às outras
-                            // representações — o item mantém o valor digitado e o
-                            // usuário pode reabrir o menu de sinal para tentar de
-                            // novo (ver confirmarValorIncognitaAceito).
-                            if (confirmarValorIncognitaAceito(item)) {
-                                sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                                        numeroRelativoFinal,
-                                        EstadoSemanticoCompartilhado.Origem.ARRASTE);
-                            }
-                            verificarConclusaoModelagem();
-                            repaint();
+                            gerard.aplicacao.FluxoEscolhaSinalNumeroRelativo.executar(alvo, base, sinal);
                         }
                     }
             );
+        }
+
+        /**
+         * Os passos da escolha de sinal que dependem de onde ela foi feita: no texto do próprio círculo/retângulo
+         * (item nulo) ou no item arrastado até ele. A ordem e os desvios são de FluxoEscolhaSinalNumeroRelativo.
+         */
+        private final class AlvoEscolhaSinal implements gerard.aplicacao.FluxoEscolhaSinalNumeroRelativo.Alvo {
+            private final ElementoVergnaud numeroRelativo;
+            private final ItemTextoArrastavel item;
+            private final boolean ocultarSinalPositivo;
+
+            AlvoEscolhaSinal(ElementoVergnaud numeroRelativo, ItemTextoArrastavel item, boolean ocultarSinalPositivo) {
+                this.numeroRelativo = numeroRelativo;
+                this.item = item;
+                this.ocultarSinalPositivo = ocultarSinalPositivo;
+            }
+
+            public void limparAvisoDivergente() { limparSinalDivergentePersistente(); }
+
+            public int valorRelativoCandidato(String base, String sinal) { return calcularValorRelativo(base, sinal); }
+
+            public boolean preservaQuantidadesNaoNegativas(int valorRelativoCandidato) {
+                return valorRelativoPreservaQuantidadesNaoNegativas(numeroRelativo, valorRelativoCandidato);
+            }
+
+            public void restaurarPositivoSeguro(String base) { restaurarValorRelativoPositivoSeguro(numeroRelativo, item, base); }
+
+            public void informarBloqueioQuantidadeNegativa() { Main.TelaGerard.this.informarBloqueioQuantidadeNegativa(); }
+
+            public void aplicarSinal(String base, String sinal) {
+                if (item == null) {
+                    numeroRelativo.textoEditavel = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
+                    return;
+                }
+                // No círculo da relação o sinal precisa permanecer explícito, inclusive quando o positivo
+                // for escolhido após o preenchimento.
+                item.valor = scaffoldingNumeroRelativo.aplicarSinal(base, sinal);
+                if (ocultarSinalPositivo && item.representaIncognitaOriginal()) {
+                    item.registrarPreenchimentoPeloProtocoloMouseTexto();
+                }
+            }
+
+            public RegistroAcaoEscolhaSinalPapelQuantitativo avaliarEscolha(String base, String sinal) {
+                return avaliarEscolhaSinalNumeroRelativo(obterChavePapelDoNumeroRelativo(numeroRelativo), sinal, base);
+            }
+
+            public void informarSuspeitaSinalIncorreto(String sinal) {
+                informarSuspeitaSinalIncorretoNumeroRelativo(item, numeroRelativo, sinal);
+            }
+
+            public void registrarEscolhaSemCriterio(String base, String sinal) { registrarEscolhaSinalSemCriterio(base, sinal); }
+
+            public void sincronizarRepresentacoes(String sinal) {
+                if (item == null) {
+                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                            numeroRelativo, EstadoSemanticoCompartilhado.Origem.EDICAO_TEXTO);
+                    return;
+                }
+                ajustarTamanhoDoItem(item);
+                centralizarItemNoNumeroRelativoSeNecessario(item);
+                // Pergunta de confirmação (nudge) se o valor divergir do curado; "Não" só adia a propagação
+                // às outras representações — o item mantém o valor digitado e a pessoa pode reabrir o menu
+                // de sinal para tentar de novo (ver confirmarValorIncognitaAceito).
+                if (confirmarValorIncognitaAceito(item)) {
+                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                            numeroRelativo, EstadoSemanticoCompartilhado.Origem.ARRASTE);
+                }
+            }
+
+            public void verificarConclusao() { verificarConclusaoModelagem(); }
+
+            public void repintar() { repaint(); }
         }
 
         private void centralizarItemNoNumeroRelativoSeNecessario(ItemTextoArrastavel item) {

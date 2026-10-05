@@ -252,8 +252,11 @@ check('tentativa.avaliarEscolha(' in avaliacao_sinal,
 check(persistir_ok and avaliacao_sinal.count('persistirAcaoDaTentativa(registro') == 1
       and 'registrarAcaoInstrumentalUsuario(' not in avaliacao_sinal,
       'o mesmo registro de sinal chega uma vez ao log e ao Modelador')
-check(callbacks_sinal.count('avaliarEscolhaSinalNumeroRelativo(') == 2,
-      'os dois caminhos de seleção usam o mesmo ponto de encaminhamento')
+check(callbacks_sinal.count('avaliarEscolhaSinalNumeroRelativo(') == 1
+      and callbacks_sinal.count('new AlvoEscolhaSinal(') == 2
+      and callbacks_sinal.count('FluxoEscolhaSinalNumeroRelativo.executar(') == 1,
+      'os dois caminhos de seleção (texto e item) usam o mesmo ponto de encaminhamento: a sequência única '
+      'FluxoEscolhaSinalNumeroRelativo, que chama a avaliação do proprietário uma só vez')
 check(all(token not in avaliacao_sinal + callbacks_sinal for token in
           ('registrarVeredito(', 'sinalEscolhidoCorrespondeAoCurado')),
       'adaptador de veredito e comparação semântica na Main não participam do fluxo')
@@ -1675,8 +1678,10 @@ check('private void informarSuspeitaSinalIncorretoNumeroRelativo(' in main,
       '"o sinal do primeiro número nos dados curados é negativo, mas o sinal do primeiro número '
       'relativo foi colocado positivo e não houve feedback de erro" (sinalEscolhidoCorrespondeAoCurado '
       'já calculava a divergência, mas só alimentava o log de pesquisa C/E, sem nenhum aviso visível)')
-check(main.count('if (registroSinal != null && registroSinal.foiErrada()) {\n'
-                 '                                informarSuspeitaSinalIncorretoNumeroRelativo(') == 2,
+fluxo_sinal = text('src/gerard/aplicacao/FluxoEscolhaSinalNumeroRelativo.java')
+check('if (registro != null && registro.foiErrada()) {\n            alvo.informarSuspeitaSinalIncorreto(sinal);' in fluxo_sinal
+      and main.count('informarSuspeitaSinalIncorretoNumeroRelativo(item, numeroRelativo, sinal)') == 1
+      and main.count('new AlvoEscolhaSinal(') == 2,
       'os dois pontos que abrem o menu de escolha de sinal (solicitarSinalNumeroRelativoParaTexto e '
       'solicitarSinalNumeroRelativoParaItem) acionam o aviso quando o sinal escolhido diverge do curado')
 check('ui.tooltip.relativeSign.confirm' in main,
@@ -1687,9 +1692,9 @@ for lang in ('pt', 'en', 'es', 'fr'):
           f'ui.tooltip.relativeSign.confirm presente e parametrizado com o sinal escolhido ({lang})')
 
 print('== Correção 2026-08-18 (revisão): aviso de sinal divergente fica na tela até o menu ser reaberto ==')
-check('boolean mostrarSinalDivergentePersistente' in main
-      and 'ItemTextoArrastavel itemSinalDivergentePersistente' in main
-      and 'ElementoVergnaud elementoSinalDivergentePersistente' in main
+aviso_sinal = text('src/gerard/ui/sinal/AvisoSinalDivergente.java')
+check('gerard.ui.sinal.AvisoSinalDivergente avisoSinalDivergente' in main
+      and 'public void exibir(' in aviso_sinal and 'public boolean limpar()' in aviso_sinal
       and 'private void limparSinalDivergentePersistente()' in main,
       'aviso de sinal divergente usa o mesmo mecanismo persistente de mostrarLimiteQuantidadeQuestionado '
       '(desenharAnotacaoMouseOver) em vez do tooltip de 2600ms — a usuária achou que sumia rápido demais '
@@ -1699,7 +1704,7 @@ check('boolean usarSinalDivergentePersistente' in main
       'desenharAnotacaoMouseOver ganhou o ramo usarSinalDivergentePersistente na mesma cadeia de '
       'prioridade dos avisos persistentes já existentes (questionamento > limite de quantidade > sinal '
       'divergente > dica de posicionamento > tooltip comum)')
-check(main.count('limparSinalDivergentePersistente();') >= 5,
+check(main.count('limparSinalDivergentePersistente();') >= 4,   # 3 recargas de situação + o passo único da escolha de sinal
       'aviso de sinal divergente é limpo ao reabrir o menu de sinal do mesmo item/elemento '
       '(sinalEscolhido) e ao carregar uma nova situação (mesmos pontos que já limpavam '
       'limparQuestionamentoPersistente)')
