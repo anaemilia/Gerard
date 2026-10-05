@@ -91,11 +91,16 @@ for f in arquivos("*.java"):
         soltos.append(f.relative_to(RAIZ).as_posix())
 exigir(not soltos, "R7: nenhum vermelho de erro/sinal definido fora do UITemaGerard (soltos: %s)" % soltos)
 tema = (SRC / "gerard/ui/UITemaGerard.java").read_text(encoding="utf-8")
-css = (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8")
-swing = re.search(r"COR_ERRO = new Color\(0x(..), 0x(..), 0x(..)\)", tema)
-web = re.search(r"--erro:#([0-9a-fA-F]{6})", css)
-exigir(bool(swing and web) and ("".join(swing.groups()).lower() == web.group(1).lower()),
-       "R7: --erro do web igual ao COR_ERRO do Swing")
+fonte = (SRC / "gerard/recursos/tema/feedback.properties").read_text(encoding="utf-8")
+exigir(not re.search(r"COR_ERRO\w*\s*=\s*new\s+Color", tema),
+       "R7: UITemaGerard não tem hex de erro próprio (lê feedback.properties)")
+css_gerado = (RAIZ / "web-poc/tokens-feedback.css").read_text(encoding="utf-8")
+valores = dict(l.split("=", 1) for l in fonte.splitlines() if l.strip() and not l.startswith("#"))
+esperado = (":root { --erro:#%s; --erro-fundo:#%s; --erro-texto:#%s; }"
+            % (valores["erro"].strip(), valores["erro_fundo"].strip(), valores["erro_texto"].strip()))
+exigir(esperado in css_gerado, "R7: web-poc/tokens-feedback.css gerado a partir da mesma fonte (rode npm run tokens)")
+exigir("--erro:" not in (RAIZ / "web-poc/styles.css").read_text(encoding="utf-8"),
+       "R7: styles.css não define --erro (vem do CSS gerado)")
 
 print()
 if violacoes:

@@ -12,6 +12,29 @@ import java.awt.Font;
  */
 public final class UITemaGerard {
 
+    /**
+     * Cor de feedback lida da fonte única compartilhada com a web
+     * (gerard/recursos/tema/feedback.properties). Sem a fonte, falha alto: não há cor padrão
+     * escondida aqui.
+     */
+    private static Color corDeFeedback(String chave) {
+        try (java.io.InputStream in = UITemaGerard.class.getResourceAsStream("/gerard/recursos/tema/feedback.properties")) {
+            if (in == null) {
+                throw new IllegalStateException("feedback.properties ausente");
+            }
+            java.util.Properties p = new java.util.Properties();
+            p.load(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+            String hex = p.getProperty(chave);
+            if (hex == null) {
+                throw new IllegalStateException("cor de feedback ausente: " + chave);
+            }
+            return new Color(Integer.parseInt(hex.trim(), 16));
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+
     private UITemaGerard() {
     }
 
@@ -143,13 +166,13 @@ public final class UITemaGerard {
      * incorreta). Uso restrito a sinais ao usuário — segue o padrão
      * cultural de vermelho para erro.
      */
-    public static final Color COR_ERRO = new Color(0xC9, 0x4F, 0x45);
+    public static final Color COR_ERRO = corDeFeedback("erro");
 
     /** Fundo suave para rótulos e áreas de feedback de erro. */
-    public static final Color COR_ERRO_FUNDO = new Color(0xFD, 0xEC, 0xEA);
+    public static final Color COR_ERRO_FUNDO = corDeFeedback("erro_fundo");
 
     /** Texto sobre fundo de erro. */
-    public static final Color COR_ERRO_TEXTO = new Color(0xC0, 0x45, 0x3B);
+    public static final Color COR_ERRO_TEXTO = corDeFeedback("erro_texto");
 
     /**
      * Cor reservada para feedback de ALERTA (aviso, não erro nem sucesso).

@@ -1,3 +1,4 @@
+@import "./tokens-feedback.css";
 /* Design System do Gérard (prompt-claude-code-cores.md, 2026-09-30) — MESMOS valores de
    gerard.ui.UITemaGerard.java (fonte única no desktop). Tokens num único lugar: toda regra
    abaixo lê destas variáveis; não escrever hex solto nos componentes. */
@@ -16,7 +17,6 @@
   /* Cores com significado (scaffolding) — separadas da paleta neutra. Sucesso segue FeedbackMode
      AZUL_UNIFICADO_COM_ACAO; para a Opção B (verde) troque só estas três linhas. */
   --sucesso:#1f56d6; --sucesso-fundo:#e3ecfd; --sucesso-texto:#173a8c;
-  --erro:#c94f45; --erro-fundo:#fdecea; --erro-texto:#c0453b;
   --alerta:#8a4b06; --alerta-fundo:#fdf3e1;
   /* Aliases usados pelo restante do arquivo */
   --fundo:var(--cinza-50); --superficie:var(--branco); --superficie-suave:var(--cinza-100);
