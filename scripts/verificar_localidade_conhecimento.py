@@ -135,6 +135,11 @@ exigir("RenderizadorMiniCategoria.para(" in painel_comparacao and "CategoriasCom
 exigir("class PainelComparacaoCategorias" not in main,
        "R8: a tela Comparar categorias é classe própria (gerard.ui.comparacao), não parte da Main")
 
+# R9 — os diálogos genéricos (Sim/Não, valor inteiro, relato de bug, explicação da categoria) são de gerard.ui.dialogos.
+presos = [k for k in ("ui.bug.description.tooltip", "ui.dialog.insertValueTitle",
+                      "ui.dialog.categoryExplanation.intro") if k in (SRC / "Main.java").read_text(encoding="utf-8")]
+exigir(not presos, "R9: a Main não monta os diálogos genéricos (textos ainda na Main: %s)" % presos)
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))

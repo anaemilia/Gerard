@@ -2138,113 +2138,13 @@ public class Main extends JFrame {
         }
 
         private void mostrarDialogoRelatoBug() {
-            final JTextArea descricao = new JTextArea(7, 46);
-            descricao.setLineWrap(true);
-            descricao.setWrapStyleWord(true);
-            descricao.setFont(new Font("Arial", Font.PLAIN, 14));
-            descricao.setToolTipText(localizacao.texto("ui.bug.description.tooltip"));
-            descricao.getAccessibleContext().setAccessibleName(localizacao.texto("ui.bug.description.label"));
-            descricao.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.bug.description.tooltip"));
-
-            JScrollPane rolagem = new JScrollPane(descricao);
-            rolagem.setPreferredSize(new Dimension(520, 150));
-
-            JLabel instrucao = new JLabel("<html>" + localizacao.texto("ui.bug.instruction") + "</html>");
-            instrucao.setFont(gerard.ui.UITemaGerard.FONTE_DIALOGO);
-
-            JPanel conteudo = new JPanel(new BorderLayout(0, 10));
-            conteudo.setBorder(BorderFactory.createEmptyBorder(8, 8, 6, 8));
-            conteudo.add(instrucao, BorderLayout.NORTH);
-            conteudo.add(rolagem, BorderLayout.CENTER);
-
-            Object[] opcoes = {
-                localizacao.texto("ui.bug.submit"),
-                localizacao.texto("analise.cancel")
-            };
-            int resposta = JOptionPane.showOptionDialog(
-                    this,
-                    conteudo,
-                    localizacao.texto("ui.bug.title"),
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    opcoes,
-                    opcoes[0]);
-
-            if (resposta != JOptionPane.OK_OPTION) {
-                requestFocusInWindow();
-                return;
-            }
-
-            String relato = descricao.getText() == null ? "" : descricao.getText().trim();
-            if (relato.length() == 0) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        localizacao.texto("ui.bug.required"),
-                        localizacao.texto("ui.bug.title"),
-                        JOptionPane.WARNING_MESSAGE);
-                requestFocusInWindow();
-                return;
-            }
-
-            try {
-                String situacaoId = situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getId();
-                String idiomaSituacao = situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getCodigoIdioma();
-                String enunciadoAtual = situacaoProblemaAtual == null ? textoProblema : situacaoProblemaAtual.getEnunciado();
-                String categoria = tipoSituacaoSelecionada == null ? "" : tipoSituacaoSelecionada.name();
-                String representacoes = obterRepresentacoesAtuaisParaRelatoBug();
-                String idiomaInterface = idiomaSelecionado == null ? "" : idiomaSelecionado.name();
-                java.io.File arquivo = RegistroRelatoBug.registrar(
-                        relato,
-                        situacaoId,
-                        categoria,
-                        representacoes,
-                        idiomaInterface,
-                        idiomaSituacao,
-                        enunciadoAtual);
-                PreparadorEmailRelatoBug.MensagemPreparada email =
-                        PreparadorEmailRelatoBug.preparar(
-                                relato,
-                                situacaoId,
-                                categoria,
-                                representacoes,
-                                idiomaInterface,
-                                idiomaSituacao,
-                                enunciadoAtual);
-                PreparadorEmailRelatoBug.ResultadoAbertura resultadoEmail =
-                        PreparadorEmailRelatoBug.abrirMensagem(email);
-                String chaveMensagemEmail;
-                int tipoMensagemEmail;
-                switch (resultadoEmail) {
-                    case GMAIL_WEB:
-                        chaveMensagemEmail = "ui.bug.gmailOpened";
-                        tipoMensagemEmail = JOptionPane.INFORMATION_MESSAGE;
-                        break;
-                    case CLIENTE_PADRAO:
-                        chaveMensagemEmail = "ui.bug.emailClientOpened";
-                        tipoMensagemEmail = JOptionPane.INFORMATION_MESSAGE;
-                        break;
-                    default:
-                        chaveMensagemEmail = "ui.bug.emailUnavailable";
-                        tipoMensagemEmail = JOptionPane.WARNING_MESSAGE;
-                        break;
-                }
-                JOptionPane.showMessageDialog(
-                        this,
-                        localizacao.formatar(
-                                chaveMensagemEmail,
-                                arquivo.getAbsolutePath(),
-                                PreparadorEmailRelatoBug.DESTINATARIO),
-                        localizacao.texto("ui.bug.title"),
-                        tipoMensagemEmail);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        localizacao.formatar("ui.bug.error", ex.getMessage()),
-                        localizacao.texto("ui.bug.title"),
-                        JOptionPane.ERROR_MESSAGE);
-            }
-            requestFocusInWindow();
+            gerard.ui.dialogos.DialogoRelatoBug.mostrar(this, localizacao, new gerard.ui.dialogos.DadosRelatoBug(
+                    situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getId(),
+                    tipoSituacaoSelecionada == null ? "" : tipoSituacaoSelecionada.name(),
+                    obterRepresentacoesAtuaisParaRelatoBug(),
+                    idiomaSelecionado == null ? "" : idiomaSelecionado.name(),
+                    situacaoProblemaAtual == null ? "" : situacaoProblemaAtual.getCodigoIdioma(),
+                    situacaoProblemaAtual == null ? textoProblema : situacaoProblemaAtual.getEnunciado()));
         }
 
         /**
@@ -4213,102 +4113,15 @@ public class Main extends JFrame {
             gerard.agente.modelousuario.ModeloUsuario modeloAtual = repositorioModeloUsuario.obter(idUsuario);
             gerard.agente.modelousuario.MidiaPreferida midia =
                     modeloAtual == null ? null : modeloAtual.getPerfilAprendizagem().getMidiaPreferida();
-            final gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria explicacaoNarrativa =
-                    gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria.para(categoriaReal, midia);
-            final PainelAjudaNarrativaVisualCategoria painelNarrativa = explicacaoNarrativa.getPainel();
-
-            final JDialog dialogo = new JDialog(
-                    SwingUtilities.getWindowAncestor(this),
-                    localizacao.texto("ui.dialog.categoryExplanation.title"),
-                    Dialog.ModalityType.APPLICATION_MODAL
-            );
-            dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialogo.setResizable(false);
-
-            JPanel conteudo = new JPanel(new BorderLayout(0, 16));
-            conteudo.setBorder(BorderFactory.createEmptyBorder(18, 20, 14, 20));
-            conteudo.setBackground(COR_SUPERFICIE);
-
-            JPanel corpo = new JPanel();
-            corpo.setLayout(new BoxLayout(corpo, BoxLayout.Y_AXIS));
-            corpo.setOpaque(false);
-
-            JLabel intro = new JLabel("<html><body style='width: 320px'>"
-                    + localizacao.texto("ui.dialog.categoryExplanation.intro") + "</body></html>");
-            intro.setFont(new Font("Arial", Font.PLAIN, 15));
-            intro.setForeground(COR_TEXTO);
-            intro.setAlignmentX(Component.LEFT_ALIGNMENT);
-            corpo.add(intro);
-            corpo.add(Box.createVerticalStrut(12));
-
-            boolean formatoPendente = explicacaoNarrativa.isFormatoPendente();
-            if (formatoPendente) {
-                JLabel avisoConstrucao = new JLabel("<html><body style='width: 320px'><i>"
-                        + localizacao.texto("ui.dialog.categoryExplanation.midiaPendente") + "</i></body></html>");
-                avisoConstrucao.setFont(new Font("Arial", Font.PLAIN, 13));
-                avisoConstrucao.setForeground(COR_TEXTO);
-                avisoConstrucao.setAlignmentX(Component.LEFT_ALIGNMENT);
-                corpo.add(avisoConstrucao);
-                corpo.add(Box.createVerticalStrut(10));
-            }
-
-            if (painelNarrativa != null) {
-                corpo.add(painelNarrativa);
-                corpo.add(Box.createVerticalStrut(12));
-            }
-
-            corpo.add(criarLinhaExplicacaoCategoria(
-                    categoriaReal, obterIconeParaCategoria(categoriaReal)));
-
-            conteudo.add(corpo, BorderLayout.CENTER);
-
-            final JButton fechar = new JButton(localizacao.texto("ui.dialog.categoryExplanation.close"));
-            fechar.setOpaque(true);
-            fechar.setBackground(COR_SUPERFICIE_SUAVE);
-            fechar.setForeground(COR_TEXTO);
-            fechar.setFocusPainted(false);
-            fechar.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
-            ActionListener fecharDialogo = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dialogo.dispose();
-                }
-            };
-            fechar.addActionListener(fecharDialogo);
-            JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-            botoes.setOpaque(false);
-            botoes.add(fechar);
-            conteudo.add(botoes, BorderLayout.SOUTH);
-
-            dialogo.getRootPane().setDefaultButton(fechar);
-            dialogo.getRootPane().registerKeyboardAction(
-                    fecharDialogo,
-                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                    JComponent.WHEN_IN_FOCUSED_WINDOW
-            );
-
-            dialogo.setContentPane(conteudo);
-            dialogo.pack();
-            dialogo.setLocationRelativeTo(this);
-            final String formatoExibido = painelNarrativa == null
-                    ? "linguagem_natural"
-                    : painelNarrativa.getFormato() == FormatoAjudaNarrativaVisual.ANIMACAO
-                            ? "historinha_animada"
-                            : "historia_em_quadrinhos";
-            dialogo.addWindowListener(new WindowAdapter() {
-                public void windowOpened(WindowEvent e) {
-                    registrarFeedbackExibido(
-                            "AG_EME",
-                            gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                            "categoria=" + categoriaReal
-                                    + "; formato=" + formatoExibido
-                                    + "; gatilho=terceiro_erro_categoria"
-                                    + (painelNarrativa == null ? ""
-                                            : "; repertorio=" + painelNarrativa.getChaveRepertorio()
-                                                    + "; quantidade_historinhas="
-                                                    + painelNarrativa.getQuantidadeHistorias()));
-                }
-            });
-            dialogo.setVisible(true);
+            gerard.ui.dialogos.DialogoExplicacaoCategoria.mostrar(this, localizacao, categoriaReal,
+                    gerard.ui.ajuda.ExplicacaoNarrativaDaCategoria.para(categoriaReal, midia),
+                    criarLinhaExplicacaoCategoria(categoriaReal, obterIconeParaCategoria(categoriaReal)),
+                    new java.util.function.Consumer<String>() {
+                        public void accept(String detalhes) {
+                            registrarFeedbackExibido("AG_EME",
+                                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL, detalhes);
+                        }
+                    });
         }
 
         /**
@@ -4385,81 +4198,7 @@ public class Main extends JFrame {
          */
         private void mostrarDialogoConfirmacaoSimNao(String pergunta, final Runnable aoResponderSim,
                 final Runnable aoResponderNao) {
-            final JDialog dialogo = new JDialog(
-                    SwingUtilities.getWindowAncestor(this),
-                    localizacao.texto("ui.dialog.confirm"),
-                    Dialog.ModalityType.APPLICATION_MODAL
-            );
-            dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialogo.setResizable(false);
-
-            JPanel conteudo = new JPanel(new BorderLayout(0, 16));
-            conteudo.setBorder(BorderFactory.createEmptyBorder(18, 20, 14, 20));
-            conteudo.setBackground(COR_SUPERFICIE);
-
-            JLabel mensagem = new JLabel("<html><body style='width: 280px'>" + pergunta + "</body></html>");
-            // Fonte maior pra melhor leitura (decisão da usuária, 2026-07-28:
-            // "mensagens muito importantes") — a largura do HTML continua
-            // fixa em 280px, então o texto ganha altura (mais linhas), não
-            // largura, mantendo o diálogo estreito.
-            mensagem.setFont(new Font("Arial", Font.PLAIN, 17));
-            mensagem.setForeground(COR_TEXTO);
-            conteudo.add(mensagem, BorderLayout.CENTER);
-
-            JButton nao = new JButton(localizacao.texto("ui.completion.no"));
-            JButton sim = new JButton(localizacao.texto("ui.completion.yes"));
-            // Estiliza direto no componente em vez de confiar no L&F nativo
-            // do Windows para o destaque azul do botão padrão — o mesmo
-            // motivo já documentado para os menus (estilizarItemMenuPopup):
-            // o L&F nativo ignora boa parte do UIManager.put, mas pintar
-            // direto no componente funciona (relatado pela usuária,
-            // 2026-07-28, com captura mostrando o azul nativo do Windows).
-            for (JButton botao : new JButton[] {nao, sim}) {
-                botao.setOpaque(true);
-                botao.setBackground(COR_SUPERFICIE_SUAVE);
-                botao.setForeground(COR_TEXTO);
-                botao.setFocusPainted(false);
-                botao.setBorder(BorderFactory.createLineBorder(COR_BORDA_BOTAO, 1));
-            }
-            JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-            botoes.setOpaque(false);
-            botoes.add(nao);
-            botoes.add(sim);
-            conteudo.add(botoes, BorderLayout.SOUTH);
-
-            ActionListener fechar = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dialogo.dispose();
-                }
-            };
-            sim.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dialogo.dispose();
-                    if (aoResponderSim != null) {
-                        aoResponderSim.run();
-                    }
-                }
-            });
-            nao.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dialogo.dispose();
-                    if (aoResponderNao != null) {
-                        aoResponderNao.run();
-                    }
-                }
-            });
-
-            dialogo.getRootPane().setDefaultButton(sim);
-            dialogo.getRootPane().registerKeyboardAction(
-                    fechar,
-                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                    JComponent.WHEN_IN_FOCUSED_WINDOW
-            );
-
-            dialogo.setContentPane(conteudo);
-            dialogo.pack();
-            dialogo.setLocationRelativeTo(this);
-            dialogo.setVisible(true);
+            gerard.ui.dialogos.DialogoConfirmacaoSimNao.mostrar(this, localizacao, pergunta, aoResponderSim, aoResponderNao);
         }
 
         private JMenu criarMenuExibir() {
@@ -13029,93 +12768,7 @@ public class Main extends JFrame {
         }
 
         private String solicitarNumeroInteiroParaInterrogacao(String valorAtual) {
-            final JDialog dialogo = new JDialog(
-                    SwingUtilities.getWindowAncestor(this),
-                    localizacao.texto("ui.dialog.insertValueTitle"),
-                    Dialog.ModalityType.APPLICATION_MODAL
-            );
-            dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialogo.setResizable(false);
-
-            JPanel conteudo = new JPanel(new BorderLayout(0, 12));
-            conteudo.setBorder(BorderFactory.createEmptyBorder(16, 18, 14, 18));
-
-            JLabel instrucao = new JLabel(localizacao.texto("ui.dialog.replaceQuestion"));
-            instrucao.setFont(instrucao.getFont().deriveFont(Font.BOLD));
-            conteudo.add(instrucao, BorderLayout.NORTH);
-
-            JPanel centro = new JPanel(new BorderLayout(0, 5));
-            JTextField campo = new JTextField(valorAtual == null ? "" : valorAtual, 18);
-            campo.getAccessibleContext().setAccessibleName(localizacao.texto("ui.dialog.insertValueTitle"));
-            campo.getAccessibleContext().setAccessibleDescription(localizacao.texto("ui.dialog.replaceQuestion"));
-            JLabel aviso = new JLabel(" ");
-            aviso.setForeground(COR_ERRO);
-            centro.add(campo, BorderLayout.NORTH);
-            centro.add(aviso, BorderLayout.SOUTH);
-            conteudo.add(centro, BorderLayout.CENTER);
-
-            JButton cancelar = new JButton(localizacao.texto("analise.cancel"));
-            JButton confirmar = new JButton(localizacao.texto("ui.dialog.confirm"));
-            JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-            botoes.add(cancelar);
-            botoes.add(confirmar);
-            conteudo.add(botoes, BorderLayout.SOUTH);
-
-            final String[] resultado = new String[1];
-            Runnable confirmarAcao = new Runnable() {
-                public void run() {
-                    String valor = campo.getText() == null ? "" : campo.getText().trim();
-                    if (!valor.matches("[0-9]+")) {
-                        aviso.setText(localizacao.texto("ui.dialog.invalidValue"));
-                        campo.requestFocusInWindow();
-                        campo.selectAll();
-                        dialogo.pack();
-                        return;
-                    }
-                    resultado[0] = valor;
-                    dialogo.dispose();
-                }
-            };
-
-            confirmar.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    confirmarAcao.run();
-                }
-            });
-            cancelar.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dialogo.dispose();
-                }
-            });
-            campo.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    confirmarAcao.run();
-                }
-            });
-
-            dialogo.getRootPane().setDefaultButton(confirmar);
-            dialogo.getRootPane().registerKeyboardAction(
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            dialogo.dispose();
-                        }
-                    },
-                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                    JComponent.WHEN_IN_FOCUSED_WINDOW
-            );
-
-            dialogo.setContentPane(conteudo);
-            dialogo.pack();
-            dialogo.setMinimumSize(new Dimension(390, dialogo.getHeight()));
-            dialogo.setLocationRelativeTo(this);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    campo.requestFocusInWindow();
-                    campo.selectAll();
-                }
-            });
-            dialogo.setVisible(true);
-            return resultado[0];
+            return gerard.ui.dialogos.DialogoValorInteiro.solicitar(this, localizacao, valorAtual);
         }
 
         private void ajustarTamanhoDoItem(ItemTextoArrastavel item) {
