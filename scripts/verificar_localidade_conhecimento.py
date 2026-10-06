@@ -162,6 +162,12 @@ exigir("FluxoConfirmacaoValorIncognita.executar(" in main_d and "private boolean
 exigir("DecisaoFeedbackConclusao.decidir(" in main_d and "tentativaJaEncerrada &&" not in main_d,
        "R12: a decisão do feedback de conclusão é de DecisaoFeedbackConclusao; a Main só materializa")
 
+# R13 — a dica do mouse sobre os controles de adicionar/remover quadradinho é de DicaControleQuadradinho (4 estados, uma vez só).
+main_h = (SRC / "Main.java").read_text(encoding="utf-8")
+exigir("DicaControleQuadradinho.decidir(" in main_h and "ui.tooltip.venn.addSquare" not in main_h
+       and "ui.tooltip.venn.minimumReached" not in main_h,
+       "R13: a Main não decide a dica dos controles de quadradinho (chaves ui.tooltip.venn.* só em DicaControleQuadradinho)")
+
 print()
 if violacoes:
     print("%d violação(ões) da localidade do conhecimento." % len(violacoes))

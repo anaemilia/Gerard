@@ -1,0 +1,47 @@
+categoria	etapa	passo	operacao	agrupamento	estado
+COMPOSICAO_MEDIDAS	antes	0	-	-	controles=[];unidades=0,0,0,;valorRef=0,0,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=0
+COMPOSICAO_MEDIDAS	modelado	0	-	-	unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=0
+COMPOSICAO_MEDIDAS	depois	0	-	-	controles=[ADICIONAR#0, REMOVER#0, ADICIONAR#2, REMOVER#2, ADICIONAR#1, REMOVER#1]
+COMPOSICAO_MEDIDAS	depois	1	ADICIONAR#0		unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=1
+COMPOSICAO_MEDIDAS	depois	2	ADICIONAR#0		unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	depois	3	REMOVER#0		unidades=11,25,1,;valorRef=11,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	depois	4	REMOVER#0		unidades=10,25,1,;valorRef=10,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	depois	5	REMOVER#0		unidades=9,25,1,;valorRef=9,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	limite	6	ADICIONAR#0		unidades=10,25,1,;valorRef=10,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	limite	7	ADICIONAR#0		unidades=11,25,1,;valorRef=11,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=2
+COMPOSICAO_MEDIDAS	limite	8	ADICIONAR#0		unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	9	ADICIONAR#2		unidades=12,25,2,;valorRef=12,25,2,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	10	ADICIONAR#2		unidades=12,25,3,;valorRef=12,25,3,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	11	REMOVER#2		unidades=12,25,2,;valorRef=12,25,2,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	12	REMOVER#2		unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	13	REMOVER#2		unidades=12,25,0,;valorRef=12,25,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	14	ADICIONAR#2		unidades=12,25,1,;valorRef=12,25,1,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	15	ADICIONAR#2		unidades=12,25,2,;valorRef=12,25,2,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	16	ADICIONAR#2		unidades=12,25,3,;valorRef=12,25,3,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	17	ADICIONAR#2		unidades=12,25,4,;valorRef=12,25,4,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	18	ADICIONAR#2		unidades=12,25,5,;valorRef=12,25,5,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	19	ADICIONAR#2		unidades=12,25,6,;valorRef=12,25,6,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	20	ADICIONAR#2		unidades=12,25,7,;valorRef=12,25,7,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	21	ADICIONAR#2		unidades=12,25,8,;valorRef=12,25,8,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	22	ADICIONAR#2		unidades=12,25,9,;valorRef=12,25,9,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	23	ADICIONAR#2		unidades=12,25,10,;valorRef=12,25,10,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	24	ADICIONAR#2		unidades=12,25,11,;valorRef=12,25,11,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	limite	25	ADICIONAR#2		unidades=12,25,12,;valorRef=12,25,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=3
+COMPOSICAO_MEDIDAS	depois	26	ADICIONAR#1		unidades=12,25,12,;valorRef=12,25,12,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=4
+COMPOSICAO_MEDIDAS	depois	27	ADICIONAR#1		unidades=12,25,12,;valorRef=12,25,12,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	depois	28	REMOVER#1		unidades=12,24,12,;valorRef=12,24,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	depois	29	REMOVER#1		unidades=12,23,12,;valorRef=12,23,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	depois	30	REMOVER#1		unidades=12,22,12,;valorRef=12,22,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	limite	31	ADICIONAR#1		unidades=12,23,12,;valorRef=12,23,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	limite	32	ADICIONAR#1		unidades=12,24,12,;valorRef=12,24,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=5
+COMPOSICAO_MEDIDAS	limite	33	ADICIONAR#1		unidades=12,25,12,;valorRef=12,25,12,;anotacao=false;limiteQuestionado=true;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+TRANSFORMACAO_MEDIDAS	antes	0	-	-	controles=[];unidades=0,0,0,;valorRef=0,0,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+TRANSFORMACAO_MEDIDAS	modelado	0	-	-	unidades=16,5,0,;valorRef=16,5,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+TRANSFORMACAO_MEDIDAS	depois	0	-	-	controles=[]
+COMPARACAO_MEDIDAS	antes	0	-	-	controles=[];unidades=0,0,0,;valorRef=0,0,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+COMPARACAO_MEDIDAS	modelado	0	-	-	unidades=27,27,0,;valorRef=27,27,12,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+COMPARACAO_MEDIDAS	depois	0	-	-	controles=[]
+COMPOSICAO_TRANSFORMACOES	antes	0	-	-	controles=[];unidades=0,0,0,;valorRef=0,0,0,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+COMPOSICAO_TRANSFORMACOES	modelado	0	-	-	unidades=2,5,7,;valorRef=2,5,7,;anotacao=false;limiteQuestionado=false;focoAdd=-1;focoRem=-1;cursor=0;logBloqueio=0;logLimite=6
+COMPOSICAO_TRANSFORMACOES	depois	0	-	-	controles=[]
+FIM	-	-	-	-	excecoes=0;listeners=1

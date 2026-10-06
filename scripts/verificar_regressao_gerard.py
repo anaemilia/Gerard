@@ -318,7 +318,7 @@ LIMITES_PROTOCOLOS_MAIN = {
     'private void processarMovimentoArraste(int x, int y)': 60,
     'public void mouseReleased(MouseEvent e)': 108,
     'public void mouseClicked(MouseEvent e)': 38,
-    'public void mouseMoved(MouseEvent e)': 205,
+    'public void mouseMoved(MouseEvent e)': 167,
 }
 for assinatura, limite in LIMITES_PROTOCOLOS_MAIN.items():
     linhas=linhas_metodo_java(main,assinatura)
@@ -1381,7 +1381,8 @@ check('CondicaoDiagramaVergnaudNaoVazio' in main
       'edição de unidades depende apenas de o diagrama de Vergnaud não estar vazio')
 check('bloqueio=modelagem_vergnaud_incompleta' in main,
       'clique antecipado no + é bloqueado sem criar unidade')
-check('minimumReached' in main and 'podeAlterarQuantidadeNoEstadoAtual' in main,
+check('minimumReached' in text('src/gerard/ui/interacao/DicaControleQuadradinho.java')   # a dica do limite mora na regra pura
+      and 'DicaControleQuadradinho.decidir(' in main and 'podeAlterarQuantidadeNoEstadoAtual' in main,
       'adição e remoção respeitam zero, limites curados e consistência aditiva')
 controle_remover=text('src/gerard/Scaffolding/venn/ControleRemoverQuadradinhoVenn.java')
 check('FUNDO_DESABILITADO' in controle_venn

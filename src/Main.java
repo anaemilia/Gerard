@@ -90,6 +90,7 @@ import gerard.dominio.campoaditivo.RecalculoComparacaoMedidas;
 import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
 import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
+import gerard.ui.interacao.DicaControleQuadradinho;
 import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
@@ -10502,10 +10503,9 @@ public class Main extends JFrame {
                     if (remover) {
                         agrupamentoRemoverQuadradinhoFocado = null;
                         mostrarAnotacaoMouseOver = true;
-                        textoAnotacaoMouseOver = localizacao.texto(
-                                ehAgrupamentoTransformacaoComSinal(agrupamento)
-                                        ? "ui.tooltip.venn.integerLimitReached"
-                                        : "ui.tooltip.venn.minimumReached");
+                        textoAnotacaoMouseOver = localizacao.texto(DicaControleQuadradinho.decidir(
+                                DicaControleQuadradinho.Controle.REMOVER, true, false,
+                                ehAgrupamentoTransformacaoComSinal(agrupamento)).getChaveMensagem());
                         mouseOverX = x;
                         mouseOverY = y;
                         setCursor(Cursor.getDefaultCursor());
@@ -12294,6 +12294,34 @@ public class Main extends JFrame {
             repaint();
         }
 
+        /** Nenhum texto do enunciado nem item arrastável em foco. */
+        private void limparFocoTextoEItem() {
+            elementoTextoFocado = null;
+            itemFocado = null;
+        }
+
+        /** Nenhum texto, item nem quadradinho em foco. */
+        private void limparFocoTextoItemEQuadradinho() {
+            limparFocoTextoEItem();
+            quadradinhoVennFocado = null;
+        }
+
+        /** Liga a dica do mouse com o texto dado. */
+        private void mostrarDicaDoMouse(String texto) {
+            mostrarAnotacaoMouseOver = true;
+            textoAnotacaoMouseOver = texto;
+        }
+
+        /** Aplica a dica decidida para o controle de quadradinho: mensagem (ou bloqueio) e cursor. */
+        private void aplicarDicaControleQuadradinho(DicaControleQuadradinho dica) {
+            mostrarDicaDoMouse(dica.bloqueadaPelaModelagem()
+                    ? obterMensagemBloqueioAdicaoUnidades()
+                    : localizacao.texto(dica.getChaveMensagem()));
+            setCursor(dica.cursorMao()
+                    ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                    : Cursor.getDefaultCursor());
+        }
+
         public void mouseMoved(MouseEvent e) {
             mouseOverX = e.getX();
             mouseOverY = e.getY();
@@ -12305,11 +12333,8 @@ public class Main extends JFrame {
             } else {
                 paineisEixosRelacoes.limparFocoBotaoEsconder();
                 if (paineisEixosRelacoes.contemAlgumPainel(e.getX(), e.getY())) {
-                    elementoTextoFocado = null;
-                    itemFocado = null;
-                    quadradinhoVennFocado = null;
-                    mostrarAnotacaoMouseOver = true;
-                    textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
+                    limparFocoTextoItemEQuadradinho();
+                    mostrarDicaDoMouse(obterMensagemBloqueioInteracaoRepresentacoes());
                     setCursor(Cursor.getDefaultCursor());
                     repaint();
                     return;
@@ -12331,24 +12356,10 @@ public class Main extends JFrame {
                     ? representacaoRemover.obterAgrupamento() : null;
             if (representacaoRemover != null) {
                 agrupamentoAdicionarQuadradinhoFocado = null;
-                elementoTextoFocado = null;
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                boolean removerEhValorInteiro = ehAgrupamentoTransformacaoComSinal(
-                        representacaoRemover.obterAgrupamento());
-                textoAnotacaoMouseOver = !modelagemIniciada
-                        ? obterMensagemBloqueioAdicaoUnidades()
-                        : (remocaoLiberada
-                                ? localizacao.texto(removerEhValorInteiro
-                                        ? "ui.tooltip.venn.decreaseIntegerValue"
-                                        : "ui.tooltip.venn.removeSquare")
-                                : localizacao.texto(removerEhValorInteiro
-                                        ? "ui.tooltip.venn.integerLimitReached"
-                                        : "ui.tooltip.venn.minimumReached"));
-                setCursor(remocaoLiberada
-                        ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                        : Cursor.getDefaultCursor());
+                limparFocoTextoItemEQuadradinho();
+                aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
+                        DicaControleQuadradinho.Controle.REMOVER, modelagemIniciada, remocaoLiberada,
+                        ehAgrupamentoTransformacaoComSinal(representacaoRemover.obterAgrupamento())));
                 repaint();
                 return;
             }
@@ -12366,61 +12377,40 @@ public class Main extends JFrame {
             agrupamentoAdicionarQuadradinhoFocado = adicaoLiberada
                     ? representacaoAdicionar.obterAgrupamento() : null;
             if (representacaoAdicionar != null) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                quadradinhoVennFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                boolean adicionarEhValorInteiro = ehAgrupamentoTransformacaoComSinal(
-                        representacaoAdicionar.obterAgrupamento());
-                textoAnotacaoMouseOver = !modelagemIniciada
-                        ? obterMensagemBloqueioAdicaoUnidades()
-                        : (adicaoLiberada
-                                ? localizacao.texto(adicionarEhValorInteiro
-                                        ? "ui.tooltip.venn.increaseIntegerValue"
-                                        : "ui.tooltip.venn.addSquare")
-                                : localizacao.texto(adicionarEhValorInteiro
-                                        ? "ui.tooltip.venn.integerLimitReached"
-                                        : "ui.tooltip.venn.semanticLimitReached"));
-                setCursor(adicaoLiberada
-                        ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                        : Cursor.getDefaultCursor());
+                limparFocoTextoItemEQuadradinho();
+                aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
+                        DicaControleQuadradinho.Controle.ADICIONAR, modelagemIniciada, adicaoLiberada,
+                        ehAgrupamentoTransformacaoComSinal(representacaoAdicionar.obterAgrupamento())));
                 repaint();
                 return;
             }
 
             if (paineisEixosRelacoes.contemLupa(e.getX(), e.getY())) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaLupa();
+                limparFocoTextoEItem();
+                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaLupa());
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 repaint();
                 return;
             }
 
             if (paineisEixosRelacoes.contemBotaoEsconder(e.getX(), e.getY())) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaBotaoEsconder();
+                limparFocoTextoEItem();
+                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaBotaoEsconder());
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 repaint();
                 return;
             }
 
             if (paineisEixosRelacoes.contemPontoControle(e.getX(), e.getY())) {
-                elementoTextoFocado = null;
-                itemFocado = null;
-                mostrarAnotacaoMouseOver = true;
-                textoAnotacaoMouseOver = paineisEixosRelacoes.obterDicaPontoControle();
+                limparFocoTextoEItem();
+                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaPontoControle());
                 definirCursorMaoAberta();
                 repaint();
                 return;
             }
 
             if (ehGraficoBarrasComparacao() && (contemPontoControleComparacao(e.getX(), e.getY()) || contemEscalaComparacao(e.getX(), e.getY()))) {
-                elementoTextoFocado = null;
-                itemFocado = null;
+                limparFocoTextoEItem();
                 mostrarAnotacaoMouseOver = true;
                 if (!interacaoRepresentacoesLiberada) {
                     textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
