@@ -10348,6 +10348,12 @@ public class Main extends JFrame {
             }
         }
 
+        /** Ao pegar um alvo: começa o arraste elástico e o cursor vira a mão fechada (os dois sempre juntos). */
+        private void iniciarArrasteComMaoFechada(int x, int y) {
+            iniciarArrasteElastico(x, y);
+            definirCursorMaoFechada();
+        }
+
         private void iniciarArrasteElastico(int x, int y) {
             controladorArrasteElastico.iniciar(x, y, new OuvinteArrasteElastico() {
                 @Override
@@ -10582,8 +10588,7 @@ public class Main extends JFrame {
                     "Elemento semântico selecionado para manipulação.");
             atualizarRealceAlvoProximidade(novo);
             iniciarFantasmaItem(novo);
-            iniciarArrasteElastico(x, y);
-            definirCursorMaoFechada();
+            iniciarArrasteComMaoFechada(x, y);
             repaint();
             return true;
         }
@@ -10653,16 +10658,14 @@ public class Main extends JFrame {
                             adaptadorInteracaoPaineisEixosRelacoes
                                     .obterAreaVisualPontoControle(),
                             14, true);
-                    iniciarArrasteElastico(x, y);
-                    definirCursorMaoFechada();
+                    iniciarArrasteComMaoFechada(x, y);
                 } else if (resultadoPaineisRelacoes.getModoManipulacao()
                         == AlvoInteracaoPaineisEixosRelacoes.ModoManipulacao.PAINEL) {
                     iniciarFantasmaRetangular(
                             adaptadorInteracaoPaineisEixosRelacoes
                                     .obterAreaVisualPainel(),
                             16, false);
-                    iniciarArrasteElastico(x, y);
-                    definirCursorMaoFechada();
+                    iniciarArrasteComMaoFechada(x, y);
                 }
                 sincronizarPainelEixoRelacaoSeNecessario(false);
                 itemFocado = null;
@@ -10687,8 +10690,7 @@ public class Main extends JFrame {
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento textual", "Texto do problema", "Elemento textual", "Escolher texto para manipulação", "texto=" + elementoTexto.valor, "Seleção visual do texto.");
                 iniciarFantasmaElementoTexto(
                         handlerElementoTextoMovel.obterElementoAtivo());
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
+                iniciarArrasteComMaoFechada(x, y);
                 repaint();
                 return;
             }
@@ -10709,8 +10711,7 @@ public class Main extends JFrame {
                 iniciarRastreamentoGranular(x, y, "Elemento do diagrama", "Quadrado do diagrama", false);
                 registrarAcaoGranular("SELECIONAR", "Selecionar elemento do diagrama", "Diagrama", "Quadrado", "Escolher objeto para manipulação", "", "Elemento selecionado.");
                 iniciarFantasmaQuadradinho(quadradinhoVennCandidato);
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
+                iniciarArrasteComMaoFechada(x, y);
                 repaint();
                 return;
             }
@@ -10724,8 +10725,7 @@ public class Main extends JFrame {
                 itemFocado = itemSelecionado;
                 registrarAcaoGranular("SELECIONAR", "Selecionar item arrastável", "Área de trabalho", "Item arrastável", "Escolher valor para posicionamento", "valor=" + itemSelecionado.valor, "Item selecionado.");
                 iniciarFantasmaItem(itemSelecionado);
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
+                iniciarArrasteComMaoFechada(x, y);
                 repaint();
                 return;
             }
@@ -10752,8 +10752,7 @@ public class Main extends JFrame {
                 iniciarRastreamentoGranular(x, y, "Conector de Vergnaud", "Conector do diagrama", false);
                 registrarAcaoGranular("SELECIONAR", "Selecionar conector", "Diagrama", "Conector", "Escolher conector para reposicionamento", "", "Conector selecionado.");
                 iniciarFantasmaConector(conectorVergnaudCandidato);
-                iniciarArrasteElastico(x, y);
-                definirCursorMaoFechada();
+                iniciarArrasteComMaoFechada(x, y);
                 repaint();
                 return;
             }
