@@ -4992,20 +4992,8 @@ public class Main extends JFrame {
         // no mesmo estilo/posição em coluna dos botões de ação contextual
         // vizinhos (botaoRestaurar/botaoCorrigirCuradoria).
         private void criarBotaoEditarNarrativa() {
-            botaoEditarNarrativa = new JButton(IconesEditorNarrativa.criarIconeEditar());
-            botaoEditarNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
-            configurarBotaoAcaoContextual(
-                    botaoEditarNarrativa,
-                    localizacao.texto("ui.tooltip.editorNarrativa.editar")
-            );
-            botaoEditarNarrativa.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    abrirEditorNarrativa();
-                    requestFocusInWindow();
-                }
-            });
-            add(botaoEditarNarrativa);
-
+            // O botão "T" que abria o editor de enunciado foi retirado do desktop (pedido da usuária, 2026-10-06):
+            // sem ele botaoEditarNarrativa fica nulo e o editor não é aberto por nenhum caminho da tela.
             botaoConcluirEditorNarrativa = new JButton(IconesEditorNarrativa.criarIconeConcluir());
             botaoConcluirEditorNarrativa.setBounds(27, 132 + ALTURA_PAINEL_ATALHOS_CATEGORIA, 26, 26);
             configurarBotaoAcaoContextual(
