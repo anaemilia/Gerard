@@ -91,6 +91,7 @@ import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
 import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
 import gerard.ui.interacao.DicaControleQuadradinho;
+import gerard.ui.interacao.CadeiaPressionamento;
 import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
@@ -10581,6 +10582,23 @@ public class Main extends JFrame {
             return true;
         }
 
+        /**
+         * Quem recebe o pressionamento, do de maior para o de menor prioridade. A ORDEM é de
+         * CadeiaPressionamento (o primeiro elo que atende encerra a cadeia); cada elo abaixo só
+         * implementa o seu atendimento.
+         */
+        private final CadeiaPressionamento cadeiaPressionamento = new CadeiaPressionamento()
+                .adicionar("controles de unidades", this::pressionarControlesUnidades)
+                .adicionar("controle da comparação", this::pressionarControleComparacao)
+                .adicionar("lupa do painel de eixo", this::pressionarLupaDoEixo)
+                .adicionar("seletor de operação", this::pressionarSeletorDeOperacao)
+                .adicionar("painéis de eixo das relações", this::pressionarPaineisDeEixo)
+                .adicionar("marcador de texto", this::pressionarMarcadorDeTexto)
+                .adicionar("elemento de texto do enunciado", this::pressionarElementoDeTexto)
+                .adicionar("quadradinho de Venn", this::pressionarQuadradinho)
+                .adicionar("item arrastável", this::pressionarItemArrastavel)
+                .adicionar("conector de Vergnaud", this::pressionarConector);
+
         public void mousePressed(MouseEvent e) {
             requestFocusInWindow();
 
@@ -10601,34 +10619,68 @@ public class Main extends JFrame {
             flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
             handlerControleComparacao.concluir();
 
-            ResultadoControleUnidades<RepresentacaoComUnidades> resultadoControleUnidades =
+            if (cadeiaPressionamento.pressionar(x, y, e) == null) {
+                // ninguém atendeu: o clique em lugar vazio tira o foco das peças
+                itemFocado = null;
+                quadradinhoVennFocado = null;
+                repaint();
+            }
+        }
+
+        /** Elo "controles de unidades" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarControlesUnidades(int x, int y, MouseEvent e) {
+ResultadoControleUnidades<RepresentacaoComUnidades> resultadoControleUnidades =
                     handlerControlesUnidades.processar(adaptadorControlesUnidades, x, y);
             if (resultadoControleUnidades != null) {
                 apresentarResultadoControleUnidades(resultadoControleUnidades, x, y);
-                return;
+                return true;
             }
 
-            ResultadoPressionamentoControleComparacao resultadoControleComparacao =
+            
+            return false;
+        }
+
+        /** Elo "controle da comparação" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarControleComparacao(int x, int y, MouseEvent e) {
+ResultadoPressionamentoControleComparacao resultadoControleComparacao =
                     handlerControleComparacao.pressionar(adaptadorControleComparacao,
                             x, y, interacaoRepresentacoesLiberadaPelaModelagem());
             if (resultadoControleComparacao
                     != ResultadoPressionamentoControleComparacao.NAO_CONSUMIDO) {
                 apresentarPressionamentoControleComparacao(resultadoControleComparacao, x, y);
-                return;
+                return true;
             }
 
-            PaineisEixosRelacoes.Painel painelRecemRevelado =
+            
+            return false;
+        }
+
+        /** Elo "lupa do painel de eixo" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarLupaDoEixo(int x, int y, MouseEvent e) {
+PaineisEixosRelacoes.Painel painelRecemRevelado =
                     paineisEixosRelacoes.processarPressionamentoLupa(x, y);
             if (painelRecemRevelado != null) {
                 apresentarRevelacaoEixoRelacaoPelaLupa(painelRecemRevelado);
-                return;
+                return true;
             }
 
-            if (casoDeUsoSelecaoOperacoesRelacoes.processar(x, y)) {
-                return;
+            
+            return false;
+        }
+
+        /** Elo "seletor de operação" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarSeletorDeOperacao(int x, int y, MouseEvent e) {
+if (casoDeUsoSelecaoOperacoesRelacoes.processar(x, y)) {
+                return true;
             }
 
-            HandlerInteracaoPaineisEixosRelacoes.ResultadoPressionamento
+            
+            return false;
+        }
+
+        /** Elo "painéis de eixo das relações" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarPaineisDeEixo(int x, int y, MouseEvent e) {
+HandlerInteracaoPaineisEixosRelacoes.ResultadoPressionamento
                     resultadoPaineisRelacoes =
                     handlerPaineisEixosRelacoes.iniciar(
                             adaptadorInteracaoPaineisEixosRelacoes,
@@ -10637,7 +10689,7 @@ public class Main extends JFrame {
             if (resultadoPaineisRelacoes.foiBloqueado()) {
                 informarBloqueioInteracaoRepresentacao(
                         x, y, "Valor semântico no painel de eixo das Relações");
-                return;
+                return true;
             }
             if (resultadoPaineisRelacoes.foiConsumido()) {
                 if (resultadoPaineisRelacoes.getModoManipulacao()
@@ -10659,15 +10711,27 @@ public class Main extends JFrame {
                 itemFocado = null;
                 quadradinhoVennFocado = null;
                 repaint();
-                return;
+                return true;
             }
 
-            if (processarSelecaoMarcadorTexto(x, y)) {
-                return;
+            
+            return false;
+        }
+
+        /** Elo "marcador de texto" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarMarcadorDeTexto(int x, int y, MouseEvent e) {
+if (processarSelecaoMarcadorTexto(x, y)) {
+                return true;
             }
 
 
-            ElementoTextoMovel elementoTexto = encontrarElementoTextoMovel(x, y);
+            
+            return false;
+        }
+
+        /** Elo "elemento de texto do enunciado" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarElementoDeTexto(int x, int y, MouseEvent e) {
+ElementoTextoMovel elementoTexto = encontrarElementoTextoMovel(x, y);
 
             if (handlerElementoTextoMovel.iniciar(
                     estaNaAreaDoTexto(x, y) ? elementoTexto : null, x, y)) {
@@ -10680,16 +10744,22 @@ public class Main extends JFrame {
                         handlerElementoTextoMovel.obterElementoAtivo());
                 iniciarArrasteComMaoFechada(x, y);
                 repaint();
-                return;
+                return true;
             }
 
-            QuadradinhoVenn quadradinhoVennCandidato = encontrarQuadradinhoVenn(x, y);
+            
+            return false;
+        }
+
+        /** Elo "quadradinho de Venn" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarQuadradinho(int x, int y, MouseEvent e) {
+QuadradinhoVenn quadradinhoVennCandidato = encontrarQuadradinhoVenn(x, y);
             handlerQuadradinhoVenn.cancelar();
 
             if (quadradinhoVennCandidato != null
                     && !interacaoRepresentacoesLiberadaPelaModelagem()) {
                 informarBloqueioInteracaoRepresentacao(x, y, "Unidade da representação complementar");
-                return;
+                return true;
             }
 
             if (quadradinhoVennCandidato != null) {
@@ -10701,10 +10771,16 @@ public class Main extends JFrame {
                 iniciarFantasmaQuadradinho(quadradinhoVennCandidato);
                 iniciarArrasteComMaoFechada(x, y);
                 repaint();
-                return;
+                return true;
             }
 
-            ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
+            
+            return false;
+        }
+
+        /** Elo "item arrastável" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarItemArrastavel(int x, int y, MouseEvent e) {
+ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
 
             if (handlerItemTextoArrastavel.iniciar(itemEncontrado, x, y)) {
                 ItemTextoArrastavel itemSelecionado =
@@ -10715,10 +10791,16 @@ public class Main extends JFrame {
                 iniciarFantasmaItem(itemSelecionado);
                 iniciarArrasteComMaoFechada(x, y);
                 repaint();
-                return;
+                return true;
             }
 
-            // Elementos semânticos (círculos/retângulos do diagrama de
+            
+            return false;
+        }
+
+        /** Elo "conector de Vergnaud" da cadeia de pressionamento (ver cadeiaPressionamento). */
+        private boolean pressionarConector(int x, int y, MouseEvent e) {
+// Elementos semânticos (círculos/retângulos do diagrama de
             // Vergnaud) deixaram de ser arrastáveis (2026-08-18): "isso foi
             // um requisito muito antigo que, agora, não faz mais sentido" —
             // decisão da usuária, aplicada uniformemente a todas as
@@ -10732,7 +10814,7 @@ public class Main extends JFrame {
 
             if (conectorVergnaudCandidato != null) {
                 if (politicaGestoEstrutural.ehPressionamentoDeDuploClique(e.getClickCount())) {
-                    return;
+                    return true;
                 }
                 handlerConectorVergnaud.iniciar(new AdaptadorMovimentoConectorVergnaud(conectorVergnaudCandidato), x, y);
                 itemFocado = null;
@@ -10742,12 +10824,9 @@ public class Main extends JFrame {
                 iniciarFantasmaConector(conectorVergnaudCandidato);
                 iniciarArrasteComMaoFechada(x, y);
                 repaint();
-                return;
+                return true;
             }
-
-            itemFocado = null;
-            quadradinhoVennFocado = null;
-            repaint();
+            return false;
         }
 
         public void mouseDragged(MouseEvent e) {

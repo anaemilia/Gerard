@@ -87,16 +87,18 @@ public class TesteMacacoPressionamentoMouse {
         if (System.getProperty("sovazio") != null) return;
         TesteMacacoHistorinhaNumeroRelativo.modelar();
         limpar();
-        varrer(id, "modelado", passo, null);
+        boolean soAlvos = System.getProperty("soalvos") != null;     // só o centro de cada peça (rápido)
+        if (!soAlvos) varrer(id, "modelado", passo, null);
         varrerAlvos(id, "modelado_alvos");
-        varrer(id, "modelado_diagrama", passoFino + 20, areaPorMetodo("obterAreaVisivelDiagramasVergnaud"));
+        if (!soAlvos) varrer(id, "modelado_diagrama", passoFino + 20, areaPorMetodo("obterAreaVisivelDiagramasVergnaud"));
         boolean porOperacao = TesteMacacoHistorinhaNumeroRelativo.seletorOperacaoAtivo();
         if (porOperacao) TesteMacacoHistorinhaNumeroRelativo.macacoOperacao();
         else TesteMacacoHistorinhaNumeroRelativo.macacoValor();
         Thread.sleep(2500);
         limpar();
-        varrer(id, "limite", passo, null);
+        if (!soAlvos) varrer(id, "limite", passo, null);
         varrerAlvos(id, "limite_alvos");
+        if (soAlvos) return;
         varrer(id, "limite_diagrama", passoFino + 20, areaPorMetodo("obterAreaVisivelDiagramasVergnaud"));
         if (tipo != TipoSituacaoAditiva.TRANSFORMACAO_RELACAO && tipo != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
             varrer(id, "limite_fino", passoFino, areaComplementar());

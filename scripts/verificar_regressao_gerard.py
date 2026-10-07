@@ -313,7 +313,7 @@ LIMITES_PROTOCOLOS_MAIN = {
     # Fase 7.12 (2026-09-29): pressionamento da barra de Comparação -> handler, 197 -> 188.
     # Fase 7.13 (2026-09-29): apresentação da lupa de Relações -> apresentador, 188 -> 174
     # (organização do roteamento; a mecânica da lupa já estava em PaineisEixosRelacoes).
-    'public void mousePressed(MouseEvent e)': 168,
+    'public void mousePressed(MouseEvent e)': 27,
     'public void mouseDragged(MouseEvent e)': 28,
     'private void processarMovimentoArraste(int x, int y)': 60,
     'public void mouseReleased(MouseEvent e)': 108,
