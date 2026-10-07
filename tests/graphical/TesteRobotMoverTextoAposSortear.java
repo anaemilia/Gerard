@@ -48,6 +48,7 @@ public class TesteRobotMoverTextoAposSortear {
                 estado[0] = t.aguardandoAdivinhacaoCategoria; estado[1] = t.categoriaSelecionadaParaAtividade; }});
             System.out.println("   depois de acertar a categoria (" + tipoSorteado[0] + "): aguardando adivinhação=" + estado[0]
                     + ", categoria selecionada=" + estado[1] + ", elementos de texto=" + textos.size());
+            if (rodada == 0 && args.length > 0) capturarEnunciado(r, o, t, new java.io.File(args[0]), "1_antes");
             int moveu = 0, tentou = 0;
             for (ElementoTextoMovel x : textos) {
                 if (x.possuiVinculoSemantico() || tentou >= 4) continue;
@@ -58,11 +59,18 @@ public class TesteRobotMoverTextoAposSortear {
                 tentou++;
                 boolean andou = x.x != antesX || x.y != antesY;
                 if (andou) moveu++;
+                if (rodada == 0 && args.length > 0 && tentou == 1) capturarEnunciado(r, o, t, new java.io.File(args[0]), "2_depois_de_arrastar_1a_palavra");
                 System.out.println((andou ? "  [MOVEU]  " : "  [PARADO] ") + "\"" + x.valor + "\" (" + antesX + "," + antesY + ") -> (" + x.x + "," + x.y + ")");
             }
             System.out.println("   " + moveu + " de " + tentou + " palavras se moveram");
         }
         System.exit(0);
+    }
+
+    static void capturarEnunciado(Robot r, Point o, Main.TelaGerard t, java.io.File pasta, String nome) throws Exception {
+        pasta.mkdirs();
+        java.awt.image.BufferedImage img = r.createScreenCapture(new java.awt.Rectangle(o.x, o.y + 190, Math.min(t.getWidth(), 1100), 140));
+        javax.imageio.ImageIO.write(img, "png", new java.io.File(pasta, nome + ".png"));
     }
 
     static javax.swing.JButton icone(Main.TelaGerard t, gerard.campoaditivo.modelo.TipoSituacaoAditiva tipo) {
