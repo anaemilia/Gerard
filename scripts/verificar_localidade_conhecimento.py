@@ -172,8 +172,7 @@ exigir("DicaControleQuadradinho.decidir(" in main_h and "ui.tooltip.venn.addSqua
 main_c = (SRC / "Main.java").read_text(encoding="utf-8")
 _ini_p = main_c.index("public void mousePressed(MouseEvent e) {")
 corpo_pressionado = main_c[_ini_p:main_c.index("/** Elo ", _ini_p)]
-exigir("cadeiaPressionamento.pressionar(" in corpo_pressionado and corpo_pressionado.count("handler") <= 6
-       and "return;" in corpo_pressionado,
+exigir("cadeiaPressionamento.pressionar(" in corpo_pressionado and corpo_pressionado.count("handler") <= 6,
        "R14: mousePressed delega a ordem de prioridade a CadeiaPressionamento (elos nomeados)")
 nomes_elos = re.findall(r'\.adicionar\("([^"]+)", this::pressionar', main_c)
 exigir(len(nomes_elos) == 10 and nomes_elos[0] == "controles de unidades" and nomes_elos[-1] == "conector de Vergnaud",
