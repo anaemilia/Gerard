@@ -12143,28 +12143,56 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     : Cursor.getDefaultCursor());
         }
 
+        /**
+         * Quem trata o mouse apenas PASSANDO (sem botão), do de maior para o de menor prioridade (ordem de
+         * CadeiaDeAtendimento). O último elo (peça sob o mouse) sempre atende.
+         */
+        private final CadeiaDeAtendimento cadeiaPassagem = new CadeiaDeAtendimento()
+                .adicionar("painéis bloqueados pela modelagem", this::passarSobPainelBloqueado)
+                .adicionar("controle de remover quadradinho", this::passarSobControleRemover)
+                .adicionar("controle de adicionar quadradinho", this::passarSobControleAdicionar)
+                .adicionar("lupa do painel de eixo", this::passarSobLupa)
+                .adicionar("botão esconder do painel de eixo", this::passarSobBotaoEsconder)
+                .adicionar("ponto de controle do eixo", this::passarSobPontoControleEixo)
+                .adicionar("controle da comparação", this::passarSobControleComparacao)
+                .adicionar("peça sob o mouse", this::passarSobPeca);
+
+        /** Quem recebe o foco da peça sob o mouse (o último elo, "nada", sempre atende). */
+        private final CadeiaDeAtendimento cadeiaFocoDePeca = new CadeiaDeAtendimento()
+                .adicionar("quadradinho de Venn", this::focarQuadradinho)
+                .adicionar("item arrastável", this::focarItem)
+                .adicionar("conector de Vergnaud", this::focarConector)
+                .adicionar("nada", this::focarNada);
+
         public void mouseMoved(MouseEvent e) {
             mouseOverX = e.getX();
             mouseOverY = e.getY();
             forcarAnotacaoMouseOverAbaixo = false;
-            boolean interacaoRepresentacoesLiberada =
-                    interacaoRepresentacoesLiberadaPelaModelagem();
-            if (interacaoRepresentacoesLiberada) {
+            if (interacaoRepresentacoesLiberadaPelaModelagem()) {
                 paineisEixosRelacoes.atualizarFocoBotaoEsconder(e.getX(), e.getY());
             } else {
                 paineisEixosRelacoes.limparFocoBotaoEsconder();
-                if (paineisEixosRelacoes.contemAlgumPainel(e.getX(), e.getY())) {
-                    limparFocoTextoItemEQuadradinho();
-                    mostrarDicaDoMouse(obterMensagemBloqueioInteracaoRepresentacoes());
-                    setCursor(Cursor.getDefaultCursor());
-                    repaint();
-                    return;
-                }
             }
+            cadeiaPassagem.atender(e.getX(), e.getY(), e);
+        }
 
+        /** Elo "painéis bloqueados pela modelagem" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobPainelBloqueado(int x, int y, MouseEvent e) {
+            if (interacaoRepresentacoesLiberadaPelaModelagem()
+                    || !paineisEixosRelacoes.contemAlgumPainel(x, y)) {
+                return false;
+            }
+            limparFocoTextoItemEQuadradinho();
+            mostrarDicaDoMouse(obterMensagemBloqueioInteracaoRepresentacoes());
+            setCursor(Cursor.getDefaultCursor());
+            repaint();
+            return true;
+        }
+
+        /** Elo "controle de remover quadradinho" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobControleRemover(int x, int y, MouseEvent e) {
             RepresentacaoComUnidadesRemoviveis representacaoRemover =
-                    encontrarRepresentacaoPeloControleRemoverQuadradinho(
-                            e.getX(), e.getY());
+                    encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);
             boolean modelagemIniciada = adicaoDeUnidadesLiberadaPelaModelagem();
             boolean remocaoLiberada = representacaoRemover != null
                     && modelagemIniciada
@@ -12175,19 +12203,23 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                             : representacaoRemover.podeRemoverUnidade());
             agrupamentoRemoverQuadradinhoFocado = remocaoLiberada
                     ? representacaoRemover.obterAgrupamento() : null;
-            if (representacaoRemover != null) {
-                agrupamentoAdicionarQuadradinhoFocado = null;
-                limparFocoTextoItemEQuadradinho();
-                aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
-                        DicaControleQuadradinho.Controle.REMOVER, modelagemIniciada, remocaoLiberada,
-                        ehAgrupamentoTransformacaoComSinal(representacaoRemover.obterAgrupamento())));
-                repaint();
-                return;
+            if (representacaoRemover == null) {
+                return false;
             }
+            agrupamentoAdicionarQuadradinhoFocado = null;
+            limparFocoTextoItemEQuadradinho();
+            aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
+                    DicaControleQuadradinho.Controle.REMOVER, modelagemIniciada, remocaoLiberada,
+                    ehAgrupamentoTransformacaoComSinal(representacaoRemover.obterAgrupamento())));
+            repaint();
+            return true;
+        }
 
+        /** Elo "controle de adicionar quadradinho" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobControleAdicionar(int x, int y, MouseEvent e) {
             RepresentacaoComUnidadesAdicionaveis representacaoAdicionar =
-                    encontrarRepresentacaoPeloControleAdicionarQuadradinho(
-                            e.getX(), e.getY());
+                    encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y);
+            boolean modelagemIniciada = adicaoDeUnidadesLiberadaPelaModelagem();
             boolean adicaoLiberada = representacaoAdicionar != null
                     && modelagemIniciada
                     && (ehAgrupamentoTransformacaoComSinal(
@@ -12197,118 +12229,153 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                             : representacaoAdicionar.podeAdicionarUnidade());
             agrupamentoAdicionarQuadradinhoFocado = adicaoLiberada
                     ? representacaoAdicionar.obterAgrupamento() : null;
-            if (representacaoAdicionar != null) {
-                limparFocoTextoItemEQuadradinho();
-                aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
-                        DicaControleQuadradinho.Controle.ADICIONAR, modelagemIniciada, adicaoLiberada,
-                        ehAgrupamentoTransformacaoComSinal(representacaoAdicionar.obterAgrupamento())));
-                repaint();
-                return;
+            if (representacaoAdicionar == null) {
+                return false;
             }
+            limparFocoTextoItemEQuadradinho();
+            aplicarDicaControleQuadradinho(DicaControleQuadradinho.decidir(
+                    DicaControleQuadradinho.Controle.ADICIONAR, modelagemIniciada, adicaoLiberada,
+                    ehAgrupamentoTransformacaoComSinal(representacaoAdicionar.obterAgrupamento())));
+            repaint();
+            return true;
+        }
 
-            if (paineisEixosRelacoes.contemLupa(e.getX(), e.getY())) {
-                limparFocoTextoEItem();
-                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaLupa());
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                repaint();
-                return;
+        /** Elo "lupa do painel de eixo" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobLupa(int x, int y, MouseEvent e) {
+            if (!paineisEixosRelacoes.contemLupa(x, y)) {
+                return false;
             }
+            limparFocoTextoEItem();
+            mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaLupa());
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            repaint();
+            return true;
+        }
 
-            if (paineisEixosRelacoes.contemBotaoEsconder(e.getX(), e.getY())) {
-                limparFocoTextoEItem();
-                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaBotaoEsconder());
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                repaint();
-                return;
+        /** Elo "botão esconder do painel de eixo" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobBotaoEsconder(int x, int y, MouseEvent e) {
+            if (!paineisEixosRelacoes.contemBotaoEsconder(x, y)) {
+                return false;
             }
+            limparFocoTextoEItem();
+            mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaBotaoEsconder());
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            repaint();
+            return true;
+        }
 
-            if (paineisEixosRelacoes.contemPontoControle(e.getX(), e.getY())) {
-                limparFocoTextoEItem();
-                mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaPontoControle());
+        /** Elo "ponto de controle do eixo" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobPontoControleEixo(int x, int y, MouseEvent e) {
+            if (!paineisEixosRelacoes.contemPontoControle(x, y)) {
+                return false;
+            }
+            limparFocoTextoEItem();
+            mostrarDicaDoMouse(paineisEixosRelacoes.obterDicaPontoControle());
+            definirCursorMaoAberta();
+            repaint();
+            return true;
+        }
+
+        /** Elo "controle da comparação" da cadeia de passagem (ver cadeiaPassagem). */
+        private boolean passarSobControleComparacao(int x, int y, MouseEvent e) {
+            if (!(ehGraficoBarrasComparacao()
+                    && (contemPontoControleComparacao(x, y) || contemEscalaComparacao(x, y)))) {
+                return false;
+            }
+            limparFocoTextoEItem();
+            mostrarAnotacaoMouseOver = true;
+            if (!interacaoRepresentacoesLiberadaPelaModelagem()) {
+                textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
+                setCursor(Cursor.getDefaultCursor());
+            } else {
+                textoAnotacaoMouseOver = localizacao.texto("ui.tooltip.integerAxisBluePoint");
                 definirCursorMaoAberta();
-                repaint();
-                return;
             }
+            repaint();
+            return true;
+        }
 
-            if (ehGraficoBarrasComparacao() && (contemPontoControleComparacao(e.getX(), e.getY()) || contemEscalaComparacao(e.getX(), e.getY()))) {
-                limparFocoTextoEItem();
-                mostrarAnotacaoMouseOver = true;
-                if (!interacaoRepresentacoesLiberada) {
-                    textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
-                    setCursor(Cursor.getDefaultCursor());
-                } else {
-                    textoAnotacaoMouseOver = localizacao.texto("ui.tooltip.integerAxisBluePoint");
-                    definirCursorMaoAberta();
-                }
-                repaint();
-                return;
-            }
-
-            ElementoTextoMovel candidatoTexto =
-                    encontrarElementoTextoMovel(e.getX(), e.getY());
+        /** Elo "peça sob o mouse" (sempre atende): palavra do enunciado ou, se não for, quadradinho/item/conector. */
+        private boolean passarSobPeca(int x, int y, MouseEvent e) {
+            ElementoTextoMovel candidatoTexto = encontrarElementoTextoMovel(x, y);
             ElementoTextoMovel elementoTexto =
                     handlerElementoTextoMovel.identificarFoco(
                             candidatoTexto,
-                            candidatoTexto != null
-                                    && estaNaAreaDoTexto(
-                                            e.getX(), e.getY()));
+                            candidatoTexto != null && estaNaAreaDoTexto(x, y));
 
             if (elementoTexto != null) {
                 elementoTextoFocado = elementoTexto;
                 mostrarAnotacaoMouseOver = true;
-
                 if (ehNumeroOuInterrogacaoDoTexto(elementoTexto)) {
                     textoAnotacaoMouseOver = criarMensagemPapelElementoTexto(elementoTexto);
                 } else {
                     textoAnotacaoMouseOver = localizacao.texto("ui.tooltip.textMoveOnly");
                 }
-
                 definirCursorMaoAberta();
             } else {
                 elementoTextoFocado = null;
-
-                {
-                    QuadradinhoVenn quadradinho = encontrarQuadradinhoVenn(e.getX(), e.getY());
-                    if (quadradinho != null) {
-                        itemFocado = null;
-                        mostrarAnotacaoMouseOver = true;
-                        if (!interacaoRepresentacoesLiberada) {
-                            quadradinhoVennFocado = null;
-                            textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
-                            setCursor(Cursor.getDefaultCursor());
-                        } else {
-                            quadradinhoVennFocado = quadradinho;
-                            textoAnotacaoMouseOver = localizacao.texto(ehDiagramaVennComposicaoMedidas() ? "ui.tooltip.collectionSquareDrag" : (ehGraficoBarrasComparacao() ? "ui.tooltip.comparisonBarDrag" : "ui.tooltip.vennSquareDrag"));
-                            definirCursorMaoAberta();
-                        }
-                    } else {
-                        quadradinhoVennFocado = null;
-                        ItemTextoArrastavel item =
-                                handlerItemTextoArrastavel.identificarFoco(
-                                        encontrarItemArrastavel(e.getX(), e.getY()));
-                        if (item != null) {
-                            itemFocado = item;
-                            mostrarAnotacaoMouseOver = true;
-                            if (mostrarQuestionamentoPersistente && item == itemQuestionadoPersistente) {
-                                textoAnotacaoMouseOver = textoQuestionamentoPersistente;
-                            } else {
-                                textoAnotacaoMouseOver = criarMensagemPapelItemArrastavel(item);
-                            }
-                            definirCursorMaoAberta();
-                        } else if (encontrarConectorVergnaud(e.getX(), e.getY()) != null) {
-                        mostrarAnotacaoMouseOver = false;
-                        textoAnotacaoMouseOver = "";
-                        definirCursorMaoAberta();
-                        } else {
-                            mostrarAnotacaoMouseOver = false;
-                            textoAnotacaoMouseOver = "";
-                            setCursor(Cursor.getDefaultCursor());
-                        }
-                    }
-                }
+                cadeiaFocoDePeca.atender(x, y, e);
             }
-
             repaint();
+            return true;
+        }
+
+        /** Elo "quadradinho de Venn" da cadeia de foco de peça (ver cadeiaFocoDePeca). */
+        private boolean focarQuadradinho(int x, int y, MouseEvent e) {
+            QuadradinhoVenn quadradinho = encontrarQuadradinhoVenn(x, y);
+            if (quadradinho == null) {
+                quadradinhoVennFocado = null;
+                return false;
+            }
+            itemFocado = null;
+            mostrarAnotacaoMouseOver = true;
+            if (!interacaoRepresentacoesLiberadaPelaModelagem()) {
+                quadradinhoVennFocado = null;
+                textoAnotacaoMouseOver = obterMensagemBloqueioInteracaoRepresentacoes();
+                setCursor(Cursor.getDefaultCursor());
+            } else {
+                quadradinhoVennFocado = quadradinho;
+                textoAnotacaoMouseOver = localizacao.texto(ehDiagramaVennComposicaoMedidas() ? "ui.tooltip.collectionSquareDrag" : (ehGraficoBarrasComparacao() ? "ui.tooltip.comparisonBarDrag" : "ui.tooltip.vennSquareDrag"));
+                definirCursorMaoAberta();
+            }
+            return true;
+        }
+
+        /** Elo "item arrastável" da cadeia de foco de peça (ver cadeiaFocoDePeca). */
+        private boolean focarItem(int x, int y, MouseEvent e) {
+            ItemTextoArrastavel item =
+                    handlerItemTextoArrastavel.identificarFoco(encontrarItemArrastavel(x, y));
+            if (item == null) {
+                return false;
+            }
+            itemFocado = item;
+            mostrarAnotacaoMouseOver = true;
+            if (mostrarQuestionamentoPersistente && item == itemQuestionadoPersistente) {
+                textoAnotacaoMouseOver = textoQuestionamentoPersistente;
+            } else {
+                textoAnotacaoMouseOver = criarMensagemPapelItemArrastavel(item);
+            }
+            definirCursorMaoAberta();
+            return true;
+        }
+
+        /** Elo "conector de Vergnaud" da cadeia de foco de peça (ver cadeiaFocoDePeca). */
+        private boolean focarConector(int x, int y, MouseEvent e) {
+            if (encontrarConectorVergnaud(x, y) == null) {
+                return false;
+            }
+            mostrarAnotacaoMouseOver = false;
+            textoAnotacaoMouseOver = "";
+            definirCursorMaoAberta();
+            return true;
+        }
+
+        /** Elo "nada" da cadeia de foco de peça: nenhuma peça sob o mouse. */
+        private boolean focarNada(int x, int y, MouseEvent e) {
+            mostrarAnotacaoMouseOver = false;
+            textoAnotacaoMouseOver = "";
+            setCursor(Cursor.getDefaultCursor());
+            return true;
         }
 
 

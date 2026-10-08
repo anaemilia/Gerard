@@ -319,7 +319,7 @@ LIMITES_PROTOCOLOS_MAIN = {
     'private void processarMovimentoArraste(int x, int y)': 3,
     'public void mouseReleased(MouseEvent e)': 12,
     'public void mouseClicked(MouseEvent e)': 5,
-    'public void mouseMoved(MouseEvent e)': 167,
+    'public void mouseMoved(MouseEvent e)': 11,
 }
 for assinatura, limite in LIMITES_PROTOCOLOS_MAIN.items():
     linhas=linhas_metodo_java(main,assinatura)
@@ -955,8 +955,8 @@ check(all(token not in alvo_controles_unidades + handler_controles_unidades
 check('handlerControlesUnidades.processar(adaptadorControlesUnidades, x, y)' in main
       and 'new AlvoControlesUnidades<RepresentacaoComUnidades>()' in main
       and 'private void apresentarResultadoControleUnidades(' in main
-      and 'encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);' not in main
-      and 'encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y);' not in main,
+      and 'encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y);' not in main.split('private boolean pressionarControlesUnidades(')[1].split('private boolean pressionarControleComparacao(')[0]
+      and 'encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y);' not in main.split('private boolean pressionarControlesUnidades(')[1].split('private boolean pressionarControleComparacao(')[0],
       'mousePressed apenas roteia os controles de unidades; hit-test fica no adaptador')
 check('class TesteHandlerInteracaoControlesUnidades' in teste_controles_unidades
       and 'testarRemoverTemPrioridadeSobreAdicionar' in teste_controles_unidades
@@ -1727,7 +1727,8 @@ check('encontrarElementoVergnaud(x, y) != null' not in main,
       'affordance de cursor (mão aberta) não considera mais um ElementoVergnaud como algo arrastável '
       '(pontoSobreElementoArrastavel)')
 check("encontrarElementoVergnaud(e.getX(), e.getY()) != null || encontrarConectorVergnaud(e.getX(), e.getY()) != null" not in main
-      and 'encontrarConectorVergnaud(e.getX(), e.getY()) != null) {' in main,
+      and 'private boolean focarConector(int x, int y, MouseEvent e) {' in main
+      and 'encontrarElementoVergnaud(x, y)' not in main.split('private boolean focarConector(')[1].split('private boolean focarNada(')[0],
       'affordance de cursor no mouseMoved também não considera mais um ElementoVergnaud arrastável '
       '(mantém só o conector)')
 check('private void editarTextoElementoVergnaud' in main
