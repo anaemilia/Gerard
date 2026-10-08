@@ -4722,7 +4722,7 @@ public class Main extends JFrame {
             desenharCabecalho(g2);
             desenharFaixaAtalhoCategoria(g2);
             desenharTextoProblema(g2);
-            desenharAreaDiagrama(g2);
+            desenharAreaDiagrama(g2, prepararAreaDiagrama());
             desenharElementos(g2);
             desenharDiagramaVenn(g2, prepararDiagramaComplementar());
             marcadorOrigemArraste.desenhar(g2);
@@ -6441,7 +6441,53 @@ public class Main extends JFrame {
             g2.setStroke(original);
         }
 
-        private void desenharAreaDiagrama(Graphics2D g2) {
+        /**
+         * O que desenharAreaDiagrama precisa saber, decidido por prepararAreaDiagrama ANTES de pintar: se há categoria,
+         * onde ficam o divisor e os dois painéis. Os retângulos são os de ANTES de o diagrama de Vergnaud ser
+         * (re)inicializado neste quadro — como sempre foram.
+         */
+        private static final class AreaDiagramaPreparada {
+            final boolean categoriaSelecionada;
+            final int xDivisor;               // < 0: sem divisor (painel complementar oculto)
+            final Rectangle limiteVergnaud;
+            final Rectangle limiteComplementar;
+
+            AreaDiagramaPreparada(boolean categoriaSelecionada, int xDivisor,
+                    Rectangle limiteVergnaud, Rectangle limiteComplementar) {
+                this.categoriaSelecionada = categoriaSelecionada;
+                this.xDivisor = xDivisor;
+                this.limiteVergnaud = limiteVergnaud;
+                this.limiteComplementar = limiteComplementar;
+            }
+        }
+
+        /**
+         * Tudo o que muda estado ou componentes na área dos diagramas: esconde os controles quando não há categoria;
+         * reposiciona os botões (restaurar, ajuda, "Ver dica") e esconde o de ajuda complementar; inicializa o diagrama de
+         * Vergnaud se ainda não existe. Roda uma vez por pintura, logo antes do desenho (mesmo ponto de antes).
+         */
+        private AreaDiagramaPreparada prepararAreaDiagrama() {
+            if (!categoriaSelecionadaParaAtividade) {
+                ocultarControlesDaAtividadeSemCategoria();
+                return new AreaDiagramaPreparada(false, -1, null, null);
+            }
+            int xDivisor = deveExibirDiagramaComplementar() ? obterXDivisorDiagramas() : -1;
+            Rectangle limiteVergnaud = obterAreaVisivelDiagramasVergnaud();
+            reposicionarBotaoRestaurarDiagrama(limiteVergnaud);
+            reposicionarBotaoAjudaVergnaud(limiteVergnaud);
+            reposicionarBotaoVerDicaPosicionamento(limiteVergnaud);
+            if (!deveExibirDiagramaComplementar() && botaoAjudaComplementar != null) {
+                botaoAjudaComplementar.setVisible(false);
+            }
+            Rectangle limiteComplementar = obterAreaDiagramaAditivo();
+            if (cenaDiagramaAtual == null || elementosVergnaud.isEmpty()) {
+                inicializarDiagramaVergnaud();
+            }
+            return new AreaDiagramaPreparada(true, xDivisor, limiteVergnaud, limiteComplementar);
+        }
+
+        /** Só desenha a área dos diagramas; não altera estado nem componentes (ver prepararAreaDiagrama). */
+        private void desenharAreaDiagrama(Graphics2D g2, AreaDiagramaPreparada area) {
             int yTopoArea = 210 + ALTURA_PAINEL_ATALHOS_CATEGORIA;
             g2.setColor(COR_FUNDO);
             g2.fillRect(0, yTopoArea, getWidth(), getHeight() - yTopoArea);
@@ -6449,7 +6495,7 @@ public class Main extends JFrame {
             g2.setColor(COR_BORDA);
             g2.drawLine(0, yTopoArea, getWidth(), yTopoArea);
 
-            if (!categoriaSelecionadaParaAtividade) {
+            if (!area.categoriaSelecionada) {
                 // Exibe os painéis vazios do diagrama de Vergnaud e da
                 // representação complementar. Formas, títulos, valores e
                 // demais conteúdos educativos só são criados após a escolha
@@ -6476,22 +6522,14 @@ public class Main extends JFrame {
                         areaComplementarVazia.height,
                         18);
 
-                ocultarControlesDaAtividadeSemCategoria();
                 return;
             }
-            if (deveExibirDiagramaComplementar()) {
+            if (area.xDivisor >= 0) {
                 g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                int xDivisorDiagramas = obterXDivisorDiagramas();
-                g2.drawLine(xDivisorDiagramas, 222 + ALTURA_PAINEL_ATALHOS_CATEGORIA, xDivisorDiagramas, getHeight() - 14);
+                g2.drawLine(area.xDivisor, 222 + ALTURA_PAINEL_ATALHOS_CATEGORIA, area.xDivisor, getHeight() - 14);
             }
 
-            Rectangle limiteVergnaud = obterAreaVisivelDiagramasVergnaud();
-            reposicionarBotaoRestaurarDiagrama(limiteVergnaud);
-            reposicionarBotaoAjudaVergnaud(limiteVergnaud);
-            reposicionarBotaoVerDicaPosicionamento(limiteVergnaud);
-            if (!deveExibirDiagramaComplementar() && botaoAjudaComplementar != null) {
-                botaoAjudaComplementar.setVisible(false);
-            }
+            Rectangle limiteVergnaud = area.limiteVergnaud;
             desenharCard(g2, limiteVergnaud.x, limiteVergnaud.y, limiteVergnaud.width, limiteVergnaud.height, 18);
             // O card do painel complementar precisa existir desde a escolha
             // da categoria, vazio até o material concreto aparecer — mesmo
@@ -6502,13 +6540,9 @@ public class Main extends JFrame {
             // está sendo apagado. Mantenha-o!"). O conteúdo (quadradinhos
             // etc.) continua condicionado a deveExibirDiagramaComplementar()
             // em outro lugar — só a moldura do painel é incondicional.
-            Rectangle limiteComplementar = obterAreaDiagramaAditivo();
+            Rectangle limiteComplementar = area.limiteComplementar;
             desenharCard(g2, limiteComplementar.x, limiteComplementar.y,
                     limiteComplementar.width, limiteComplementar.height, 18);
-
-            if (cenaDiagramaAtual == null || elementosVergnaud.isEmpty()) {
-                inicializarDiagramaVergnaud();
-            }
 
             ConectorVergnaud conectorAtivo = obterConectorVergnaudAtivo();
             EstadoFeedbackDiagrama feedbackCena = cenaDiagramaAtual == null

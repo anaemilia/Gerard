@@ -56,6 +56,7 @@ public class TesteMacacoAnotacaoMouseOver {
 
         saida = new PrintWriter(tsv, "UTF-8");
         saida.println("cenario\tfase\tpasso\thash");
+        registrar("PO_inicio_sem_categoria", "inicio", "tela_sem_categoria", new Point());
         for (String id : ids) cenario(id);
         saida.close();
         System.out.println("CAPTURAS registradas: " + linhas + " em " + tsv);
