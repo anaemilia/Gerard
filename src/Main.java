@@ -10631,6 +10631,14 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             return false;
         }
 
+        /**
+         * Quem conclui a SOLTURA do mouse, do de maior para o de menor prioridade (ordem de CadeiaDeAtendimento). Se nenhum
+         * elo atende, a soltura é a de um item/texto/quadradinho (concluirSolturaDeItem).
+         */
+        private final CadeiaDeAtendimento cadeiaSoltura = new CadeiaDeAtendimento()
+                .adicionar("painéis de eixo", this::soltarPaineisDeEixo)
+                .adicionar("controle da comparação", this::soltarControleDaComparacao);
+
         public void mouseReleased(MouseEvent e) {
             if (controladorArrasteElastico.estaAtivo()) {
                 controladorArrasteElastico.concluir(e.getX(), e.getY());
@@ -10639,42 +10647,58 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             HandlerInteracaoQuadradinhoVenn.ResultadoSoltura resultadoSolturaQuadradinho =
                     handlerQuadradinhoVenn.concluir(circulosVenn);
             finalizarRastreamentoGranular(e.getX(), e.getY());
-            if (handlerPaineisEixosRelacoes.estaAtivo()) {
-                sincronizarPainelEixoRelacaoSeNecessario(true);
-                handlerPaineisEixosRelacoes.concluir();
-                marcadorOrigemArraste.limpar();
-                atualizarCursorDepoisDoPickup(e.getX(), e.getY());
-                repaint();
-                return;
+            if (cadeiaSoltura.atender(e.getX(), e.getY(), e) == null) {
+                concluirSolturaDeItem(e, resultadoSolturaQuadradinho);
             }
+        }
 
-            if (handlerControleComparacao.estaAtivo()) {
-                handlerControleComparacao.concluir();
-                flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
-                marcadorOrigemArraste.limpar();
-                // Ao soltar o controle do gráfico de barras (comparação de
-                // medidas): mesma checagem/pergunta de confirmação do valor
-                // da incógnita usada nos outros protocolos de preenchimento —
-                // esse caminho escreve direto no diagrama e, sem isso,
-                // contornava a checagem inteira (ver
-                // incognitaAguardandoConfirmacaoDeValor em
-                // atualizarBarrasComparacaoAPartirDoControle, que só bloqueia
-                // em silêncio durante o arrasto).
-                ElementoVergnaud diferenca = encontrarElementoVergnaudPorPapel(
-                        "papel.diferenca");
-                if (diferenca != null) {
-                    ItemTextoArrastavel itemDiferenca = encontrarItemSobreElemento(diferenca);
-                    if (confirmarValorIncognitaAceito(itemDiferenca)) {
-                        sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
-                                diferenca, EstadoSemanticoCompartilhado.Origem.EIXO_VERTICAL);
-                    }
-                    verificarConclusaoModelagem();
+        /** Elo "painéis de eixo" da cadeia de soltura (ver cadeiaSoltura). */
+        private boolean soltarPaineisDeEixo(int x, int y, MouseEvent e) {
+            if (!handlerPaineisEixosRelacoes.estaAtivo()) {
+                return false;
+            }
+            sincronizarPainelEixoRelacaoSeNecessario(true);
+            handlerPaineisEixosRelacoes.concluir();
+            marcadorOrigemArraste.limpar();
+            atualizarCursorDepoisDoPickup(e.getX(), e.getY());
+            repaint();
+            return true;
+        }
+
+        /** Elo "controle da comparação" da cadeia de soltura (ver cadeiaSoltura). */
+        private boolean soltarControleDaComparacao(int x, int y, MouseEvent e) {
+            if (!handlerControleComparacao.estaAtivo()) {
+                return false;
+            }
+            handlerControleComparacao.concluir();
+            flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
+            marcadorOrigemArraste.limpar();
+            // Ao soltar o controle do gráfico de barras (comparação de
+            // medidas): mesma checagem/pergunta de confirmação do valor
+            // da incógnita usada nos outros protocolos de preenchimento —
+            // esse caminho escreve direto no diagrama e, sem isso,
+            // contornava a checagem inteira (ver
+            // incognitaAguardandoConfirmacaoDeValor em
+            // atualizarBarrasComparacaoAPartirDoControle, que só bloqueia
+            // em silêncio durante o arrasto).
+            ElementoVergnaud diferenca = encontrarElementoVergnaudPorPapel(
+                    "papel.diferenca");
+            if (diferenca != null) {
+                ItemTextoArrastavel itemDiferenca = encontrarItemSobreElemento(diferenca);
+                if (confirmarValorIncognitaAceito(itemDiferenca)) {
+                    sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
+                            diferenca, EstadoSemanticoCompartilhado.Origem.EIXO_VERTICAL);
                 }
-                atualizarCursorDepoisDoPickup(e.getX(), e.getY());
-                repaint();
-                return;
+                verificarConclusaoModelagem();
             }
+            atualizarCursorDepoisDoPickup(e.getX(), e.getY());
+            repaint();
+            return true;
+        }
 
+        /** Soltura quando nenhum painel/controle estava ativo: elemento de texto, item arrastável e quadradinho. */
+        private void concluirSolturaDeItem(MouseEvent e,
+                HandlerInteracaoQuadradinhoVenn.ResultadoSoltura resultadoSolturaQuadradinho) {
             handlerElementoTextoMovel.concluir();
             HandlerInteracaoItemTextoArrastavel.ResultadoSoltura solturaItem =
                     handlerItemTextoArrastavel.concluir(e.getX(), e.getY());

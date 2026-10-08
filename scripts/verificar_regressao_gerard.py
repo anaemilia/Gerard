@@ -317,7 +317,7 @@ LIMITES_PROTOCOLOS_MAIN = {
     'public void mousePressed(MouseEvent e)': 22,
     'public void mouseDragged(MouseEvent e)': 20,
     'private void processarMovimentoArraste(int x, int y)': 3,
-    'public void mouseReleased(MouseEvent e)': 103,
+    'public void mouseReleased(MouseEvent e)': 12,
     'public void mouseClicked(MouseEvent e)': 5,
     'public void mouseMoved(MouseEvent e)': 167,
 }

@@ -17,3 +17,11 @@ o restante é cursor mão/padrão em pontos vazios e deslocamento de 1 px de lay
 
 Conclusão limitada: não houve regressão detectada nesta amostra (2 situações); ela não prova equivalência fora dela.
 Tabelas completas: `antes.tsv.gz`, `depois.tsv.gz`, `depois2.tsv.gz`.
+
+## Fatia 3c — mouseReleased em cadeia de soltura (103 -> 12 linhas)
+
+Mesma gravação (732 operações) com o código novo (`soltura.tsv.gz`) contra `depois` e `depois2` (código anterior):
+79 e 83 chaves diferentes de 713, contra 80 entre as duas gravações do código anterior. Por campo, só aparecem as
+mesmas duas classes de ruído (hash durante o arraste elástico; cursor mão/padrão). Nenhuma diferença em handlers
+ativos, foco, dica, diálogo/menu nem no hash do estado das peças depois de soltar.
+Limite: o macaco não cobre a soltura dos painéis de eixo das Relações (elo "painéis de eixo" sem prova por mouse real).
