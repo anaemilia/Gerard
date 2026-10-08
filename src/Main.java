@@ -4719,9 +4719,9 @@ public class Main extends JFrame {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            desenharCabecalho(g2);
+            desenharCabecalho(g2, prepararCabecalho());
             desenharFaixaAtalhoCategoria(g2);
-            desenharTextoProblema(g2);
+            desenharTextoProblema(g2, prepararTextoProblema());
             desenharAreaDiagrama(g2, prepararAreaDiagrama());
             desenharElementos(g2);
             desenharDiagramaVenn(g2, prepararDiagramaComplementar());
@@ -4730,28 +4730,36 @@ public class Main extends JFrame {
             // permanecer a frente dos componentes estaticos da tela.
             // Mantemos apenas overlays transitorios (pickup, feedback e
             // anotacoes) acima dele.
+            prepararPaineisEixoRelacoes();
             desenharPaineisEixoRelacoes(g2);
             desenharPickupEmPrimeiroPlano(g2);
             desenharFeedbackExplicitoProximidade(g2);
             desenharAnotacaoMouseOver(g2, reconciliarAnotacaoDoMouseOver());
         }
 
-        private void desenharCabecalho(Graphics2D g2) {
-            g2.setColor(COR_SUPERFICIE);
-            g2.fillRect(0, 0, getWidth(), 45);
-            g2.setColor(COR_BORDA);
-            g2.drawLine(0, 44, getWidth(), 44);
+        /** Texto do status do cabeçalho e onde ele começa (decididos por prepararCabecalho). */
+        private static final class CabecalhoPreparado {
+            final String status;
+            final int xStatus;
 
-            g2.setFont(new Font("Arial", Font.PLAIN, 12));
-            g2.setColor(COR_TEXTO_SECUNDARIO);
+            CabecalhoPreparado(String status, int xStatus) {
+                this.status = status;
+                this.xStatus = xStatus;
+            }
+        }
+
+        /**
+         * Posiciona os componentes do cabeçalho (painel de ações à esquerda e botão de chat ao lado do status) e decide
+         * onde o status é escrito. Roda uma vez por pintura, antes do desenho do cabeçalho.
+         */
+        private CabecalhoPreparado prepararCabecalho() {
             String status = categoriaSelecionadaParaAtividade
                     ? localizacao.formatar("ui.header.status", idiomaSelecionado.getNome(), tipoSituacaoSelecionada.getSigla())
                     : idiomaSelecionado.getNome();
-            FontMetrics fmStatus = g2.getFontMetrics();
+            FontMetrics fmStatus = getFontMetrics(new Font("Arial", Font.PLAIN, 12));
             int larguraStatus = fmStatus.stringWidth(status);
             int limiteDireitoStatus = getWidth() - 18;
             int xStatus = Math.max(800, limiteDireitoStatus - larguraStatus);
-            g2.drawString(status, xStatus, 28);
             if (painelAcoesCabecalhoEsquerda != null) {
                 Dimension tamanhoAcoes = painelAcoesCabecalhoEsquerda.getPreferredSize();
                 int alturaAcoes = Math.min(32, tamanhoAcoes.height);
@@ -4774,6 +4782,19 @@ public class Main extends JFrame {
                 botaoChat.setLocation(xChat, yChat);
                 botaoChat.setVisible(true);
             }
+            return new CabecalhoPreparado(status, xStatus);
+        }
+
+        /** Só desenha o cabeçalho (fundo, linha e status); não altera componentes (ver prepararCabecalho). */
+        private void desenharCabecalho(Graphics2D g2, CabecalhoPreparado cabecalho) {
+            g2.setColor(COR_SUPERFICIE);
+            g2.fillRect(0, 0, getWidth(), 45);
+            g2.setColor(COR_BORDA);
+            g2.drawLine(0, 44, getWidth(), 44);
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 12));
+            g2.setColor(COR_TEXTO_SECUNDARIO);
+            g2.drawString(cabecalho.status, cabecalho.xStatus, 28);
         }
 
         /** Fundo da faixa de atalhos de categoria (ver criarPainelAtalhoCategoria). */
@@ -4822,34 +4843,22 @@ public class Main extends JFrame {
             }
         }
 
-        private void desenharTextoProblema(Graphics2D g2) {
+        /** O que o painel do enunciado mostra neste quadro (decidido por prepararTextoProblema). */
+        private enum FaseTextoProblema { ADIVINHACAO, SEM_CATEGORIA, COMPLETO }
+
+        /**
+         * Tudo o que muda estado ou componentes no painel do enunciado: zera os marcadores fixos, reposiciona os botões
+         * contextuais, esconde os controles quando ainda não há categoria, e (com categoria) dimensiona e posiciona os
+         * elementos de texto e marca os que têm vínculo semântico. Roda uma vez por pintura, antes do desenho.
+         */
+        private FaseTextoProblema prepararTextoProblema() {
             marcadoresFixosTexto.clear();
             reposicionarBotaoAtalhoProximoPasso();
 
             if (!categoriaSelecionadaParaAtividade) {
-                if (aguardandoAdivinhacaoCategoria && textoProblema != null && textoProblema.trim().length() > 0) {
-                    // Sorteio em andamento: mostra o texto puro, sem elementos
-                    // arrastáveis (só criados em inicializarElementosTexto,
-                    // chamado depois da confirmação em
-                    // confirmarCategoriaAdivinhada) e sem os botões
-                    // contextuais (ainda fazem referência a uma categoria que
-                    // o usuário não confirmou ter identificado). Também cobre
-                    // o caso em que a categoria sorteada não tem nenhuma
-                    // situação curada disponível: iniciarQuizCategoria já
-                    // preenche textoProblema com a mensagem de aviso
-                    // ("Nenhuma situação-problema curada..."), então essa
-                    // mensagem aparece aqui em vez da tela ficar muda —
-                    // decisão da usuária, 2026-07-28.
-                    desenharTextoProblemaAdivinhacao(g2);
-                    ocultarControlesDaAtividadeSemCategoria();
-                    return;
-                }
-                // Mantém a divisão visual da interface desde a inicialização.
-                // Somente o conteúdo educativo permanece ausente até que o
-                // usuário escolha uma categoria.
-                desenharCardEnunciado(g2);
                 ocultarControlesDaAtividadeSemCategoria();
-                return;
+                return aguardandoAdivinhacaoCategoria && textoProblema != null && textoProblema.trim().length() > 0
+                        ? FaseTextoProblema.ADIVINHACAO : FaseTextoProblema.SEM_CATEGORIA;
             }
 
             // Reserva uma faixa à esquerda para as ações contextuais.
@@ -4860,13 +4869,11 @@ public class Main extends JFrame {
             yInicial += ALTURA_PAINEL_ATALHOS_CATEGORIA;
             int larguraMaxima = getWidth() - margemX - 30;
 
-            desenharCardEnunciado(g2);
             if (botaoIdiomaSituacao != null) botaoIdiomaSituacao.setVisible(situacaoProblemaAtual != null);
             atualizarDisponibilidadeArtefatoExplicativo();
             reposicionarBotaoAjudaTexto();
 
-            g2.setFont(new Font("Arial", Font.BOLD, 20));
-            FontMetrics fm = g2.getFontMetrics();
+            FontMetrics fm = getFontMetrics(new Font("Arial", Font.BOLD, 20));
 
             garantirLayoutElementosTexto(fm, margemX, yInicial, larguraMaxima);
             reposicionarBotaoCorrigirCuradoria(fm, margemX, larguraMaxima);
@@ -4875,11 +4882,47 @@ public class Main extends JFrame {
             for (int i = 0; i < elementosTexto.size(); i++) {
                 ElementoTextoMovel elemento = elementosTexto.get(i);
                 elemento.atualizarTamanho(fm);
+                marcarElementoSemanticoDoTexto(fm, elemento);
+            }
+            return FaseTextoProblema.COMPLETO;
+        }
 
+        /** Só desenha o painel do enunciado da fase decidida; não altera componentes nem estado. */
+        private void desenharTextoProblema(Graphics2D g2, FaseTextoProblema fase) {
+            if (fase == FaseTextoProblema.ADIVINHACAO) {
+                // Sorteio em andamento: mostra o texto puro, sem elementos
+                // arrastáveis (só criados em inicializarElementosTexto,
+                // chamado depois da confirmação em
+                // confirmarCategoriaAdivinhada) e sem os botões
+                // contextuais (ainda fazem referência a uma categoria que
+                // o usuário não confirmou ter identificado). Também cobre
+                // o caso em que a categoria sorteada não tem nenhuma
+                // situação curada disponível: iniciarQuizCategoria já
+                // preenche textoProblema com a mensagem de aviso
+                // ("Nenhuma situação-problema curada..."), então essa
+                // mensagem aparece aqui em vez da tela ficar muda —
+                // decisão da usuária, 2026-07-28.
+                desenharTextoProblemaAdivinhacao(g2);
+                return;
+            }
+            if (fase == FaseTextoProblema.SEM_CATEGORIA) {
+                // Mantém a divisão visual da interface desde a inicialização.
+                // Somente o conteúdo educativo permanece ausente até que o
+                // usuário escolha uma categoria.
+                desenharCardEnunciado(g2);
+                return;
+            }
+
+            desenharCardEnunciado(g2);
+
+            g2.setFont(new Font("Arial", Font.BOLD, 20));
+            FontMetrics fm = g2.getFontMetrics();
+
+            for (int i = 0; i < elementosTexto.size(); i++) {
+                ElementoTextoMovel elemento = elementosTexto.get(i);
                 if (elemento != handlerElementoTextoMovel.obterElementoAtivo()) {
                     desenharElementoTextoMovel(g2, fm, elemento);
                 }
-                marcarElementoSemanticoDoTexto(fm, elemento);
             }
 
             desenharMarcadoresFixosDoTexto(g2);
@@ -6569,8 +6612,13 @@ public class Main extends JFrame {
                     obterAreaConteudoDiagramaVergnaud());
         }
 
-        private void desenharPaineisEixoRelacoes(Graphics2D g2) {
+        /** Atualiza a visibilidade dos painéis de eixo conforme a situação (antes de desenhá-los). */
+        private void prepararPaineisEixoRelacoes() {
             atualizarPaineisEixosRelacoesConformeVisibilidade();
+        }
+
+        /** Só desenha os painéis de eixo e os seletores de operação; não altera estado (ver prepararPaineisEixoRelacoes). */
+        private void desenharPaineisEixoRelacoes(Graphics2D g2) {
             paineisEixosRelacoes.desenhar(
                     g2,
                     getWidth(),
