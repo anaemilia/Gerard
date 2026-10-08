@@ -168,12 +168,12 @@ exigir("DicaControleQuadradinho.decidir(" in main_h and "ui.tooltip.venn.addSqua
        and "ui.tooltip.venn.minimumReached" not in main_h,
        "R13: a Main não decide a dica dos controles de quadradinho (chaves ui.tooltip.venn.* só em DicaControleQuadradinho)")
 
-# R14 — a prioridade de quem recebe o pressionamento é de CadeiaPressionamento (ordem em um só lugar), não de ifs em sequência.
+# R14 — a prioridade de quem recebe o pressionamento é de CadeiaDeAtendimento (ordem em um só lugar), não de ifs em sequência.
 main_c = (SRC / "Main.java").read_text(encoding="utf-8")
 _ini_p = main_c.index("public void mousePressed(MouseEvent e) {")
 corpo_pressionado = main_c[_ini_p:main_c.index("/** Elo ", _ini_p)]
-exigir("cadeiaPressionamento.pressionar(" in corpo_pressionado and corpo_pressionado.count("handler") <= 6,
-       "R14: mousePressed delega a ordem de prioridade a CadeiaPressionamento (elos nomeados)")
+exigir("cadeiaPressionamento.atender(" in corpo_pressionado and corpo_pressionado.count("handler") <= 6,
+       "R14: mousePressed delega a ordem de prioridade a CadeiaDeAtendimento (elos nomeados)")
 nomes_elos = re.findall(r'\.adicionar\("([^"]+)", this::pressionar', main_c)
 exigir(len(nomes_elos) == 10 and nomes_elos[0] == "controles de unidades" and nomes_elos[-1] == "conector de Vergnaud",
        "R14: a cadeia tem os 10 elos, dos controles de unidades (maior prioridade) ao conector (menor): %d" % len(nomes_elos))

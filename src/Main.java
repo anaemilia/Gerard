@@ -91,7 +91,7 @@ import gerard.campoaditivo.diagrama.modelo.DecisaoExibicaoPaineisEixo;
 import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
 import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
 import gerard.ui.interacao.DicaControleQuadradinho;
-import gerard.ui.interacao.CadeiaPressionamento;
+import gerard.ui.interacao.CadeiaDeAtendimento;
 import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
@@ -10268,10 +10268,10 @@ public class Main extends JFrame {
 
         /**
          * Quem recebe o pressionamento, do de maior para o de menor prioridade. A ORDEM é de
-         * CadeiaPressionamento (o primeiro elo que atende encerra a cadeia); cada elo abaixo só
+         * CadeiaDeAtendimento (o primeiro elo que atende encerra a cadeia); cada elo abaixo só
          * implementa o seu atendimento.
          */
-        private final CadeiaPressionamento cadeiaPressionamento = new CadeiaPressionamento()
+        private final CadeiaDeAtendimento cadeiaPressionamento = new CadeiaDeAtendimento()
                 .adicionar("controles de unidades", this::pressionarControlesUnidades)
                 .adicionar("controle da comparação", this::pressionarControleComparacao)
                 .adicionar("lupa do painel de eixo", this::pressionarLupaDoEixo)
@@ -10298,7 +10298,7 @@ public class Main extends JFrame {
             flushLogConsistenciaAutomaticaPendenteDoArrasteComparacao();
             handlerControleComparacao.concluir();
 
-            if (cadeiaPressionamento.pressionar(x, y, e) == null) {
+            if (cadeiaPressionamento.atender(x, y, e) == null) {
                 // ninguém atendeu: o clique em lugar vazio tira o foco das peças
                 itemFocado = null;
                 quadradinhoVennFocado = null;
@@ -10529,25 +10529,54 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             }
         }
 
+        /** Quem move o gesto de arraste, do de maior para o de menor prioridade (ordem de CadeiaDeAtendimento). */
+        private final CadeiaDeAtendimento cadeiaMovimento = new CadeiaDeAtendimento()
+                .adicionar("painéis de eixo", this::moverPaineisDeEixo)
+                .adicionar("controle da comparação", this::moverControleDaComparacao)
+                .adicionar("quadradinho de Venn", this::moverQuadradinho)
+                .adicionar("elemento de texto do enunciado", this::moverElementoDeTexto)
+                .adicionar("item arrastável", this::moverItemArrastavel)
+                .adicionar("conector de Vergnaud", this::moverConector);
+
         private void processarMovimentoArraste(int x, int y) {
+            cadeiaMovimento.atender(x, y, null);
+        }
+
+        /** Elo "painéis de eixo" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverPaineisDeEixo(int x, int y, MouseEvent e) {
             if (handlerPaineisEixosRelacoes.mover(x, y)) {
                 sincronizarPainelEixoRelacaoSeNecessario(false);
                 repaint();
-                return;
+                return true;
             }
 
+            return false;
+        }
+
+        /** Elo "controle da comparação" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverControleDaComparacao(int x, int y, MouseEvent e) {
             if (handlerControleComparacao.estaAtivo()) {
                 aplicarControleComparacaoPeloMouse(y);
                 repaint();
-                return;
+                return true;
             }
 
+            return false;
+        }
+
+        /** Elo "quadradinho de Venn" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverQuadradinho(int x, int y, MouseEvent e) {
             if (handlerQuadradinhoVenn.estaAtivo()) {
                 handlerQuadradinhoVenn.mover(x, y);
                 repaint();
-                return;
+                return true;
             }
 
+            return false;
+        }
+
+        /** Elo "elemento de texto do enunciado" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverElementoDeTexto(int x, int y, MouseEvent e) {
             ElementoTextoMovel elementoTextoAtivo =
                     handlerElementoTextoMovel.obterElementoAtivo();
             if (elementoTextoAtivo != null) {
@@ -10556,7 +10585,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     converterElementoTextoEmItemDiagrama(
                             elementoTextoAtivo, x, y);
                     repaint();
-                    return;
+                    return true;
                 }
 
                 if (ehNumeroOuInterrogacaoDoTexto(elementoTextoAtivo)) {
@@ -10569,18 +10598,28 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                             x, y, limites);
                 }
                 repaint();
-                return;
+                return true;
             }
 
+            return false;
+        }
+
+        /** Elo "item arrastável" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverItemArrastavel(int x, int y, MouseEvent e) {
             ItemTextoArrastavel itemMovido =
                     handlerItemTextoArrastavel.moverPara(x, y);
             if (itemMovido != null) {
                 atualizarRealceAlvoProximidade(itemMovido);
                 atualizarQuestionamentoPersistenteDuranteMovimento(itemMovido);
                 repaint();
-                return;
+                return true;
             }
 
+            return false;
+        }
+
+        /** Elo "conector de Vergnaud" da cadeia de movimento do arraste (ver cadeiaMovimento). */
+        private boolean moverConector(int x, int y, MouseEvent e) {
             if (handlerConectorVergnaud.estaAtivo()) {
                 boolean moveu = handlerConectorVergnaud.mover(
                         x, y, obterLimitesMovimentoConectorVergnaud());
@@ -10588,6 +10627,8 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     repaint();
                 }
             }
+
+            return false;
         }
 
         public void mouseReleased(MouseEvent e) {
@@ -10694,39 +10735,67 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             repaint();
         }
 
+        /**
+         * Quem atende o DUPLO clique, do de maior para o de menor prioridade (ordem de CadeiaDeAtendimento). O primeiro
+         * elo só bloqueia: o duplo clique sobre os controles de adicionar/remover quadradinho não edita nada.
+         */
+        private final CadeiaDeAtendimento cadeiaCliqueDuplo = new CadeiaDeAtendimento()
+                .adicionar("controles de quadradinho", this::cliqueSobreControleDeQuadradinho)
+                .adicionar("número editável no diagrama", this::editarNumeroDoItemNoDiagrama)
+                .adicionar("texto do quadradinho de Venn", this::editarTextoDoQuadradinho)
+                .adicionar("texto do elemento de Vergnaud", this::editarTextoDoElementoDeVergnaud)
+                .adicionar("texto do círculo de Venn", this::editarTextoDoCirculoDeVenn);
+
         public void mouseClicked(MouseEvent e) {
-            if (encontrarRepresentacaoPeloControleAdicionarQuadradinho(
-                    e.getX(), e.getY()) != null
-                    || encontrarRepresentacaoPeloControleRemoverQuadradinho(
-                            e.getX(), e.getY()) != null) {
-                return;
-            }
             if (e.getClickCount() == 2) {
-                ItemTextoArrastavel item = encontrarItemArrastavel(e.getX(), e.getY());
-
-                if (item != null && item.editavel && item.estaNoDiagrama()) {
-                    editarNumeroNatural(item);
-                    return;
-                }
-
-                QuadradinhoVenn quadradinho = encontrarQuadradinhoVenn(e.getX(), e.getY());
-                if (quadradinho != null) {
-                    editarTextoQuadradinhoVenn(quadradinho);
-                    return;
-                }
-
-                ElementoVergnaud elemento = encontrarElementoVergnaud(e.getX(), e.getY());
-                if (elemento != null) {
-                    editarTextoElementoVergnaud(elemento);
-                    return;
-                }
-
-                CirculoVenn circulo = encontrarCirculoVenn(e.getX(), e.getY());
-                if (circulo != null) {
-                    editarTextoCirculoVenn(circulo);
-                    return;
-                }
+                cadeiaCliqueDuplo.atender(e.getX(), e.getY(), e);
             }
+        }
+
+        /** Elo "controles de quadradinho" da cadeia do duplo clique (ver cadeiaCliqueDuplo). */
+        private boolean cliqueSobreControleDeQuadradinho(int x, int y, MouseEvent e) {
+            return encontrarRepresentacaoPeloControleAdicionarQuadradinho(x, y) != null
+                    || encontrarRepresentacaoPeloControleRemoverQuadradinho(x, y) != null;
+        }
+
+        /** Elo "número editável no diagrama" da cadeia do duplo clique (ver cadeiaCliqueDuplo). */
+        private boolean editarNumeroDoItemNoDiagrama(int x, int y, MouseEvent e) {
+            ItemTextoArrastavel item = encontrarItemArrastavel(x, y);
+            if (item != null && item.editavel && item.estaNoDiagrama()) {
+                editarNumeroNatural(item);
+                return true;
+            }
+            return false;
+        }
+
+        /** Elo "texto do quadradinho de Venn" da cadeia do duplo clique (ver cadeiaCliqueDuplo). */
+        private boolean editarTextoDoQuadradinho(int x, int y, MouseEvent e) {
+            QuadradinhoVenn quadradinho = encontrarQuadradinhoVenn(x, y);
+            if (quadradinho != null) {
+                editarTextoQuadradinhoVenn(quadradinho);
+                return true;
+            }
+            return false;
+        }
+
+        /** Elo "texto do elemento de Vergnaud" da cadeia do duplo clique (ver cadeiaCliqueDuplo). */
+        private boolean editarTextoDoElementoDeVergnaud(int x, int y, MouseEvent e) {
+            ElementoVergnaud elemento = encontrarElementoVergnaud(x, y);
+            if (elemento != null) {
+                editarTextoElementoVergnaud(elemento);
+                return true;
+            }
+            return false;
+        }
+
+        /** Elo "texto do círculo de Venn" da cadeia do duplo clique (ver cadeiaCliqueDuplo). */
+        private boolean editarTextoDoCirculoDeVenn(int x, int y, MouseEvent e) {
+            CirculoVenn circulo = encontrarCirculoVenn(x, y);
+            if (circulo != null) {
+                editarTextoCirculoVenn(circulo);
+                return true;
+            }
+            return false;
         }
 
 

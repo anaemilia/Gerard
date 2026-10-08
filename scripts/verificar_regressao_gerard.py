@@ -313,11 +313,12 @@ LIMITES_PROTOCOLOS_MAIN = {
     # Fase 7.12 (2026-09-29): pressionamento da barra de Comparação -> handler, 197 -> 188.
     # Fase 7.13 (2026-09-29): apresentação da lupa de Relações -> apresentador, 188 -> 174
     # (organização do roteamento; a mecânica da lupa já estava em PaineisEixosRelacoes).
+    # Fatia 3b (2026-10-07): movimento do arraste e duplo clique -> CadeiaDeAtendimento (60->3, 34->5).
     'public void mousePressed(MouseEvent e)': 22,
     'public void mouseDragged(MouseEvent e)': 20,
-    'private void processarMovimentoArraste(int x, int y)': 60,
+    'private void processarMovimentoArraste(int x, int y)': 3,
     'public void mouseReleased(MouseEvent e)': 103,
-    'public void mouseClicked(MouseEvent e)': 34,
+    'public void mouseClicked(MouseEvent e)': 5,
     'public void mouseMoved(MouseEvent e)': 167,
 }
 for assinatura, limite in LIMITES_PROTOCOLOS_MAIN.items():
@@ -1730,7 +1731,8 @@ check("encontrarElementoVergnaud(e.getX(), e.getY()) != null || encontrarConecto
       'affordance de cursor no mouseMoved também não considera mais um ElementoVergnaud arrastável '
       '(mantém só o conector)')
 check('private void editarTextoElementoVergnaud' in main
-      and 'ElementoVergnaud elemento = encontrarElementoVergnaud(e.getX(), e.getY());' in main
+      and 'ElementoVergnaud elemento = encontrarElementoVergnaud(x, y);' in main
+      and '.adicionar("texto do elemento de Vergnaud", this::editarTextoDoElementoDeVergnaud)' in main
       and 'editarTextoElementoVergnaud(elemento);' in main,
       'edição de texto por duplo clique no elemento continua intacta — mouseClicked nunca dependeu do '
       'mousePressed para isso, é um caminho independente')
