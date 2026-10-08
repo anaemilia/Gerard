@@ -4724,7 +4724,7 @@ public class Main extends JFrame {
             desenharTextoProblema(g2);
             desenharAreaDiagrama(g2);
             desenharElementos(g2);
-            desenharDiagramaVenn(g2);
+            desenharDiagramaVenn(g2, prepararDiagramaComplementar());
             marcadorOrigemArraste.desenhar(g2);
             // O eixo dos inteiros e um painel flutuante de apoio e deve
             // permanecer a frente dos componentes estaticos da tela.
@@ -8511,20 +8511,25 @@ public class Main extends JFrame {
             }
         }
 
-        private void desenharDiagramaVenn(Graphics2D g2) {
+        /** O que o diagrama complementar mostra neste quadro (decidido por prepararDiagramaComplementar). */
+        private enum FaseDiagramaComplementar { HISTORINHAS, OCULTO, GENERICO, COMPLETO }
+
+        /**
+         * Prepara o estado do painel complementar ANTES de desenhá-lo: mostra/oculta as historinhas, posiciona o botão de
+         * ajuda, reconstrói/sincroniza a cena do Venn com as representações e atualiza as unidades correspondentes da
+         * comparação. Tudo o que muda estado ou componentes fica aqui; desenharDiagramaVenn só lê e desenha. Roda uma vez
+         * por pintura, logo antes do desenho (mesma ordem de antes: as camadas anteriores já foram pintadas).
+         */
+        private FaseDiagramaComplementar prepararDiagramaComplementar() {
             if (ehHistorinhasCategoria()) {
                 exibirHistorinhasNoPainelComplementar(obterAreaDiagramaAditivo());
-                return;
+                return FaseDiagramaComplementar.HISTORINHAS;
             }
             ocultarHistorinhasDoPainelComplementar();
             if (!deveExibirDiagramaComplementar()) {
-                return;
+                return FaseDiagramaComplementar.OCULTO;
             }
             Rectangle area = obterAreaDiagramaAditivo();
-            boolean composicaoMedidas = ehDiagramaVennComposicaoMedidas();
-            boolean comparacaoMedidas = ehGraficoBarrasComparacao();
-            boolean processoTransformacao = ehProcessoTransformacaoMedidas();
-            boolean composicaoTransformacoesProcesso = ehComposicaoTransformacoesProcesso();
             /*
              * Categorias sem representação complementar ativa caem no
              * fallback GENERICA (círculos vazios + setas, sem conteúdo
@@ -8537,13 +8542,41 @@ public class Main extends JFrame {
              * são suprimidos.
              */
             boolean representacaoGenerica = ehRepresentacaoComplementarGenerica();
-
             if (!representacaoGenerica) {
-                desenharCard(g2, area.x, area.y, area.width, area.height, 18);
                 reposicionarBotaoAjudaComplementar(area);
             } else if (botaoAjudaComplementar != null) {
                 botaoAjudaComplementar.setVisible(false);
                 botaoAjudaComplementar.setEnabled(false);
+            }
+
+            boolean precisaReconstruirEstruturaVenn = cenaDiagramaVennAtual == null || ultimaAreaDiagramaVenn == null || !ultimaAreaDiagramaVenn.equals(area);
+            if (precisaReconstruirEstruturaVenn
+                    || (!handlerQuadradinhoVenn.estaAtivo()
+                    && !handlerItemTextoArrastavel.estaAtivo()
+                    && !handlerElementoTextoMovel.estaAtivo())) {
+                sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
+            }
+            if (representacaoGenerica) {
+                return FaseDiagramaComplementar.GENERICO;
+            }
+            atualizarQuadradinhosCorrespondentesComparacao(ehGraficoBarrasComparacao());
+            return FaseDiagramaComplementar.COMPLETO;
+        }
+
+        /** Só desenha o painel complementar da fase decidida; não altera estado nem componentes. */
+        private void desenharDiagramaVenn(Graphics2D g2, FaseDiagramaComplementar fase) {
+            if (fase == FaseDiagramaComplementar.HISTORINHAS || fase == FaseDiagramaComplementar.OCULTO) {
+                return;
+            }
+            Rectangle area = obterAreaDiagramaAditivo();
+            boolean composicaoMedidas = ehDiagramaVennComposicaoMedidas();
+            boolean comparacaoMedidas = ehGraficoBarrasComparacao();
+            boolean processoTransformacao = ehProcessoTransformacaoMedidas();
+            boolean composicaoTransformacoesProcesso = ehComposicaoTransformacoesProcesso();
+            boolean representacaoGenerica = fase == FaseDiagramaComplementar.GENERICO;
+
+            if (!representacaoGenerica) {
+                desenharCard(g2, area.x, area.y, area.width, area.height, 18);
             }
 
             if (processoTransformacao) {
@@ -8559,14 +8592,6 @@ public class Main extends JFrame {
                 g2.setColor(COR_TEXTO);
                 g2.setFont(new Font("Arial", Font.BOLD, 16));
                 g2.drawString(localizacao.texto(chaveTituloDiagrama), area.x + 18, area.y + 28);
-            }
-
-            boolean precisaReconstruirEstruturaVenn = cenaDiagramaVennAtual == null || ultimaAreaDiagramaVenn == null || !ultimaAreaDiagramaVenn.equals(area);
-            if (precisaReconstruirEstruturaVenn
-                    || (!handlerQuadradinhoVenn.estaAtivo()
-                    && !handlerItemTextoArrastavel.estaAtivo()
-                    && !handlerElementoTextoMovel.estaAtivo())) {
-                sincronizarDiagramaVennComRepresentacoes(precisaReconstruirEstruturaVenn);
             }
 
             if (!representacaoGenerica && cenaDiagramaVennAtual != null) {
@@ -8612,7 +8637,6 @@ public class Main extends JFrame {
             }
 
             if (!representacaoGenerica) {
-                atualizarQuadradinhosCorrespondentesComparacao(comparacaoMedidas);
                 for (int i = 0; i < quadradinhosVenn.size(); i++) {
                     QuadradinhoVenn quadradinho = quadradinhosVenn.get(i);
                     if (quadradinho != handlerQuadradinhoVenn.obterQuadradinhoAtivo()) {
