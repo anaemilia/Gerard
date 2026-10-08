@@ -92,6 +92,7 @@ import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
 import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
 import gerard.ui.interacao.DicaControleQuadradinho;
 import gerard.ui.interacao.CadeiaDeAtendimento;
+import gerard.ui.interacao.DecisaoAnotacaoMouseOver;
 import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
@@ -4732,7 +4733,7 @@ public class Main extends JFrame {
             desenharPaineisEixoRelacoes(g2);
             desenharPickupEmPrimeiroPlano(g2);
             desenharFeedbackExplicitoProximidade(g2);
-            desenharAnotacaoMouseOver(g2);
+            desenharAnotacaoMouseOver(g2, reconciliarAnotacaoDoMouseOver());
         }
 
         private void desenharCabecalho(Graphics2D g2) {
@@ -6929,75 +6930,114 @@ public class Main extends JFrame {
             g2.setColor(corOriginal);
         }
 
-        private void desenharAnotacaoMouseOver(Graphics2D g2) {
-            boolean usarQuestionamentoPersistente = mostrarQuestionamentoPersistente
+        /**
+         * Reconcilia o estado das anotações persistentes e decide qual delas a tela mostra agora. A prioridade entre as
+         * fontes é de DecisaoAnotacaoMouseOver; aqui só se responde, por fonte, "ainda é válida?". Efeito: a dica de
+         * posicionamento (AG_AE) que deixou de valer — papel resolvido, diagrama trocado ou superada por outra fonte —
+         * é encerrada junto com a ação correlacionada (mesmo action_id, §4.8). Roda uma vez por pintura, ANTES do
+         * desenho do balão (que não altera nada).
+         */
+        private DecisaoAnotacaoMouseOver.Fonte reconciliarAnotacaoDoMouseOver() {
+            boolean questionamentoValido = mostrarQuestionamentoPersistente
                     && itemQuestionadoPersistente != null
                     && itensArrastaveis.contains(itemQuestionadoPersistente)
                     && textoQuestionamentoPersistente != null
                     && textoQuestionamentoPersistente.trim().length() > 0;
-
-            boolean usarLimiteQuantidadePersistente = !usarQuestionamentoPersistente
-                    && mostrarLimiteQuantidadeQuestionado
+            boolean limiteQuantidadeValido = mostrarLimiteQuantidadeQuestionado
                     && agrupamentoLimiteQuantidadeQuestionado != null
                     && circulosVenn.contains(agrupamentoLimiteQuantidadeQuestionado)
                     && textoLimiteQuantidadeQuestionado != null
                     && textoLimiteQuantidadeQuestionado.trim().length() > 0;
-
-            // Aviso de sinal divergente do número relativo (2026-08-18) —
-            // mesma família persistente, ancorado no item OU no elemento
-            // (nunca os dois), conforme o menu de sinal foi aberto a partir
-            // de um ou de outro.
-            boolean usarSinalDivergentePersistente = !usarQuestionamentoPersistente
-                    && !usarLimiteQuantidadePersistente
-                    && avisoSinalDivergente.estaVisivel(itensArrastaveis, elementosVergnaud);
-
-            // AG_AE — mesma família de anotação persistente das duas acima,
-            // mas com uma checagem extra: se o papel foi resolvido (ou o
-            // diagrama mudou) desde a última exibição, a dica se auto-fecha
-            // aqui, no próximo repaint, em vez de exigir um gancho em cada
-            // ponto onde um item pode ser solto sobre um elemento —
-            // fechar aqui também encerra a ação correlacionada (mesmo
-            // action_id) do §4.8.
+            // Aviso de sinal divergente do número relativo (2026-08-18): ancorado no item OU no elemento.
+            boolean sinalDivergenteValido = avisoSinalDivergente.estaVisivel(itensArrastaveis, elementosVergnaud);
             String fraseDicaPosicionamento = mostrarDicaPosicionamentoPersistente
                     && papelDicaPosicionamentoAtual != null
                     ? obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual) : null;
-            boolean usarDicaPosicionamentoPersistente = !usarQuestionamentoPersistente
-                    && !usarLimiteQuantidadePersistente
-                    && !usarSinalDivergentePersistente
-                    && mostrarDicaPosicionamentoPersistente
+            boolean dicaPosicionamentoValida = mostrarDicaPosicionamentoPersistente
                     && elementoDicaPosicionamentoPersistente != null
                     && elementosVergnaud.contains(elementoDicaPosicionamentoPersistente)
                     && papelDicaPosicionamentoAtual != null
                     && fraseDicaPosicionamento != null
                     && !avaliadorConclusaoModelagem.papelResolvido(
                             papelDicaPosicionamentoAtual, capturarPosicionamentosConclusao());
-            if (mostrarDicaPosicionamentoPersistente && !usarDicaPosicionamentoPersistente) {
+            DecisaoAnotacaoMouseOver.Fonte fonte = DecisaoAnotacaoMouseOver.decidir(
+                    questionamentoValido, limiteQuantidadeValido, sinalDivergenteValido,
+                    dicaPosicionamentoValida, mostrarAnotacaoMouseOver);
+            if (mostrarDicaPosicionamentoPersistente
+                    && fonte != DecisaoAnotacaoMouseOver.Fonte.DICA_POSICIONAMENTO) {
                 scaffoldingAutomatizacaoPassos.encerrarAcao(papelDicaPosicionamentoAtual);
                 mostrarDicaPosicionamentoPersistente = false;
                 elementoDicaPosicionamentoPersistente = null;
                 papelDicaPosicionamentoAtual = null;
             }
+            return fonte;
+        }
 
-            if (!usarQuestionamentoPersistente && !usarLimiteQuantidadePersistente
-                    && !usarSinalDivergentePersistente
-                    && !usarDicaPosicionamentoPersistente && !mostrarAnotacaoMouseOver) {
+        /** Texto da fonte decidida (null se a fonte não tem texto). */
+        private String obterMensagemAnotacao(DecisaoAnotacaoMouseOver.Fonte fonte) {
+            switch (fonte) {
+                case QUESTIONAMENTO_PERSISTENTE:
+                    return textoQuestionamentoPersistente;
+                case LIMITE_QUANTIDADE:
+                    return textoLimiteQuantidadeQuestionado;
+                case SINAL_DIVERGENTE:
+                    return avisoSinalDivergente.getTexto();
+                case DICA_POSICIONAMENTO:
+                    return localizacao.formatar("ui.hint.stepPlacement",
+                            obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual));
+                case MOUSE_OVER:
+                    return textoAnotacaoMouseOver;
+                default:
+                    return null;
+            }
+        }
+
+        /** Ponto ao qual o balão da fonte decidida se ancora (o mouse, ou a peça a que a mensagem se refere). */
+        private java.awt.Point obterAncoraAnotacao(DecisaoAnotacaoMouseOver.Fonte fonte) {
+            switch (fonte) {
+                case QUESTIONAMENTO_PERSISTENTE:
+                    return new java.awt.Point(
+                            itemQuestionadoPersistente.x + itemQuestionadoPersistente.largura,
+                            Math.max(50, itemQuestionadoPersistente.y + itemQuestionadoPersistente.altura / 2));
+                case LIMITE_QUANTIDADE:
+                    RepresentacaoComUnidadesAdicionaveis representacaoLimite =
+                            criarRepresentacaoVennEditavel(
+                                    agrupamentoLimiteQuantidadeQuestionado);
+                    Rectangle areaControle = ehAgrupamentoTransformacaoComSinal(
+                            representacaoLimite.obterAgrupamento())
+                            ? obterAreaControleSinalAdicionar(
+                                    representacaoLimite.obterAgrupamento())
+                            : controleAdicionarQuadradinhoVenn.obterArea(
+                                    representacaoLimite,
+                                    obterAreaDiagramaAditivo());
+                    return new java.awt.Point(areaControle.x + areaControle.width,
+                            Math.max(50, areaControle.y + areaControle.height / 2));
+                case SINAL_DIVERGENTE:
+                    return avisoSinalDivergente.ancora();
+                case DICA_POSICIONAMENTO:
+                    return new java.awt.Point(
+                            elementoDicaPosicionamentoPersistente.x + elementoDicaPosicionamentoPersistente.largura,
+                            Math.max(50, elementoDicaPosicionamentoPersistente.y
+                                    + elementoDicaPosicionamentoPersistente.altura / 2));
+                default:
+                    return new java.awt.Point(mouseOverX, mouseOverY);
+            }
+        }
+
+        /** Só desenha: não altera estado nem decide a mensagem (ver reconciliarAnotacaoDoMouseOver). */
+        private void desenharAnotacaoMouseOver(Graphics2D g2, DecisaoAnotacaoMouseOver.Fonte fonte) {
+            if (fonte == DecisaoAnotacaoMouseOver.Fonte.NENHUMA) {
                 return;
             }
-
-            String mensagem = usarQuestionamentoPersistente
-                    ? textoQuestionamentoPersistente
-                    : (usarLimiteQuantidadePersistente
-                            ? textoLimiteQuantidadeQuestionado
-                            : (usarSinalDivergentePersistente
-                                    ? avisoSinalDivergente.getTexto()
-                                    : (usarDicaPosicionamentoPersistente
-                                            ? localizacao.formatar("ui.hint.stepPlacement", fraseDicaPosicionamento)
-                                            : textoAnotacaoMouseOver)));
-
+            String mensagem = obterMensagemAnotacao(fonte);
             if (mensagem == null || mensagem.length() == 0) {
                 return;
             }
+            java.awt.Point ancora = obterAncoraAnotacao(fonte);
+            desenharBalaoAnotacao(g2, mensagem, ancora.x, ancora.y);
+        }
 
+        private void desenharBalaoAnotacao(Graphics2D g2, String mensagem, int baseX, int baseY) {
             Font fonteAnotacao = new Font("Arial", Font.PLAIN, 13);
             Font fonteAnotacaoNegrito = fonteAnotacao.deriveFont(Font.BOLD);
             g2.setFont(fonteAnotacao);
@@ -7014,35 +7054,6 @@ public class Main extends JFrame {
 
             int largura = larguraTexto + 18;
             int altura = linhas.size() * fm.getHeight() + 10;
-
-            int baseX = mouseOverX;
-            int baseY = mouseOverY;
-            if (usarQuestionamentoPersistente) {
-                baseX = itemQuestionadoPersistente.x + itemQuestionadoPersistente.largura;
-                baseY = Math.max(50, itemQuestionadoPersistente.y + itemQuestionadoPersistente.altura / 2);
-            } else if (usarLimiteQuantidadePersistente) {
-                RepresentacaoComUnidadesAdicionaveis representacaoLimite =
-                        criarRepresentacaoVennEditavel(
-                                agrupamentoLimiteQuantidadeQuestionado);
-                Rectangle areaControle = ehAgrupamentoTransformacaoComSinal(
-                        representacaoLimite.obterAgrupamento())
-                        ? obterAreaControleSinalAdicionar(
-                                representacaoLimite.obterAgrupamento())
-                        : controleAdicionarQuadradinhoVenn.obterArea(
-                                representacaoLimite,
-                                obterAreaDiagramaAditivo());
-                baseX = areaControle.x + areaControle.width;
-                baseY = Math.max(50, areaControle.y + areaControle.height / 2);
-            } else if (usarSinalDivergentePersistente) {
-                java.awt.Point ancoraAviso = avisoSinalDivergente.ancora();
-                baseX = ancoraAviso.x;
-                baseY = ancoraAviso.y;
-            } else if (usarDicaPosicionamentoPersistente) {
-                baseX = elementoDicaPosicionamentoPersistente.x
-                        + elementoDicaPosicionamentoPersistente.largura;
-                baseY = Math.max(50, elementoDicaPosicionamentoPersistente.y
-                        + elementoDicaPosicionamentoPersistente.altura / 2);
-            }
 
             int x = baseX + 14;
             int y = forcarAnotacaoMouseOverAbaixo ? (baseY + 18) : (baseY - altura - 10);

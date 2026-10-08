@@ -1703,9 +1703,10 @@ check('gerard.ui.sinal.AvisoSinalDivergente avisoSinalDivergente' in main
       'aviso de sinal divergente usa o mesmo mecanismo persistente de mostrarLimiteQuantidadeQuestionado '
       '(desenharAnotacaoMouseOver) em vez do tooltip de 2600ms — a usuária achou que sumia rápido demais '
       '("deixe na tela até que seja corrigido")')
-check('boolean usarSinalDivergentePersistente' in main
-      and main.count('usarSinalDivergentePersistente') >= 5,
-      'desenharAnotacaoMouseOver ganhou o ramo usarSinalDivergentePersistente na mesma cadeia de '
+decisao_anotacao=text('src/gerard/ui/interacao/DecisaoAnotacaoMouseOver.java')
+check('DecisaoAnotacaoMouseOver.decidir(' in main and 'SINAL_DIVERGENTE' in decisao_anotacao
+      and decisao_anotacao.index('QUESTIONAMENTO_PERSISTENTE') < decisao_anotacao.index('LIMITE_QUANTIDADE') < decisao_anotacao.index('SINAL_DIVERGENTE'),
+      'a anotação flutuante (DecisaoAnotacaoMouseOver) tem o ramo SINAL_DIVERGENTE na mesma cadeia de '
       'prioridade dos avisos persistentes já existentes (questionamento > limite de quantidade > sinal '
       'divergente > dica de posicionamento > tooltip comum)')
 check(main.count('limparSinalDivergentePersistente();') >= 4,   # 3 recargas de situação + o passo único da escolha de sinal
