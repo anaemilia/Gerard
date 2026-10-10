@@ -198,7 +198,9 @@ import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
 import gerard.campoaditivo.diagrama.elementos.QuadradinhoVenn;
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
-import gerard.campoaditivo.diagrama.elementos.FragmentoAnotacao;
+import gerard.campoaditivo.diagrama.apresentacao.RenderizadorBalaoAnotacao;
+import gerard.ui.icones.IconesInterface;
+import gerard.ui.venn.RenderizadorElementosVenn;
 import gerard.campoaditivo.diagrama.elementos.MarcadorTexto;
 import gerard.interacao.arraste.SessaoArrasteTextoParaDiagrama;
 import gerard.interacao.arraste.HandlerInteracaoElementoTextoMovel;
@@ -1871,73 +1873,15 @@ public class Main extends JFrame {
         }
 
         private Icon criarIconeRestaurar() {
-            return new Icon() {
-                public int getIconWidth() { return 16; }
-                public int getIconHeight() { return 16; }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(c.isEnabled() ? COR_TEXTO_SECUNDARIO : gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO);
-                        g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawArc(x + 3, y + 3, 10, 10, 40, 285);
-                        Path2D seta = new Path2D.Double();
-                        seta.moveTo(x + 2.5, y + 7.0);
-                        seta.lineTo(x + 3.7, y + 2.5);
-                        seta.lineTo(x + 7.5, y + 4.7);
-                        g2.draw(seta);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.restaurar();
         }
 
         private Icon criarIconeEditar() {
-            return new Icon() {
-                public int getIconWidth() { return 16; }
-                public int getIconHeight() { return 16; }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(c.isEnabled() ? COR_TEXTO_SECUNDARIO : gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO);
-                        g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawLine(x + 4, y + 12, x + 11, y + 5);
-                        g2.drawLine(x + 6, y + 14, x + 13, y + 7);
-                        g2.drawLine(x + 4, y + 12, x + 3, y + 15);
-                        g2.drawLine(x + 3, y + 15, x + 6, y + 14);
-                        g2.drawLine(x + 11, y + 5, x + 13, y + 7);
-                        g2.drawLine(x + 12, y + 4, x + 14, y + 6);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.editar();
         }
 
         private Icon criarIconeIdiomaSituacao() {
-            return new Icon() {
-                public int getIconWidth() { return 18; }
-                public int getIconHeight() { return 16; }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(c.isEnabled() ? COR_TEXTO_SECUNDARIO : gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO);
-                        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
-                        g2.drawString("A", x + 1, y + 11);
-                        g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 9));
-                        g2.drawString("文", x + 9, y + 11);
-                        g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawLine(x + 5, y + 14, x + 13, y + 14);
-                        g2.drawLine(x + 11, y + 12, x + 13, y + 14);
-                        g2.drawLine(x + 11, y + 16, x + 13, y + 14);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.idiomaSituacao();
         }
 
         public void definirTelaCuradoriaSituacoes(TelaCuradoriaSituacoes telaCuradoriaSituacoes) {
@@ -1979,27 +1923,7 @@ public class Main extends JFrame {
         }
 
         private Icon criarIconeChat() {
-            return new Icon() {
-                public int getIconWidth() { return 30; }
-                public int getIconHeight() { return 22; }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(c.isEnabled() ? COR_TEXTO_SECUNDARIO : gerard.ui.UITemaGerard.COR_ICONE_DESABILITADO);
-                        g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawRoundRect(x + 1, y + 1, 27, 16, 14, 14);
-                        Path2D cauda = new Path2D.Float();
-                        cauda.moveTo(x + 9, y + 17);
-                        cauda.curveTo(x + 8, y + 19, x + 6, y + 20, x + 4, y + 21);
-                        cauda.curveTo(x + 6, y + 19, x + 6, y + 18, x + 6, y + 16);
-                        g2.draw(cauda);
-                        g2.fillOval(x + 8, y + 8, 3, 3);
-                        g2.fillOval(x + 14, y + 8, 3, 3);
-                        g2.fillOval(x + 20, y + 8, 3, 3);
-                    } finally { g2.dispose(); }
-                }
-            };
+            return IconesInterface.chat();
         }
 
         private void abrirChatbot() {
@@ -2434,29 +2358,7 @@ public class Main extends JFrame {
         }
 
         private Icon criarIconeInterrogacaoContextual() {
-            return new Icon() {
-                public int getIconWidth() { return 20; }
-                public int getIconHeight() { return 20; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(COR_SUPERFICIE);
-                        g2.fillOval(x + 1, y + 1, 18, 18);
-                        g2.setColor(COR_TEXTO_SECUNDARIO);
-                        g2.setStroke(new BasicStroke(1.4f));
-                        g2.drawOval(x + 1, y + 1, 18, 18);
-                        // Icone "info" (circulo + haste + ponto), mesmo simbolo
-                        // do botao web (IconeAjudaContextual, MenuAjudaContextual.tsx).
-                        g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawLine(x + 10, y + 9, x + 10, y + 13);
-                        g2.fillOval(x + 9, y + 5, 2, 2);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.interrogacaoContextual();
         }
 
         private void atualizarTextosBotoesAjudaContextual() {
@@ -2873,54 +2775,13 @@ public class Main extends JFrame {
 
         /** Duas silhuetas de pessoa (comunidade) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
         private Icon criarIconeComunidade() {
-            final int tamanho = 22;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        g2.setColor(COR_TEXTO_SECUNDARIO);
-                        g2.setStroke(new BasicStroke(1.7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        desenharPessoaIconeComunidade(g2, x + 6, y + 4);
-                        desenharPessoaIconeComunidade(g2, x + 13, y + 6);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.comunidade();
         }
 
-        private void desenharPessoaIconeComunidade(Graphics2D g2, int cx, int topoCabeca) {
-            int diametroCabeca = 6;
-            g2.draw(new java.awt.geom.Ellipse2D.Float(cx - diametroCabeca / 2f, topoCabeca, diametroCabeca, diametroCabeca));
-            java.awt.geom.Arc2D.Float corpo = new java.awt.geom.Arc2D.Float(
-                    cx - 6, topoCabeca + diametroCabeca - 1, 12, 11, 15, 150, java.awt.geom.Arc2D.OPEN);
-            g2.draw(corpo);
-        }
 
         /** Globo (site) — círculo com meridiano e paralelo, mesmo traço fino neutro dos outros ícones. */
         private Icon criarIconeSite() {
-            final int tamanho = 22;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        int diametro = tamanho - 4;
-                        float ox = x + 2;
-                        float oy = y + 2;
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(ox, oy, diametro, diametro));
-                        g2.draw(new java.awt.geom.Line2D.Float(ox, oy + diametro / 2f, ox + diametro, oy + diametro / 2f));
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(ox + diametro * 0.28f, oy, diametro * 0.44f, diametro));
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.site();
         }
 
         /**
@@ -3003,26 +2864,7 @@ public class Main extends JFrame {
         }
 
         private Icon criarIconeEntrar() {
-            final int tamanho = 28;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    try {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        g2.setColor(COR_TEXTO_SECUNDARIO);
-                        g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                        g2.drawOval(x + 2, y + 2, tamanho - 5, tamanho - 5);
-                        int cy = y + tamanho / 2;
-                        g2.drawLine(x + 8, cy, x + 19, cy);
-                        g2.drawLine(x + 15, cy - 4, x + 19, cy);
-                        g2.drawLine(x + 15, cy + 4, x + 19, cy);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.entrar();
         }
 
         private boolean usuarioLogado() {
@@ -3058,40 +2900,12 @@ public class Main extends JFrame {
                     // Falha ao ler a foto cai na silhueta genérica abaixo.
                 }
             }
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(x + 1, y + 1, tamanho - 2, tamanho - 2));
-                        int cabecaDiam = tamanho / 3;
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(
-                                x + tamanho / 2f - cabecaDiam / 2f, y + tamanho * 0.28f, cabecaDiam, cabecaDiam));
-                        java.awt.geom.Arc2D.Float ombros = new java.awt.geom.Arc2D.Float(
-                                x + tamanho * 0.2f, y + tamanho * 0.55f, tamanho * 0.6f, tamanho * 0.55f,
-                                20, 140, java.awt.geom.Arc2D.OPEN);
-                        g2.draw(ombros);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.pessoaSilhueta(tamanho);
         }
 
         /** Recorta origem num círculo de tamanho x tamanho, esticando pra preencher (mesmo comportamento de crop de rotuloPreviewFoto em DialogoUsuario). */
         private BufferedImage recortarImagemCircular(Image origem, int tamanho) {
-            BufferedImage quadro = new BufferedImage(tamanho, tamanho, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = quadro.createGraphics();
-            try {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setClip(new java.awt.geom.Ellipse2D.Float(0, 0, tamanho, tamanho));
-                g2.drawImage(origem, 0, 0, tamanho, tamanho, null);
-            } finally {
-                g2.dispose();
-            }
-            return quadro;
+            return IconesInterface.recortarImagemCircular(origem, tamanho);
         }
 
         private JButton criarBotaoReportarBugMenuBar() {
@@ -3113,38 +2927,7 @@ public class Main extends JFrame {
 
         /** Silhueta simples de inseto (corpo, cabeça, antenas, 3 pares de pernas) — mesmo traço fino neutro dos outros ícones, ver prepararTracoIconeCategoria. */
         private Icon criarIconeReportarBug() {
-            final int tamanho = 22;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        int corpoLargura = 10;
-                        int corpoAltura = 12;
-                        int cx = x + tamanho / 2;
-                        int topoCorpo = y + 7;
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx - corpoLargura / 2f, topoCorpo, corpoLargura, corpoAltura));
-
-                        int cabecaDiametro = 5;
-                        g2.draw(new java.awt.geom.Ellipse2D.Float(cx - cabecaDiametro / 2f, topoCorpo - cabecaDiametro + 1, cabecaDiametro, cabecaDiametro));
-
-                        g2.drawLine(cx - 1, topoCorpo - cabecaDiametro + 1, cx - 3, y + 1);
-                        g2.drawLine(cx + 1, topoCorpo - cabecaDiametro + 1, cx + 3, y + 1);
-
-                        int[] deslocamentosY = {topoCorpo + 2, topoCorpo + 6, topoCorpo + 10};
-                        for (int dy : deslocamentosY) {
-                            g2.drawLine(cx - corpoLargura / 2, dy, cx - corpoLargura / 2 - 4, dy - 2);
-                            g2.drawLine(cx - corpoLargura / 2, dy, cx - corpoLargura / 2 - 4, dy + 2);
-                            g2.drawLine(cx + corpoLargura / 2, dy, cx + corpoLargura / 2 + 4, dy - 2);
-                            g2.drawLine(cx + corpoLargura / 2, dy, cx + corpoLargura / 2 + 4, dy + 2);
-                        }
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.reportarBug();
         }
 
         /**
@@ -3204,32 +2987,7 @@ public class Main extends JFrame {
 
         /** Duas caixas com seta dupla entre elas — mesmo traço fino neutro dos ícones de categoria, ver prepararTracoIconeCategoria. */
         private Icon criarIconeCompararCategorias() {
-            final int tamanho = 30;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        int ladoCaixa = 9;
-                        int yCaixa = y + 10;
-                        g2.drawRoundRect(x + 3, yCaixa, ladoCaixa, ladoCaixa, 2, 2);
-                        g2.drawRoundRect(x + tamanho - 3 - ladoCaixa, yCaixa, ladoCaixa, ladoCaixa, 2, 2);
-
-                        int yFlecha = y + tamanho / 2;
-                        int xEsq = x + 3 + ladoCaixa + 2;
-                        int xDir = x + tamanho - 3 - ladoCaixa - 2;
-                        g2.drawLine(xEsq, yFlecha, xDir, yFlecha);
-                        g2.drawLine(xEsq, yFlecha, xEsq + 4, yFlecha - 3);
-                        g2.drawLine(xEsq, yFlecha, xEsq + 4, yFlecha + 3);
-                        g2.drawLine(xDir, yFlecha, xDir - 4, yFlecha - 3);
-                        g2.drawLine(xDir, yFlecha, xDir - 4, yFlecha + 3);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.compararCategorias();
         }
 
         /**
@@ -3243,29 +3001,9 @@ public class Main extends JFrame {
          * quando os dois ainda ficavam juntos no cabeçalho).
          */
         private Icon criarIconeFerramentaSortear() {
-            final int tamanho = 26;
-            return new Icon() {
-                public int getIconWidth() { return tamanho; }
-                public int getIconHeight() { return tamanho; }
-
-                public void paintIcon(Component c, Graphics g, int x, int y) {
-                    Graphics2D g2 = gerard.ui.categoria.IconeCategoria.prepararTraco(g);
-                    try {
-                        g2.drawRoundRect(x + 2, y + 2, tamanho - 4, tamanho - 4, 6, 6);
-                        int raioPonto = 2;
-                        desenharPontoIconeFerramentaSortear(g2, x + 8, y + 8, raioPonto);
-                        desenharPontoIconeFerramentaSortear(g2, x + tamanho / 2, y + tamanho / 2, raioPonto);
-                        desenharPontoIconeFerramentaSortear(g2, x + tamanho - 8, y + tamanho - 8, raioPonto);
-                    } finally {
-                        g2.dispose();
-                    }
-                }
-            };
+            return IconesInterface.ferramentaSortear();
         }
 
-        private void desenharPontoIconeFerramentaSortear(Graphics2D g2, int cx, int cy, int raio) {
-            g2.fill(new java.awt.geom.Ellipse2D.Float(cx - raio, cy - raio, raio * 2, raio * 2));
-        }
 
         private JMenu criarMenuArquivo() {
             JMenu menu = new JMenu(localizacao.texto("ui.menu.top.file"));
@@ -6841,17 +6579,25 @@ public class Main extends JFrame {
 
         }
 
+        /** Só desenha: quem está sendo carregado vem de obterDesenhaveisPickup. */
         private void desenharPickupEmPrimeiroPlano(final Graphics2D g2) {
             if (g2 == null) {
                 return;
             }
+            for (DesenhavelPickup desenhavel : obterDesenhaveisPickup()) {
+                renderizadorPickup.desenharEmPrimeiroPlano(g2, desenhavel);
+            }
+        }
 
+        /** Só decide (lê o estado dos handlers): lista, na ordem de desenho, o que está em pickup. */
+        private java.util.List<DesenhavelPickup> obterDesenhaveisPickup() {
+            final java.util.List<DesenhavelPickup> desenhaveis = new ArrayList<DesenhavelPickup>();
             if (handlerElementoTextoMovel.estaAtivo()) {
                 final ElementoTextoMovel elemento =
                         handlerElementoTextoMovel.obterElementoAtivo();
                 final Font fonte = new Font("Arial", Font.BOLD, 20);
                 final FontMetrics fm = getFontMetrics(fonte);
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(
                                 elemento.x - 4,
@@ -6870,7 +6616,7 @@ public class Main extends JFrame {
                 final QuadradinhoVenn quadradinho = handlerQuadradinhoVenn.obterQuadradinhoAtivo();
                 final boolean composicao = ehDiagramaVennComposicaoMedidas();
                 final boolean comparacao = ehGraficoBarrasComparacao();
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(quadradinho.x, quadradinho.y,
                                 Math.max(1, quadradinho.tamanho),
@@ -6886,7 +6632,7 @@ public class Main extends JFrame {
             if (handlerItemTextoArrastavel.estaAtivo()) {
                 final ItemTextoArrastavel item =
                         handlerItemTextoArrastavel.obterItemAtivo();
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(item.x - 4, item.y - 4,
                                 Math.max(1, item.largura + 8),
@@ -6908,7 +6654,7 @@ public class Main extends JFrame {
                     scaffoldingFeedbackProxyPosicionamento.obterProxyEmFeedback();
             if (proxyEmFeedback != null
                     && proxyEmFeedback != handlerItemTextoArrastavel.obterItemAtivo()) {
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return new Rectangle(proxyEmFeedback.x - 4, proxyEmFeedback.y - 4,
                                 Math.max(1, proxyEmFeedback.largura + 8),
@@ -6922,7 +6668,7 @@ public class Main extends JFrame {
 
             final ConectorVergnaud conector = obterConectorVergnaudAtivo();
             if (conector != null) {
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return obterLimitesVisuaisConector(conector);
                     }
@@ -6936,7 +6682,7 @@ public class Main extends JFrame {
                     paineisEixosRelacoes.encontrarArrastando();
             if (painelEixoRelacaoArrastando != null
                     && painelEixoRelacaoArrastando.grafico.estaArrastandoPontoControle()) {
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         return painelEixoRelacaoArrastando.grafico.obterAreaVisualPontoControle();
                     }
@@ -6947,7 +6693,7 @@ public class Main extends JFrame {
             }
 
             if (handlerControleComparacao.estaAtivo()) {
-                renderizadorPickup.desenharEmPrimeiroPlano(g2, new DesenhavelPickup() {
+                desenhaveis.add(new DesenhavelPickup() {
                     public Rectangle obterLimitesVisuais() {
                         Rectangle area = obterRetanguloPontoControleComparacao();
                         return new Rectangle(
@@ -6961,6 +6707,7 @@ public class Main extends JFrame {
                     }
                 });
             }
+            return desenhaveis;
         }
 
         private Rectangle obterLimitesVisuaisConector(ConectorVergnaud conector) {
@@ -7120,216 +6867,10 @@ public class Main extends JFrame {
         }
 
         private void desenharBalaoAnotacao(Graphics2D g2, String mensagem, int baseX, int baseY) {
-            Font fonteAnotacao = new Font("Arial", Font.PLAIN, 13);
-            Font fonteAnotacaoNegrito = fonteAnotacao.deriveFont(Font.BOLD);
-            g2.setFont(fonteAnotacao);
-            FontMetrics fm = g2.getFontMetrics(fonteAnotacao);
-
-            int larguraMaxima = Math.min(430, Math.max(240, getWidth() - 40));
-            java.util.List<java.util.List<FragmentoAnotacao>> linhas = quebrarTextoAnotacaoFormatado(
-                    mensagem, fonteAnotacao, fonteAnotacaoNegrito, larguraMaxima - 18, g2);
-
-            int larguraTexto = 0;
-            for (java.util.List<FragmentoAnotacao> linha : linhas) {
-                larguraTexto = Math.max(larguraTexto, medirLinhaAnotacao(linha, fonteAnotacao, fonteAnotacaoNegrito, g2));
-            }
-
-            int largura = larguraTexto + 18;
-            int altura = linhas.size() * fm.getHeight() + 10;
-
-            int x = baseX + 14;
-            int y = forcarAnotacaoMouseOverAbaixo ? (baseY + 18) : (baseY - altura - 10);
-
-            if (x + largura > getWidth() - 8) {
-                x = getWidth() - largura - 8;
-            }
-
-            if (x < 8) {
-                x = 8;
-            }
-
-            if (!forcarAnotacaoMouseOverAbaixo && y < 50) {
-                y = baseY + 18;
-            }
-
-            if (y + altura > getHeight() - 8) {
-                y = getHeight() - altura - 8;
-            }
-
-            Composite originalComposite = g2.getComposite();
-            Stroke originalStroke = g2.getStroke();
-
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.97f));
-            g2.setColor(COR_QUESTIONAMENTO);
-            g2.fillRoundRect(x, y, largura, altura, 12, 12);
-
-            g2.setColor(COR_AVISO);
-            g2.setStroke(new BasicStroke(1.0f));
-            g2.drawRoundRect(x, y, largura, altura, 10, 10);
-
-            g2.setColor(COR_TEXTO);
-            int yLinha = y + fm.getAscent() + 5;
-            for (java.util.List<FragmentoAnotacao> linha : linhas) {
-                desenharLinhaAnotacao(g2, linha, x + 9, yLinha, fonteAnotacao, fonteAnotacaoNegrito);
-                yLinha += fm.getHeight();
-            }
-
-            g2.setComposite(originalComposite);
-            g2.setStroke(originalStroke);
+            new RenderizadorBalaoAnotacao(COR_QUESTIONAMENTO, COR_AVISO, COR_TEXTO)
+                    .desenhar(g2, mensagem, baseX, baseY, getWidth(), getHeight(), forcarAnotacaoMouseOverAbaixo);
         }
 
-
-        private java.util.List<java.util.List<FragmentoAnotacao>> quebrarTextoAnotacaoFormatado(
-                String texto,
-                Font fonteNormal,
-                Font fonteNegrito,
-                int larguraMaxima,
-                Graphics2D g2
-        ) {
-            java.util.List<FragmentoAnotacao> tokens = tokenizarAnotacao(texto);
-            java.util.List<java.util.List<FragmentoAnotacao>> linhas = new ArrayList<java.util.List<FragmentoAnotacao>>();
-            java.util.List<FragmentoAnotacao> linhaAtual = new ArrayList<FragmentoAnotacao>();
-            int larguraAtual = 0;
-
-            for (FragmentoAnotacao tokenOriginal : tokens) {
-                if (tokenOriginal == null || tokenOriginal.texto.length() == 0) {
-                    continue;
-                }
-
-                FragmentoAnotacao token = tokenOriginal;
-                int larguraToken = medirFragmentoAnotacao(token, fonteNormal, fonteNegrito, g2);
-
-                if (!linhaAtual.isEmpty() && larguraAtual + larguraToken > larguraMaxima) {
-                    linhas.add(linhaAtual);
-                    linhaAtual = new ArrayList<FragmentoAnotacao>();
-                    larguraAtual = 0;
-                    token = new FragmentoAnotacao(removerEspacoInicial(token.texto), token.negrito);
-                    larguraToken = medirFragmentoAnotacao(token, fonteNormal, fonteNegrito, g2);
-                }
-
-                linhaAtual.add(token);
-                larguraAtual += larguraToken;
-            }
-
-            if (!linhaAtual.isEmpty()) {
-                linhas.add(linhaAtual);
-            }
-
-            if (linhas.isEmpty()) {
-                java.util.List<FragmentoAnotacao> linhaVazia = new ArrayList<FragmentoAnotacao>();
-                linhaVazia.add(new FragmentoAnotacao("", false));
-                linhas.add(linhaVazia);
-            }
-
-            return linhas;
-        }
-
-        private java.util.List<FragmentoAnotacao> tokenizarAnotacao(String texto) {
-            java.util.List<FragmentoAnotacao> fragmentos = extrairFragmentosAnotacao(texto);
-            java.util.List<FragmentoAnotacao> tokens = new ArrayList<FragmentoAnotacao>();
-
-            for (FragmentoAnotacao fragmento : fragmentos) {
-                if (fragmento == null || fragmento.texto == null) {
-                    continue;
-                }
-
-                String textoFragmento = fragmento.texto.replace('\n', ' ');
-                String[] palavras = textoFragmento.trim().length() == 0 ? new String[0] : textoFragmento.trim().split("\\s+");
-
-                for (String palavra : palavras) {
-                    if (palavra.length() == 0) {
-                        continue;
-                    }
-                    boolean pontuacaoSemEspaco = palavra.matches("^[,.;:!?)]$");
-                    boolean precisaEspaco = !tokens.isEmpty() && !pontuacaoSemEspaco;
-                    String textoToken = (precisaEspaco ? " " : "") + palavra;
-                    tokens.add(new FragmentoAnotacao(textoToken, fragmento.negrito));
-                }
-            }
-
-            return tokens;
-        }
-
-        private java.util.List<FragmentoAnotacao> extrairFragmentosAnotacao(String texto) {
-            java.util.List<FragmentoAnotacao> fragmentos = new ArrayList<FragmentoAnotacao>();
-            String origem = texto == null ? "" : texto;
-            int posicao = 0;
-
-            while (posicao < origem.length()) {
-                int inicioNegrito = origem.indexOf("<b>", posicao);
-                if (inicioNegrito < 0) {
-                    fragmentos.add(new FragmentoAnotacao(origem.substring(posicao), false));
-                    break;
-                }
-
-                if (inicioNegrito > posicao) {
-                    fragmentos.add(new FragmentoAnotacao(origem.substring(posicao, inicioNegrito), false));
-                }
-
-                int fimNegrito = origem.indexOf("</b>", inicioNegrito + 3);
-                if (fimNegrito < 0) {
-                    fragmentos.add(new FragmentoAnotacao(origem.substring(inicioNegrito + 3), true));
-                    break;
-                }
-
-                fragmentos.add(new FragmentoAnotacao(origem.substring(inicioNegrito + 3, fimNegrito), true));
-                posicao = fimNegrito + 4;
-            }
-
-            if (fragmentos.isEmpty()) {
-                fragmentos.add(new FragmentoAnotacao(origem, false));
-            }
-
-            return fragmentos;
-        }
-
-        private String removerEspacoInicial(String texto) {
-            if (texto == null) {
-                return "";
-            }
-            int indice = 0;
-            while (indice < texto.length() && Character.isWhitespace(texto.charAt(indice))) {
-                indice++;
-            }
-            return texto.substring(indice);
-        }
-
-        private int medirLinhaAnotacao(java.util.List<FragmentoAnotacao> linha, Font fonteNormal, Font fonteNegrito, Graphics2D g2) {
-            int largura = 0;
-            for (FragmentoAnotacao fragmento : linha) {
-                largura += medirFragmentoAnotacao(fragmento, fonteNormal, fonteNegrito, g2);
-            }
-            return largura;
-        }
-
-        private int medirFragmentoAnotacao(FragmentoAnotacao fragmento, Font fonteNormal, Font fonteNegrito, Graphics2D g2) {
-            if (fragmento == null || fragmento.texto == null || fragmento.texto.length() == 0) {
-                return 0;
-            }
-            Font fonte = fragmento.negrito ? fonteNegrito : fonteNormal;
-            return g2.getFontMetrics(fonte).stringWidth(fragmento.texto);
-        }
-
-        private void desenharLinhaAnotacao(
-                Graphics2D g2,
-                java.util.List<FragmentoAnotacao> linha,
-                int x,
-                int y,
-                Font fonteNormal,
-                Font fonteNegrito
-        ) {
-            int xAtual = x;
-            for (FragmentoAnotacao fragmento : linha) {
-                if (fragmento == null || fragmento.texto == null) {
-                    continue;
-                }
-                Font fonte = fragmento.negrito ? fonteNegrito : fonteNormal;
-                g2.setFont(fonte);
-                g2.drawString(fragmento.texto, xAtual, y);
-                xAtual += g2.getFontMetrics(fonte).stringWidth(fragmento.texto);
-            }
-            g2.setFont(fonteNormal);
-        }
 
         private java.util.List<String> quebrarTextoAnotacao(String texto, FontMetrics fm, int larguraMaxima) {
             java.util.List<String> linhas = new ArrayList<String>();
@@ -8678,7 +8219,7 @@ public class Main extends JFrame {
 
             if (!representacaoGenerica && cenaDiagramaVennAtual != null) {
                 for (ConectorDiagramaVenn conector : cenaDiagramaVennAtual.getConectores()) {
-                    desenharSetaVenn(g2, conector.getX1(), conector.getY1(), conector.getX2(), conector.getY2());
+                    RenderizadorElementosVenn.desenharSeta(g2, conector.getX1(), conector.getY1(), conector.getX2(), conector.getY2());
                 }
             }
 
@@ -9460,24 +9001,7 @@ public class Main extends JFrame {
                 circulo.desenhar(g2);
                 return;
             }
-
-            Stroke original = g2.getStroke();
-            g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-            g2.fillRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 16, 16);
-            g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-            g2.setStroke(new BasicStroke(1.6f));
-            g2.drawRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 16, 16);
-
-            if (circulo.textoEditavel != null && circulo.textoEditavel.trim().length() > 0) {
-                g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-                g2.setFont(new Font("Arial", Font.BOLD, 17));
-                FontMetrics fm = g2.getFontMetrics();
-                int tx = circulo.x + (circulo.largura - fm.stringWidth(circulo.textoEditavel)) / 2;
-                int ty = circulo.y + (circulo.altura - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(circulo.textoEditavel, tx, ty);
-            }
-
-            g2.setStroke(original);
+            RenderizadorElementosVenn.desenharColecaoComposicao(g2, circulo);
         }
 
         private void atualizarQuadradinhosCorrespondentesComparacao(boolean comparacaoMedidas) {
@@ -9527,38 +9051,10 @@ public class Main extends JFrame {
         }
 
         private void desenharBarraComparacao(Graphics2D g2, CirculoVenn circulo) {
-            Stroke original = g2.getStroke();
-            if (circulo.exibirQuadradinhos) {
-                g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-                g2.fillRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 12, 12);
-                g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                g2.setStroke(new BasicStroke(1.4f));
-                g2.drawRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 12, 12);
-            } else {
-                int valorAtual = obterValorRelativoAssinadoComparacao();
-                g2.setColor(COR_TEXTO_SECUNDARIO);
-                g2.setFont(new Font("Arial", Font.BOLD, 12));
-                FontMetrics fmRotulo = g2.getFontMetrics();
-                int xRotulo = circulo.x + (circulo.largura - fmRotulo.stringWidth(circulo.rotulo)) / 2;
-                g2.drawString(circulo.rotulo, xRotulo, circulo.y - 8);
-
-                g2.setColor(gerard.ui.UITemaGerard.COR_SUPERFICIE);
-                g2.fillRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 12, 12);
-                g2.setColor(gerard.ui.UITemaGerard.COR_BORDA);
-                g2.setStroke(new BasicStroke(1.2f));
-                g2.drawRoundRect(circulo.x, circulo.y, circulo.largura, circulo.altura, 12, 12);
-
-                String valor = servicoQuantidadeContextual
-                        .formatarNumeroRelativoParaDiagrama(
-                                valorAtual, situacaoProblemaAtual);
-                g2.setColor(COR_TEXTO);
-                g2.setFont(new Font("Arial", Font.BOLD, 26));
-                FontMetrics fmValor = g2.getFontMetrics();
-                int xValor = circulo.x + (circulo.largura - fmValor.stringWidth(valor)) / 2;
-                int yValor = circulo.y + (circulo.altura - fmValor.getHeight()) / 2 + fmValor.getAscent();
-                g2.drawString(valor, xValor, yValor);
-            }
-            g2.setStroke(original);
+            String valor = circulo.exibirQuadradinhos ? null
+                    : servicoQuantidadeContextual.formatarNumeroRelativoParaDiagrama(
+                            obterValorRelativoAssinadoComparacao(), situacaoProblemaAtual);
+            RenderizadorElementosVenn.desenharBarraComparacao(g2, circulo, valor);
         }
 
         private void desenharResumoComparacaoMedidas(Graphics2D g2, Rectangle area) {
@@ -9922,51 +9418,8 @@ public class Main extends JFrame {
                     .composicaoDeMedidas().calcularTodo(
                             Math.max(0, quantidade1), Math.max(0, quantidade2));
 
-            g2.setColor(COR_TEXTO_SECUNDARIO);
-            g2.setFont(new Font("Arial", Font.BOLD, 26));
-            FontMetrics fm = g2.getFontMetrics();
-
-            desenharNumeroComposicaoVenn(g2, String.valueOf(quantidade1), parcela1.x + parcela1.largura + 22, parcela1.y + parcela1.altura / 2 + fm.getAscent() / 2);
-            desenharNumeroComposicaoVenn(g2, String.valueOf(quantidade2), parcela2.x + parcela2.largura + 22, parcela2.y + parcela2.altura / 2 + fm.getAscent() / 2);
-            // O número junto à coleção resultado representa a quantidade real
-            // de quadradinhos dentro dela. O ponto de ancoragem é ajustado
-            // para permanecer confortavelmente dentro do card do diagrama.
-            int ancoraResultado = Math.min(area.x + area.width - 26, resultado.x + resultado.largura + 18);
-            desenharNumeroComposicaoVenn(g2, String.valueOf(quantidadeResultado), ancoraResultado, resultado.y + resultado.altura / 2 + fm.getAscent() / 2);
-
-            String equacao = quantidade1 + " + " + quantidade2 + " = " + totalComposicao;
-            g2.setFont(new Font("Arial", Font.BOLD, 16));
-            FontMetrics fmEquacao = g2.getFontMetrics();
-            int xEquacao = area.x + Math.max(18, (area.width - fmEquacao.stringWidth(equacao)) / 2);
-            int yEquacao = area.y + area.height - 18;
-            g2.drawString(equacao, xEquacao, yEquacao);
-        }
-
-        private void desenharNumeroComposicaoVenn(Graphics2D g2, String texto, int x, int y) {
-            FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(texto, x - fm.stringWidth(texto) / 2, y);
-        }
-
-        private void desenharSetaVenn(Graphics2D g2, int x1, int y1, int x2, int y2) {
-            Stroke original = g2.getStroke();
-
-            g2.setColor(gerard.ui.UITemaGerard.COR_TEXTO_SECUNDARIO);
-            g2.setStroke(new BasicStroke(1.6f));
-            g2.drawLine(x1, y1, x2, y2);
-
-            double angulo = Math.atan2(y2 - y1, x2 - x1);
-            int tamanho = 10;
-
-            int xA = (int) (x2 - tamanho * Math.cos(angulo - Math.PI / 6));
-            int yA = (int) (y2 - tamanho * Math.sin(angulo - Math.PI / 6));
-
-            int xB = (int) (x2 - tamanho * Math.cos(angulo + Math.PI / 6));
-            int yB = (int) (y2 - tamanho * Math.sin(angulo + Math.PI / 6));
-
-            g2.drawLine(x2, y2, xA, yA);
-            g2.drawLine(x2, y2, xB, yB);
-
-            g2.setStroke(original);
+            RenderizadorElementosVenn.desenharContagensComposicao(g2, area, parcela1, parcela2, resultado,
+                    quantidade1, quantidade2, quantidadeResultado, totalComposicao);
         }
 
         private int contarQuadradinhosNoCirculo(CirculoVenn circulo) {

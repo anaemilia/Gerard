@@ -1,0 +1,63 @@
+# Passo 2 do desenho — balão da anotação extraído (2026-10-09)
+
+`desenharBalaoAnotacao` (58 linhas) e seus 7 auxiliares de quebra/medida/pintura de texto formatado (`<b>`) saíram da
+`Main.TelaGerard` para `gerard.campoaditivo.diagrama.apresentacao.RenderizadorBalaoAnotacao`. A classe só mede e pinta:
+recebe mensagem, âncora, largura/altura do painel, "forçar abaixo" e as três cores; não lê nem altera estado da tela.
+Na `Main` resta um delegador de 3 linhas. `FragmentoAnotacao` deixou de ser importado pela `Main`.
+
+Prova: `TesteMacacoAnotacaoMouseOver` (mouse real), 3 situações + tela inicial, 213 capturas por versão; antigo = HEAD
+(1d88600) compilado à parte. Pixel a pixel com a faixa y 205–245 mascarada (ruído de 1 px já registrado): 213 de 213 idênticas.
+
+Limites: a faixa mascarada não é comparada (balão que caia nela não é verificado); PNGs não versionados.
+Pendentes do passo 2: pickup (`desenharPickupEmPrimeiroPlano`), elementos do Venn, ícones.
+
+## Pickup: decidir x desenhar (2026-10-09)
+
+`desenharPickupEmPrimeiroPlano` (7 blocos que liam os handlers e desenhavam no mesmo passo) virou:
+`obterDesenhaveisPickup()` (só lê o estado dos handlers e devolve, na ordem de desenho, a lista de `DesenhavelPickup`) +
+`desenharPickupEmPrimeiroPlano(g2)` (só percorre a lista e chama `renderizadorPickup`). O renderizador de pickup
+(`gerard.Scaffolding.pickup`) já existia e não mudou.
+
+Prova: novo `tests/graphical/TesteMacacoPickupSegurando` (mouse real, captura SEGURANDO o botão, antes de soltar:
+palavra do enunciado, peça de texto e quadradinho do Venn; 3 situações; 96 capturas por rodada). Com 250 ms entre passos
+o teste era instável (antigo x antigo: 62 de 96 diferentes, balão de hover); com `-Despera=1500` antigo x antigo = 96/96
+idênticas e antigo x novo = 96/96 idênticas (comparação da imagem inteira, sem máscara). A captura confere que o pickup
+(peça com sombra) aparece na imagem. O teste de anotação seguiu 213/213 idêntico depois desta mudança.
+
+Limites: não cobre conector em pickup, ponto de controle de eixo/comparação nem item de proxy em feedback.
+
+## Venn: elementos desenhados por `RenderizadorElementosVenn` (2026-10-09)
+
+`gerard.ui.venn.RenderizadorElementosVenn` (estático, só pinta): coleção da composição, barra da comparação (recebe o
+valor já formatado), contagens + equação da composição (recebe as quantidades e o total já calculados) e seta. Na `Main`
+ficam a escolha da representação (`desenharCirculoVenn`), o cálculo do valor/quantidades e delegadores.
+
+Prova (mouse real, antigo = HEAD 1d88600 compilado à parte):
+- comparação de medidas + composição de transformações: anotação 149/149 idênticas (faixa y 205–245 mascarada) e
+  pickup segurando 72/72 idênticas (imagem inteira, `-Despera=1500`);
+- composição de medidas (`PO_COMPOSICAO_MEDIDAS_bolas_1098018440`): pickup segurando 36/36; anotação 79/79 depois de
+  descontar o fenômeno abaixo.
+Fenômeno de teste, não de código: nas 16 primeiras capturas (cenário de composição) os ícones da barra superior
+(globo, inseto, avatar, entrar) às vezes ainda não estão desenhados; isso ocorre em ordem aleatória, inclusive
+antigo x antigo (c_a_antes x c_a_antes2: 16 diferentes). Pares com o mesmo estado da barra são idênticos.
+Limite: seta e transformação de medidas não foram exercitadas (ids PO_TRANSFORMACAO_MEDIDAS_* não validados por
+`listarValidadas`; ver `Ids.java`: `PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160` é o id válido, ainda não rodado).
+
+## Ícones: `gerard.ui.icones.IconesInterface` (2026-10-09)
+
+Os 11 `criarIcone*` da `Main` (restaurar, editar, idioma da situação, chat, interrogação contextual, comunidade, site,
+entrar, reportar bug, comparar categorias, ferramenta sortear), a silhueta de pessoa sem foto e o recorte circular saíram
+para a classe estática; na `Main` ficaram delegadores de 3 linhas (mesmos nomes, chamadores intactos). Leitura de foto
+do disco e do recurso do Gérard continuam na `Main` (não são desenho). Main: -547 linhas líquidas neste passo.
+
+Prova: `TesteMacacoAnotacaoMouseOver`, composição e comparação de medidas, 155 capturas por versão. Com a barra superior
+no mesmo estado nos dois lados, 79/79 (composição) e todas as da comparação idênticas pixel a pixel, ícones da barra
+(comunidade, site, bug, avatar, entrar), "comparar categorias", sortear, restaurar, editar, chat e info incluídos.
+Limite: a silhueta sem foto (usuário logado sem foto) e o ícone de erro de foto não aparecem nessas capturas.
+
+## Fechamento: transformação de medidas (seta) (2026-10-09)
+
+`PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160`, versão cumulativa (balão + pickup + Venn + ícones) contra HEAD:
+anotação 99/100 idênticas (a diferente é a 1ª captura da execução, tela inicial, com a janela ainda ajustando o
+tamanho: a imagem inteira desloca; não é desenho) e pickup segurando 36/36 idênticas. Fecha o limite da seta/transformação
+de medidas anotado acima.
