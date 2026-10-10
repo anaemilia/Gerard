@@ -100,3 +100,20 @@ nova, comparação pixel a pixel:
 
 Limites: só essas duas categorias; relações, composição de transformações e Venn não foram capturadas; a base de
 comparação é a versão anterior ao fluxo da conclusão (já verificado separadamente).
+
+### Complemento: outras categorias, encaixe e redimensionamento (MontadorElementosVergnaud)
+
+Mesma comparação (versão anterior x nova, pixel a pixel, faixa y 205–245 mascarada), hover da anotação e arrastar segurando:
+- `PO_TRANSFORMACAO_RELACAO_bonecas_620955739`: 65/65 e 24/24; `PO_COMPOSICAO_RELACOES_dinheiro_161113042`: 65/65 e 24/24;
+- `PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114`: 73/73 e 36/36; `PO_COMPARACAO_MEDIDAS_bolas_487868670`: 77/77 e 36/36.
+
+Encaixe e redimensionamento: `tests/graphical/TesteMacacoEncaixeRedimensiona` (mouse real). Arrasta cada palavra até a figura
+correspondente (captura a cada soltura), solta uma palavra fora de qualquer figura, tira a janela do estado maximizado
+(preparo programático) e arrasta o canto inferior direito: 1484x732 -> 1264x572 -> 1484x732 -> 1644x832. 9 capturas por cenário:
+- composição de medidas: 9/9 idênticas;
+- transformação de relação e composição de transformações: 8/9 cada; a diferença é só em `e3_janela_menor`, 12x16 px no
+  quadradinho do "?" do enunciado (segunda linha), e a versão anterior contra ela mesma deu a mesma diferença no mesmo lugar
+  (97 e 100 px): ruído conhecido do texto, fora da faixa mascarada por causa da quebra de linha com a janela menor.
+
+Limites: o Venn (outro gerador de cena) não foi capturado; a saída do estado maximizado é preparo programático, o
+redimensionamento em si é por arrasto real do canto.
