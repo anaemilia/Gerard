@@ -117,3 +117,22 @@ correspondente (captura a cada soltura), solta uma palavra fora de qualquer figu
 
 Limites: o Venn (outro gerador de cena) não foi capturado; a saída do estado maximizado é preparo programático, o
 redimensionamento em si é por arrasto real do canto.
+
+### Cobertura do Venn (correção e prova com o Venn visível)
+
+Correção do que foi afirmado antes: o painel do Venn NÃO aparece por padrão. `SeletorRepresentacaoComplementar.deveExibir`
+só o mostra quando a escalada de ajuda chega ao limite (3 valores errados consecutivos na incógnita). Nas capturas
+anteriores (anotação, pickup, encaixe) o painel direito estava vazio; a prova dos renderizadores do Venn (`9398092`) e do
+`MontadorElementosVergnaud` não cobria o Venn desenhado. Além disso, em comparação/transformação o painel direito mostra a
+historinha (figura animada), e não o Venn.
+
+Prova com o Venn visível: `tests/graphical/TesteMacacoVennEncaixe` (mouse real): modela a situação, digita 3 valores errados
+na incógnita (o Venn aparece: "Diagrama de composição de coleções"), arrasta 4 quadradinhos até círculos, solta um fora e
+redimensiona a janela pelo canto (14 capturas). `PO_COMPOSICAO_MEDIDAS_bolas_1098018440` (única categoria com Venn):
+- versão anterior ao passo 2 (HEAD 1d88600) x atual: identicas nos 8 passos do Venn (3 valores errados 1 e 2, 4 encaixes, solto fora);
+  diferenças só em `e0_inicio` (ícones da barra superior, corrida de inicialização), `e0_errado_0` (746–793 x 630–677,
+  marca de erro; também difere de si mesma entre duas execuções da versão anterior: 904 px) e nos cantos da janela
+  (colunas x=0 e x=largura-1, últimas linhas: pixels do fundo atrás do canto arredondado, não do aplicativo);
+- ícones/renderizadores x atual: 14/14 idênticas.
+Comparação e transformação de medidas: o teste não é determinístico (versão anterior x ela mesma: 11/14 diferentes) porque
+o painel direito mostra a historinha animada; não servem para provar o Venn.
