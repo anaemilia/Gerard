@@ -198,6 +198,7 @@ import gerard.ui.janela.DimensionadorJanelaComparacaoCategorias;
 import gerard.campoaditivo.diagrama.elementos.CirculoVenn;
 import gerard.campoaditivo.diagrama.elementos.QuadradinhoVenn;
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
+import gerard.campoaditivo.diagrama.apresentacao.MontadorElementosVergnaud;
 import gerard.campoaditivo.diagrama.apresentacao.RenderizadorBalaoAnotacao;
 import gerard.ui.icones.IconesInterface;
 import gerard.ui.venn.RenderizadorElementosVenn;
@@ -7552,37 +7553,6 @@ public class Main extends JFrame {
             return areaVergnaud.x + areaVergnaud.width + (ESPACO_BASE_ENTRE_DIAGRAMAS / 2);
         }
 
-        private Rectangle criarZonaSemanticaElemento(Rectangle limite,
-                int indiceElemento, int largura, int altura) {
-            AreaDiagrama projetada = geradorCenaDiagrama
-                    .projetarZonaFigura(cenaDiagramaAtual,
-                            new AreaDiagrama(limite.x, limite.y,
-                                    limite.width, limite.height),
-                            indiceElemento);
-            Rectangle zonaBase = new Rectangle(projetada.x, projetada.y,
-                    projetada.largura, projetada.altura);
-            int margemX = 12;
-            int margemY = 12;
-            int x = zonaBase.x + margemX;
-            int y = zonaBase.y + margemY;
-            int w = Math.max(largura + 18, zonaBase.width - (margemX * 2));
-            int h = Math.max(altura + 18, zonaBase.height - (margemY * 2));
-            int maxW = limite.x + limite.width - x;
-            int maxH = limite.y + limite.height - y;
-            return new Rectangle(x, y, Math.max(largura, Math.min(w, maxW)), Math.max(altura, Math.min(h, maxH)));
-        }
-
-        private Rectangle criarZonaSemanticaConector(Rectangle limite,
-                int indiceConector) {
-            AreaDiagrama projetada = geradorCenaDiagrama
-                    .projetarZonaConector(cenaDiagramaAtual,
-                            new AreaDiagrama(limite.x, limite.y,
-                                    limite.width, limite.height),
-                            indiceConector);
-            return new Rectangle(projetada.x, projetada.y,
-                    projetada.largura, projetada.altura);
-        }
-
         /**
          * Deslocamento horizontal para centralizar o conteúdo do diagrama
          * dentro da área já reservada por obterAreasDiagramasProporcionais —
@@ -7644,57 +7614,9 @@ public class Main extends JFrame {
             deslocamentoCentroXAplicadoDiagramaVergnaud = deslocamentoCentroX;
             deslocamentoCentroYAplicadoDiagramaVergnaud = deslocamentoCentroY;
 
-            for (int i = 0; i < cenaDiagramaAtual.getConectores().size(); i++) {
-                ConectorDiagrama conector = cenaDiagramaAtual.getConectores().get(i);
-                Rectangle zona = criarZonaSemanticaConector(area, i);
-                zona = deslocarZonaSemantica(
-                        zona, deslocamentoCentroX, deslocamentoCentroY, area);
-                if (conector.temAlvo()) {
-                    conectoresVergnaud.add(new ConectorVergnaud(
-                            conector.getTipo(),
-                            conector.getX1() + deslocamentoCentroX,
-                            conector.getY1() + deslocamentoCentroY,
-                            conector.getX2() + deslocamentoCentroX,
-                            conector.getY2() + deslocamentoCentroY,
-                            conector.getLegenda(),
-                            zona,
-                            conector.getXAlvo() + deslocamentoCentroX,
-                            conector.getYAlvo() + deslocamentoCentroY
-                    ));
-                } else {
-                    conectoresVergnaud.add(new ConectorVergnaud(
-                            conector.getTipo(),
-                            conector.getX1() + deslocamentoCentroX,
-                            conector.getY1() + deslocamentoCentroY,
-                            conector.getX2() + deslocamentoCentroX,
-                            conector.getY2() + deslocamentoCentroY,
-                            conector.getLegenda(),
-                            zona
-                    ));
-                }
-            }
-
-            int indiceIncognita = obterIndiceFiguraIncognitaAtual();
-            for (int i = 0; i < cenaDiagramaAtual.getFiguras().size(); i++) {
-                FiguraDiagrama figura = cenaDiagramaAtual.getFiguras().get(i);
-                Rectangle zona = criarZonaSemanticaElemento(
-                        area, i,
-                        figura.getLargura(), figura.getAltura());
-                zona = deslocarZonaSemantica(
-                        zona, deslocamentoCentroX, deslocamentoCentroY, area);
-                elementosVergnaud.add(new ElementoVergnaud(
-                        figura.getX() + deslocamentoCentroX,
-                        figura.getY() + deslocamentoCentroY,
-                        figura.getLargura(),
-                        figura.getAltura(),
-                        figura.getTipo(),
-                        figura.getRotulo(),
-                        zona,
-                        i == indiceIncognita,
-                        figura.isExibirLupa(),
-                        figura.getChavePapelSemantico()
-                ));
-            }
+            new MontadorElementosVergnaud(geradorCenaDiagrama).montar(
+                    cenaDiagramaAtual, area, deslocamentoCentroX, deslocamentoCentroY,
+                    obterIndiceFiguraIncognitaAtual(), conectoresVergnaud, elementosVergnaud);
 
             // O diagrama deve iniciar vazio. A interrogação pertence ao enunciado
             // e só pode aparecer dentro de uma figura após o arraste do usuário.
@@ -7930,32 +7852,6 @@ public class Main extends JFrame {
             Rectangle unido = new Rectangle(atual);
             unido.add(novo);
             return unido;
-        }
-
-        private Rectangle deslocarZonaSemantica(Rectangle zona, int dx, int dy, Rectangle limite) {
-            Rectangle deslocada = new Rectangle(zona.x + dx, zona.y + dy, zona.width, zona.height);
-
-            if (deslocada.width > limite.width) {
-                deslocada.width = limite.width;
-            }
-            if (deslocada.height > limite.height) {
-                deslocada.height = limite.height;
-            }
-
-            if (deslocada.x < limite.x) {
-                deslocada.x = limite.x;
-            }
-            if (deslocada.y < limite.y) {
-                deslocada.y = limite.y;
-            }
-            if (deslocada.x + deslocada.width > limite.x + limite.width) {
-                deslocada.x = limite.x + limite.width - deslocada.width;
-            }
-            if (deslocada.y + deslocada.height > limite.y + limite.height) {
-                deslocada.y = limite.y + limite.height - deslocada.height;
-            }
-
-            return deslocada;
         }
 
         private ElementoVergnaud encontrarElementoVergnaud(int x, int y) {

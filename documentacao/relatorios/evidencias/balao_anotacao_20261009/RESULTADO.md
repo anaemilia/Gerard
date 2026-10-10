@@ -85,3 +85,18 @@ Limites:
 - `concluida=true` depois de "Sim"/clique é igual nas três execuções (leitura do campo `tentativaModelagemAtual`); não
   interpretado aqui;
 - só composição de medidas.
+
+## Montagem dos elementos do diagrama de Vergnaud
+
+`inicializarDiagramaVergnaud` passou a delegar a realização da cena (deslocamento de centralização, zona permitida de
+cada figura e conector, marca da incógnita) para `gerard.campoaditivo.diagrama.apresentacao.MontadorElementosVergnaud`.
+`criarZonaSemanticaElemento`, `criarZonaSemanticaConector` e `deslocarZonaSemantica` saíram da `Main` (só eram usados
+ali). A `Main` mantém os efeitos de tela e a ativação dos seletores.
+
+Prova: `TesteMacacoAnotacaoMouseOver` e `TesteMacacoPickupSegurando` (mouse real, `-Despera=1500`), versão anterior x
+nova, comparação pixel a pixel:
+- `PO_TRANSFORMACAO_MEDIDAS_figurinhas_1595370160`: 100/100 e 36/36 idênticas;
+- `PO_COMPOSICAO_MEDIDAS_bolas_1098018440`: 79/79 e 36/36 idênticas.
+
+Limites: só essas duas categorias; relações, composição de transformações e Venn não foram capturadas; a base de
+comparação é a versão anterior ao fluxo da conclusão (já verificado separadamente).
