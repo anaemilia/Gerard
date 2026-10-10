@@ -61,3 +61,27 @@ Limite: a silhueta sem foto (usuário logado sem foto) e o ícone de erro de fot
 anotação 99/100 idênticas (a diferente é a 1ª captura da execução, tela inicial, com a janela ainda ajustando o
 tamanho: a imagem inteira desloca; não é desenho) e pickup segurando 36/36 idênticas. Fecha o limite da seta/transformação
 de medidas anotado acima.
+
+## Fluxo da conclusão da modelagem: `FluxoFeedbackConclusaoModelagem` (2026-10-10)
+
+`configurarFeedbackConclusaoModelagem` perdeu os ouvintes do tip (Sim/Não), do selo (clique, hover) e do sequenciador
+(decidir/cancelar) e os textos do log `CONCLUSAO_MODELAGEM`: foram para `gerard.ui.conclusao.FluxoFeedbackConclusaoModelagem`.
+A `Main` só realiza as ações pela `Porta` (destaque, selo, tip, repintura, nova situação, log) e mantém a ordem original
+das operações. `inicializarDiagramaVergnaud` não foi tocado.
+
+Prova: `tests/graphical/TesteMacacoConclusaoFluxo` (mouse real, `-Dpausa=1200`), composição de medidas
+`PO_COMPOSICAO_MEDIDAS_bolas_1098018440`, três rodadas: (0) conclui, passa o mouse no círculo do selo (tip), tira, volta,
+escolhe "Não"; (1) conclui, passa o mouse e escolhe "Sim" (nova situação); (2) conclui e clica no selo (próxima tarefa).
+Três execuções (antigo = HEAD 1d88600, novo = 4b41bb6, antigo de novo): as 8 capturas (selo, tip sobre o selo, tip some
+com o mouse fora, tip de novo, escolheu Não, Não com mouse fora, selo das rodadas 1 e 2) são idênticas pixel a pixel
+nos três pares (faixa y 205–245 mascarada). Linhas de resultado idênticas entre as três: após "Não" permanece
+(`tipo=COMPOSICAO_MEDIDAS`), após "Sim" e após o clique a situação muda (id diferente da fixa).
+
+Limites:
+- as escolhas Sim/Não/Próxima tarefa NÃO geraram linha `CONCLUSAO_MODELAGEM; escolha=...` no log nem na versão antiga
+  (3 linhas "Sinalizar conclusão", 0 de escolha, nos três arquivos de sessão): a igualdade vale, mas o teste não prova o
+  conteúdo dessas linhas; falta saber por que o log não as grava nesse caminho (possível filtro do modo exploratório
+  depois da conclusão; não investigado);
+- `concluida=true` depois de "Sim"/clique é igual nas três execuções (leitura do campo `tentativaModelagemAtual`); não
+  interpretado aqui;
+- só composição de medidas.

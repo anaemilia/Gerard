@@ -58,11 +58,13 @@ public class TesteMacacoConclusaoFluxo {
         saida = new PrintWriter(tsv, "UTF-8");
         saida.println("fase\tpasso\thash");
 
-        for (int rodada = 0; rodada < 2; rodada++) {
-            for (int i = 0; i < 200 && !ID.equals(TesteMacacoHistorinhaNumeroRelativo.idAtual()); i++) {
+        for (int rodada = 0; rodada < 3; rodada++) {
+            // sorteia sempre ao menos uma vez (reinicia a modelagem), até cair na situação fixa
+            int i = 0;
+            do {
                 TesteRobotExploracaoAposConclusao.selecionar(t, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS);
                 Thread.sleep(300);
-            }
+            } while (++i < 200 && !ID.equals(TesteMacacoHistorinhaNumeroRelativo.idAtual()));
             Thread.sleep(800);
             TesteRobotExploracaoAposConclusao.fechar(r);
             final Point o = new Point();
@@ -71,30 +73,31 @@ public class TesteMacacoConclusaoFluxo {
             concluir(o);
             String f = "r" + rodada;
             registrar(f, "selo_apos_conclusao");
-            passar(selo());
-            registrar(f, "tip_sobre_selo");
-            passar(new Point(40, 400));
-            Thread.sleep(espera);
-            registrar(f, "mouse_fora_tip_some");
-            passar(selo());
-            registrar(f, "tip_de_novo");
             if (rodada == 0) {
+                // passa o mouse, tira, volta; escolhe "Não": permanece, sem selo nem destaque
+                passar(selo());
+                registrar(f, "tip_sobre_selo");
+                passar(new Point(40, 400));
+                Thread.sleep(espera);
+                registrar(f, "mouse_fora_tip_some");
+                passar(selo());
+                registrar(f, "tip_de_novo");
                 clicar(opcao(false));
                 registrar(f, "escolheu_nao");
                 passar(new Point(40, 400));
                 registrar(f, "nao_mouse_fora");
+                saida.println(f + "	nao_permanece	tipo=" + tipoAtual() + ";concluida=" + concluida());
+            } else if (rodada == 1) {
                 passar(selo());
                 clicar(opcao(true));
                 Thread.sleep(espera);
                 TesteRobotExploracaoAposConclusao.fechar(r);
-                saida.println(f + "\tsim_nova_situacao\ttipo=" + tipoAtual() + ";concluida=" + concluida());
+                saida.println(f + "	sim_nova_situacao	id=" + TesteMacacoHistorinhaNumeroRelativo.idAtual() + ";concluida=" + concluida());
             } else {
-                passar(new Point(40, 400));
-                Thread.sleep(espera);
                 clicar(selo());
                 Thread.sleep(espera);
                 TesteRobotExploracaoAposConclusao.fechar(r);
-                saida.println(f + "\tclique_proxima_tarefa\ttipo=" + tipoAtual() + ";concluida=" + concluida());
+                saida.println(f + "	clique_proxima_tarefa	id=" + TesteMacacoHistorinhaNumeroRelativo.idAtual() + ";concluida=" + concluida());
             }
         }
         for (String linha : linhasLog()) saida.println("LOG\t-\t" + linha);
@@ -130,7 +133,7 @@ public class TesteMacacoConclusaoFluxo {
         final Point p = new Point();
         SwingUtilities.invokeAndWait(new Runnable() { public void run() {
             Rectangle b = t.seloConclusaoModelagem.getBounds();
-            p.setLocation(b.x + b.width / 2, b.y + b.height / 2); } });
+            p.setLocation(b.x + 14, b.y + b.height / 2); } });   // dentro do círculo; o centro dos limites cai no rótulo
         return p;
     }
 
