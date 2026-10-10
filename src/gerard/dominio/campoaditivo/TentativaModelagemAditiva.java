@@ -25,6 +25,12 @@ public final class TentativaModelagemAditiva {
      * agregado de escopo da tentativa.
      */
     private boolean encerradaPorConclusao;
+    /**
+     * Regra da usuária (2026-10-10): ao atingir o limite de rejeições consecutivas da incógnita, o registro
+     * factual para. A ação que atingiu o limite ainda é constituída (o terceiro erro é registrado); as
+     * seguintes não. Restaurar ou sortear (nova tentativa) reabre o registro.
+     */
+    private boolean registroEncerradoPorLimite;
     private final java.util.Map<String, Integer> rejeicoesOperacao =
             new java.util.LinkedHashMap<String, Integer>();
     private final Set<String> operacoesAcompanhadas = new LinkedHashSet<String>();
@@ -92,7 +98,7 @@ public final class TentativaModelagemAditiva {
      * publicador de gestos, porta web) apenas consulta este fato.
      */
     public boolean admiteRegistroFactual() {
-        return getFase() == FaseDaTentativa.MODELAGEM;
+        return getFase() == FaseDaTentativa.MODELAGEM && !registroEncerradoPorLimite;
     }
 
     /** Fase em que a atividade está: modelagem até o azul, exploratória depois dele. */
@@ -121,6 +127,13 @@ public final class TentativaModelagemAditiva {
         if (registro instanceof gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) {
             acompanharEscolhaOperacao(
                     (gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) registro);
+        }
+        if (registro instanceof gerard.dominio.atividade.RegistroAcaoInstrumental) {
+            java.util.Optional<ResultadoRegistroTentativaPapel> resultado =
+                    ((gerard.dominio.atividade.RegistroAcaoInstrumental) registro).getResultadoTentativa();
+            if (resultado.isPresent() && resultado.get().isLimiteAtingidoAgora()) {
+                registroEncerradoPorLimite = true;
+            }
         }
         return java.util.Optional.of(registro);
     }
@@ -165,6 +178,7 @@ public final class TentativaModelagemAditiva {
      */
     private void reabrirPrimeiraModelagem(PapelQuantitativo[] papeisParticipantes) {
         encerradaPorConclusao = false;
+        registroEncerradoPorLimite = false;
         if (papeisParticipantes != null) {
             for (PapelQuantitativo papel : papeisParticipantes) {
                 incorporar(papel);
