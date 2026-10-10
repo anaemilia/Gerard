@@ -242,6 +242,7 @@ import gerard.campoaditivo.diagrama.elementos.Seta;
 import gerard.suporte.RegistroRelatoBug;
 import gerard.suporte.PreparadorEmailRelatoBug;
 import gerard.ui.conclusao.CalculadorAreaVisualDiagramaVergnaud;
+import gerard.ui.conclusao.FluxoFeedbackConclusaoModelagem;
 import gerard.ui.conclusao.SeloConclusaoModelagem;
 import gerard.ui.conclusao.SequenciadorFeedbackConclusao;
 import gerard.ui.conclusao.TipConclusaoModelagem;
@@ -1309,96 +1310,60 @@ public class Main extends JFrame {
         }
 
         private void configurarFeedbackConclusaoModelagem() {
-            tipConclusaoModelagem.definirOuvinte(new TipConclusaoModelagem.OuvinteEscolha() {
-                public void aoEscolherSim() {
-                    sequenciadorFeedbackConclusao.encerrar();
-                    registrarLogUsuario(
-                            "Concluir modelagem e avançar", "C",
-                            "Diagrama de Vergnaud", "Tip de conclusão",
-                            "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
-                            "A modelagem concluída permite iniciar uma nova situação-problema.",
-                            "CONCLUSAO_MODELAGEM", "escolha=sim");
+            new FluxoFeedbackConclusaoModelagem(
+                    tipConclusaoModelagem, seloConclusaoModelagem, sequenciadorFeedbackConclusao,
+                    controladorConclusaoModelagem, new FluxoFeedbackConclusaoModelagem.Porta() {
+                public void registrarLogUsuario(String tarefa, String ce, String instrumentoOrganizacao,
+                        String instrumentoArtefato, String funcaoDoArtefato, String objeto, String regras,
+                        String origemEvento, String detalhes) {
+                    TelaGerard.this.registrarLogUsuario(tarefa, ce, instrumentoOrganizacao,
+                            instrumentoArtefato, funcaoDoArtefato, objeto, regras, origemEvento, detalhes);
+                }
+
+                public void iniciarNovaSituacao() {
                     if (itemNovaSituacao != null && itemNovaSituacao.isEnabled()) {
                         itemNovaSituacao.doClick();
                     }
                 }
 
-                public void aoEscolherNao() {
-                    sequenciadorFeedbackConclusao.encerrar();
-                    registrarLogUsuario(
-                            "Concluir modelagem e permanecer", "C",
-                            "Diagrama de Vergnaud", "Tip de conclusão",
-                            "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
-                            "A escolha Não mantém a situação atual e o destaque de conclusão.",
-                            "CONCLUSAO_MODELAGEM", "escolha=nao");
+                public void repintar() {
                     repaint();
                 }
-            });
-            sequenciadorFeedbackConclusao.definirOuvinte(
-                    new SequenciadorFeedbackConclusao.Ouvinte() {
-                public void aoMostrarConfirmacaoVisual() {
-                    // Aguarda a pausa (ver SequenciadorFeedbackConclusao) sem
-                    // alterar nada visualmente ainda — o diagrama só passa a
-                    // azul depois do atraso, em aoSolicitarDecisao().
+
+                public void limparFeedbackVisualErro() {
+                    limparFeedbackVisualErroDiagrama();
                 }
 
-                public void aoSolicitarDecisao() {
-                    if (!controladorConclusaoModelagem.isConcluida()) {
-                        sequenciadorFeedbackConclusao.cancelar();
-                        return;
-                    }
-                    controladorConclusaoModelagem.registrarTipApresentado();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            // Defesa da transição ERRO -> NEUTRO -> SUCESSO:
-                            // nenhum vermelho pode sobreviver sob o destaque azul.
-                            limparFeedbackVisualErroDiagrama();
-                            aplicadorDestaqueConclusaoDiagrama.aplicar(
-                                    true, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
-                                    quadradinhosVenn);
-                            atualizarTextosTipConclusaoModelagem();
-                            Rectangle areaPermitida = obterAreaVisivelDiagramasVergnaud();
-                            Rectangle areaDiagrama = obterAreaVisualDiagramaVergnaudAtual();
-                            tipConclusaoModelagem.ocultar();
-                            setComponentZOrder(seloConclusaoModelagem, 0);
-                            seloConclusaoModelagem.mostrarAoLadoDireitoDoDiagrama(
-                                    areaDiagrama, areaPermitida, getWidth(), getHeight());
-                            registrarFeedbackExibido("AG_EMS",
-                                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                                    "selo de conclusão da modelagem, após o atraso padrão");
-                            repaint();
-                        }
-                    });
-                }
-
-                public void aoCancelar() {
+                public void aplicarDestaqueConclusao(boolean ativo) {
                     aplicadorDestaqueConclusaoDiagrama.aplicar(
-                            false, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
+                            ativo, elementosVergnaud, conectoresVergnaud, itensArrastaveis,
                             quadradinhosVenn);
+                }
+
+                public void mostrarSeloConclusao() {
+                    atualizarTextosTipConclusaoModelagem();
+                    Rectangle areaPermitida = obterAreaVisivelDiagramasVergnaud();
+                    Rectangle areaDiagrama = obterAreaVisualDiagramaVergnaudAtual();
+                    tipConclusaoModelagem.ocultar();
+                    setComponentZOrder(seloConclusaoModelagem, 0);
+                    seloConclusaoModelagem.mostrarAoLadoDireitoDoDiagrama(
+                            areaDiagrama, areaPermitida, getWidth(), getHeight());
+                    registrarFeedbackExibido("AG_EMS",
+                            gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
+                            "selo de conclusão da modelagem, após o atraso padrão");
+                    repaint();
+                }
+
+                public void ocultarSeloETip() {
                     seloConclusaoModelagem.ocultar();
                     tipConclusaoModelagem.ocultar();
                     repaint();
                 }
-            });
-            seloConclusaoModelagem.definirAcaoClique(new Runnable() {
-                public void run() {
-                    sequenciadorFeedbackConclusao.encerrar();
-                    registrarLogUsuario(
-                            "Concluir modelagem e avançar", "C",
-                            "Diagrama de Vergnaud", "Próxima tarefa",
-                            "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
-                            "A modelagem concluída permite iniciar uma nova situação-problema.",
-                            "CONCLUSAO_MODELAGEM", "escolha=proxima_tarefa");
-                    if (itemNovaSituacao != null && itemNovaSituacao.isEnabled()) {
-                        itemNovaSituacao.doClick();
-                    }
-                }
-            });
-            seloConclusaoModelagem.definirAcaoHover(new Runnable() {
-                public void run() {
+
+                public void mostrarTipConclusao() {
                     mostrarTipConclusaoModelagem();
                 }
-            });
+            }).ligar();
             // Ao retirar o mouse do tip (sem escolher Sim/Não), ele some e
             // volta a mostrar só o link "Próxima tarefa" (seloConclusaoModelagem
             // nunca é ocultado, então reaparece sozinho ao ocultar o tip por
