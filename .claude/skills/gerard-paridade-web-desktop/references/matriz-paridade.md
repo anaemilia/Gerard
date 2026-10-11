@@ -1,0 +1,23 @@
+# Matriz de paridade web ↔ desktop (modelagem)
+
+Estado em 2026-10-10. "Verificado" = exercitado por interação real ou log real nos dois lados.
+Atualize a cada questão resolvida; não marque "verificado" por inferência do código.
+
+| Funcionalidade | Desktop | Web | Camada comum | Situação |
+|---|---|---|---|---|
+| Arrastar palavra do enunciado ao diagrama | Handler ElementoTextoMovel | EnunciadoInterativo / EditorNarrativa | domínio + cena | existe nos dois; paridade não reverificada nesta sessão |
+| Valor da incógnita + confirmação Sim/Não | Main / FluxoConfirmacao | api.posicionar / responderConfirmacaoValor | PapelQuantitativo | existe nos dois |
+| Sinal do número relativo | handlers de sinal | EscolhaSinalFigura | domínio | existe nos dois |
+| Eixo de inteiros / lupa | PaineisEixosRelacoes | EixoNumericoFigura + rotas de eixo | domínio | existe nos dois |
+| Seletores de operação | SeletorOperacaoRelacaoAluno | SeletorOperacaoDiagramaGerard | AvaliacaoEscolhaOperacaoRelacao | existe nos dois |
+| Quadradinhos do Venn (+/−) | HandlerQuadradinhoVenn | api.ajustarQuadradinho | domínio + cena | existe nos dois |
+| Historinhas (ajuda visual) | Main | HistorinhaPassiva | DecisorAjudaVisual | existe nos dois; excludente com o Venn |
+| Restaurar | Main.registrarAcaoRestauracao | api.reiniciar | TentativaModelagemAditiva.restaurar | existe nos dois |
+| Registro para no limite de 3 rejeições (incógnita e operação) | **verificado**: mouse real, log real | **verificado só por serviço** (`TesteWebRegistroParaNoLimite`); falta HTTP/navegador | TentativaModelagemAditiva | lacuna de evidência na web |
+| Fluxo de conclusão (selo, tip Sim/Não, nova situação) | **verificado** (mouse real, 8 capturas idênticas depois de passar a usar `EscolhaConclusaoModelagem`) | **verificado** (2026-10-10): `SeloConclusao.tsx` + `ProjetorConclusaoWeb` + rota `/api/acoes/conclusao`; navegador com mouse real, 20 verificações, 2 execuções (`tests/web/e2e_conclusao_fluxo_web.mjs`); `TesteWebConclusaoFluxo` | EscolhaConclusaoModelagem (decisão e pausa de 1150 ms); textos de `ui.completion.*` | paridade fechada; o selo do desktop fica fixo e o da web segue o texto "Modelagem concluída" que some após 4 s (diferença de realização herdada) |
+| Rótulo com valor na caixa (ex.: "Todo" com `14`) | bloco de rótulo sempre fora da caixa (abaixo, salvo ACIMA) | **verificado** (2026-10-11): `coordenadaYDoRotulo(f, comValorNaCaixa)` põe o rótulo abaixo; viewport reserva o espaço; captura em `web_conclusao_20261010/conclusao_apos_nao.png`, e2e 20/20 | cena (`FiguraDiagrama.getLinhasRotulo`) | paridade fechada; o rótulo no centro só ocorre com a caixa vazia e sem subtítulo (diferença anterior do desktop, que desenha abaixo também vazio: a verificar)
+| Anotação com balão ao passar o mouse | RenderizadorBalaoAnotacao | **sem equivalente encontrado** | a definir | lacuna: levantar a fonte real do texto antes de propor |
+| Selo de erro (marca vermelha ao lado do diagrama) | SeloErroModelagem | a verificar (feedback pela cena) | cena/feedback | a verificar |
+| Seleção de marcador do texto | HandlerSelecaoMarcadorTexto | a verificar | a verificar | a verificar |
+| Pickup (item em primeiro plano ao segurar) | desenhado em Main | arraste HTML5 do navegador | — | diferença de realização; decidir se é paridade exigida |
+| Barras da comparação | existe (sem situação que as acione) | — | — | uso futuro, não remover |

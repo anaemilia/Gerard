@@ -49,6 +49,17 @@ export type HistorinhaAjudaVisualWeb = Readonly<{
   /** Cronograma das legendas DENTRO da animação, calculado pelo backend (um laço = duracao_s). */
   duracao_s?: number; legendas?: readonly Readonly<{ texto: string; inicio_s: number; fim_s: number }>[];
 }>;
+// Fluxo de decisão depois do azul, publicado pela API (ProjetorConclusaoWeb); o cliente só o realiza.
+export type AcaoConclusao = Readonly<{
+  tipo: "CONCLUSAO_SIM" | "CONCLUSAO_NAO" | "CONCLUSAO_PROXIMA_TAREFA";
+  metodo: "POST"; href: string; corpo?: Readonly<Record<string, unknown>>; inicia_nova_situacao: boolean;
+}>;
+export type ConclusaoWeb = Readonly<{
+  atraso_decisao_ms: number;
+  textos: Readonly<{ selo: string; pergunta: string; sim: string; nao: string; proxima_tarefa: string }>;
+  acoes: readonly AcaoConclusao[];
+}>;
+
 export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |
     "AGUARDANDO_CONFIRMACAO_CATEGORIA" | "CATEGORIA_CLASSIFICADA" | "REEXPLICACAO_CATEGORIA";
@@ -62,6 +73,7 @@ export type EstadoClassificacao = Readonly<{
   explicacao_categoria_rotulo?: string; explicacao_categoria_definicao?: string;
   explicacao_categoria_fechar?: string;
   dica_proximo_passo?: string | null;
+  conclusao?: ConclusaoWeb;
   ajuda_contextual?: readonly ItemAjudaContextual[];
   // Historinhas passivas do repertório da PRÓPRIA categoria (TipoSituacaoAditiva), só na
   // escalada no limite; vazio quando a categoria não tem repertório (ex.: Transformação

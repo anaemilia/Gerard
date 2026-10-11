@@ -1,6 +1,7 @@
 package gerard.ui.conclusao;
 
 import gerard.campoaditivo.conclusao.ControladorConclusaoModelagem;
+import gerard.campoaditivo.conclusao.EscolhaConclusaoModelagem;
 
 /**
  * Fluxo do feedback de conclusão da modelagem: o que acontece quando o usuário escolhe Sim/Não no tip, clica em
@@ -63,7 +64,9 @@ public final class FluxoFeedbackConclusaoModelagem {
                         "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
                         "A modelagem concluída permite iniciar uma nova situação-problema.",
                         "CONCLUSAO_MODELAGEM", "escolha=sim");
-                porta.iniciarNovaSituacao();
+                if (EscolhaConclusaoModelagem.SIM.iniciaNovaSituacao()) {
+                    porta.iniciarNovaSituacao();
+                }
             }
 
             public void aoEscolherNao() {
@@ -115,7 +118,9 @@ public final class FluxoFeedbackConclusaoModelagem {
                         "Escolher a continuidade da atividade", "OBJ_CONCLUSAO",
                         "A modelagem concluída permite iniciar uma nova situação-problema.",
                         "CONCLUSAO_MODELAGEM", "escolha=proxima_tarefa");
-                porta.iniciarNovaSituacao();
+                if (EscolhaConclusaoModelagem.PROXIMA_TAREFA.iniciaNovaSituacao()) {
+                    porta.iniciarNovaSituacao();
+                }
             }
         });
         selo.definirAcaoHover(new Runnable() {

@@ -74,3 +74,13 @@ siga esta ordem — sem pular etapa:
    caso com os dados hoje disponíveis — é válido dizer "falta curadoria".
    Nesse caso, aponte exatamente qual dado curado está faltando e para qual
    situação.
+
+
+## Regra 4 — paridade web ↔ desktop
+
+Desktop (Swing) e web (API + React) são dois clientes do mesmo domínio, e a web deve ter toda a
+parte de modelagem que existe no desktop. Sempre que resolver, corrigir ou implementar algo em um
+dos lados, verifique no outro antes de declarar resolvido, com evidência por ação real nos dois
+(Regra 2). Procedimento, matriz de paridade e o bloco "Paridade:" que fecha cada resposta estão na
+skill `gerard-paridade-web-desktop` (`.agents/skills/` e espelho em `.claude/skills/`). Lacuna
+encontrada vai para a matriz; nunca se inventa conteúdo de interface para fechá-la (Regra 1).

@@ -24,7 +24,7 @@ export const api = {
   }),
   consultarSessaoUsuario: () => requisitar<SessaoAtualUsuarioWeb>("/api/sessao/usuario"),
   carregar: () => requisitar<EstadoWeb>("/api/situacao"),
-  executar: (acao: AcaoDisponivel) => requisitar<EstadoWeb>(acao.href, {
+  executar: (acao: Pick<AcaoDisponivel, "metodo" | "href" | "corpo">) => requisitar<EstadoWeb>(acao.href, {
     method: acao.metodo,
     headers: acao.corpo ? { "Content-Type": "application/json" } : undefined,
     body: acao.corpo ? JSON.stringify(acao.corpo) : undefined

@@ -131,7 +131,7 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
       {conhecida ? figura.valor : engatada ? "?" : figura.rotulo}
     </text>
     {(conhecida || engatada) && <text className="scene-figure-role"
-      x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>}
+      x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura, true)}>{figura.rotulo}</text>}
     <LupaCenaGerard figura={figura} aoAlternarEixo={aoAlternarEixo} />
   </g>{deveMostrarSeletorSinal && seletorSinal && <EscolhaSinalFigura
       figuraId={figura.id} papelNome={figura.rotulo} ocupado={Boolean(ocupado)}

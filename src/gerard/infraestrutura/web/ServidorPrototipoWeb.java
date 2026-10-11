@@ -111,6 +111,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/acoes/posicionar", aplicacao::posicionar);
         servidor.createContext("/api/acoes/responder-confirmacao-valor", aplicacao::responderConfirmacaoValor);
         servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
+        servidor.createContext("/api/acoes/conclusao", aplicacao::escolherConclusao);
         servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
         servidor.createContext("/api/acoes/posicionar-conhecido", aplicacao::posicionarConhecido);
         servidor.createContext("/api/acoes/engatar-incognita", aplicacao::engatarIncognita);
@@ -520,6 +521,21 @@ public final class ServidorPrototipoWeb {
                 return;
             }
             responder(troca, 200, sorteios.escolherOperacao(seletor, operacao));
+        } catch (RuntimeException erro) {
+            responder(troca, 400, erro(erro.getMessage()));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void escolherConclusao(HttpExchange troca) throws IOException {
+        if (!"POST".equals(troca.getRequestMethod())) {
+            responder(troca, 405, erro("Método não permitido"));
+            return;
+        }
+        try {
+            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
+            responder(troca, 200, sorteios.escolherConclusao(String.valueOf(analisado.get("escolha"))));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

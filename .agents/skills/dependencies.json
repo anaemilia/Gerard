@@ -145,6 +145,12 @@
       "kind": "skill",
       "path": ".agents/skills/gerard-tela-via-gerador-de-cena/SKILL.md",
       "knowledge_owner": "projecao_da_tela_pela_cena"
+    },
+    {
+      "id": "gerard-paridade-web-desktop",
+      "kind": "skill",
+      "path": ".agents/skills/gerard-paridade-web-desktop/SKILL.md",
+      "knowledge_owner": "paridade_web_desktop"
     }
   ],
   "edges": [
@@ -735,6 +741,36 @@
       "relation": "constrains",
       "to": "gerard-tela-via-gerador-de-cena",
       "reason": "Handlers nao atribuem conteudo a elementos fora da cena."
+    },
+    {
+      "from": "gerard-paridade-web-desktop",
+      "relation": "requires",
+      "to": "gerard-tela-via-gerador-de-cena",
+      "reason": "Decisao no objeto rico, projecao pela cena, realizacao nos clientes: base para decidir em que camada verificar."
+    },
+    {
+      "from": "gerard-paridade-web-desktop",
+      "relation": "requires",
+      "to": "gerard-api-semantica",
+      "reason": "A web consome a API; paridade exige conferir o contrato publicado."
+    },
+    {
+      "from": "gerard-paridade-web-desktop",
+      "relation": "constrains",
+      "to": "gerard-domain-model-first",
+      "reason": "Corrigir uma vez no dominio evita divergencia entre clientes."
+    },
+    {
+      "from": "gerard-paridade-web-desktop",
+      "relation": "related",
+      "to": "gerard-log-acao-instrumental",
+      "reason": "Verificar o log real dos dois lados quando a questao envolve registro."
+    },
+    {
+      "from": "gerard-paridade-web-desktop",
+      "relation": "related",
+      "to": "gerard-handlers-de-interacao",
+      "reason": "Equivalencia dos handlers desktop nos componentes web."
     }
   ]
 }

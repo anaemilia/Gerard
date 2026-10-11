@@ -16,7 +16,8 @@ public final class SequenciadorFeedbackConclusao {
         void aoCancelar();
     }
 
-    public static final int ATRASO_PADRAO_DECISAO_MS = 1150;
+    public static final int ATRASO_PADRAO_DECISAO_MS =
+            gerard.campoaditivo.conclusao.EscolhaConclusaoModelagem.ATRASO_DECISAO_MS;
 
     private final Timer timerDecisao;
     private EstadoFeedbackConclusao estado = EstadoFeedbackConclusao.INATIVO;

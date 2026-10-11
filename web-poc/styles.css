@@ -331,6 +331,14 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 /* Selo de conclusão: marca de visto SEMPRE visível + texto "Modelagem concluída"
    (ui.completion.completed) que some sozinho após 4s — o sucesso nunca depende só da cor. */
 .selo-conclusao { position:absolute; right:16px; bottom:16px; z-index:3; display:flex; align-items:center; gap:10px; pointer-events:none; }
+/* Decisão depois do azul (paridade com SeloConclusaoModelagem/TipConclusaoModelagem): link "Próxima tarefa" e tip Sim/Não. */
+.selo-conclusao-decisao { position:relative; pointer-events:auto; }
+.selo-conclusao-proxima { padding:4px 10px; border:1px solid var(--sucesso); border-radius:var(--raio-campo); background:var(--sucesso-fundo); color:var(--sucesso-texto); font-weight:600; font-size:.9rem; cursor:pointer; }
+.selo-conclusao-proxima:disabled { cursor:default; opacity:.6; }
+.tip-conclusao { position:absolute; right:0; bottom:calc(100% + 8px); width:min(260px,calc(100vw - 24px)); display:flex; flex-direction:column; gap:6px; padding:10px 12px; border:1px solid var(--borda-controle); border-radius:var(--raio-campo); background:var(--superficie); color:var(--texto); box-shadow:var(--sombra-suave); }
+.tip-conclusao-pergunta { margin:0 0 2px; font-size:.9rem; font-weight:600; }
+.tip-conclusao-opcao { display:flex; align-items:center; gap:8px; font-size:.9rem; cursor:pointer; }
+.tip-conclusao-opcao input[type="radio"] { width:15px; height:15px; margin:0; flex-shrink:0; accent-color:var(--sucesso); }
 .selo-conclusao svg { width:44px; height:44px; flex:none; fill:none; stroke:var(--sucesso); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
 .selo-conclusao-texto { color:var(--sucesso-texto); font-weight:600; font-size:.95rem; animation:selo-conclusao-some .4s ease 4s forwards; }
 @keyframes selo-conclusao-some { to { opacity:0; } }

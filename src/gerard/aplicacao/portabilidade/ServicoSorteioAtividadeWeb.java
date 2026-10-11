@@ -578,6 +578,24 @@ public final class ServicoSorteioAtividadeWeb {
         return resultado;
     }
 
+    /**
+     * Escolha do participante depois do azul (Sim, Não ou Próxima tarefa). A decisão é do domínio
+     * ({@link gerard.campoaditivo.conclusao.EscolhaConclusaoModelagem}): Sim e Próxima tarefa iniciam uma nova
+     * situação do mesmo grupo; Não permanece. Decisão de interface: não gera registro no log.
+     */
+    public synchronized Map<String, Object> escolherConclusao(String codigo) {
+        gerard.campoaditivo.conclusao.EscolhaConclusaoModelagem escolha =
+                gerard.campoaditivo.conclusao.EscolhaConclusaoModelagem.de(codigo);
+        Map<String, Object> atual = projetarEstado();
+        if (!Boolean.TRUE.equals(atual.get("concluida"))) {
+            throw new IllegalStateException("a modelagem atual ainda não foi concluída");
+        }
+        if (!escolha.iniciaNovaSituacao()) {
+            return atual;
+        }
+        return sortear(grupoAtual);
+    }
+
     public synchronized Map<String, Object> reiniciarAtividadeAtual() {
         if (atividadeModelagem == null && atividadeEscolhaOperacao == null) {
             throw new IllegalStateException("a situação atual não possui modelagem web implementada");
@@ -869,6 +887,13 @@ public final class ServicoSorteioAtividadeWeb {
             estado.remove("ajuda_contextual");
             estado.remove("ajuda_visual");
             estado.remove("ajuda_visual_acionada");
+        }
+        // Fluxo de decisão depois do azul (selo + tip Sim/Não): textos e ações publicados pela
+        // aplicação; o cliente só os realiza (ProjetorConclusaoWeb, EscolhaConclusaoModelagem).
+        if (Boolean.TRUE.equals(estado.get("concluida"))) {
+            estado.put("conclusao", ProjetorConclusaoWeb.projetar(ServicoLocalizacao.getInstancia()));
+        } else {
+            estado.remove("conclusao");
         }
         // A curadoria bruta contém a resposta da incógnita e nunca integra o
         // contrato público do participante, mesmo após a classificação.
@@ -1429,6 +1454,7 @@ public final class ServicoSorteioAtividadeWeb {
             if (figura.getPosicaoRotulo() == PosicaoRotuloFigura.ACIMA) {
                 minimoY = Math.min(minimoY, figura.getY() - ESPACO_ROTULO_FORA_DA_FIGURA);
             } else if (figura.getPosicaoRotulo() == PosicaoRotuloFigura.ABAIXO
+                    || (figura.getRotulo() != null && !figura.getRotulo().trim().isEmpty())
                     || temParticipante(contexto, figura.getChavePapelSemantico())) {
                 maximoY = Math.max(maximoY,
                         figura.getY() + figura.getAltura() + ESPACO_ROTULO_FORA_DA_FIGURA);
