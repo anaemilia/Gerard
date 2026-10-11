@@ -263,6 +263,13 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 .diagram-panel-concluido .scene-connector path { stroke:var(--sucesso); }
 .diagram-panel-concluido .scene-figure text,.diagram-panel-concluido .scene-connector text,
 .diagram-panel-concluido .portable-scene > defs marker path { fill:var(--sucesso); }
+/* COR_ERRO do Gérard: feedback de erro da incógnita, decidido pelo domínio (cena.estado_feedback === "ERRO"). */
+.diagram-panel-erro .scene-figure rect,.diagram-panel-erro .scene-figure ellipse,
+.diagram-panel-erro .scene-connector path { stroke:var(--erro); }
+.diagram-panel-erro .scene-figure text,.diagram-panel-erro .scene-connector text,
+.diagram-panel-erro .portable-scene > defs marker path { fill:var(--erro); }
+.selo-erro { position:absolute; right:16px; bottom:16px; z-index:3; pointer-events:none; }
+.selo-erro svg { width:44px; height:44px; flex:none; fill:none; stroke:var(--erro); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
 /* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única).
    Desenhado pelo gerador de cena (GeradorCenaGerard/FiguraCenaGerard), igual ao
    diagrama abstrato — .portable-scene aqui só precisa de menos altura mínima. */

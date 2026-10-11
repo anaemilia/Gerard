@@ -3,6 +3,7 @@ import { api } from "./api";
 import type { AcaoConclusao, AcaoDisponivel, EstadoWeb, FiguraCena,
   IdiomaSituacaoWeb, InteracaoPermitidaFigura } from "./contratos";
 import { SeloConclusao } from "./SeloConclusao";
+import { SeloErro } from "./SeloErro";
 import { BarraCategorias } from "./BarraCategorias";
 import { EdicaoValorFigura } from "./EdicaoValorFigura";
 import { EixoNumericoFigura } from "./EixoNumericoFigura";
@@ -556,6 +557,10 @@ export default function App() {
     return estado?.ajuda_contextual?.find((item) => item.area === area);
   }
 
+  // O selo de erro aparece já na rejeição (desktop: "já no primeiro erro"), antes da resposta Sim/Não, por isso lê o
+  // snapshot da proposta rejeitada quando ele existe.
+  const feedbackErroDoDiagrama = (snapshotPropostaRejeitada ?? estado)?.cena?.estado_feedback === "ERRO";
+
   return <main className="app-shell">
     <BarraCategorias ocupado={ocupado}
       aoAbrirChat={() => setChatAberto(true)}
@@ -617,7 +622,7 @@ export default function App() {
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>
       <div className="workspace workspace-awaiting-category">
-        <section className={`diagram-panel${estado.modelagem?.concluida === true ? " diagram-panel-concluido" : ""}`} aria-label="Área do diagrama">
+        <section className={`diagram-panel${estado.modelagem?.concluida === true ? " diagram-panel-concluido" : ""}${feedbackErroDoDiagrama ? " diagram-panel-erro" : ""}`} aria-label="Área do diagrama">
           <MenuAjudaContextual item={itemAjuda("VERGNAUD")} />
           {acao("REINICIAR_TENTATIVA") && <span className="help-mark-wrap diagram-restore-wrap">
             <button type="button" className="help-mark"
@@ -669,6 +674,7 @@ export default function App() {
                   projetarEixo(figura.chave_papel_semantico, valor)}
                 aoFechar={() => void alternarEixo(figura)} />;
             })}
+          {feedbackErroDoDiagrama && <SeloErro />}
           {estado.modelagem?.concluida === true && estado.conclusao
             && <SeloConclusao key={estado.modelagem?.tentativa_id ?? estado.situacao_id}
               conclusao={estado.conclusao} ocupado={ocupado} aoEscolher={escolherConclusao} />}

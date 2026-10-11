@@ -45,6 +45,7 @@ final class ValorIncognitaWeb {
                 incognita.getFluxoTentativas().iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO),
                 TarefaInteracao.TEXTO, proposta, esperado, contexto);
         escopo.persistir(registro);
+        escopo.registrarFeedbackDaIncognita(registro);
         boolean aceita = registro.possuiCriterioAplicavel()
                 ? registro.foiCorreta()
                 : Boolean.TRUE.equals(incognita.correspondeAoEsperado(proposta, esperado));

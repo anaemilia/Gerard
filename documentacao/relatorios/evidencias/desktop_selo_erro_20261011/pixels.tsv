@@ -1,0 +1,5 @@
+passo	pixels_cor_erro	esperado
+modelado_sem_erro	3	<=50
+errado_com_pergunta_aberta	2964	>50
+errado_pergunta_respondida	2964	>50
+correto_concluido	3	<=50

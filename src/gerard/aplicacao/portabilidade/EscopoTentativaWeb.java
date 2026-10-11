@@ -1,6 +1,7 @@
 package gerard.aplicacao.portabilidade;
 
 import gerard.aplicacao.interacao.PortaPersistenciaAcaoInstrumental;
+import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 import gerard.dominio.campoaditivo.OrigemAcao;
@@ -30,6 +31,7 @@ public final class EscopoTentativaWeb {
     private final PortaPersistenciaAcaoInstrumental persistencia;
     private final List<PapelQuantitativo> participantesAtuais =
             new ArrayList<PapelQuantitativo>();
+    private boolean feedbackDeErroDaIncognita;
 
     public EscopoTentativaWeb(TentativaModelagemAditiva tentativa,
             PortaPersistenciaAcaoInstrumental persistencia) {
@@ -59,8 +61,26 @@ public final class EscopoTentativaWeb {
         }
     }
 
+    /**
+     * Mesma decisão de FluxoConfirmacaoValorIncognita (desktop): a incógnita
+     * errada com critério aplicável liga o feedback de erro do diagrama;
+     * correta (ou sem critério) o desliga. Só a proposta de valor da incógnita decide.
+     */
+    public void registrarFeedbackDaIncognita(RegistroAcaoInstrumental registro) {
+        if (registro.foiErrada() && registro.possuiCriterioAplicavel()) {
+            feedbackDeErroDaIncognita = true;
+        } else if (!registro.possuiCriterioAplicavel() || registro.foiCorreta()) {
+            feedbackDeErroDaIncognita = false;
+        }
+    }
+
+    public boolean estaComFeedbackDeErro() {
+        return feedbackDeErroDaIncognita;
+    }
+
     public RegistroAcaoRestauracaoModelagem restaurar(
             TipoRestauracaoModelagem tipo, OrigemAcao origem) {
+        feedbackDeErroDaIncognita = false;
         return tentativa.restaurar(tipo, origem,
                 participantesAtuais.toArray(new PapelQuantitativo[0]));
     }

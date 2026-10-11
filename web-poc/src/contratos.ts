@@ -176,6 +176,8 @@ export type CenaDiagrama = Readonly<{
   elementos_texto?: readonly ElementoTexto[];
   vocabulario_texto?: VocabularioTexto;
   permite_editar_narrativa?: boolean;
+  /** Feedback do diagrama decidido pelo domínio (EstadoFeedbackDiagrama); ERRO acende o selo vermelho. */
+  estado_feedback?: "NEUTRO" | "ERRO" | "SUCESSO";
   titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
   relacao_exploratoria?: RelacaoExploratoria;
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;

@@ -112,12 +112,13 @@ async function digitar(alvo, valor) {
 }
 
 async function classificarRelacoes() {
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 300; i++) {
     await clicar('button[aria-label="Sortear Relações"]'); await page.waitForTimeout(500);
     const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
     await clicar('button[aria-label="Composição de relações"]');
     const j = await (await resp).json(); await page.waitForTimeout(500);
-    if (j.correta) return true;
+    // Situação das idades ("mais velha", "mais velho"): todos os sinais positivos, a relação final é a soma.
+    if (j.correta && estado.situacao_id === 'PO_COMPOSICAO_RELACOES_idades_642701604') return true;
     for (let k = 0; k < 3; k++) {
       const d = page.locator('.confirmation-dialog'); if (await d.count() === 0) break;
       await d.locator('button').last().click(); await page.waitForTimeout(400);
@@ -144,6 +145,7 @@ await digitar(alvo, soma);
 await clicar('input[aria-label="positivo"]'); await page.waitForTimeout(800);
 verificar('incógnita correta aceita (a escolha de operação é o passo seguinte)', estado.modelagem?.concluida !== true);
 
+await page.waitForSelector('g[aria-label="Subtração"]');
 const chamadas = [];
 page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/acoes/')) chamadas.push(r.url().split('/api/acoes/')[1]); });
 const serie = [];

@@ -834,7 +834,8 @@ public final class ServicoSorteioAtividadeWeb {
             Map<String, Object> cenaProjetada = projetarCena(contextoAtual, acoesParaCena,
                     estado.get("modelagem"), visibilidadeEixoPorPapel,
                     escopoTentativa.getTentativa().estaNoLimiteAjudaVisual(),
-                    escopoTentativa.getTentativa().admiteExploracao());
+                    escopoTentativa.getTentativa().admiteExploracao(),
+                    escopoTentativa.estaComFeedbackDeErro());
             cenaDaAjudaVisual = cenaProjetada;
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
@@ -1045,7 +1046,7 @@ public final class ServicoSorteioAtividadeWeb {
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
             Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel,
-            boolean escaladaNoLimite, boolean faseExploratoria) {
+            boolean escaladaNoLimite, boolean faseExploratoria, boolean feedbackDeErro) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
         boolean estadoInicialDecomposto =
                 !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
@@ -1060,12 +1061,18 @@ public final class ServicoSorteioAtividadeWeb {
                 DecisorAjudaVisual.decidir(contexto.getSituacao(), escaladaNoLimite),
                 contexto.getSituacao().getTipo(), contexto.getSituacao(),
                 contexto.getSituacao().getCodigoIdioma());
+        // O erro da incógnita vale só enquanto a modelagem não foi concluída (a conclusão restaura a cena neutra).
+        // Por último: as demais etapas da cena recriam o estado de feedback como neutro.
+        cena = gerador.comFeedback(cena, feedbackDeErro && !concluida
+                ? gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama.ERRO
+                : gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama.NEUTRO);
         Map<String, Object> valoresPorChave = extrairValoresDePapeisProjetados(modelagem);
         Map<String, Object> resultado = mapa();
         resultado.put("elementos_texto", projetarElementosTexto(cena, valoresPorChave));
         resultado.put("vocabulario_texto", projetarVocabularioTexto(cena));
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(cena));
+        resultado.put("estado_feedback", cena.getEstadoFeedback().name());
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
         CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada relacaoExploratoria =
