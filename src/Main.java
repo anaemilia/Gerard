@@ -863,7 +863,7 @@ public class Main extends JFrame {
                         materializadorDecisaoAjuda, registradorEventosAjuda);
         final java.util.function.BooleanSupplier admissaoRegistroFactual =
                 tentativaCorrente::admiteRegistroFactual;
-        { loggerInteracaoGerard.definirAdmissaoRegistroDoSujeito(admissaoRegistroFactual); }
+        { loggerInteracaoGerard.definirAdmissaoRegistroDoSujeitoPorAcao(tentativaCorrente::admiteRegistroFactual); }
         final PublicadorGestoInteracao publicadorGestosInteracao =
                 new gerard.interacao.PublicadorGestoAdmitido(
                         LoggerGestosInteracaoGerard.paraSessao(loggerInteracaoGerard),

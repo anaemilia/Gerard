@@ -26,11 +26,13 @@ public final class TentativaModelagemAditiva {
      */
     private boolean encerradaPorConclusao;
     /**
-     * Regra da usuária (2026-10-10): ao atingir o limite de rejeições consecutivas da incógnita, o registro
-     * factual para. A ação que atingiu o limite ainda é constituída (o terceiro erro é registrado); as
+     * Regra da usuária (2026-10-10): ao atingir o limite de rejeições consecutivas (da incógnita ou da escolha de
+     * operação), o registro factual para. A ação que atingiu o limite ainda é constituída (o terceiro erro é registrado); as
      * seguintes não. Restaurar ou sortear (nova tentativa) reabre o registro.
      */
     private boolean registroEncerradoPorLimite;
+    /** Ação que atingiu o limite: continua admitida nas demais portas que a recebem (persistir, encaminhar). */
+    private String actionIdQueAtingiuLimite;
     private final java.util.Map<String, Integer> rejeicoesOperacao =
             new java.util.LinkedHashMap<String, Integer>();
     private final Set<String> operacoesAcompanhadas = new LinkedHashSet<String>();
@@ -101,6 +103,16 @@ public final class TentativaModelagemAditiva {
         return getFase() == FaseDaTentativa.MODELAGEM && !registroEncerradoPorLimite;
     }
 
+    /**
+     * A ação que atingiu o limite continua admitida (o terceiro erro é registrado, em todas as portas que a
+     * recebem, inclusive o logger); as demais ações só são admitidas enquanto a porta geral estiver aberta.
+     */
+    public boolean admiteRegistroFactual(String actionId) {
+        return admiteRegistroFactual()
+                || (getFase() == FaseDaTentativa.MODELAGEM && actionId != null
+                        && actionId.equals(actionIdQueAtingiuLimite));
+    }
+
     /** Fase em que a atividade está: modelagem até o azul, exploratória depois dele. */
     public FaseDaTentativa getFase() {
         return encerradaPorConclusao ? FaseDaTentativa.EXPLORATORIA : FaseDaTentativa.MODELAGEM;
@@ -121,7 +133,11 @@ public final class TentativaModelagemAditiva {
      * é exploratória e não gera registro.
      */
     public <R> java.util.Optional<R> constituir(R registro) {
-        if (registro == null || !admiteRegistroFactual()) {
+        if (registro == null) {
+            return java.util.Optional.empty();
+        }
+        // A mesma ação chega a mais de uma porta (persistir, encaminhar): a que atingiu o limite não se perde.
+        if (!admiteRegistroFactual(actionIdDe(registro))) {
             return java.util.Optional.empty();
         }
         if (registro instanceof gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) {
@@ -133,9 +149,20 @@ public final class TentativaModelagemAditiva {
                     ((gerard.dominio.atividade.RegistroAcaoInstrumental) registro).getResultadoTentativa();
             if (resultado.isPresent() && resultado.get().isLimiteAtingidoAgora()) {
                 registroEncerradoPorLimite = true;
+                actionIdQueAtingiuLimite = actionIdDe(registro);
             }
         }
         return java.util.Optional.of(registro);
+    }
+
+    private static String actionIdDe(Object registro) {
+        if (registro instanceof gerard.dominio.atividade.RegistroAcaoInstrumental) {
+            return ((gerard.dominio.atividade.RegistroAcaoInstrumental) registro).getActionId();
+        }
+        if (registro instanceof gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) {
+            return ((gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem) registro).getActionId();
+        }
+        return null;
     }
 
     private void acompanharEscolhaOperacao(
@@ -149,6 +176,9 @@ public final class TentativaModelagemAditiva {
         rejeicoesOperacao.put(alvo, quantidade);
         if (quantidade >= PapelQuantitativo.LIMITE_TENTATIVAS_REJEITADAS_CONSECUTIVAS) {
             ajudaVisualOperacaoNoLimite = true;
+            // Entra a historinha / o material concreto: nada é registrado nesse intervalo (2026-10-10).
+            registroEncerradoPorLimite = true;
+            actionIdQueAtingiuLimite = registro.getActionId();
         }
     }
 
@@ -179,6 +209,7 @@ public final class TentativaModelagemAditiva {
     private void reabrirPrimeiraModelagem(PapelQuantitativo[] papeisParticipantes) {
         encerradaPorConclusao = false;
         registroEncerradoPorLimite = false;
+        actionIdQueAtingiuLimite = null;
         if (papeisParticipantes != null) {
             for (PapelQuantitativo papel : papeisParticipantes) {
                 incorporar(papel);

@@ -380,10 +380,15 @@ public class LoggerInteracaoGerard {
      * conhece a regra (a tentativa em curso) responde; por padrão tudo é
      * admitido. Não afeta registros do computador nem do pesquisador.
      */
-    private volatile java.util.function.BooleanSupplier admissaoRegistroDoSujeito = () -> true;
+    private volatile java.util.function.Predicate<String> admissaoRegistroDoSujeito = actionId -> true;
 
     public void definirAdmissaoRegistroDoSujeito(java.util.function.BooleanSupplier admissao) {
-        this.admissaoRegistroDoSujeito = admissao == null ? () -> true : admissao;
+        this.admissaoRegistroDoSujeito = admissao == null ? actionId -> true : actionId -> admissao.getAsBoolean();
+    }
+
+    /** Admissão que conhece o action_id: a ação que atinge o limite de rejeições ainda é registrada. */
+    public void definirAdmissaoRegistroDoSujeitoPorAcao(java.util.function.Predicate<String> admissao) {
+        this.admissaoRegistroDoSujeito = admissao == null ? actionId -> true : admissao;
     }
 
     public synchronized String getTentativaAtualId() { return tentativaAtualId; }
@@ -736,7 +741,7 @@ public class LoggerInteracaoGerard {
                                        String mudancaObservavel,
                                        String actionId,
                                        String rejectionSequenceId) {
-        if ("S".equals(agente) && !admissaoRegistroDoSujeito.getAsBoolean()) {
+        if ("S".equals(agente) && !admissaoRegistroDoSujeito.test(actionId)) {
             return;
         }
         EventoLogGerard evento = EventoLogGerard.criar(

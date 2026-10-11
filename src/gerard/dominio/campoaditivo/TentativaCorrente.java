@@ -19,6 +19,12 @@ public final class TentativaCorrente {
         return t == null || t.admiteRegistroFactual();
     }
 
+    /** Como {@link #admiteRegistroFactual()}, mas a ação que atingiu o limite de rejeições ainda é admitida. */
+    public boolean admiteRegistroFactual(String actionId) {
+        TentativaModelagemAditiva t = atual;
+        return t == null || t.admiteRegistroFactual(actionId);
+    }
+
     /** Exploração (recálculo de valores e dos números do enunciado) só após a conclusão correta. */
     public boolean admiteExploracao() {
         TentativaModelagemAditiva t = atual;
