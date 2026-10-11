@@ -992,6 +992,11 @@ public final class ServicoSorteioAtividadeWeb {
             item.put("papel_id", segmento.possuiVinculoSemantico()
                     ? segmento.getChavePapelSemantico() : null);
             item.put("incognita", Boolean.valueOf(segmento.representaIncognitaOriginal()));
+            // Mesma decisão de PoliticaUnicidadeElementoMatematicoTexto (desktop): o número cujo papel já está no
+            // diagrama (valor conhecido posicionado ou incógnita engatada) não pode ser selecionado de novo.
+            item.put("ja_posicionado", Boolean.valueOf(
+                    Boolean.TRUE.equals(extrairCampo(papelProjetado, "conhecido"))
+                    || Boolean.TRUE.equals(extrairCampo(papelProjetado, "engatada"))));
             resultado.add(item);
         }
         return resultado;
@@ -1073,6 +1078,9 @@ public final class ServicoSorteioAtividadeWeb {
         resultado.put("permite_editar_narrativa", Boolean.valueOf(cena.isPermiteEditarNarrativa()));
         resultado.put("ajuda_visual", ProjetorAjudaVisualWeb.projetar(cena));
         resultado.put("estado_feedback", cena.getEstadoFeedback().name());
+        // Tooltip do desktop ao selecionar de novo um número já posicionado (processarSelecaoMarcadorTexto).
+        resultado.put("texto_ja_posicionado",
+                gerard.i18n.ServicoLocalizacao.getInstancia().texto("ui.tooltip.alreadyPositioned"));
         resultado.put("titulo", cena.getTitulo());
         resultado.put("descricao", cena.getDescricao());
         CatalogoRelacoesEstruturaisAditivas.RelacaoContextualizada relacaoExploratoria =

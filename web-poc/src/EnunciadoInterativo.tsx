@@ -44,7 +44,8 @@ type IndicacaoAtracao = {
  * não esteja sobre ela (deveCentralizarAoSoltar do desktop).
  */
 export function EnunciadoInterativo({ elementos, figuras, organizadores = [], modeloPalavraComum = null,
-  permiteEditarNarrativa, aoSoltar, aoAtualizarAlvo }: {
+  permiteEditarNarrativa, aoSoltar, aoAtualizarAlvo, textoJaPosicionado }: {
+  textoJaPosicionado?: string;
   permiteEditarNarrativa: boolean;
   elementos: readonly ElementoTexto[];
   figuras: readonly FiguraCena[];
@@ -54,6 +55,8 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
   aoAtualizarAlvo?: (figuraId: string | null) => void;
 }) {
   const [arrastando, setArrastando] = useState<string | null>(null);
+  // Selecionar de novo um número já posicionado não inicia arraste: mostra o tooltip do desktop (ui.tooltip.alreadyPositioned).
+  const [avisoJaPosicionado, setAvisoJaPosicionado] = useState<{ x: number; y: number } | null>(null);
   const [editandoNarrativa, setEditandoNarrativa] = useState(false);
   const [indicacaoAtracao, setIndicacaoAtracao] = useState<IndicacaoAtracao | null>(null);
   const ghostRef = useRef<HTMLDivElement>(null);
@@ -174,7 +177,15 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
         const papelId = elemento.papel_id;
         return <span key={indice}>{espaco}<span
           className={`enunciado-elemento-semantico${arrastando === papelId ? " enunciado-elemento-arrastando" : ""}`}
-          onMouseDown={(evento) => iniciarArraste(evento, papelId)}
+          onMouseDown={(evento) => {
+            if (elemento.ja_posicionado && textoJaPosicionado) {
+              evento.preventDefault();
+              setAvisoJaPosicionado({ x: evento.clientX, y: evento.clientY });
+              return;
+            }
+            iniciarArraste(evento, papelId);
+          }}
+          onMouseLeave={() => setAvisoJaPosicionado(null)}
           aria-label={elemento.incognita ? "Incógnita — arraste até o diagrama" : "Valor conhecido — arraste até o diagrama"}
         >{elemento.valor}</span></span>;
       })}
@@ -187,6 +198,8 @@ export function EnunciadoInterativo({ elementos, figuras, organizadores = [], mo
         pointer-events:none é essencial: sem isso, o elementFromPoint em
         App.tsx pegaria o próprio fantasma como alvo do drop em vez da caixa
         do diagrama por baixo dele. */}
+    {avisoJaPosicionado && <div className="enunciado-tip-ja-posicionado" role="status"
+      style={{ left: avisoJaPosicionado.x + 12, top: avisoJaPosicionado.y + 16 }}>{textoJaPosicionado}</div>}
     {arrastando && <div ref={ghostRef} className="enunciado-ghost-arraste" aria-hidden="true">
       {valorArrastando}
     </div>}

@@ -618,6 +618,7 @@ export default function App() {
               figuras={cenaExibida.figuras}
               organizadores={cenaExibida.vocabulario_texto?.candidatos_organizadores_informacao ?? []}
               modeloPalavraComum={cenaExibida.vocabulario_texto?.modelo_palavra_comum ?? null}
+              textoJaPosicionado={cenaExibida.texto_ja_posicionado}
               aoSoltar={aoSoltarNoDiagrama} aoAtualizarAlvo={setFiguraDestacadaId} />
           : <h1 id="enunciado">{estado.enunciado}</h1>}
       </section>

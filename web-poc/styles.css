@@ -270,6 +270,7 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 .diagram-panel-erro .portable-scene > defs marker path { fill:var(--erro); }
 .selo-erro { position:absolute; right:16px; bottom:16px; z-index:3; pointer-events:none; }
 .selo-erro svg { width:44px; height:44px; flex:none; fill:none; stroke:var(--erro); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.enunciado-tip-ja-posicionado { position:fixed; z-index:20; padding:6px 10px; border:1px solid var(--borda); border-radius:var(--raio-controle); background:var(--superficie); color:var(--texto); font-size:.85rem; pointer-events:none; box-shadow:0 2px 8px rgba(0,0,0,.12); }
 /* Material concreto (AG_EMCME) — cores copiadas de QuadradinhoVenn.java (fonte única).
    Desenhado pelo gerador de cena (GeradorCenaGerard/FiguraCenaGerard), igual ao
    diagrama abstrato — .portable-scene aqui só precisa de menos altura mínima. */

@@ -17,6 +17,7 @@ export type AcaoDisponivel = Readonly<{
 
 export type PapelProjetado = Readonly<{ id: string; nome: string; conhecido: boolean; valor: number | null; engatada: boolean }>;
 export type ElementoTexto = Readonly<{ id: string; valor: string; papel_id: string | null; incognita: boolean;
+  ja_posicionado?: boolean;
   tipo: "COMUM" | "CANDIDATO_ORGANIZADOR_INFORMACAO" | "QUANTIDADE" | "INCOGNITA"; manipulavel: boolean;
   saco_destino: "COMUM" | "ORGANIZADORES" | null }>;
 export type VocabularioTexto = Readonly<{
@@ -178,6 +179,7 @@ export type CenaDiagrama = Readonly<{
   permite_editar_narrativa?: boolean;
   /** Feedback do diagrama decidido pelo domínio (EstadoFeedbackDiagrama); ERRO acende o selo vermelho. */
   estado_feedback?: "NEUTRO" | "ERRO" | "SUCESSO";
+  texto_ja_posicionado?: string;
   titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
   relacao_exploratoria?: RelacaoExploratoria;
   viewport: Readonly<{ x: number; y: number; largura: number; altura: number }>;

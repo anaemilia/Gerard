@@ -1,0 +1,7 @@
+passo	pixels_cor_erro	esperado
+ha_numero_posicionado_no_diagrama	OK
+ha_marcador_com_papel_no_enunciado	OK
+selecionar_de_novo_nao_inicia_arraste	OK
+mostra_o_aviso	OK
+texto_do_aviso_e_ui.tooltip.alreadyPositioned (Eu já fui posicionado no diagrama)	OK
+nao_cria_outro_item_no_diagrama	OK
