@@ -125,13 +125,12 @@ export function FiguraCenaGerard({ figura, aoEditarValor, destacada, ocupado, ao
         rótulo/papel. */}
     {figura.subtitulo && <text className="scene-figure-subtitle"
       x={figura.x + figura.largura / 2} y={coordenadaYDoSubtitulo(figura)}>{figura.subtitulo}</text>}
-    <text className={`${conhecida || engatada ? "scene-figure-valor" : ""}${figura.subtitulo ? " scene-figure-role" : ""}`.trim() || undefined}
-      x={figura.x + figura.largura / 2}
-      y={conhecida || engatada ? coordenadaYDoValor(figura) : coordenadaYDoRotulo(figura)}>
-      {conhecida ? figura.valor : engatada ? "?" : figura.rotulo}
-    </text>
-    {(conhecida || engatada) && <text className="scene-figure-role"
-      x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura, true)}>{figura.rotulo}</text>}
+    {(conhecida || engatada) && <text className="scene-figure-valor"
+      x={figura.x + figura.largura / 2} y={coordenadaYDoValor(figura)}>
+      {conhecida ? figura.valor : "?"}
+    </text>}
+    {figura.rotulo && <text className="scene-figure-role"
+      x={figura.x + figura.largura / 2} y={coordenadaYDoRotulo(figura)}>{figura.rotulo}</text>}
     <LupaCenaGerard figura={figura} aoAlternarEixo={aoAlternarEixo} />
   </g>{deveMostrarSeletorSinal && seletorSinal && <EscolhaSinalFigura
       figuraId={figura.id} papelNome={figura.rotulo} ocupado={Boolean(ocupado)}

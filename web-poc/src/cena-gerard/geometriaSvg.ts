@@ -29,15 +29,13 @@ export function caminhoDoConector(c: ConectorCena) {
 }
 
 /**
- * Com valor (ou "?") na caixa, o rótulo nunca disputa o centro: o desktop
- * (ElementoVergnaud.desenhar) empilha o bloco de rótulo fora da caixa,
- * abaixo salvo ACIMA. Sem valor e sem subtítulo em CENTRO, o rótulo ocupa a caixa.
+ * O rótulo nunca ocupa a caixa: o desktop (ElementoVergnaud.desenhar) empilha o
+ * bloco de rótulo fora dela, abaixo salvo ACIMA, com ou sem valor.
  */
-export function coordenadaYDoRotulo(f: FiguraCena, comValorNaCaixa = false) {
+export function coordenadaYDoRotulo(f: FiguraCena) {
   if (f.posicao_rotulo === "ACIMA") return f.y - 14;
   if (f.posicao_rotulo === "ABAIXO" || f.subtitulo) return f.y + f.altura + 40;
-  if (comValorNaCaixa) return f.y + f.altura + 22;
-  return f.y + f.altura / 2 + 4;
+  return f.y + f.altura + 22;
 }
 
 /**
