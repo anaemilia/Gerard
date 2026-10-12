@@ -32,6 +32,7 @@ public final class EscopoTentativaWeb {
     private final List<PapelQuantitativo> participantesAtuais =
             new ArrayList<PapelQuantitativo>();
     private boolean feedbackDeErroDaIncognita;
+    private PosicionamentoQuestionadoWeb posicionamentoQuestionado;
 
     public EscopoTentativaWeb(TentativaModelagemAditiva tentativa,
             PortaPersistenciaAcaoInstrumental persistencia) {
@@ -74,6 +75,23 @@ public final class EscopoTentativaWeb {
         }
     }
 
+    /** Soltura incompatível: o número permanece na caixa e a pergunta aberta, até a correção ou a restauração. */
+    public void questionarPosicionamento(PosicionamentoQuestionadoWeb questionado) {
+        posicionamentoQuestionado = questionado;
+    }
+
+    /** Uma soltura compatível do mesmo número resolve a pergunta (processarQuestionamentoPosicionamento, desktop). */
+    public void resolverPosicionamentoDe(String origemPapelId) {
+        if (posicionamentoQuestionado != null
+                && posicionamentoQuestionado.getOrigemPapelId().equals(origemPapelId)) {
+            posicionamentoQuestionado = null;
+        }
+    }
+
+    public PosicionamentoQuestionadoWeb getPosicionamentoQuestionado() {
+        return posicionamentoQuestionado;
+    }
+
     public boolean estaComFeedbackDeErro() {
         return feedbackDeErroDaIncognita;
     }
@@ -81,6 +99,7 @@ public final class EscopoTentativaWeb {
     public RegistroAcaoRestauracaoModelagem restaurar(
             TipoRestauracaoModelagem tipo, OrigemAcao origem) {
         feedbackDeErroDaIncognita = false;
+        posicionamentoQuestionado = null;
         return tentativa.restaurar(tipo, origem,
                 participantesAtuais.toArray(new PapelQuantitativo[0]));
     }

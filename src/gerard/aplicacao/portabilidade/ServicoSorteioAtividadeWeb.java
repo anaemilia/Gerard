@@ -835,7 +835,8 @@ public final class ServicoSorteioAtividadeWeb {
                     estado.get("modelagem"), visibilidadeEixoPorPapel,
                     escopoTentativa.getTentativa().estaNoLimiteAjudaVisual(),
                     escopoTentativa.getTentativa().admiteExploracao(),
-                    escopoTentativa.estaComFeedbackDeErro());
+                    escopoTentativa.estaComFeedbackDeErro(),
+                    escopoTentativa.getPosicionamentoQuestionado());
             cenaDaAjudaVisual = cenaProjetada;
             estado.put("cena", cenaProjetada);
             // Cena do material concreto (grupos de quadradinhos), gerada
@@ -975,6 +976,47 @@ public final class ServicoSorteioAtividadeWeb {
      * tokenizador usa \S+, então isso corresponde exatamente ao texto
      * original.
      */
+    /**
+     * Mesmo estado do desktop (itemQuestionadoPersistente): o número solto na caixa incompatível aparece nela e a
+     * pergunta permanece aberta até ser corrigido. O domínio decide; a cena só publica o número e a pergunta.
+     */
+    @SuppressWarnings("unchecked")
+    private static void projetarPosicionamentoQuestionado(Map<String, Object> cenaProjetada,
+            List<Object> figuras, CenaDiagramaAditivo cena, PosicionamentoQuestionadoWeb questionado,
+            boolean concluida) {
+        if (questionado == null || concluida) {
+            return;
+        }
+        String numero = null;
+        for (gerard.interpretacao.modelo.SegmentoTextoSemantico segmento : cena.getElementosTexto()) {
+            if (segmento.possuiVinculoSemantico()
+                    && questionado.getOrigemPapelId().equals(segmento.getChavePapelSemantico())) {
+                numero = segmento.getValor();
+                break;
+            }
+        }
+        for (Object figura : figuras) {
+            Map<String, Object> item = (Map<String, Object>) figura;
+            if (!questionado.getChavePapelAlvo().equals(item.get("chave_papel_semantico"))) {
+                continue;
+            }
+            if (numero != null && item.get("valor") == null) {
+                try {
+                    item.put("valor", Integer.valueOf(numero.trim()));
+                } catch (NumberFormatException naoNumerico) {
+                    item.put("valor", numero);
+                }
+                item.put("conhecido", Boolean.TRUE);
+            }
+            Map<String, Object> pergunta = mapa();
+            pergunta.put("figura_chave_papel", questionado.getChavePapelAlvo());
+            pergunta.put("figura_id", item.get("id"));
+            pergunta.put("mensagem", questionado.getMensagem());
+            cenaProjetada.put("posicionamento_questionado", pergunta);
+            return;
+        }
+    }
+
     private static List<Object> projetarElementosTexto(CenaDiagramaAditivo cena,
             Map<String, Object> valoresPorChave) {
         List<gerard.interpretacao.modelo.SegmentoTextoSemantico> segmentos = cena.getElementosTexto();
@@ -1051,7 +1093,8 @@ public final class ServicoSorteioAtividadeWeb {
     private static Map<String, Object> projetarCena(
             ContextoCarregamentoAtividade contexto, List<Object> acoes, Object modelagem,
             Map<String, ControleVisibilidadeEixoPapel> visibilidadeEixoPorPapel,
-            boolean escaladaNoLimite, boolean faseExploratoria, boolean feedbackDeErro) {
+            boolean escaladaNoLimite, boolean faseExploratoria, boolean feedbackDeErro,
+            PosicionamentoQuestionadoWeb questionado) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
         boolean estadoInicialDecomposto =
                 !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
@@ -1125,8 +1168,10 @@ public final class ServicoSorteioAtividadeWeb {
             descritorRelacao.put("projecoes", projecoesPorPapel);
             resultado.put("relacao_exploratoria", descritorRelacao);
         }
-        resultado.put("figuras", serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
-                visibilidadeEixoPorPapel));
+        List<Object> figurasSerializadas = serializarFiguras(cena.getFiguras(), contexto, valoresPorChave, acoes,
+                visibilidadeEixoPorPapel);
+        resultado.put("figuras", figurasSerializadas);
+        projetarPosicionamentoQuestionado(resultado, figurasSerializadas, cena, questionado, faseExploratoria);
         resultado.put("conectores", serializarConectores(cena.getConectores()));
         Map<String, Object> seletorOperacao = projetarSeletorOperacao(
                 contexto.getSituacao().getTipo(), cena);

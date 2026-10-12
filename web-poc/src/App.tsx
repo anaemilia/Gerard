@@ -54,8 +54,6 @@ export default function App() {
   const [dicaVisivel, setDicaVisivel] = useState(false);
   const [figuraDestacadaId, setFiguraDestacadaId] = useState<string | null>(null);
   const [avisoSinal, setAvisoSinal] = useState<{ figuraId: string; mensagem: string } | null>(null);
-  const [avisoPosicionamento, setAvisoPosicionamento] =
-    useState<{ figuraId: string; mensagem: string } | null>(null);
   const [avisoLimite, setAvisoLimite] =
     useState<{ figuraId: string; mensagem: string } | null>(null);
   const [chatAberto, setChatAberto] = useState(false);
@@ -114,12 +112,6 @@ export default function App() {
     const temporizador = setTimeout(() => setAvisoSinal(null), 4000);
     return () => clearTimeout(temporizador);
   }, [avisoSinal]);
-
-  useEffect(() => {
-    if (!avisoPosicionamento) return;
-    const temporizador = setTimeout(() => setAvisoPosicionamento(null), 4000);
-    return () => clearTimeout(temporizador);
-  }, [avisoPosicionamento]);
 
   function receberSnapshot(snapshot: EstadoWeb) {
     enviarEventoRepresentacional({ tipo: "SNAPSHOT_SERVIDOR_RECEBIDO", snapshot });
@@ -385,8 +377,6 @@ export default function App() {
             (item) => item.tipo === "EDITAR_VALOR");
           if (figuraEngatada && editar) iniciarEdicaoValor(figuraEngatada, editar);
         }
-        setAvisoPosicionamento(resultado.aceita ? null
-          : { figuraId: figura.id, mensagem: resultado.chave_mensagem ?? "" });
       } catch (erro) { console.error(erro); }
       finally { setOcupado(false); }
       return;
@@ -402,8 +392,6 @@ export default function App() {
         href: "/api/acoes/posicionar-conhecido", corpo: { papel_id: posicionar.papel_id }
       }, papelId);
       receberSnapshot(resultado.estado);
-      setAvisoPosicionamento(resultado.aceita ? null
-        : { figuraId: figura.id, mensagem: resultado.chave_mensagem ?? "" });
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -659,8 +647,10 @@ export default function App() {
             aoConfirmarDigitacao={() => void aoConfirmarDigitacao()}
             aoConfirmarValor={aoConfirmarValor}
             aoNegarValor={aoNegarValor} />}
-          {avisoPosicionamento && <AvisoPosicionamentoFigura
-            figuraId={avisoPosicionamento.figuraId} mensagem={avisoPosicionamento.mensagem} />}
+          {estado.cena?.posicionamento_questionado && <AvisoPosicionamentoFigura
+            key={estado.cena.posicionamento_questionado.figura_id}
+            figuraId={estado.cena.posicionamento_questionado.figura_id}
+            mensagem={estado.cena.posicionamento_questionado.mensagem} />}
           {avisoLimite && <AvisoPosicionamentoFigura
             figuraId={avisoLimite.figuraId} mensagem={avisoLimite.mensagem} />}
           {estado.cena?.figuras.filter((figura) => figura.lupa_habilitada && figura.eixo)

@@ -49,6 +49,14 @@ final class AvaliadorOrigemDestinoWeb {
                     ContextosAcaoInstrumentalWeb.posicionamento(
                             origemPapelId, chavePapelAlvo, participantes)));
         }
+        if (resultado != null && resultado.isAplicavel() && escopo != null) {
+            if (resultado.isCorreto()) {
+                escopo.resolverPosicionamentoDe(origemPapelId);
+            } else {
+                escopo.questionarPosicionamento(new PosicionamentoQuestionadoWeb(
+                        origemPapelId, chavePapelAlvo, resultado.getMensagem()));
+            }
+        }
         return resultado;
     }
 }

@@ -179,6 +179,8 @@ export type CenaDiagrama = Readonly<{
   permite_editar_narrativa?: boolean;
   /** Feedback do diagrama decidido pelo domínio (EstadoFeedbackDiagrama); ERRO acende o selo vermelho. */
   estado_feedback?: "NEUTRO" | "ERRO" | "SUCESSO";
+  /** Número solto na caixa incompatível: fica na caixa, com a pergunta aberta, até ser corrigido. */
+  posicionamento_questionado?: { figura_id: string; figura_chave_papel: string; mensagem: string };
   texto_ja_posicionado?: string;
   titulo: string; descricao: string; figuras: readonly FiguraCena[]; conectores: readonly ConectorCena[];
   relacao_exploratoria?: RelacaoExploratoria;
