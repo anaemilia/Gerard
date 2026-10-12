@@ -1247,7 +1247,6 @@ public class Main extends JFrame {
                 new AvaliadorConclusaoModelagem();
         final ScaffoldingAutomatizacaoPassos scaffoldingAutomatizacaoPassos =
                 new ScaffoldingAutomatizacaoPassos();
-        JButton botaoVerDicaPosicionamento;
         boolean sincronizacaoEstadoFinalHabilitada = false;
         ItemTextoArrastavel itemIncognitaEstadoFinal = null;
         ElementoVergnaud elementoEstadoFinalSincronizado = null;
@@ -2228,76 +2227,6 @@ public class Main extends JFrame {
             add(botaoAjudaVergnaud);
             add(botaoAjudaComplementar);
             atualizarTextosBotoesAjudaContextual();
-            criarBotaoVerDicaPosicionamento();
-        }
-
-        /**
-         * AG_AE — botão "Ver dica" (sob demanda, item 7 do levantamento de
-         * 2026-08-07): mesmo padrão visual dos botões de ajuda contextual
-         * acima, mas com texto (não só ícone) por ser uma affordance nova,
-         * ainda não reconhecível por forma. Fica oculto sempre que não há
-         * papel-dado pendente de posicionar (ver
-         * reposicionarBotaoVerDicaPosicionamento).
-         */
-        private void criarBotaoVerDicaPosicionamento() {
-            final JButton botao = new JButton();
-            botao.setFocusable(true);
-            botao.setFocusPainted(true);
-            botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            botao.setFont(new Font("Arial", Font.PLAIN, 12));
-            botao.setMargin(new Insets(2, 8, 2, 8));
-            botao.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mostrarProximaDicaPosicionamento();
-                }
-            });
-            botaoVerDicaPosicionamento = botao;
-            add(botao);
-            atualizarTextoBotaoVerDicaPosicionamento();
-        }
-
-        private void atualizarTextoBotaoVerDicaPosicionamento() {
-            if (botaoVerDicaPosicionamento == null) {
-                return;
-            }
-            String texto = localizacao.texto("ui.hint.stepPlacement.button");
-            botaoVerDicaPosicionamento.setText(texto);
-            botaoVerDicaPosicionamento.getAccessibleContext().setAccessibleName(texto);
-            botaoVerDicaPosicionamento.setSize(botaoVerDicaPosicionamento.getPreferredSize());
-        }
-
-        /**
-         * Visível só quando a categoria está selecionada, a modelagem
-         * linguística está em curso (há elementos no diagrama) e ainda
-         * existe ao menos um papel-dado não resolvido — a mesma condição
-         * de obterProximoPapelNaoResolvidoParaDica(), sem gerar o evento
-         * (só decide visibilidade, não conta como exibição de dica).
-         *
-         * Também fica visível quando todos os papéis-dado já foram
-         * posicionados corretamente mas ainda falta responder (ou foi
-         * respondido errado) algum seletor de soma/subtração ativo — ver
-         * existeSeletorOperacaoPendenteParaDica(). Sem isso o botão
-         * simplesmente sumia nesse momento e o aluno ficava sem saber que
-         * a etapa pendente virou o seletor, não mais o diagrama (Item 36,
-         * 2026-08-23: "e se o usuário não for notificado que tem que
-         * escolher a operação e ficar esperando infinitamente?").
-         */
-        private void reposicionarBotaoVerDicaPosicionamento(Rectangle area) {
-            if (botaoVerDicaPosicionamento == null || area == null) {
-                return;
-            }
-            boolean exibir = categoriaSelecionadaParaAtividade
-                    && !elementosVergnaud.isEmpty()
-                    && (obterProximoPapelNaoResolvidoParaDica() != null
-                            || existeSeletorOperacaoPendenteParaDica());
-            botaoVerDicaPosicionamento.setVisible(exibir);
-            botaoVerDicaPosicionamento.setEnabled(exibir);
-            if (exibir) {
-                Dimension tamanho = botaoVerDicaPosicionamento.getPreferredSize();
-                botaoVerDicaPosicionamento.setBounds(
-                        area.x + area.width - 38 - tamanho.width - 6,
-                        area.y + 10, tamanho.width, 26);
-            }
         }
 
         private JButton criarBotaoAjudaContextual(final ScaffoldingAjudaContextual.Area area) {
@@ -4084,7 +4013,6 @@ public class Main extends JFrame {
             if (botaoAjudaVergnaud != null) botaoAjudaVergnaud.setVisible(false);
             if (botaoAjudaComplementar != null) botaoAjudaComplementar.setVisible(false);
             ocultarHistorinhasDoPainelComplementar();
-            if (botaoVerDicaPosicionamento != null) botaoVerDicaPosicionamento.setVisible(false);
             if (menuAjudaContextualAtivo != null) {
                 menuAjudaContextualAtivo.setVisible(false);
                 menuAjudaContextualAtivo = null;
@@ -4397,7 +4325,6 @@ public class Main extends JFrame {
                 botaoFerramentaSortearRelacoes.getAccessibleContext().setAccessibleDescription(descricao);
             }
             atualizarTextosBotoesAjudaContextual();
-            atualizarTextoBotaoVerDicaPosicionamento();
             fecharMenuAjudaContextual();
         }
 
@@ -5043,69 +4970,7 @@ public class Main extends JFrame {
             scaffoldingAutomatizacaoPassos.limpar();
         }
 
-        /**
-         * AG_AE — botão "Ver dica" (sob demanda): revela, um papel por vez
-         * e em ordem progressiva, qual frase pertence a cada papel-dado
-         * ainda não posicionado corretamente. Nunca indica a incógnita.
-         * Cada exibição vira um evento FEEDBACK_EXIBIDO real, correlacionado
-         * por action_id enquanto o mesmo papel continuar pendente.
-         */
-        private void mostrarProximaDicaPosicionamento() {
-            String papel = obterProximoPapelNaoResolvidoParaDica();
-            if (papel == null) {
-                mostrarDicaPosicionamentoPersistente = false;
-                elementoDicaPosicionamentoPersistente = null;
-                papelDicaPosicionamentoAtual = null;
-                if (existeSeletorOperacaoPendenteParaDica()) {
-                    mostrarDicaSeletorOperacaoPendente();
-                }
-                return;
-            }
-            int indice = obterIndiceElementoVergnaudPorPapel(papel);
-            if (indice < 0 || indice >= elementosVergnaud.size()) {
-                return;
-            }
-            String frase = obterFraseParaDicaPosicionamento(papel);
-            if (frase == null) {
-                return;
-            }
-            elementoDicaPosicionamentoPersistente = elementosVergnaud.get(indice);
-            papelDicaPosicionamentoAtual = papel;
-            mostrarDicaPosicionamentoPersistente = true;
-            String actionId = scaffoldingAutomatizacaoPassos.obterOuIniciarAcao(papel);
-            registrarFeedbackExibido("AG_AE",
-                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "dica de posicionamento sob demanda; papel=" + papel,
-                    actionId);
-            registrarAcaoGranular(
-                    "SELECIONAR",
-                    "Ver dica de posicionamento",
-                    "Diagrama de Vergnaud",
-                    "MODELAGEM_LINGUISTICA",
-                    localizacao.texto("ui.hint.stepPlacement.button"),
-                    "papel=" + papel + "; action_id=" + actionId,
-                    "O participante solicitou a dica de posicionamento (AG_AE).");
-            repaint();
-        }
-
-        /**
-         * Item 36 (2026-08-23) — true quando não resta mais nenhum
-         * papel-dado pendente de posicionar (obterProximoPapelNaoResolvidoParaDica()
-         * == null) mas ainda existe um seletor de soma/subtração ativo que
-         * o aluno não respondeu ou respondeu errado
-         * (operacoesDeSomaSubtracaoRespondidasCorretamente() == false).
-         * Existe para o botão "Ver dica" continuar útil depois que o
-         * diagrama já está todo posicionado corretamente — antes deste
-         * item, esse era exatamente o momento em que o botão sumia sem
-         * avisar nada, deixando o aluno sem saber que a etapa pendente
-         * virou o seletor.
-         */
-        private boolean existeSeletorOperacaoPendenteParaDica() {
-            return obterProximoPapelNaoResolvidoParaDica() == null
-                    && !operacoesDeSomaSubtracaoRespondidasCorretamente();
-        }
-
-        /**
+                        /**
          * "Estado modificado" (2026-08-06): true quando o valor atual do
          * papel diverge do curado do problema original — para QUALQUER
          * papel, não só a incógnita (ver getEstadoModificado em
@@ -5720,29 +5585,7 @@ public class Main extends JFrame {
                             + ") + dica de escolher soma ou subtração");
         }
 
-        /**
-         * Item 36 (2026-08-23) — "Ver dica" quando todos os papéis-dado já
-         * estão posicionados corretamente, mas ainda falta responder (ou foi
-         * respondido errado) algum seletor de soma/subtração — sem isso, o
-         * aluno clicava em "Ver dica" e nada acontecia, sem saber que a
-         * etapa pendente não era mais o diagrama, e sim o seletor. Mesmo
-         * padrão de exibição (JOptionPane) já usado por
-         * mostrarDicaOperacaoIncognita — não introduz um terceiro estilo de
-         * dica. Não nomeia a categoria nem a operação certa (o seletor já
-         * mostra sua própria explicação quando o aluno erra) — só aponta
-         * onde olhar, mesma função de scaffolding (manutenção da direção)
-         * do resto do botão "Ver dica".
-         */
-        private void mostrarDicaSeletorOperacaoPendente() {
-            JOptionPane.showMessageDialog(this,
-                    localizacao.texto("ui.hint.pendingOperationSelector"),
-                    localizacao.texto("ui.dialog.confirm"), JOptionPane.INFORMATION_MESSAGE);
-            registrarFeedbackExibido("AG_AE",
-                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,
-                    "dica: falta responder o seletor de soma/subtracao pendente");
-        }
-
-        /**
+                /**
          * "Só deixe azulzinho depois que for escolhida as operações
          * corretamente" — quando algum seletor de soma/subtração está ativo
          * para a situação atual, ele também precisa estar respondido
@@ -6222,7 +6065,6 @@ public class Main extends JFrame {
             Rectangle limiteVergnaud = obterAreaVisivelDiagramasVergnaud();
             reposicionarBotaoRestaurarDiagrama(limiteVergnaud);
             reposicionarBotaoAjudaVergnaud(limiteVergnaud);
-            reposicionarBotaoVerDicaPosicionamento(limiteVergnaud);
             if (!deveExibirDiagramaComplementar() && botaoAjudaComplementar != null) {
                 botaoAjudaComplementar.setVisible(false);
             }
