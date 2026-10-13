@@ -106,7 +106,7 @@ public final class CargaMultiusuarioGerard {
         HttpResponse<String> r = http.send(b.build(), BodyHandlers.ofString());
         long ms = (System.nanoTime() - t0) / 1_000_000;
         latencias.add(ms);
-        porRota.computeIfAbsent(metodo + " " + caminho, k -> new CopyOnWriteArrayList<Long>()).add(ms);
+        porRota.computeIfAbsent(metodo + " " + caminho.replaceAll("/tentativas/[0-9a-f-]{36}", "/tentativas/{id}"), k -> new CopyOnWriteArrayList<Long>()).add(ms);
         if (r.statusCode() >= 500) {
             erros.incrementAndGet();
         }
