@@ -52,6 +52,7 @@ public final class ServidorPrototipoWeb {
     private final FachadaCarregamentoAtividade catalogo = new FachadaCarregamentoAtividade(
             new RepositorioSituacoesAditivas(), new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado());
     private final SessoesWeb sessoes;
+    private final FiltroDeOperacao filtro = new FiltroDeOperacao();
     private final Path raizWeb;
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
     private final RepositorioEventosLogPesquisa logPesquisa = new RepositorioEventosLogPesquisa(
@@ -133,16 +134,21 @@ public final class ServidorPrototipoWeb {
         ServidorPrototipoWeb aplicacao = new ServidorPrototipoWeb(
                 Files.isDirectory(distribuicao) ? distribuicao : Paths.get("web-poc"));
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
-        servidor.createContext(RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes, aplicacao::responder));
-        servidor.createContext(Problema.BASE.substring(0, Problema.BASE.length() - 1), aplicacao::problemas);
-        servidor.createContext("/api/v1", aplicacao::raizDaApi);
-        servidor.createContext("/api/v1/usuarios", aplicacao::usuarios);
-        servidor.createContext("/api/v1/sessao/usuario", aplicacao::entrarUsuario);
-        servidor.createContext("/api/v1/relatos", aplicacao::relatoBug);
-        servidor.createContext("/api/curadoria/situacoes", aplicacao::situacoesCuradoria);
-        servidor.createContext("/api/pesquisa/log", aplicacao::logPesquisa);
-        servidor.createContext("/api/v1/pesquisa/sincronizacoes", aplicacao::sincronizarLogSessao);
-        servidor.createContext("/", aplicacao::arquivoEstatico);
+        registrar(servidor, aplicacao, RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes, aplicacao::responder));
+        registrar(servidor, aplicacao, Problema.BASE.substring(0, Problema.BASE.length() - 1), aplicacao::problemas);
+        registrar(servidor, aplicacao, "/api/v1", aplicacao::raizDaApi);
+        registrar(servidor, aplicacao, "/api/v1/usuarios", aplicacao::usuarios);
+        registrar(servidor, aplicacao, "/api/v1/sessao/usuario", aplicacao::entrarUsuario);
+        registrar(servidor, aplicacao, "/api/v1/relatos", aplicacao::relatoBug);
+        registrar(servidor, aplicacao, "/api/v1/curadoria/situacoes", aplicacao::situacoesCuradoria);
+        registrar(servidor, aplicacao, "/api/v1/pesquisa/log", aplicacao::logPesquisa);
+        registrar(servidor, aplicacao, "/api/v1/pesquisa/sincronizacoes", aplicacao::sincronizarLogSessao);
+        registrar(servidor, aplicacao, "/api/v1/metricas", aplicacao::metricas);
+        registrar(servidor, aplicacao, "/api/v1/openapi.json", aplicacao::contrato);
+        // Caminhos antigos, depreciados: seguem atendendo (clientes fora do repositório) com Deprecation/Sunset/Link.
+        registrar(servidor, aplicacao, "/api/curadoria/situacoes", aplicacao::situacoesCuradoria);
+        registrar(servidor, aplicacao, "/api/pesquisa/log", aplicacao::logPesquisa);
+        registrar(servidor, aplicacao, "/", aplicacao::arquivoEstatico);
         int threadsHttp = Integer.parseInt(System.getenv().getOrDefault("HTTP_THREADS", "64"));
         servidor.setExecutor(Executors.newFixedThreadPool(threadsHttp));
         servidor.start();
@@ -287,14 +293,8 @@ public final class ServidorPrototipoWeb {
             responder(troca, 405, erro("Método não permitido"));
             return;
         }
-        String tokenEsperado = System.getenv("CURADORIA_TOKEN");
-        if (tokenEsperado == null || tokenEsperado.trim().length() == 0) {
-            responder(troca, 503, erro("Upload de curadoria não está configurado neste servidor"));
-            return;
-        }
-        String tokenRecebido = troca.getRequestHeaders().getFirst("X-Curadoria-Token");
-        if (tokenRecebido == null || !tokenEsperado.equals(tokenRecebido)) {
-            responder(troca, 401, erro("Token de curadoria inválido"));
+        marcarDepreciacao(troca, "/api/curadoria/", "/api/v1/curadoria/situacoes");
+        if (negadoAoPesquisador(troca)) {
             return;
         }
         String conteudo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -325,14 +325,8 @@ public final class ServidorPrototipoWeb {
      */
     @SuppressWarnings("unchecked")
     private void logPesquisa(HttpExchange troca) throws IOException {
-        String tokenEsperado = System.getenv("CURADORIA_TOKEN");
-        if (tokenEsperado == null || tokenEsperado.trim().length() == 0) {
-            responder(troca, 503, erro("Log de pesquisa não está configurado neste servidor"));
-            return;
-        }
-        String tokenRecebido = troca.getRequestHeaders().getFirst("X-Curadoria-Token");
-        if (tokenRecebido == null || !tokenEsperado.equals(tokenRecebido)) {
-            responder(troca, 401, erro("Token inválido"));
+        marcarDepreciacao(troca, "/api/pesquisa/", "/api/v1/pesquisa/log");
+        if (negadoAoPesquisador(troca)) {
             return;
         }
 
@@ -525,6 +519,13 @@ public final class ServidorPrototipoWeb {
             corpoFinal.put("detail", corpo.get("erro"));
             corpoFinal.put("instance", troca.getRequestURI().getPath());
         }
+        if (ehProblema) {
+            String idDaRequisicao = filtro.idDaRequisicao(troca);
+            if (idDaRequisicao != null && !corpoFinal.containsKey("request_id")) {
+                corpoFinal = new LinkedHashMap<String, Object>(corpoFinal);
+                corpoFinal.put("request_id", idDaRequisicao);
+            }
+        }
         byte[] bytes = EscritorJsonSimples.escrever(corpoFinal).getBytes(StandardCharsets.UTF_8);
         troca.getResponseHeaders().set("Content-Type",
                 ehProblema ? "application/problem+json; charset=utf-8"
@@ -536,6 +537,63 @@ public final class ServidorPrototipoWeb {
         // estáticos, só que na consulta em si.
         troca.getResponseHeaders().set("Cache-Control", "no-store");
         troca.sendResponseHeaders(status, bytes.length);
+        try (OutputStream saida = troca.getResponseBody()) {
+            saida.write(bytes);
+        }
+    }
+
+    private static void registrar(HttpServer servidor, ServidorPrototipoWeb aplicacao, String caminho,
+            com.sun.net.httpserver.HttpHandler handler) {
+        servidor.createContext(caminho, handler).getFilters().add(aplicacao.filtro);
+    }
+
+    /** Quando os caminhos fora de /api/v1 deixam de existir (RFC 8594). Os clientes têm até lá para migrar. */
+    private static final String SUNSET = "Mon, 11 Jan 2027 00:00:00 GMT";
+
+    /** Se a chamada veio por um caminho antigo, marca a resposta como depreciada e aponta o sucessor. */
+    private static void marcarDepreciacao(HttpExchange troca, String caminhoAntigo, String caminhoNovo) {
+        if (troca.getRequestURI().getPath().startsWith(caminhoAntigo)) {
+            troca.getResponseHeaders().set("Deprecation", "true");
+            troca.getResponseHeaders().set("Sunset", SUNSET);
+            troca.getResponseHeaders().add("Link", "<" + caminhoNovo + ">; rel=\"successor-version\"");
+        }
+    }
+
+    /** Responde com o problema se a requisição não for de pesquisador autenticado; true se respondeu. */
+    private boolean negadoAoPesquisador(HttpExchange troca) throws IOException {
+        Problema negado = AutorizacaoPesquisador.verificar(troca);
+        if (negado == null) {
+            return false;
+        }
+        responder(troca, negado.status(), negado.corpo(null, troca.getRequestURI().getPath()));
+        return true;
+    }
+
+    /** GET /api/v1/metricas: contagem, duração e status por rota (só pesquisador). */
+    private void metricas(HttpExchange troca) throws IOException {
+        if (!"GET".equals(troca.getRequestMethod())) {
+            troca.getResponseHeaders().set("Allow", "GET");
+            responder(troca, 405, Problema.METODO_NAO_PERMITIDO.corpo(null, troca.getRequestURI().getPath()));
+            return;
+        }
+        if (negadoAoPesquisador(troca)) {
+            return;
+        }
+        responder(troca, 200, filtro.metricas());
+    }
+
+    /** GET /api/v1/openapi.json: o contrato desta API. */
+    private void contrato(HttpExchange troca) throws IOException {
+        if (!"GET".equals(troca.getRequestMethod())) {
+            troca.getResponseHeaders().set("Allow", "GET");
+            responder(troca, 405, Problema.METODO_NAO_PERMITIDO.corpo(null, troca.getRequestURI().getPath()));
+            return;
+        }
+        // Escrito pelo próprio DocumentoOpenApi: é o mesmo texto do arquivo do repositório, byte a byte.
+        byte[] bytes = DocumentoOpenApi.escrever(DocumentoOpenApi.gerar()).getBytes(StandardCharsets.UTF_8);
+        troca.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        troca.getResponseHeaders().set("Cache-Control", "no-store");
+        troca.sendResponseHeaders(200, bytes.length);
         try (OutputStream saida = troca.getResponseBody()) {
             saida.write(bytes);
         }
@@ -565,7 +623,9 @@ public final class ServidorPrototipoWeb {
         links.put("entrar", RotasTentativa.link("/api/v1/sessao/usuario", "POST"));
         links.put("relatos", RotasTentativa.link("/api/v1/relatos", "POST"));
         links.put("sincronizacoes", RotasTentativa.link("/api/v1/pesquisa/sincronizacoes", "POST"));
-        links.put("curadoria_situacoes", RotasTentativa.link("/api/curadoria/situacoes", "POST"));
+        links.put("curadoria_situacoes", RotasTentativa.link("/api/v1/curadoria/situacoes", "POST"));
+        links.put("metricas", RotasTentativa.link("/api/v1/metricas", "GET"));
+        links.put("openapi", RotasTentativa.link("/api/v1/openapi.json", "GET"));
         Map<String, Object> problemas = RotasTentativa.link(Problema.BASE + "{slug}", "GET");
         problemas.put("templated", Boolean.TRUE);
         links.put("problemas", problemas);

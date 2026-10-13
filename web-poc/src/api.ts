@@ -127,7 +127,7 @@ export const api = {
   enviarCuradoria: async (token: string, conteudoTsv: string) =>
     seguir<{ aceito: boolean; total_situacoes: number; total_validadas: number }>(
       await daRaiz("curadoria_situacoes"), {
-        cabecalhos: { "Content-Type": "text/plain; charset=utf-8", "X-Curadoria-Token": token },
+        cabecalhos: { "Content-Type": "text/plain; charset=utf-8", Authorization: `Bearer ${token}` },
         corpoBruto: conteudoTsv
       }),
   /** Fechar a aba: avisa o servidor, que antecipa o envio do log. Só dá para usar se a entrada já foi lida. */

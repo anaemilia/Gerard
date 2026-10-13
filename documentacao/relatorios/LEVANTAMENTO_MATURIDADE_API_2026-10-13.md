@@ -12,7 +12,7 @@ Base da avaliação: leitura do código do servidor e do cliente, e um teste loc
 | P1 nível 1: recursos | **feito**: a tentativa é um recurso (`/api/v1/tentativas/{id}/...`, ver `RotasTentativa`); a pessoa também (`/api/v1/usuarios/{id}`). Rotas com verbo removidas (23, mais `GET /api/situacao`, que sorteava). `TesteRecursosTentativaWeb` (HTTP), `e2e_recursos_tentativa_web.mjs` e os e2e existentes (mouse real). |
 | P2 nível 2: verbos e status | **feito para a tentativa**: `GET` só lê (com ETag e `If-None-Match`), `PUT` onde repetir dá o mesmo (`idioma`, `eixo/visibilidade`), `POST` onde cada chamada é um evento; 201 + `Location`, 404/410/409/422/400/415/405 (com `Allow`)/428/412/429 (com `Retry-After`); erros em `application/problem+json` com `type` dereferenciável (`GET /api/v1/problemas/{slug}`); `ETag`/`If-Match` em toda alteração. A tabela rota × verbo × status é o `TesteRecursosTentativaWeb` (33 linhas, HTTP real). |
 | P3 nível 3: hipermídia | **feito**: a entrada `GET /api/v1` (`application/hal+json`) publica os 10 links de onde tudo parte; o estado da tentativa traz `_links` (`self`, `tentativas`, `idioma`, `ajudas`), cada figura com papel traz os recursos do papel (`posicionamento`, `valor`, `confirmacao_valor`, `quadradinhos`, `sinal`, `eixo_visibilidade`, `eixo_projecao`), cada pessoa traz `editar`; `acoes_disponiveis` segue como a lista do que é possível agora (ação com método, href e corpo sugerido). O React só conhece `/api/v1` e segue links. Prova: `TesteHipermidiaWeb` e os e2e de mouse real com o recurso das tentativas renomeado no servidor (`-Dgerard.api.recurso.tentativas=percursos`): nada no cliente quebra. |
-| P4 contrato e operação | não iniciado |
+| P4 contrato e operação | **feito, menos o teste de carga no Render**: contrato OpenAPI 3.1 servido em `GET /api/v1/openapi.json` e guardado em `documentacao/api/openapi.json` (a tabela de rotas da tentativa gera as rotas do contrato; `TesteContratoOpenApiWeb` confere servido = repositório e que as 33 operações documentadas existem); `/api/pesquisa/log` e `/api/curadoria/situacoes` passam a `/api/v1/...` e os caminhos antigos seguem até 2027-01-11 com `Deprecation`, `Sunset` e `Link rel=successor-version`; dois perfis (visitante: cookie de sessão; pesquisador: `Authorization: Bearer`, token em `PESQUISADOR_TOKEN`; `X-Curadoria-Token` aceito e marcado como depreciado); `X-Request-Id`, log JSON por requisição sem segredo e `GET /api/v1/metricas` (só pesquisador); CORS explícito (`CORS_ORIGENS`; sem lista, só mesma origem). `TesteOperacaoWeb`. |
 
 Semântica de cada verbo nas rotas da tentativa (a fonte de verdade é o teste):
 
@@ -30,6 +30,15 @@ Semântica de cada verbo nas rotas da tentativa (a fonte de verdade é o teste):
 Formato adotado no P3: HAL para `_links` (rel → `{href, metodo?, templated?}`; o `metodo` é uma extensão, só presente quando não é GET) e,
 ao lado, `acoes_disponiveis` com o corpo sugerido de cada ação, no papel que o Siren dá às *actions*. Os `href` das ações e dos links
 saem do mesmo lugar (`RotasTentativa`), então não divergem.
+
+Política de depreciação (P4): um caminho que sai de uso continua atendendo até a data em `Sunset`, sempre com `Deprecation: true` e
+`Link: <novo>; rel="successor-version"`; o contrato marca a operação como `deprecated`. Depois da data, o caminho é removido e o
+contrato e o teste mudam juntos. Hoje: `/api/pesquisa/log` e `/api/curadoria/situacoes` até 2027-01-11.
+
+Não feito no P4: o teste de carga **no Render**. Rodá-lo contra o serviço publicado gravaria eventos falsos no banco de pesquisa
+(`pesquisa_log.db`) e usaria o serviço real; a carga foi medida local (100 e 300 usuários, ver `scripts/benchmark/CargaMultiusuarioGerard.java`).
+Para medir no Render é preciso um serviço de homologação com banco próprio. Também fora: contas individuais de pesquisador, rotação de
+token e papéis além de visitante e pesquisador.
 
 Fora do P2 de propósito: `usuarios`, `sessao`, `relatos`, `pesquisa/log` e `curadoria` seguem com o formato de erro novo
 (problem+json) mas sem `ETag`/`If-Match` (não há duas abas disputando a mesma pessoa). Uma aba que fica para trás depois de

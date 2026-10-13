@@ -6,7 +6,7 @@ export type LinkWeb = Readonly<{ href: string; metodo?: "GET" | "POST" | "PUT"; 
 export type RaizApiWeb = Readonly<{
   schema: "gerard.api-raiz.v1";
   _links: Readonly<Record<"self" | "tentativas" | "usuarios" | "cadastrar_usuario" | "sessao_usuario" | "entrar"
-    | "relatos" | "sincronizacoes" | "curadoria_situacoes" | "problemas", LinkWeb>>;
+    | "relatos" | "sincronizacoes" | "curadoria_situacoes" | "problemas" | "metricas" | "openapi", LinkWeb>>;
 }>;
 export type PerfilUsuarioWeb = Readonly<{ id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; possui_foto:boolean; _links: Readonly<{ editar: LinkWeb }> }>;
 export type ListaUsuariosWeb = Readonly<{ schema:"gerard.usuarios-web.v1"; usuarios:readonly PerfilUsuarioWeb[] }>;

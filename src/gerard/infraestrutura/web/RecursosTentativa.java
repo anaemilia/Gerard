@@ -35,22 +35,36 @@ final class RecursosTentativa implements HttpHandler {
         void responder(HttpExchange troca, int status, Map<String, Object> corpo) throws IOException;
     }
 
-    /** Uma operação sobre a tentativa: recebe o serviço, o papel do caminho (ou null) e o corpo JSON. */
-    private interface Operacao {
-        Map<String, Object> executar(ServicoSorteioAtividade sorteios, String papel, Map<String, Object> corpo);
-    }
-
-    /** Uma linha da tabela de rotas: o método do recurso, se altera a tentativa, e o que faz. */
-    private static final class Rota {
+    /**
+     * Uma linha da tabela de rotas (a fonte única: o roteamento e o documento OpenAPI saem dela). {@code modelo} é o
+     * caminho abaixo de /tentativas/{id}, com {papel} onde houver; {@code corpo} lista os campos do JSON como
+     * "nome:tipo" (sufixo "?" se opcional) para o contrato.
+     */
+    static final class Rota {
         final String metodo;
+        final String modelo;
         final boolean altera;
+        final String resumo;
+        final String[] corpo;
         final Operacao operacao;
 
-        Rota(String metodo, boolean altera, Operacao operacao) {
+        Rota(String metodo, String modelo, boolean altera, String resumo, String[] corpo, Operacao operacao) {
             this.metodo = metodo;
+            this.modelo = modelo;
             this.altera = altera;
+            this.resumo = resumo;
+            this.corpo = corpo;
             this.operacao = operacao;
         }
+
+        boolean temPapel() {
+            return modelo.contains("{papel}");
+        }
+    }
+
+    /** Uma operação sobre a tentativa: recebe o serviço, o papel do caminho (ou null) e o corpo JSON. */
+    interface Operacao {
+        Map<String, Object> executar(ServicoSorteioAtividade sorteios, String papel, Map<String, Object> corpo);
     }
 
     private final SessoesWeb sessoes;
@@ -94,23 +108,27 @@ final class RecursosTentativa implements HttpHandler {
         }
         List<String> segmentos = Arrays.asList(resto.split("/"));
         String id = segmentos.get(0);
-        Rota rota = reconhecer(segmentos.subList(1, segmentos.size()));
-        if (rota == null) {
-            problema(troca, Problema.RECURSO_INEXISTENTE, null);
+        List<String> abaixo = segmentos.subList(1, segmentos.size());
+        Casamento casamento = casar(abaixo, troca.getRequestMethod());
+        if (casamento == null) {
+            // O caminho existe com outro método? Então é 405 com Allow; senão, recurso que não existe.
+            String aceitos = metodosDoCaminho(abaixo);
+            if (!aceitos.isEmpty()) {
+                troca.getResponseHeaders().set("Allow", aceitos);
+                problema(troca, Problema.METODO_NAO_PERMITIDO, null);
+            } else {
+                problema(troca, Problema.RECURSO_INEXISTENTE, null);
+            }
             return;
         }
-        if (!rota.metodo.equals(troca.getRequestMethod())) {
-            troca.getResponseHeaders().set("Allow", rota.metodo);
-            problema(troca, Problema.METODO_NAO_PERMITIDO, null);
-            return;
-        }
+        Rota rota = casamento.rota;
         ServicoSorteioAtividade sorteios = sessao.sorteios();
         if (!id.equals(sorteios.getTentativaId())) {
             problema(troca, sessao.foiSubstituida(id) ? Problema.TENTATIVA_SUBSTITUIDA : Problema.TENTATIVA_INEXISTENTE,
                     null);
             return;
         }
-        String papel = segmentos.size() >= 3 && "papeis".equals(segmentos.get(1)) ? segmentos.get(2) : null;
+        String papel = casamento.papel;
         Map<String, Object> corpo;
         if ("GET".equals(rota.metodo)) {
             corpo = new LinkedHashMap<String, Object>();
@@ -228,67 +246,107 @@ final class RecursosTentativa implements HttpHandler {
         return tipo == null && (comprimento == null || "0".equals(comprimento));
     }
 
-    /** As linhas da tabela: caminho abaixo de /tentativas/{id}, método, se altera a tentativa, e o que faz. */
-    private static Rota reconhecer(List<String> s) {
-        int n = s.size();
-        if (n == 0) {
-            return new Rota("GET", false, (sv, p, c) -> sv.consultarEstado());
+    /** O resultado de casar um caminho com a tabela: a linha e o papel capturado (ou null). */
+    private static final class Casamento {
+        final Rota rota;
+        final String papel;
+
+        Casamento(Rota rota, String papel) {
+            this.rota = rota;
+            this.papel = papel;
         }
-        if (n == 1) {
-            switch (s.get(0)) {
-                case "classificacao":
-                    return new Rota("POST", true, (sv, p, c) -> sv.escolherCategoria(String.valueOf(c.get("categoria"))));
-                case "operacoes":
-                    return new Rota("POST", true, (sv, p, c) -> {
-                        if (!sv.possuiAtividadeEscolhaOperacaoAtiva()) {
-                            throw new IllegalStateException("a situação atual não possui escolha de operação implementada");
-                        }
-                        return sv.escolherOperacao(String.valueOf(c.get("seletor")), String.valueOf(c.get("operacao")));
-                    });
-                case "conclusao":
-                    return new Rota("POST", true, (sv, p, c) -> sv.escolherConclusao(String.valueOf(c.get("escolha"))));
-                case "ajudas":
-                    return new Rota("POST", true, (sv, p, c) ->
-                            sv.ajudaContextual(String.valueOf(c.get("area")), String.valueOf(c.get("intencao"))));
-                case "reinicio":
-                    return new Rota("POST", true, (sv, p, c) -> sv.reiniciarAtividadeAtual());
-                case "idioma":
-                    return new Rota("PUT", true, (sv, p, c) -> sv.trocarIdiomaSituacao(String.valueOf(c.get("codigo"))));
-                default:
-                    return null;
+    }
+
+    /** As linhas da tabela, na ordem em que aparecem no contrato. */
+    static final List<Rota> TABELA = Arrays.asList(
+        new Rota("GET", "", false, "Lê o estado atual da tentativa", new String[0],
+                (sv, p, c) -> sv.consultarEstado()),
+        new Rota("POST", "classificacao", true, "Escolhe a categoria da situação", new String[] {"categoria:string"},
+                (sv, p, c) -> sv.escolherCategoria(String.valueOf(c.get("categoria")))),
+        new Rota("POST", "classificacao/confirmacao", true, "Responde à confirmação da categoria",
+                new String[] {"concordou:boolean"},
+                (sv, p, c) -> sv.confirmarCategoria(Boolean.TRUE.equals(c.get("concordou")))),
+        new Rota("POST", "operacoes", true, "Escolhe a operação (soma ou subtração)",
+                new String[] {"seletor:string", "operacao:string"}, (sv, p, c) -> {
+                    if (!sv.possuiAtividadeEscolhaOperacaoAtiva()) {
+                        throw new IllegalStateException("a situação atual não possui escolha de operação implementada");
+                    }
+                    return sv.escolherOperacao(String.valueOf(c.get("seletor")), String.valueOf(c.get("operacao")));
+                }),
+        new Rota("POST", "conclusao", true, "Escolhe o que fazer depois da conclusão", new String[] {"escolha:string"},
+                (sv, p, c) -> sv.escolherConclusao(String.valueOf(c.get("escolha")))),
+        new Rota("POST", "ajudas", true, "Pede a ajuda contextual", new String[] {"area:string", "intencao:string"},
+                (sv, p, c) -> sv.ajudaContextual(String.valueOf(c.get("area")), String.valueOf(c.get("intencao")))),
+        new Rota("POST", "reinicio", true, "Recomeça a modelagem", new String[0],
+                (sv, p, c) -> sv.reiniciarAtividadeAtual()),
+        new Rota("PUT", "idioma", true, "Grava o idioma da situação", new String[] {"codigo:string"},
+                (sv, p, c) -> sv.trocarIdiomaSituacao(String.valueOf(c.get("codigo")))),
+        new Rota("POST", "papeis/{papel}/posicionamento", true, "Solta um número sobre a figura do papel",
+                new String[] {"origem_papel_id:string?"}, (sv, p, c) -> {
+                    Object origem = c.get("origem_papel_id");
+                    return sv.soltarNumero(p, origem == null ? null : String.valueOf(origem));
+                }),
+        new Rota("POST", "papeis/{papel}/valor", true, "Propõe o valor do papel", new String[] {"valor:integer"},
+                (sv, p, c) -> sv.proporValor(p, ((Number) c.get("valor")).intValue())),
+        new Rota("POST", "papeis/{papel}/valor/confirmacao", true, "Responde à confirmação do valor",
+                new String[] {"confirmou:boolean", "valor:integer"}, (sv, p, c) -> sv.responderConfirmacaoValor(p,
+                        Boolean.TRUE.equals(c.get("confirmou")), ((Number) c.get("valor")).intValue())),
+        new Rota("POST", "papeis/{papel}/quadradinhos", true, "Ajusta os quadradinhos do material concreto",
+                new String[] {"delta:integer"},
+                (sv, p, c) -> sv.ajustarQuadradinho(p, ((Number) c.get("delta")).intValue())),
+        new Rota("POST", "papeis/{papel}/sinal", true, "Escolhe o sinal do número relativo",
+                new String[] {"sinal:string"},
+                (sv, p, c) -> sv.escolherSinalNumeroRelativo(p, String.valueOf(c.get("sinal")))),
+        new Rota("PUT", "papeis/{papel}/eixo/visibilidade", true, "Grava o eixo dos inteiros como revelado ou oculto",
+                new String[] {"visivel:boolean"},
+                (sv, p, c) -> Boolean.TRUE.equals(c.get("visivel")) ? sv.revelarEixo(p) : sv.ocultarEixo(p)),
+        // Cálculo puro: não grava nada na tentativa, então não exige nem avança a versão.
+        new Rota("POST", "papeis/{papel}/eixo/projecao", false, "Projeta um valor no eixo (cálculo, não grava)",
+                new String[] {"valor:integer"},
+                (sv, p, c) -> sv.projetarAlteracaoEixo(p, ((Number) c.get("valor")).intValue())));
+
+    private static boolean casaModelo(Rota rota, List<String> segmentos) {
+        String[] modelo = rota.modelo.isEmpty() ? new String[0] : rota.modelo.split("/");
+        if (modelo.length != segmentos.size()) {
+            return false;
+        }
+        for (int i = 0; i < modelo.length; i++) {
+            if (!"{papel}".equals(modelo[i]) && !modelo[i].equals(segmentos.get(i))) {
+                return false;
             }
         }
-        if (n == 2 && "classificacao".equals(s.get(0)) && "confirmacao".equals(s.get(1))) {
-            return new Rota("POST", true, (sv, p, c) -> sv.confirmarCategoria(Boolean.TRUE.equals(c.get("concordou"))));
-        }
-        if (n >= 3 && "papeis".equals(s.get(0))) {
-            String recurso = String.join("/", s.subList(2, n));
-            switch (recurso) {
-                case "posicionamento":
-                    return new Rota("POST", true, (sv, p, c) -> {
-                        Object origem = c.get("origem_papel_id");
-                        return sv.soltarNumero(p, origem == null ? null : String.valueOf(origem));
-                    });
-                case "valor":
-                    return new Rota("POST", true, (sv, p, c) -> sv.proporValor(p, ((Number) c.get("valor")).intValue()));
-                case "valor/confirmacao":
-                    return new Rota("POST", true, (sv, p, c) -> sv.responderConfirmacaoValor(p,
-                            Boolean.TRUE.equals(c.get("confirmou")), ((Number) c.get("valor")).intValue()));
-                case "quadradinhos":
-                    return new Rota("POST", true, (sv, p, c) -> sv.ajustarQuadradinho(p, ((Number) c.get("delta")).intValue()));
-                case "sinal":
-                    return new Rota("POST", true, (sv, p, c) -> sv.escolherSinalNumeroRelativo(p, String.valueOf(c.get("sinal"))));
-                case "eixo/visibilidade":
-                    return new Rota("PUT", true, (sv, p, c) ->
-                            Boolean.TRUE.equals(c.get("visivel")) ? sv.revelarEixo(p) : sv.ocultarEixo(p));
-                case "eixo/projecao":
-                    // Cálculo puro: não grava nada na tentativa, então não exige nem avança a versão.
-                    return new Rota("POST", false, (sv, p, c) -> sv.projetarAlteracaoEixo(p, ((Number) c.get("valor")).intValue()));
-                default:
-                    return null;
+        return true;
+    }
+
+    private static String papelDoCaminho(Rota rota, List<String> segmentos) {
+        String[] modelo = rota.modelo.isEmpty() ? new String[0] : rota.modelo.split("/");
+        for (int i = 0; i < modelo.length; i++) {
+            if ("{papel}".equals(modelo[i])) {
+                return segmentos.get(i);
             }
         }
         return null;
+    }
+
+    /** Acha a linha que casa com o caminho abaixo de /tentativas/{id} e com o método; null se nenhuma. */
+    private static Casamento casar(List<String> segmentos, String metodo) {
+        for (Rota rota : TABELA) {
+            if (rota.metodo.equals(metodo) && casaModelo(rota, segmentos)) {
+                return new Casamento(rota, papelDoCaminho(rota, segmentos));
+            }
+        }
+        return null;
+    }
+
+    /** Os métodos que o caminho aceita (para o cabeçalho Allow); vazio se o caminho não existe. */
+    private static String metodosDoCaminho(List<String> segmentos) {
+        java.util.TreeSet<String> metodos = new java.util.TreeSet<String>();
+        for (Rota rota : TABELA) {
+            if (casaModelo(rota, segmentos)) {
+                metodos.add(rota.metodo);
+            }
+        }
+        return String.join(", ", metodos);
     }
 
     @SuppressWarnings("unchecked")
