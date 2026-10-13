@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -417,6 +419,23 @@ public class LoggerInteracaoGerard {
         private final String invarianteObservacaoAtual;
         private final String invarianteSugestaoAdotadaAtual;
 
+        /** Contexto em branco, como o do logger antes de qualquer situação: o de um visitante que ainda não começou. */
+        private ContextoInteracao() {
+            this.problemaAtual = "P1";
+            this.situacaoVersaoIdAtual = "";
+            this.situacaoGrupoIdAtual = "";
+            this.idiomaSituacaoAtual = "";
+            this.categoriaAtual = "";
+            this.enunciadoAtual = "";
+            this.tentativaAtualId = "T0000";
+            this.tentativaAtualNumeroSituacao = 0;
+            this.invarianteOrigemAtual = "";
+            this.invarianteCodigoAtual = "";
+            this.invarianteSimbolicoAtual = "";
+            this.invarianteObservacaoAtual = "";
+            this.invarianteSugestaoAdotadaAtual = "";
+        }
+
         private ContextoInteracao(LoggerInteracaoGerard logger) {
             this.problemaAtual = logger.problemaAtual;
             this.situacaoVersaoIdAtual = logger.situacaoVersaoIdAtual;
@@ -432,6 +451,10 @@ public class LoggerInteracaoGerard {
             this.invarianteObservacaoAtual = logger.invarianteObservacaoAtual;
             this.invarianteSugestaoAdotadaAtual = logger.invarianteSugestaoAdotadaAtual;
         }
+    }
+
+    public static ContextoInteracao contextoInicial() {
+        return new ContextoInteracao();
     }
 
     public synchronized ContextoInteracao capturarContextoAtual() {
@@ -498,44 +521,99 @@ public class LoggerInteracaoGerard {
         );
     }
 
+    /**
+     * Quantas tentativas distintas esta pessoa já fez desta situação, mais uma. Responde por um índice em memória
+     * (usuário + situação, por grupo, versão ou enunciado, na mesma precedência de antes): ele é montado uma vez a
+     * partir dos arquivos de log já gravados e depois mantido em gravar(). Antes, cada situação nova relia todos os
+     * arquivos de log, o que travava o servidor sob vários usuários e piorava a cada log novo.
+     */
     private int calcularProximoNumeroTentativaSituacao() {
         String chaveGrupo = situacaoGrupoIdAtual == null ? "" : situacaoGrupoIdAtual.trim();
         String chaveVersao = situacaoVersaoIdAtual == null ? "" : situacaoVersaoIdAtual.trim();
         String chaveEnunciado = enunciadoAtual == null ? "" : enunciadoAtual.trim();
-        Set<String> tentativas = new HashSet<String>();
+        if (!indiceTentativasCarregado) {
+            carregarIndiceTentativas();
+            indiceTentativasCarregado = true;
+        }
+        String chave;
+        if (chaveGrupo.length() > 0) {
+            chave = "g|" + usuario + "|" + chaveGrupo;
+        } else if (chaveVersao.length() > 0) {
+            chave = "v|" + usuario + "|" + chaveVersao;
+        } else {
+            chave = "e|" + usuario + "|" + chaveEnunciado;
+        }
+        Set<String> tentativas = tentativasPorSituacao.get(chave);
+        return (tentativas == null ? 0 : tentativas.size()) + 1;
+    }
+
+    /**
+     * Sobe o logger e monta o índice de tentativas agora, em vez de na primeira situação sorteada: com o histórico de
+     * logs grande, essa primeira chamada segurava todos os visitantes que chegavam juntos.
+     */
+    public synchronized void aquecerIndiceDeTentativas() {
+        if (!indiceTentativasCarregado) {
+            carregarIndiceTentativas();
+            indiceTentativasCarregado = true;
+        }
+    }
+
+    private final Map<String, Set<String>> tentativasPorSituacao = new HashMap<String, Set<String>>();
+    private boolean indiceTentativasCarregado;
+
+    private void indexarTentativa(String usuarioDoEvento, String grupo, String versao, String enunciado,
+                                  String tentativa) {
+        if (tentativa == null || tentativa.trim().length() == 0 || usuarioDoEvento == null) {
+            return;
+        }
+        String id = tentativa.trim();
+        String g = grupo == null ? "" : grupo.trim();
+        String v = versao == null ? "" : versao.trim();
+        String e = enunciado == null ? "" : enunciado.trim();
+        if (g.length() > 0) {
+            adicionarAoIndice("g|" + usuarioDoEvento + "|" + g, id);
+        }
+        if (v.length() > 0) {
+            adicionarAoIndice("v|" + usuarioDoEvento + "|" + v, id);
+        }
+        adicionarAoIndice("e|" + usuarioDoEvento + "|" + e, id);
+    }
+
+    private void adicionarAoIndice(String chave, String tentativa) {
+        Set<String> conjunto = tentativasPorSituacao.get(chave);
+        if (conjunto == null) {
+            conjunto = new HashSet<String>();
+            tentativasPorSituacao.put(chave, conjunto);
+        }
+        conjunto.add(tentativa);
+    }
+
+    private void carregarIndiceTentativas() {
         File[] arquivos = diretorioLogs.listFiles();
-        if (arquivos != null) {
-            for (File arquivo : arquivos) {
-                if (!arquivo.isFile() || !arquivo.getName().startsWith("gerard_interacao_") || !arquivo.getName().endsWith(".tsv")) {
-                    continue;
-                }
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(new FileInputStream(arquivo), "UTF-8"));
-                    String linha;
-                    while ((linha = reader.readLine()) != null) {
-                        EventoLogGerard evento = EventoLogGerard.deTsv(linha);
-                        if (evento == null || !usuario.equals(evento.getUsuario())) continue;
-                        boolean mesmaSituacao;
-                        if (chaveGrupo.length() > 0) {
-                            mesmaSituacao = chaveGrupo.equals(evento.getSituacaoGrupoId());
-                        } else if (chaveVersao.length() > 0) {
-                            mesmaSituacao = chaveVersao.equals(evento.getSituacaoVersaoId());
-                        } else {
-                            mesmaSituacao = chaveEnunciado.equals(evento.getEnunciado());
-                        }
-                        if (mesmaSituacao && evento.getTentativa() != null && evento.getTentativa().trim().length() > 0) {
-                            tentativas.add(evento.getTentativa().trim());
-                        }
+        if (arquivos == null) {
+            return;
+        }
+        for (File arquivo : arquivos) {
+            if (!arquivo.isFile() || !arquivo.getName().startsWith("gerard_interacao_") || !arquivo.getName().endsWith(".tsv")) {
+                continue;
+            }
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(arquivo), "UTF-8"));
+                String linha;
+                while ((linha = reader.readLine()) != null) {
+                    EventoLogGerard evento = EventoLogGerard.deTsv(linha);
+                    if (evento != null) {
+                        indexarTentativa(evento.getUsuario(), evento.getSituacaoGrupoId(),
+                                evento.getSituacaoVersaoId(), evento.getEnunciado(), evento.getTentativa());
                     }
-                } catch (Exception ex) {
-                    System.err.println("Erro ao contar tentativas da situação: " + ex.getMessage());
-                } finally {
-                    if (reader != null) try { reader.close(); } catch (Exception ignore) { }
                 }
+            } catch (Exception ex) {
+                System.err.println("Erro ao contar tentativas da situação: " + ex.getMessage());
+            } finally {
+                if (reader != null) try { reader.close(); } catch (Exception ignore) { }
             }
         }
-        return tentativas.size() + 1;
     }
 
     public synchronized void atualizarContexto(String categoria, String enunciado) {
@@ -1066,6 +1144,10 @@ public class LoggerInteracaoGerard {
             writer.write(evento.toTsv());
             writer.newLine();
             writer.close();
+            if (indiceTentativasCarregado) {
+                indexarTentativa(evento.getUsuario(), evento.getSituacaoGrupoId(), evento.getSituacaoVersaoId(),
+                        evento.getEnunciado(), evento.getTentativa());
+            }
         } catch (Exception ex) {
             System.err.println(f("pesq.log.error.write", ex.getMessage()));
         }

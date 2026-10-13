@@ -14,7 +14,7 @@ public class TesteSessoesWeb {
     }
 
     static SessaoWeb nova() {
-        return new SessaoWeb(SessoesWeb.novoId(), new ServicoSorteioAtividade(), null);
+        return new SessaoWeb(SessoesWeb.novoId(), new ServicoSorteioAtividade(), null, null);
     }
 
     public static void main(String[] args) throws Exception {

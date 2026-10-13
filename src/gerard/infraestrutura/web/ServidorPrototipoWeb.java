@@ -72,6 +72,8 @@ public final class ServidorPrototipoWeb {
 
     private ServidorPrototipoWeb(Path raizWeb) {
         this.raizWeb = raizWeb.toAbsolutePath().normalize();
+        // O logger e o índice de tentativas sobem no boot, não na primeira visita.
+        gerard.pesquisador.log.LoggerInteracaoGerard.getInstancia().aquecerIndiceDeTentativas();
         long ociosidadeMinutos = Long.parseLong(System.getenv().getOrDefault("SESSAO_OCIOSIDADE_MINUTOS", "120"));
         int limiteSessoes = Integer.parseInt(System.getenv().getOrDefault("SESSAO_LIMITE", "500"));
         this.sessoes = new SessoesWeb(this::novaSessao, ociosidadeMinutos * 60_000L, limiteSessoes);
@@ -89,11 +91,12 @@ public final class ServidorPrototipoWeb {
     // Raiz de composição: a infraestrutura fornece as implementações das portas da aplicação (registro, ajuda
     // contextual e questionamento de posicionamento) para a tentativa de cada visitante.
     private SessaoWeb novaSessao() {
+        RegistradorAtividadeWebLogGerard registro = new RegistradorAtividadeWebLogGerard();
         ServicoSorteioAtividade sorteios = new ServicoSorteioAtividade(new PoliticaSorteioSituacoesAditivas(),
-                catalogo, new java.util.Random(), IdiomaInterface.PORTUGUES, new RegistradorAtividadeWebLogGerard(),
+                catalogo, new java.util.Random(), IdiomaInterface.PORTUGUES, registro,
                 new AdaptadorAjudaContextualWeb(), new AdaptadorQuestionamentoPosicionamento());
         return new SessaoWeb(SessoesWeb.novoId(), sorteios,
-                new SessaoAdaptativaUsuario(usuarios, new RepositorioRegrasAdaptativasPublicadas()));
+                new SessaoAdaptativaUsuario(usuarios, new RepositorioRegrasAdaptativasPublicadas()), registro);
     }
 
     private void iniciarVerificacaoInatividade() {
@@ -275,6 +278,7 @@ public final class ServidorPrototipoWeb {
                 sessoes.de(troca).usuario().encerrarNoLogout();
             }
             String versao = sessoes.de(troca).usuario().iniciarNoLogin(id).getVersaoModelo();
+            sessoes.de(troca).registro().definirUsuario(id);
             Map<String, Object> resposta = new LinkedHashMap<String, Object>();
             resposta.put("schema", "gerard.sessao-usuario-web.v1");
             resposta.put("usuario_id", id);

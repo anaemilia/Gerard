@@ -97,7 +97,12 @@ final class SessoesWeb {
             for (String par : cabecalho.split(";")) {
                 String p = par.trim();
                 if (p.startsWith(COOKIE + "=")) {
-                    return p.substring(COOKIE.length() + 1);
+                    String valor = p.substring(COOKIE.length() + 1);
+                    // RFC 6265: o valor do cookie pode vir entre aspas (alguns clientes, como o CookieManager do JDK).
+                    if (valor.length() >= 2 && valor.startsWith("\"") && valor.endsWith("\"")) {
+                        valor = valor.substring(1, valor.length() - 1);
+                    }
+                    return valor;
                 }
             }
         }
