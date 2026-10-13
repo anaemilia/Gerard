@@ -48,15 +48,14 @@ import java.util.UUID;
  * mecanismos coexistem. O papel incógnito nunca é pré-posicionado com o
  * valor curado.
  */
-public final class ServicoAtividadeWebComposicaoTransformacoes
-        implements ServicoAtividadeWeb, ServicoAtividadeWebEscolhaOperacao, ServicoAtividadeWebComSinal {
+public final class ServicoAtividadeWebComposicaoTransformacoes extends ServicoAtividadeWebModelagemPapeis
+        implements ServicoAtividadeWebEscolhaOperacao, ServicoAtividadeWebComSinal {
     public static final String SCHEMA_ESTADO = ServicoAtividadeWebComposicao.SCHEMA_ESTADO;
     public static final String SCHEMA_RESULTADO = ServicoAtividadeWebComposicao.SCHEMA_RESULTADO;
 
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private final EscopoTentativaWeb escopo;
-    private final AvaliadorOrigemDestinoWeb avaliadorOrigemDestino;
     private SinalNumeroRelativoWeb sinais;
     private PapelQuantitativo estadoInicial;
     private PapelQuantitativo transformacao1;
@@ -74,9 +73,6 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     private final RelacaoEstruturalComposicaoDeTransformacoes relacaoDiagnostico =
             RelacaoEstruturalComposicaoDeTransformacoes.composicaoDeTransformacoes();
     private IncognitaQuantitativa incognita;
-    // null quando a situação não tem incógnita curada resolvível.
-    private PapelQuantitativo papelDesconhecido;
-    private boolean incognitaEngatada;
     // Papéis que têm elemento (token) próprio no enunciado; null = desconhecido (todos arrastáveis).
     private java.util.Set<String> papeisComElementoNoEnunciado;
     private OpcaoOperacaoCuradoria escolhaEntreTransformacoes;
@@ -85,7 +81,6 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
     // ServicoAtividadeWebComSinal) já revelado (arrastado) mas ainda sem
     // sinal escolhido — mesmo protocolo do desktop e mesmo padrão já usado
     // por ServicoAtividadeWebComparacaoMedidas/TransformacaoMedidas.
-    private PapelQuantitativo papelAguardandoSinal;
     private Integer valorCuradoAguardandoSinal;
 
     public ServicoAtividadeWebComposicaoTransformacoes(String tentativaId,
@@ -109,7 +104,6 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         this.tentativaId = tentativaId;
         this.situacao = situacao;
         this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
-        this.avaliadorOrigemDestino = new AvaliadorOrigemDestinoWeb(questionamento);
         reiniciar();
     }
 
@@ -385,7 +379,22 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         return true;
     }
 
-    private PapelQuantitativo papelPorChave(String chave) {
+    /** Só os papéis com valor curado podem ser posicionados (os 3 de estado tipicamente não têm, ver reiniciar). */
+    @Override
+    protected void validarPosicionavel(PapelQuantitativo papel) {
+        if (!temValorCurado(papel)) {
+            throw new IllegalArgumentException(
+                    "papel sem valor curado para posicionar: " + papel.getChave());
+        }
+    }
+
+    @Override
+    protected void aposPosicionarConhecido() {
+        completarDerivadosPorConsistencia();
+    }
+
+    @Override
+    protected PapelQuantitativo papelPorChave(String chave) {
         for (PapelQuantitativo papel : todosOsPapeis()) {
             if (papel.getChave().equals(chave)) {
                 return papel;
@@ -393,73 +402,6 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         }
         throw new IllegalStateException(
                 "papel incompatível com Composição de Transformações: " + chave);
-    }
-
-    /**
-     * Posiciona um papel conhecido (só os que têm valor curado — os 3 de
-     * estado tipicamente não têm nesta categoria, ver reiniciar) com esse
-     * valor — ação que soltar um elemento do enunciado sobre sua caixa
-     * dispara (protocolo de mouse é posicionar).
-     */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
-        PapelQuantitativo papel = papelPorChave(papelId);
-        if (papel == papelDesconhecido) {
-            throw new IllegalArgumentException(
-                    "papel é a incógnita desta situação, use ENGATAR_INCOGNITA/PROPOR_VALOR_PAPEL: " + papelId);
-        }
-        if (!temValorCurado(papel)) {
-            throw new IllegalArgumentException(
-                    "papel sem valor curado para posicionar: " + papelId);
-        }
-        ResultadoQuestionamentoPosicionamento questionamento =
-                avaliadorOrigemDestino.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
-                        participantes(), escopo);
-        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
-            Map<String, Object> rejeitado = mapa();
-            rejeitado.put("schema", SCHEMA_RESULTADO);
-            rejeitado.put("aceita", Boolean.FALSE);
-            rejeitado.put("chave_mensagem", questionamento.getMensagem());
-            rejeitado.put("estado", estadoAtual());
-            return rejeitado;
-        }
-        if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
-            posicionarConhecido(papel);
-        }
-        completarDerivadosPorConsistencia();
-        Map<String, Object> resultado = mapa();
-        resultado.put("schema", SCHEMA_RESULTADO);
-        resultado.put("aceita", Boolean.TRUE);
-        resultado.put("chave_mensagem", null);
-        resultado.put("estado", estadoAtual());
-        return resultado;
-    }
-
-    /** Engata o "?" na caixa da incógnita (protocolo mouse-texto, Main.java). */
-    public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
-        if (papelDesconhecido == null || !papelDesconhecido.getChave().equals(papelId)) {
-            throw new IllegalArgumentException(
-                    "papel não é a incógnita curada desta situação: " + papelId);
-        }
-        ResultadoQuestionamentoPosicionamento questionamento =
-                avaliadorOrigemDestino.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
-                        participantes(), escopo);
-        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
-            Map<String, Object> rejeitado = mapa();
-            rejeitado.put("schema", SCHEMA_RESULTADO);
-            rejeitado.put("aceita", Boolean.FALSE);
-            rejeitado.put("chave_mensagem", questionamento.getMensagem());
-            rejeitado.put("estado", estadoAtual());
-            return rejeitado;
-        }
-        if (!papelDesconhecido.estaPreenchido()) {
-            incognitaEngatada = true;
-        }
-        Map<String, Object> resultado = mapa();
-        resultado.put("schema", SCHEMA_RESULTADO);
-        resultado.put("aceita", Boolean.TRUE);
-        resultado.put("chave_mensagem", null);
-        resultado.put("estado", estadoAtual());
-        return resultado;
     }
 
     /** Resposta Sim/Não à confirmação do valor rejeitado da incógnita. */
@@ -608,7 +550,8 @@ public final class ServicoAtividadeWebComposicaoTransformacoes
         return resultado;
     }
 
-    private void posicionarConhecido(PapelQuantitativo papel) {
+    @Override
+    protected void posicionarConhecido(PapelQuantitativo papel) {
         String limpo = valorCuradoDoPapel(papel).trim();
         int valor;
         try {

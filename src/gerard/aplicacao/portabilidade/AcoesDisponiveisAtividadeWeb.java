@@ -61,7 +61,7 @@ public final class AcoesDisponiveisAtividadeWeb {
         List<Object> acoes = new ArrayList<Object>();
         Map<String, Object> corpo = new LinkedHashMap<String, Object>();
         corpo.put("papel_id", papelAlvo);
-        acoes.add(acao("POSICIONAR_CONHECIDO", "POST", "/api/acoes/posicionar-conhecido", corpo));
+        acoes.add(acao("POSICIONAR_CONHECIDO", "POST", "/api/acoes/soltar-numero", corpo));
         return acoes;
     }
 
@@ -69,7 +69,7 @@ public final class AcoesDisponiveisAtividadeWeb {
         List<Object> acoes = new ArrayList<Object>();
         Map<String, Object> corpo = new LinkedHashMap<String, Object>();
         corpo.put("papel_id", papelAlvo);
-        acoes.add(acao("ENGATAR_INCOGNITA", "POST", "/api/acoes/engatar-incognita", corpo));
+        acoes.add(acao("ENGATAR_INCOGNITA", "POST", "/api/acoes/soltar-numero", corpo));
         return acoes;
     }
 

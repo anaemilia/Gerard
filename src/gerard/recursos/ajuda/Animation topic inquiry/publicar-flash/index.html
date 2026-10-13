@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='6' r='4' fill='%231F56D6'/%3E%3Ccircle cx='5.8' cy='17' r='4' fill='none' stroke='%231F56D6' stroke-width='2.6'/%3E%3Ccircle cx='18.2' cy='17' r='4' fill='none' stroke='%231F56D6' stroke-width='2.6'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F2F6FE"/><g transform="translate(30 30) scale(1.667)"><circle cx="12" cy="6" r="4" fill="#1F56D6"/><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"/></g></svg></template>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GÉRARD — Laboratório</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
+<script src="./mobile-embeds.js"></script>
+<style>
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  body { margin: 0; background: #FFFFFF; color: #0E1726; font-family: 'Nunito', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #1F56D6; text-underline-offset: 3px; }
+  a:hover { color: #173A8C; }
+  *:focus-visible { outline: 3px solid #1F56D6; outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: #C6D7FA; }
+  @keyframes gIntroFly { 0% { transform: translate(var(--fx), var(--fy)) scale(.2) rotate(-200deg); opacity: 0; } 65% { transform: translate(0,0) scale(1.12) rotate(8deg); opacity: 1; } 82% { transform: scale(.96); } 100% { transform: none; opacity: 1; } }
+  @keyframes gIntroFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes gIntroOp { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes gIntroDrop { 0% { opacity: 0; transform: translateY(-70px) scale(1.5); } 60% { opacity: 1; transform: translateY(6px) scale(.95); } 100% { opacity: 1; transform: none; } }
+  @keyframes gIntroBar { from { width: 0; } to { width: 100%; } }
+  @keyframes gIntroSpin { to { transform: rotate(360deg); } }
+  @keyframes gIntroOut { to { opacity: 0; transform: scale(1.05); } }
+  @keyframes gPopA { 0% { transform: scale(.6); box-shadow: 0 0 0 0 rgba(31,86,214,.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); box-shadow: 0 0 0 18px rgba(31,86,214,0); } }
+  @keyframes gPopB { 0% { transform: scale(.6); box-shadow: 0 0 0 0 rgba(31,86,214,.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); box-shadow: 0 0 0 18px rgba(31,86,214,0); } }
+  @keyframes gShakeA { 0%,100% { transform: none; } 20% { transform: translateX(-9px) rotate(-3deg); } 40% { transform: translateX(9px) rotate(3deg); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  @keyframes gShakeB { 0%,100% { transform: none; } 20% { transform: translateX(-9px) rotate(-3deg); } 40% { transform: translateX(9px) rotate(3deg); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+</style>
+</helmet>
+<div style="zoom:{{ zoom }};min-height:100vh;background:#FFFFFF;color:#0E1726;font-family:'Nunito',system-ui,sans-serif;font-size:17px;line-height:1.6;">
+
+  {{ introEl }}
+
+  <a href="#conteudo" style="position:absolute;left:-9999px;top:8px;z-index:100;background:#0E1726;color:#FFFFFF;padding:10px 16px;border-radius:8px;" style-focus="left:16px;">Pular para o conteúdo</a>
+
+  <sc-if value="{{ showUtilityBar }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#F5F7FA;border-bottom:1px solid #E4E8EF;font-size:13px;color:#3D4759;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);min-height:40px;display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;">
+        <span>Projeto de pesquisa · UFPE · UNIVASF</span>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <div role="group" aria-label="Tamanho do texto" style="display:flex;align-items:center;gap:4px;">
+            <span style="margin-right:4px;">Texto</span>
+            <button type="button" onClick="{{ fontDown }}" aria-label="Diminuir texto" style="min-width:32px;height:28px;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:6px;font:inherit;font-size:12px;color:#0E1726;cursor:pointer;" style-hover="border-color:#1F56D6;">A−</button>
+            <button type="button" onClick="{{ fontReset }}" aria-label="Tamanho padrão" style="min-width:32px;height:28px;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:6px;font:inherit;font-size:14px;color:#0E1726;cursor:pointer;" style-hover="border-color:#1F56D6;">A</button>
+            <button type="button" onClick="{{ fontUp }}" aria-label="Aumentar texto" style="min-width:32px;height:28px;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:6px;font:inherit;font-size:16px;color:#0E1726;cursor:pointer;" style-hover="border-color:#1F56D6;">A+</button>
+          </div>
+          <button type="button" onClick="{{ replayIntro }}" style="font:inherit;font-size:12.5px;font-weight:700;padding:4px 12px;border-radius:999px;border:1px solid #C6D3E8;background:linear-gradient(180deg,#FFFFFF,#E9EFF8);color:#173A8C;cursor:pointer;" style-hover="border-color:#1F56D6;">▶ Rever intro</button>
+          <div role="group" aria-label="Idioma" style="display:flex;align-items:center;gap:2px;font-family:'IBM Plex Mono',monospace;font-size:12px;">
+            <span aria-current="true" style="padding:4px 8px;border-radius:6px;background:#E3ECFD;color:#173A8C;font-weight:500;">PT</span>
+            <span title="Em breve" aria-disabled="true" style="padding:4px 8px;color:#5B6577;">EN</span>
+            <span title="Em breve" aria-disabled="true" style="padding:4px 8px;color:#5B6577;">FR</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <header style="position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#FFFFFF 0%,#EAF1FC 100%);border-bottom:1px solid #C6D3E8;box-shadow:0 3px 0 #DCE5F4,0 10px 20px -12px rgba(23,58,140,0.35);">
+    <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:68px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+      <a href="#/" aria-label="GÉRARD — início" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#0E1726;">
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" style="flex:none;display:block;"><circle cx="12" cy="6" r="4" fill="#1F56D6"></circle><circle cx="5.8" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle><circle cx="18.2" cy="17" r="4" fill="none" stroke="#1F56D6" stroke-width="2"></circle></svg>
+        <span style="font-weight:600;font-size:19px;letter-spacing:0.1em;">GÉRARD</span>
+      </a>
+      <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+        <nav aria-label="Principal" style="display:flex;align-items:center;gap:2px;">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+            <a href="{{ n.href }}" aria-current="{{ n.cur }}" style="padding:8px 12px;border-radius:8px;font-size:15px;font-weight:500;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;" style-hover="background:#F2F6FE;color:#173A8C;">{{ n.label }}</a>
+          </sc-for>
+        </nav>
+      </sc-if>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:15px;font-weight:500;text-decoration:none;white-space:nowrap;" style-hover="transform:translateY(-1px);filter:brightness(1.08);color:#FFFFFF;" style-active="transform:translateY(2px);filter:brightness(0.95);">
+          <span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/play.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/play.svg) center/contain no-repeat;"></span>
+          Ver demonstração
+        </a>
+        <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ toggleMenu }}" aria-expanded="{{ menuOpen }}" aria-controls="menu-movel" aria-label="{{ menuLabel }}" style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:10px;cursor:pointer;color:#0E1726;">
+            <span aria-hidden="true" style="width:22px;height:22px;background:currentColor;-webkit-mask:url({{ menuIcon }}) center/contain no-repeat;mask:url({{ menuIcon }}) center/contain no-repeat;"></span>
+          </button>
+        </sc-if>
+      </div>
+    </div>
+    <sc-if value="{{ showDrawer }}" hint-placeholder-val="{{ false }}">
+      <nav id="menu-movel" aria-label="Menu" style="border-top:1px solid #E4E8EF;background:#FFFFFF;padding:8px clamp(20px,4vw,40px) 20px;display:flex;flex-direction:column;">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+          <a href="{{ n.href }}" onClick="{{ closeMenu }}" style="display:flex;align-items:center;min-height:52px;border-bottom:1px solid #EEF1F5;font-size:17px;font-weight:500;color:#0E1726;text-decoration:none;">{{ n.label }}</a>
+        </sc-for>
+      </nav>
+    </sc-if>
+  </header>
+
+  <main id="conteudo">
+    <sc-if value="{{ isInner }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Cabeçalho da página" style="background-color:#EEF4FD;background-image:linear-gradient(#DCE6F7 1px,transparent 1px),linear-gradient(90deg,#DCE6F7 1px,transparent 1px);background-size:24px 24px;border-bottom:1px solid #C6D3E8;padding:clamp(40px,6vw,72px) 0 clamp(36px,5vw,56px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <nav aria-label="Breadcrumb" style="font-size:14px;margin-bottom:20px;"><ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;color:#5B6577;"><li><a href="#/" style="color:#3D4759;">Início</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color:#0E1726;font-weight:500;">{{ pageTitle }}</li></ol></nav>
+        <h1 style="margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.1;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">{{ pageH1 }}</h1>
+        <p style="margin:18px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:60ch;text-wrap:pretty;">{{ pageLead }}</p>
+      </div>
+    </section>
+    </sc-if>
+
+
+    <sc-if value="{{ show_inicio }}" hint-placeholder-val="{{ true }}">
+    <section id="inicio" data-screen-label="01 Hero" style="background-color:#EEF4FD;background-image:linear-gradient(#DCE6F7 1px,transparent 1px),linear-gradient(90deg,#DCE6F7 1px,transparent 1px);background-size:24px 24px;border-bottom:1px solid #C6D3E8;padding:clamp(48px,7vw,96px) 0 clamp(56px,7vw,88px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:clamp(40px,5vw,72px);align-items:center;">
+        <div>
+          <p style="display:inline-flex;align-items:center;gap:8px;margin:0 0 24px;padding:6px 12px 6px 10px;border:1px solid #C6D7FA;background:#FFFFFF;border-radius:999px;font-size:13px;font-weight:500;color:#173A8C;">
+            <span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;background:#1F56D6;"></span>
+            Ensino e aprendizagem · Sistema adaptativo · Pesquisa
+          </p>
+          <h1 style="margin:0;font-size:clamp(36px,4.8vw,58px);line-height:1.08;font-weight:800;letter-spacing:-0.01em;color:#0E1726;text-wrap:balance;">Da situação ao conceito.</h1>
+          <p style="margin:24px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#3D4759;max-width:56ch;text-wrap:pretty;">Um ambiente adaptativo de aprendizagem e pesquisa sobre Estruturas Aditivas, fundamentado na Teoria dos Campos Conceituais de Gérard Vergnaud.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;">
+            <a href="#/sobre" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="transform:translateY(-1px);filter:brightness(1.08);color:#FFFFFF;" style-active="transform:translateY(2px);filter:brightness(0.95);">
+              Conhecer o Gérard
+              <span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span>
+            </a>
+            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">
+              <span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/circle-play.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/circle-play.svg) center/contain no-repeat;"></span>
+              Ver demonstração
+            </a>
+          </div>
+          <div style="margin-top:40px;padding-top:24px;border-top:1px solid #DDE3EC;">
+            <p style="margin:0 0 12px;font-size:14px;color:#5B6577;">Comece pelo seu perfil</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <sc-for list="{{ entryPaths }}" as="e" hint-placeholder-count="3">
+                <a href="{{ e.href }}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #B5C4DC;background:linear-gradient(180deg,#FFFFFF 0%,#E9EFF8 100%);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #C3CFE2;font-size:15px;font-weight:500;color:#0E1726;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">
+                  <span aria-hidden="true" style="width:18px;height:18px;background:#1F56D6;-webkit-mask:url({{ e.icon }}) center/contain no-repeat;mask:url({{ e.icon }}) center/contain no-repeat;"></span>{{ e.label }}
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <figure style="margin:0 0 0 auto;width:100%;max-width:580px;">
+          <div data-screen-label="Laboratório" style="position:relative;border-radius:24px;padding:6px;background:linear-gradient(180deg,#9DBBF2 0%,#3F72DE 100%);box-shadow:0 6px 0 #1C4BB8,0 28px 44px -22px rgba(23,58,140,0.6);">
+            <div style="border-radius:19px;background:linear-gradient(180deg,#FFFFFF 0%,#EFF5FE 100%);overflow:hidden;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px 10px 16px;background:linear-gradient(180deg,#4A7EF2 0%,#2560E3 50%,#1B4FCB 51%,#2259D8 100%);color:#FFFFFF;">
+                <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;text-shadow:0 1px 0 rgba(0,0,0,0.3);">
+                  <span aria-hidden="true" style="display:flex;gap:4px;"><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span><span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,#BFD3FF);"></span></span>
+                  Laboratório · Composição
+                </span>
+                <button type="button" onClick="{{ labReset }}" style="font:inherit;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.6);background:linear-gradient(180deg,rgba(255,255,255,0.35),rgba(255,255,255,0.08));color:#FFFFFF;cursor:pointer;text-shadow:0 1px 0 rgba(0,0,0,0.25);" style-hover="background:rgba(255,255,255,0.3);">Recomeçar</button>
+              </div>
+              <div style="padding:18px 20px 20px;">
+                <p style="margin:0;font-size:17px;line-height:1.55;color:#0E1726;text-wrap:pretty;">Lucas tem <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">12</strong> figurinhas do Pokémon e <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">25</strong> do Digimon. Quantas figurinhas ele tem <strong style="padding:1px 7px;border-radius:7px;background:#FFE99A;">ao todo</strong>?</p>
+                <p style="margin:6px 0 0;font-size:14px;color:#5B6577;">Arraste as peças para o diagrama de Vergnaud. Também dá para tocar na peça e depois no lugar.</p>
+                <div style="margin-top:16px;padding:22px 12px 14px;border-radius:16px;border:2px dashed #B9CAE6;background-color:#F7FAFF;background-image:linear-gradient(#E3EBF8 1px,transparent 1px),linear-gradient(90deg,#E3EBF8 1px,transparent 1px);background-size:20px 20px;display:grid;grid-template-columns:auto 40px auto;align-items:center;justify-content:center;gap:10px;">
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="p1" onClick="{{ slot_p1_click }}" aria-label="{{ slot_p1_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_p1_bs }} {{ slot_p1_bd }};background:{{ slot_p1_bg }};color:{{ slot_p1_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_p1_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_p1_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_p1_cap }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="p2" onClick="{{ slot_p2_click }}" aria-label="{{ slot_p2_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_p2_bs }} {{ slot_p2_bd }};background:{{ slot_p2_bg }};color:{{ slot_p2_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_p2_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_p2_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_p2_cap }}</span>
+                  </div>
+                  </div>
+                  <div aria-hidden="true" style="height:150px;margin-top:-20px;border:4px solid #1F56D6;border-left:none;border-radius:0 18px 18px 0;width:16px;"></div>
+                  <div style="margin-top:-20px;"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <button type="button" data-slot="w" onClick="{{ slot_w_click }}" aria-label="{{ slot_w_aria }}" style="width:88px;height:66px;border-radius:14px;border:3px {{ slot_w_bs }} {{ slot_w_bd }};background:{{ slot_w_bg }};color:{{ slot_w_fg }};font:inherit;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:{{ slot_w_anim }};box-shadow:inset 0 2px 6px rgba(23,58,140,0.12);">{{ slot_w_label }}</button>
+                    <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ slot_w_cap }}</span>
+                  </div></div>
+                </div>
+                <div role="group" aria-label="Peças" style="display:flex;justify-content:center;gap:14px;min-height:64px;margin-top:16px;align-items:center;">
+                  <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+                    <button type="button" onPointerDown="{{ c.down }}" onClick="{{ c.key }}" aria-pressed="{{ c.sel }}" aria-label="Peça {{ c.label }}" style="position:relative;z-index:{{ c.z }};touch-action:none;width:74px;height:58px;border-radius:16px;border:none;font:inherit;font-size:28px;font-weight:900;color:#3A2A00;background:linear-gradient(180deg,#FFF7D1 0%,#FFD95A 50%,#F5BC0E 51%,#FFCB2E 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.8),0 4px 0 #C48A00,0 12px 16px -8px rgba(0,0,0,0.35);cursor:grab;transform:translate({{ c.dx }}px,{{ c.dy }}px) scale({{ c.sc }});transition:{{ c.tr }};outline:{{ c.ol }};outline-offset:3px;">{{ c.label }}</button>
+                  </sc-for>
+                </div>
+                <p role="status" style="margin:12px 0 0;min-height:24px;text-align:center;font-size:15.5px;font-weight:700;color:{{ labMsgFg }};">{{ labMsg }}</p>
+              </div>
+            </div>
+          </div>
+          <figcaption style="display:flex;align-items:center;gap:14px;margin-top:16px;">
+            <img src="imagens/Vergnaud_melhorada.png" alt="Retrato de Gérard Vergnaud." style="flex:none;width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:55% 30%;border:1px solid #D5DBE5;">
+            <span style="font-size:14px;line-height:1.5;color:#3D4759;"><strong style="display:block;font-weight:600;color:#0E1726;">Gérard Vergnaud (1933–2021)</strong>Tríade dos Campos Conceituais: um conceito é a união de situações, invariantes e representações.</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_fundamentacao }}" hint-placeholder-val="{{ true }}">
+    <section id="fundamentacao" data-screen-label="02 Fundamentação" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:clamp(40px,5vw,72px);align-items:start;">
+        <div>
+          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Fundamentação científica</p>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">A Teoria dos Campos Conceituais.</h2>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px;font-size:17px;line-height:1.65;color:#3D4759;max-width:58ch;">
+            <p style="margin:0;text-wrap:pretty;">Para Gérard Vergnaud, um conceito não se aprende isolado: ele ganha sentido dentro de um campo — um conjunto de situações, invariantes e representações que se apoiam mutuamente.</p>
+            <p style="margin:0;text-wrap:pretty;">As estruturas aditivas formam um desses campos. Somar e subtrair são apenas o cálculo; o que se aprende é a relação entre as quantidades em cada classe de situação.</p>
+          </div>
+          <a href="#/pesquisa" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:32px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;" style-active="background:#E3ECFD;">Conhecer a fundamentação<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          
+          <div>
+          <p style="margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Categorias de relações entre medidas</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;">
+            <sc-for list="{{ categories }}" as="c" hint-placeholder-count="3">
+              <div style="border:1px solid #DDE3EC;border-radius:12px;background:#FFFFFF;padding:18px;">
+                <sc-if value="{{ c.is_comp }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;gap:6px;flex:none;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></span><span style="width:9px;height:40px;border:1.5px solid #0E1726;border-left:0;box-sizing:border-box;flex:none;"></span><span style="width:10px;height:1.5px;background:#0E1726;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_trans }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:34px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_compar }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="position:relative;display:inline-block;width:1.5px;height:18px;background:#0E1726;margin:0 auto;"><span style="position:absolute;bottom:-1px;left:-3.25px;border-top:6px solid #0E1726;border-left:4px solid transparent;border-right:4px solid transparent;"></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></span><span style="display:flex;align-items:center;gap:4px;margin-left:4px;"><span style="width:10px;height:1.5px;background:#0E1726;"></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></span></div></sc-if>
+                <sc-if value="{{ c.is_ctrans }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:22px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:22px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_trel }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:34px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_crel }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;gap:6px;flex:none;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></span><span style="width:9px;height:40px;border:1.5px solid #0E1726;border-left:0;box-sizing:border-box;flex:none;"></span><span style="width:10px;height:1.5px;background:#0E1726;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></div></sc-if>
+                <h3 style="margin:0 0 6px;font-size:16px;font-weight:600;color:#0E1726;">{{ c.title }}</h3>
+                <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.5;color:#3D4759;">{{ c.rule }}</p>
+              </div>
+            </sc-for>
+          </div>
+          </div>
+          <div>
+          <p style="margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Categorias de relações entre transformações e relações</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;">
+            <sc-for list="{{ categoriesRel }}" as="c" hint-placeholder-count="3">
+              <div style="border:1px solid #DDE3EC;border-radius:12px;background:#FFFFFF;padding:18px;">
+                <sc-if value="{{ c.is_comp }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;gap:6px;flex:none;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></span><span style="width:9px;height:40px;border:1.5px solid #0E1726;border-left:0;box-sizing:border-box;flex:none;"></span><span style="width:10px;height:1.5px;background:#0E1726;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_trans }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:34px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_compar }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="position:relative;display:inline-block;width:1.5px;height:18px;background:#0E1726;margin:0 auto;"><span style="position:absolute;bottom:-1px;left:-3.25px;border-top:6px solid #0E1726;border-left:4px solid transparent;border-right:4px solid transparent;"></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></span><span style="display:flex;align-items:center;gap:4px;margin-left:4px;"><span style="width:10px;height:1.5px;background:#0E1726;"></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></span></div></sc-if>
+                <sc-if value="{{ c.is_ctrans }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:22px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:22px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:18px;height:18px;border:1.5px solid #1F56D6;border-radius:4px;box-sizing:border-box;background:#EEF3FE;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_trel }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;"><span style="width:14px;height:14px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="position:relative;display:inline-block;width:34px;height:1.5px;background:#0E1726;flex:none;"><span style="position:absolute;right:-1px;top:-3.5px;border-left:6px solid #0E1726;border-top:4px solid transparent;border-bottom:4px solid transparent;"></span></span></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></div></sc-if>
+                <sc-if value="{{ c.is_crel }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="display:flex;align-items:center;gap:6px;height:64px;margin-bottom:12px;padding:0 12px;border-radius:8px;background:#F7F9FC;"><span style="display:flex;flex-direction:column;gap:6px;flex:none;"><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></span><span style="width:9px;height:40px;border:1.5px solid #0E1726;border-left:0;box-sizing:border-box;flex:none;"></span><span style="width:10px;height:1.5px;background:#0E1726;flex:none;"></span><span style="width:22px;height:22px;border:1.5px solid #1F56D6;border-radius:50%;box-sizing:border-box;background:#FFFFFF;flex:none;"></span></div></sc-if>
+                <h3 style="margin:0 0 6px;font-size:16px;font-weight:600;color:#0E1726;">{{ c.title }}</h3>
+                <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.5;color:#3D4759;">{{ c.rule }}</p>
+              </div>
+            </sc-for>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_dimensoes }}" hint-placeholder-val="{{ true }}">
+    <section id="dimensoes" data-screen-label="02 Três dimensões" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(24px,5vw,72px);align-items:start;">
+          <div>
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">O que é o Gérard</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;text-wrap:balance;">Três dimensões integradas em um só ambiente.</h2>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;font-size:17px;line-height:1.65;color:#3D4759;">
+            <p style="margin:0;text-wrap:pretty;">Diante de um problema aditivo, muitos estudantes procuram palavras-chave — “ganhou” é somar, “perdeu” é subtrair — sem compreender a estrutura da situação.</p>
+            <p style="margin:0;text-wrap:pretty;">O Gérard coloca a situação em primeiro lugar. Enquanto o estudante representa e resolve, o sistema registra cada ação — e esses dados alimentam tanto o retorno ao estudante quanto a pesquisa.</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-top:clamp(36px,4vw,48px);">
+          <sc-for list="{{ concepts }}" as="c" hint-placeholder-count="4">
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:18px;border:1px solid #E1E6EE;border-radius:12px;background:#F7F9FC;">
+              <span aria-hidden="true" style="flex:none;width:22px;height:22px;margin-top:2px;background:#1F56D6;-webkit-mask:url({{ c.icon }}) center/contain no-repeat;mask:url({{ c.icon }}) center/contain no-repeat;"></span>
+              <div><h3 style="margin:0 0 4px;font-size:16px;font-weight:600;color:#0E1726;">{{ c.title }}</h3><p style="margin:0;font-size:14.5px;line-height:1.5;color:#3D4759;">{{ c.body }}</p></div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin:clamp(48px,6vw,72px) 0 0;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">Ensino e aprendizagem + Sistema adaptativo + Pesquisa científica</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;margin-top:16px;">
+          <sc-for list="{{ dimensions }}" as="d" hint-placeholder-count="3">
+            <article style="display:flex;flex-direction:column;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);padding:32px;background:#FFFFFF;transition:border-color .2s ease;" style-hover="border-color:#C6D7FA;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:#EEF3FE;">
+                  <span style="width:24px;height:24px;background:#1F56D6;-webkit-mask:url({{ d.icon }}) center/contain no-repeat;mask:url({{ d.icon }}) center/contain no-repeat;"></span>
+                </span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;">{{ d.no }}</span>
+              </div>
+              <h3 style="margin:22px 0 8px;font-size:22px;line-height:1.25;font-weight:600;color:#0E1726;">{{ d.title }}</h3>
+              <p style="margin:0 0 20px;font-size:15.5px;line-height:1.6;color:#3D4759;text-wrap:pretty;">{{ d.body }}</p>
+              <ul style="list-style:none;margin:auto 0 0;padding:18px 0 0;border-top:1px solid #EEF1F5;display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ d.items }}" as="it" hint-placeholder-count="4">
+                  <li style="display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>{{ it.t }}<sc-if value="{{ it.soon }}" hint-placeholder-val="{{ false }}"><span style="margin-left:8px;padding:1px 8px;border-radius:999px;background:#FDF3E1;color:#8A4B06;font-size:12px;font-weight:500;white-space:nowrap;">em desenvolvimento</span></sc-if></span></li>
+                </sc-for>
+              </ul>
+            </article>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_como_funciona }}" hint-placeholder-val="{{ true }}">
+    <section id="como-funciona" data-screen-label="03 Como funciona" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Como funciona</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Da situação-problema ao acompanhamento da aprendizagem.</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:20px;font-size:14px;color:#3D4759;">
+          <span style="display:inline-flex;align-items:center;gap:8px;"><span aria-hidden="true" style="width:14px;height:14px;border-radius:50%;border:2px solid #1F56D6;background:#FFFFFF;"></span>Ação do estudante</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;"><span aria-hidden="true" style="width:14px;height:14px;border-radius:4px;background:#1F56D6;"></span>Ação do sistema</span>
+        </div>
+        <ol style="list-style:none;margin:clamp(32px,4vw,48px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:28px 16px;">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="7">
+            <li style="display:flex;flex-direction:column;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:none;width:40px;height:40px;border-radius:{{ s.radius }};border:2px solid #1F56D6;background:{{ s.bg }};color:{{ s.fg }};display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;box-sizing:border-box;">{{ s.no }}</span>
+                <span aria-hidden="true" style="flex:1;height:2px;background:#C6D7FA;"></span>
+              </div>
+              <span style="margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">{{ s.actor }}</span>
+              <h3 style="margin:4px 0 6px;font-size:17px;line-height:1.3;font-weight:600;color:#0E1726;">{{ s.title }}</h3>
+              <p style="margin:0;font-size:14.5px;line-height:1.55;color:#3D4759;text-wrap:pretty;">{{ s.body }}</p>
+            </li>
+          </sc-for>
+        </ol>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_representacoes }}" hint-placeholder-val="{{ true }}">
+    <section id="representacoes" data-screen-label="04 Representações" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
+          <div>
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Representações</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Uma situação, muitas formas de ver.</h2>
+          </div>
+          <p style="margin:0;font-size:17px;line-height:1.6;color:#3D4759;max-width:46ch;text-wrap:pretty;">Cada representação destaca um aspecto da mesma relação. Alternar entre elas é parte da aprendizagem.</p>
+        </div>
+        <figure style="margin:40px 0 0;">
+          <a href="imagens/prints_gerard/18_mesma_solucao_categorias.png" target="_blank" rel="noopener" aria-label="Abrir em tamanho real" style="display:block;border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;"><img src="imagens/prints_gerard/18_mesma_solucao_categorias.png" alt="Tela do Gérard: mesma solução numérica (4 + 7 = 11) em três categorias — composição, transformação e comparação de medidas — com seus diagramas" loading="lazy" style="display:block;width:100%;height:auto;"></a>
+          <figcaption style="margin-top:12px;font-size:14.5px;line-height:1.55;color:#3D4759;max-width:72ch;"><strong style="font-weight:600;color:#0E1726;">Mesma solução numérica, diferentes categorias.</strong> A mesma conta, 4 + 7 = 11, resolve situações de composição, transformação e comparação. A construção do diagrama torna visíveis as diferenças de estrutura.</figcaption>
+        </figure>
+        <div style="margin-top:40px;border:1px solid #DDE3EC;border-radius:16px;background:#FFFFFF;overflow:hidden;">
+          <div style="padding:18px 24px;border-bottom:1px solid #E4E8EF;background:#F7F9FC;">
+            <p style="margin:0;font-size:15px;color:#3D4759;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;color:#5B6577;margin-right:10px;">Composição</span>Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas ele tem ao todo?</p>
+          </div>
+          <div role="tablist" aria-label="Representações" style="display:flex;gap:4px;padding:8px 16px 0;border-bottom:1px solid #E4E8EF;overflow-x:auto;">
+            <sc-for list="{{ repTabs }}" as="t" hint-placeholder-count="6">
+              <button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.onClick }}" style="flex:none;min-height:46px;padding:0 16px;border:0;border-bottom:2px solid {{ t.bd }};background:transparent;font:inherit;font-size:15px;font-weight:500;color:{{ t.fg }};cursor:pointer;" style-hover="color:#173A8C;">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <div role="tabpanel" style="padding:clamp(28px,4vw,48px);min-height:300px;display:flex;flex-direction:column;justify-content:center;gap:24px;overflow-x:auto;">
+            <sc-if value="{{ rep_texto }}" hint-placeholder-val="{{ true }}">
+              <p style="margin:0;font-size:clamp(20px,2.4vw,28px);line-height:1.75;color:#0E1726;max-width:36ch;">Lucas tem <span style="display:inline-block;padding:0 10px;border:1.5px dashed #1F56D6;border-radius:8px;background:#EEF3FE;color:#173A8C;font-weight:600;line-height:1.5;">12</span> figurinhas do Pokémon e <span style="display:inline-block;padding:0 10px;border:1.5px dashed #1F56D6;border-radius:8px;background:#EEF3FE;color:#173A8C;font-weight:600;line-height:1.5;">25</span> do Digimon. Quantas figurinhas ele tem ao todo <span style="display:inline-block;padding:0 12px;border:1.5px dashed #5B6577;border-radius:8px;color:#3D4759;font-weight:600;line-height:1.5;">?</span></p>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">As quantidades são marcadas no próprio enunciado. O estudante decide quais são partes e qual é o todo.</p>
+            </sc-if>
+            <sc-if value="{{ rep_barras }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px 16px;align-items:center;max-width:760px;width:100%;">
+                <span style="font-size:14px;color:#3D4759;">Parte 1 · Pokémon</span>
+                <div style="display:flex;"><div style="width:32.4%;height:44px;border-radius:8px;background:#C6D7FA;border:1.5px solid #1F56D6;display:flex;align-items:center;justify-content:center;font-weight:600;color:#173A8C;">12</div></div>
+                <span style="font-size:14px;color:#3D4759;">Parte 2 · Digimon</span>
+                <div style="display:flex;"><div style="margin-left:32.4%;width:67.6%;height:44px;border-radius:8px;background:#E3ECFD;border:1.5px solid #1F56D6;display:flex;align-items:center;justify-content:center;font-weight:600;color:#173A8C;">25</div></div>
+                <span style="font-size:14px;color:#0E1726;font-weight:600;">Todo</span>
+                <div style="height:44px;border-radius:8px;border:1.5px dashed #5B6577;display:flex;align-items:center;justify-content:center;font-weight:600;color:#3D4759;">?</div>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">Comprimentos proporcionais: o todo aparece como a justaposição das partes.</p>
+            </sc-if>
+            <sc-if value="{{ rep_diagrama }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;">
+                <div style="display:flex;flex-direction:column;gap:28px;">
+                  <div style="text-align:center;"><div style="font-size:14px;font-weight:600;color:#3D4759;margin-bottom:6px;">Parte 1 · Pokémon</div><div style="width:88px;height:64px;margin:0 auto;border:1.5px solid #C5CCD8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#173A8C;">12</div></div>
+                  <div style="text-align:center;"><div style="font-size:14px;font-weight:600;color:#3D4759;margin-bottom:6px;">Parte 2 · Digimon</div><div style="width:88px;height:64px;margin:0 auto;border:1.5px solid #C5CCD8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#173A8C;">25</div></div>
+                </div>
+                <div aria-hidden="true" style="flex:none;width:28px;height:150px;border:2px solid #0E1726;border-left:0;margin-left:16px;"></div>
+                <div aria-hidden="true" style="flex:none;width:40px;height:2px;background:#0E1726;"></div>
+                <div style="text-align:center;"><div style="font-size:14px;font-weight:600;color:#3D4759;margin-bottom:6px;">Todo · Lucas</div><div style="width:88px;height:64px;border:1.5px dashed #5B6577;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#3D4759;">?</div></div>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">O diagrama de Vergnaud explicita a estrutura: duas partes se compõem em um todo.</p>
+            </sc-if>
+            <sc-if value="{{ rep_venn }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;width:100%;max-width:520px;aspect-ratio:16/9;border:2px solid #1F56D6;border-radius:50%;display:flex;align-items:center;justify-content:center;gap:4%;">
+                <span style="position:absolute;top:9%;left:50%;transform:translateX(-50%);font-size:14px;font-weight:600;color:#173A8C;background:#FFFFFF;padding:0 8px;white-space:nowrap;">Todo · ?</span>
+                <div style="width:24%;aspect-ratio:1;border-radius:50%;border:1.5px solid #1F56D6;background:#EEF3FE;display:flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-size:22px;font-weight:600;color:#173A8C;">12</span><span style="font-size:12px;color:#3D4759;">Pokémon</span></div>
+                <div style="width:36%;aspect-ratio:1;border-radius:50%;border:1.5px solid #1F56D6;background:#E3ECFD;display:flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-size:26px;font-weight:600;color:#173A8C;">25</span><span style="font-size:12px;color:#3D4759;">Digimon</span></div>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">Conjuntos disjuntos contidos no todo: nenhuma figurinha é contada duas vezes.</p>
+            </sc-if>
+            <sc-if value="{{ rep_eixo }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;width:100%;min-width:480px;max-width:820px;height:120px;">
+                <div style="position:absolute;left:0;width:30%;top:18px;height:30px;border:1.5px solid #1F56D6;background:#C6D7FA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#173A8C;box-sizing:border-box;">+12</div>
+                <div style="position:absolute;left:30%;width:62.5%;top:18px;height:30px;border:1.5px solid #1F56D6;background:#E3ECFD;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#173A8C;box-sizing:border-box;">+25</div>
+                <div style="position:absolute;left:0;right:0;top:72px;height:2px;background:#0E1726;"></div>
+                <sc-for list="{{ ticks }}" as="k" hint-placeholder-count="9">
+                  <div style="position:absolute;left:{{ k.left }};top:66px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;">
+                    <span style="width:2px;height:14px;background:{{ k.color }};"></span>
+                    <span style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ k.color }};font-weight:{{ k.weight }};">{{ k.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">No eixo numérico, a composição aparece como deslocamentos sucessivos a partir do zero.</p>
+            </sc-if>
+            <sc-if value="{{ rep_concreto }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:20px;">
+                <div style="padding:16px;border:1.5px solid #C5CCD8;border-radius:12px;display:grid;grid-template-columns:repeat(4,16px);gap:6px;">
+                  <sc-for list="{{ sq12 }}" as="q" hint-placeholder-count="12"><span style="width:16px;height:16px;border:2px solid #1F56D6;border-radius:3px;box-sizing:border-box;"></span></sc-for>
+                </div>
+                <span style="font-size:24px;font-weight:600;color:#3D4759;">+</span>
+                <div style="padding:16px;border:1.5px solid #C5CCD8;border-radius:12px;display:grid;grid-template-columns:repeat(5,16px);gap:6px;">
+                  <sc-for list="{{ sq25 }}" as="q" hint-placeholder-count="25"><span style="width:16px;height:16px;border:2px solid #1F56D6;border-radius:3px;box-sizing:border-box;"></span></sc-for>
+                </div>
+                <span style="font-size:24px;font-weight:600;color:#3D4759;">=</span>
+                <div style="width:120px;height:120px;border:1.5px dashed #5B6577;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#3D4759;">?</div>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">Os quadradinhos são manipuláveis: o estudante arrasta, agrupa e conta.</p>
+            </sc-if>
+            <sc-if value="{{ rep_funis }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:0;max-width:520px;width:100%;">
+                <div style="display:flex;justify-content:center;gap:48px;width:100%;">
+                  <div style="display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:14px;font-weight:600;color:#3D4759;margin-bottom:6px;">Pokémon</span>
+                    <div style="width:140px;height:84px;background:#C6D7FA;clip-path:polygon(0 0,100% 0,62% 100%,38% 100%);display:flex;align-items:flex-start;justify-content:center;padding-top:14px;box-sizing:border-box;font-size:24px;font-weight:600;color:#173A8C;">12</div>
+                    <div style="width:18px;height:28px;background:#C6D7FA;"></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:14px;font-weight:600;color:#3D4759;margin-bottom:6px;">Digimon</span>
+                    <div style="width:140px;height:84px;background:#E3ECFD;clip-path:polygon(0 0,100% 0,62% 100%,38% 100%);display:flex;align-items:flex-start;justify-content:center;padding-top:14px;box-sizing:border-box;font-size:24px;font-weight:600;color:#173A8C;">25</div>
+                    <div style="width:18px;height:28px;background:#E3ECFD;"></div>
+                  </div>
+                </div>
+                <div style="width:100%;max-width:380px;height:72px;border:2px solid #0E1726;border-top:0;border-radius:0 0 14px 14px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;color:#3D4759;"><span style="font-weight:600;">Tábua · todo</span><span style="padding:0 12px;border:1.5px dashed #5B6577;border-radius:8px;font-size:22px;font-weight:600;color:#3D4759;">?</span></div>
+              </div>
+              <p style="margin:0;font-size:15px;color:#5B6577;max-width:60ch;">Cada funil despeja uma parte na tábua: o todo é o que se acumula.</p>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_produtos }}" hint-placeholder-val="{{ true }}">
+    <section id="produtos" data-screen-label="05 Produtos" style="padding:clamp(64px,9vw,112px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Ecossistema Gérard</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Produtos organizados pela tríade de Vergnaud.</h2>
+        <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Cada produto nasce de um dos elementos do conceito — C = (S, I, R): situações que dão sentido, invariantes que o estudante mobiliza e representações que o expressam.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;margin-top:clamp(40px,5vw,56px);align-items:start;">
+          <sc-for list="{{ pillars }}" as="pl" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid #DDE3EC;border-radius:18px;background:#FFFFFF;">
+              <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #E4E8EF;">
+                <span aria-hidden="true" style="flex:none;width:52px;height:52px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;">{{ pl.letter }}</span>
+                <div><h3 style="margin:0;font-size:19px;font-weight:600;color:#0E1726;">{{ pl.name }}</h3><p style="margin:2px 0 0;font-size:14px;line-height:1.45;color:#3D4759;">{{ pl.def }}</p></div>
+              </div>
+              <sc-for list="{{ pl.items }}" as="p" hint-placeholder-count="2">
+            <article style="display:flex;flex-direction:column;border:1px solid #E1E6EE;border-top:3px solid {{ p.accent }};border-radius:14px;padding:28px;background:#FFFFFF;transition:border-color .2s ease, box-shadow .2s ease;" style-hover="box-shadow:0 12px 32px -20px rgba(14,23,38,0.25);">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:{{ p.tint }};">
+                  <span style="width:22px;height:22px;background:{{ p.accent }};-webkit-mask:url({{ p.icon }}) center/contain no-repeat;mask:url({{ p.icon }}) center/contain no-repeat;"></span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;background:{{ p.badgeBg }};color:{{ p.badgeFg }};"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>{{ p.status }}</span>
+              </div>
+              <p style="margin:22px 0 2px;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5B6577;"><span aria-hidden="true" style="display:grid;grid-template-columns:repeat(2,6px);gap:2px;"><sc-for list="{{ p.mark }}" as="mk" hint-placeholder-count="4"><span style="width:6px;height:6px;border-radius:2px;border:1.5px solid {{ p.accent }};background:{{ mk.bg }};box-sizing:border-box;"></span></sc-for></span>Gérard</p>
+              <h3 style="margin:0 0 10px;font-size:21px;line-height:1.25;font-weight:600;color:#0E1726;">{{ p.name }}</h3>
+              <p style="margin:0 0 24px;font-size:15.5px;line-height:1.6;color:#3D4759;flex:1;text-wrap:pretty;">{{ p.body }}</p>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-top:18px;border-top:1px solid #EEF1F5;">
+                <a href="#/produtos" style="display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:32px;" style-hover="color:#173A8C;text-decoration:underline;">Conhecer produto<span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+                <sc-if value="{{ p.hasWeb }}" hint-placeholder-val="{{ false }}">
+                  <a href="{{ p.web }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:14px;color:#3D4759;text-decoration:none;min-height:32px;" style-hover="color:#173A8C;text-decoration:underline;"><span aria-hidden="true" style="width:15px;height:15px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Versão web</a>
+                </sc-if>
+                <sc-if value="{{ p.hasDl }}" hint-placeholder-val="{{ false }}">
+                  <a href="{{ p.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:14px;color:#3D4759;text-decoration:none;min-height:32px;" style-hover="color:#173A8C;text-decoration:underline;"><span aria-hidden="true" style="width:15px;height:15px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>{{ p.dlLabel }}</a>
+                </sc-if>
+              </div>
+            </article>
+          </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_publico }}" hint-placeholder-val="{{ true }}">
+    <section id="publico" data-screen-label="06 Para quem é" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Para quem é</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Um ambiente, três formas de uso.</h2>
+        <div style="display:flex;flex-direction:column;gap:clamp(48px,6vw,80px);margin-top:clamp(40px,5vw,64px);">
+          <sc-for list="{{ audiences }}" as="a" hint-placeholder-count="3">
+            <div id="{{ a.id }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(28px,4vw,56px);align-items:center;">
+              <div style="order:{{ a.textOrder }};">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span aria-hidden="true" style="width:22px;height:22px;background:#1F56D6;-webkit-mask:url({{ a.icon }}) center/contain no-repeat;mask:url({{ a.icon }}) center/contain no-repeat;"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">{{ a.kicker }}</span>
+                </div>
+                <h3 style="margin:14px 0 12px;font-size:clamp(24px,2.6vw,30px);line-height:1.2;font-weight:600;letter-spacing:-0.012em;color:#0E1726;text-wrap:balance;">{{ a.title }}</h3>
+                <p style="margin:0;font-size:17px;line-height:1.6;color:#3D4759;max-width:52ch;text-wrap:pretty;">{{ a.body }}</p>
+                <ul style="list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+                  <sc-for list="{{ a.items }}" as="it" hint-placeholder-count="3">
+                    <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>{{ it }}</span></li>
+                  </sc-for>
+                </ul>
+                <a href="{{ a.href }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:24px;font-size:15.5px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:44px;" style-hover="color:#173A8C;text-decoration:underline;">{{ a.cta }}<span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+              </div>
+              <figure style="margin:0;order:{{ a.imgOrder }};">
+                <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
+                  <img src="{{ a.img }}" alt="{{ a.alt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ a.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ a.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if>
+                </div>
+                <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ a.caption }}</figcaption>
+              </figure>
+            </div>
+          </sc-for>
+        </div>
+        <div id="p-instituicoes" style="margin-top:clamp(48px,6vw,72px);border:1px solid #DDE3EC;border-radius:16px;background:#F7F9FC;padding:clamp(24px,3vw,36px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px 40px;align-items:center;">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;"><span aria-hidden="true" style="width:22px;height:22px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/building-2.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/building-2.svg) center/contain no-repeat;"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Para instituições</span></div>
+            <h3 style="margin:12px 0 0;font-size:clamp(22px,2.4vw,26px);line-height:1.25;font-weight:600;color:#0E1726;">Escolas, redes de ensino e universidades.</h3>
+            <a href="#/contato" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:15.5px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:44px;" style-hover="color:#173A8C;text-decoration:underline;">Fale com a equipe<span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+          </div>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span>Fundamentação científica consolidada</li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span>Software registrado no INPI</li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span>Parcerias de pesquisa e formação de professores</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    
+
+    <sc-if value="{{ show_inteligencia }}" hint-placeholder-val="{{ true }}">
+    <section id="inteligencia" data-screen-label="08 Adaptatividade do sistema" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
+          <div>
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Adaptatividade do sistema</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Não é uma coleção de exercícios.</h2>
+          </div>
+          <p style="margin:0;font-size:17px;line-height:1.6;color:#3D4759;max-width:48ch;text-wrap:pretty;">Cada ação vira dado. O sistema modela o que o estudante já domina e propõe a próxima situação dentro da sua Zona de Desenvolvimento Proximal.</p>
+        </div>
+        <div style="margin-top:40px;border:1px solid #DDE3EC;border-radius:16px;background:#FFFFFF;overflow:hidden;box-shadow:0 20px 40px -32px rgba(14,23,38,0.3);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid #E4E8EF;background:#F7F9FC;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#3D4759;">Estudante #0142 · sessão 3</span>
+            <span style="padding:2px 10px;border-radius:999px;border:1px solid #D5DBE5;font-size:12px;color:#5B6577;">Dados ilustrativos</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));">
+            <div style="padding:24px;border-right:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;margin:0 -1px -1px 0;">
+              <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0E1726;">01 · Monitoramento</p>
+              <p style="margin:0 0 16px;font-size:13.5px;color:#5B6577;">Log de interação em tempo real</p>
+              <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;">
+                <sc-for list="{{ logRows }}" as="r" hint-placeholder-count="5">
+                  <li style="display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:8px 10px;border-radius:8px;background:#F7F9FC;"><span style="color:#5B6577;">{{ r.t }}</span><span style="color:#0E1726;">{{ r.e }}</span></li>
+                </sc-for>
+              </ol>
+            </div>
+            <div style="padding:24px;border-right:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;margin:0 -1px -1px 0;">
+              <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0E1726;">02 · Modelagem do estudante</p>
+              <p style="margin:0 0 16px;font-size:13.5px;color:#5B6577;">Domínio estimado por categoria</p>
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <sc-for list="{{ mastery }}" as="m" hint-placeholder-count="3">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span style="color:#0E1726;">{{ m.label }}</span><span style="font-family:'IBM Plex Mono',monospace;color:#3D4759;">{{ m.pct }}</span></div>
+                    <div role="progressbar" aria-label="{{ m.label }}" aria-valuenow="{{ m.v }}" aria-valuemin="0" aria-valuemax="100" style="height:8px;border-radius:999px;background:#EEF1F5;overflow:hidden;"><div style="height:100%;width:{{ m.pct }};background:#1F56D6;border-radius:999px;"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:20px 0 0;padding:10px 12px;border-radius:8px;background:#F7F9FC;font-size:13.5px;line-height:1.5;color:#3D4759;"><strong style="font-weight:600;color:#0E1726;">Regra induzida:</strong> confunde referente e referido quando a relação é “a menos”.</p>
+            </div>
+            <div style="padding:24px;border-bottom:1px solid #E4E8EF;margin:0 0 -1px 0;">
+              <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0E1726;">03 · Feedback e adaptação</p>
+              <p style="margin:0 0 16px;font-size:13.5px;color:#5B6577;">Próxima situação na ZDP</p>
+              <div style="display:grid;grid-template-columns:38fr 34fr 28fr;height:56px;border-radius:10px;border:1px solid #E4E8EF;overflow:hidden;font-size:12px;line-height:1.2;text-align:center;">
+                <div style="display:flex;align-items:center;justify-content:center;padding:0 6px;background:#EEF1F5;color:#3D4759;">Já domina</div>
+                <div style="display:flex;align-items:center;justify-content:center;padding:0 6px;background:#E3ECFD;border-left:2px dashed #1F56D6;border-right:2px dashed #1F56D6;font-weight:600;color:#173A8C;">ZDP</div>
+                <div style="display:flex;align-items:center;justify-content:center;padding:0 6px;background:#F7F9FC;color:#3D4759;">Ainda distante</div>
+              </div>
+              <div style="margin-top:16px;padding:14px;border:1px solid #C6D7FA;border-radius:10px;background:#FFFFFF;">
+                <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;">Sugerida</p>
+                <p style="margin:0;font-size:14.5px;line-height:1.5;color:#0E1726;">Comparação com referido desconhecido, relação “a mais”.</p>
+              </div>
+              <p style="margin:12px 0 0;display:flex;align-items:center;gap:8px;font-size:13px;color:#8A4B06;"><span aria-hidden="true" style="width:14px;height:14px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/flask-conical.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/flask-conical.svg) center/contain no-repeat;"></span>Adaptação em desenvolvimento na versão 2026</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+    <sc-if value="{{ show_inteligencia }}" hint-placeholder-val="{{ true }}">
+    <section id="analise-modelagem" data-screen-label="Análise da modelagem" style="padding:clamp(56px,8vw,96px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
+        <div>
+          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Análise da modelagem</p>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">O estudante explica as próprias decisões.</h2>
+          <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">Após cada tentativa, o estudante pode justificar como interpretou a situação e onde posicionou cada elemento no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.</p>
+          <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Papel semântico de cada elemento: referido, valor relativo, referendo</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Dificuldade percebida — fácil, intermediária ou difícil — e justificativa</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Registro automático dos protocolos de interação usados</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Fotografia do estado da modelagem no momento da explicação</span></li>
+          </ul>
+          <p style="margin:22px 0 0;padding:12px 14px;border-radius:10px;background:#FFFFFF;border:1px solid #DDE3EC;font-size:14.5px;line-height:1.55;color:#3D4759;max-width:56ch;"><strong style="font-weight:600;color:#0E1726;">Para a pesquisa:</strong> une o que o estudante fez, como fez e o que diz ter pensado — dados para analisar invariantes operatórios.</p>
+        </div>
+        <figure style="margin:0;">
+          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="imagens/analise-modelagem.png" alt="Tela Análise da modelagem: situação de comparação, tabela com elemento, papel semântico, dificuldade e justificativa, e registro automático dos protocolos de interação." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Análise da modelagem em uma situação de comparação de medidas.</figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+    <sc-if value="{{ show_inteligencia }}" hint-placeholder-val="{{ true }}">
+    <section id="chat-gerard" data-screen-label="Chat do Gérard" style="padding:clamp(56px,8vw,96px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(32px,5vw,64px);align-items:center;">
+        <figure style="margin:0;">
+          <div style="border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);max-width:560px;"><img src="imagens/chat-gerard.png" alt="Tela Chat do Gérard: 'Como posso ajudar?', conversa com dica sobre números, personagens e papéis semânticos, e botões de ajuda para Texto, Diagrama de Vergnaud e Diagrama complementar." loading="lazy" style="display:block;width:100%;height:auto;"></div>
+          <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">Chat do Gérard durante a resolução de uma situação-problema.</figcaption>
+        </figure>
+        <div>
+          <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Chat do Gérard</p>
+          <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:20ch;text-wrap:balance;">Ajuda no momento em que o estudante precisa.</h2>
+          <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:54ch;text-wrap:pretty;">O estudante escreve sua dúvida ou escolhe a área em que precisa de apoio. O Gérard responde com dicas que orientam a leitura da situação — sem entregar a resposta.</p>
+          <ul style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Ajuda por área: texto, diagrama de Vergnaud e diagrama complementar</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Dicas que chamam atenção para números, personagens e a pergunta</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Remete aos papéis semânticos destacados no enunciado</span></li>
+            <li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>Cada pedido de ajuda é registrado junto da interação</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_pesquisa }}" hint-placeholder-val="{{ true }}">
+    <section id="pesquisa" data-screen-label="09 Pesquisa" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px;">
+          <div>
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Pesquisa e publicações</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:22ch;text-wrap:balance;">Duas décadas de investigação.</h2>
+          </div>
+          <div id="publicacoes" role="group" aria-label="Filtrar por tipo" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="5">
+              <button type="button" aria-pressed="{{ f.sel }}" onClick="{{ f.onClick }}" style="min-height:40px;padding:0 16px;border-radius:999px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font:inherit;font-size:14px;font-weight:500;cursor:pointer;" style-hover="border-color:#1F56D6;">{{ f.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px;margin-top:40px;">
+          <sc-for list="{{ pubs }}" as="p" hint-placeholder-count="4">
+            <article style="display:flex;flex-direction:column;border:1px solid #E1E6EE;border-radius:14px;padding:24px;background:#FFFFFF;transition:border-color .2s ease;" style-hover="border-color:#C6D7FA;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <span style="padding:3px 10px;border-radius:6px;background:#EEF3FE;color:#173A8C;font-size:12.5px;font-weight:500;">{{ p.type }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;">{{ p.year }}</span>
+              </div>
+              <h3 style="margin:18px 0 6px;font-size:18px;line-height:1.35;font-weight:600;color:#0E1726;">{{ p.title }}</h3>
+              <p style="margin:0 0 10px;font-size:14px;color:#3D4759;">{{ p.authors }}</p>
+              <p style="margin:0;font-size:13.5px;line-height:1.5;color:#5B6577;flex:1;font-style:italic;">{{ p.venue }}</p>
+            </article>
+          </sc-for>
+        </div>
+        <a href="#/publicacoes" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;margin-top:28px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Ver todas as publicações · {{ pubTotal }}<span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_demonstracao }}" hint-placeholder-val="{{ true }}">
+    <section id="demonstracao" data-screen-label="Demonstração" style="padding:clamp(64px,9vw,112px) 0;background:#0B1A3D;color:#FFFFFF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:24px 48px;">
+          <div style="flex:1 1 480px;">
+            <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#9DB8F5;">Demonstração</p>
+            <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#FFFFFF;max-width:24ch;text-wrap:balance;">Veja como o Gérard transforma situações-problema em experiências interativas de aprendizagem.</h2>
+            <p style="margin:20px 0 0;font-size:17px;line-height:1.6;color:#C9D5EE;max-width:56ch;text-wrap:pretty;">Três demonstrações interativas: arraste os quadradinhos, preencha o diagrama e observe o retorno a cada ação.</p>
+          </div>
+          <a href="https://gerard-web-deploy.onrender.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:10px;background:#FFFFFF;color:#0B1A3D;font-size:16px;font-weight:500;text-decoration:none;flex:none;" style-hover="background:#E3ECFD;color:#0B1A3D;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir o Gérard na web</a>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:32px;margin-top:clamp(40px,5vw,56px);">
+          <sc-for list="{{ demoPhones }}" as="m" hint-placeholder-count="3">
+            <figure style="margin:0;flex:0 1 330px;max-width:330px;">
+              <div style="border:1px solid #2A3D6B;border-radius:40px;padding:10px;background:#13254F;box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);">
+                <div style="border-radius:30px;overflow:hidden;background:#F5F7FA;">
+                  <iframe srcdoc="{{ m.srcdoc }}" title="{{ m.title }}" loading="lazy" style="display:block;width:100%;height:640px;border:0;"></iframe>
+                </div>
+              </div>
+              <figcaption style="margin-top:14px;text-align:center;font-size:16px;font-weight:500;color:#FFFFFF;">{{ m.label }}</figcaption>
+            </figure>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_instituicoes }}" hint-placeholder-val="{{ true }}">
+    <section id="instituicoes" data-screen-label="10 Instituições" style="padding:clamp(56px,7vw,88px) 0;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 24px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#5B6577;text-align:center;">Instituições e parcerias</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;">
+          <sc-for list="{{ institutions }}" as="i" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:112px;padding:20px;border:1px solid #E1E6EE;border-radius:12px;">
+              <span style="font-size:24px;font-weight:600;letter-spacing:0.06em;color:#3D4759;">{{ i.short }}</span>
+              <span style="margin-top:4px;font-size:13.5px;color:#5B6577;">{{ i.name }}</span>
+            </div>
+          </sc-for>
+          <sc-for list="{{ instSlots }}" as="i" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:112px;padding:20px;border:1.5px dashed #D5DBE5;border-radius:12px;">
+              <span style="font-size:15px;font-weight:500;color:#5B6577;">{{ i }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_historinhas }}" hint-placeholder-val="{{ false }}">
+    <section id="historinhas" data-screen-label="Historinhas" style="padding:clamp(40px,6vw,72px) 0 clamp(56px,8vw,104px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:24px;">
+        <div role="group" aria-label="Filtrar por classe de situação" style="display:flex;flex-wrap:wrap;gap:8px;">
+          <sc-for list="{{ histCats }}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.pressed }}" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:inherit;font-size:15px;font-weight:500;cursor:pointer;">{{ c.label }}<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;">{{ c.n }}</span></button>
+          </sc-for>
+        </div>
+        <div>
+          <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;">
+            <div style="flex:1 1 100%;max-width:960px;margin:0 auto;width:100%;min-width:0;display:flex;flex-direction:column;gap:14px;">
+              <div style="position:relative;aspect-ratio:16 / 9;border:1px solid #D5DBE5;border-radius:14px;overflow:hidden;background:#F2F2F2;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);">
+                <iframe src="{{ histSrc }}" title="{{ histTitle }}" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                <div style="min-width:0;">
+                  <p style="margin:0 0 4px;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;font-weight:600;">{{ histCat }}</p>
+                  <h2 style="margin:0;font-size:clamp(22px,2.4vw,28px);line-height:1.2;color:#0E1726;">{{ histTitle }}</h2>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <button type="button" onClick="{{ histPrev }}" aria-label="Historinha anterior" style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:10px;cursor:pointer;color:#0E1726;" style-hover="background:#F2F6FE;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-left.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-left.svg) center/contain no-repeat;"></span></button>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#5B6577;min-width:64px;text-align:center;">{{ histPos }}</span>
+                  <button type="button" onClick="{{ histNext }}" aria-label="Próxima historinha" style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #D5DBE5;background:#FFFFFF;border-radius:10px;cursor:pointer;color:#0E1726;" style-hover="background:#F2F6FE;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-right.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/chevron-right.svg) center/contain no-repeat;"></span></button>
+                </div>
+              </div>
+            </div>
+            <ol aria-label="Historinhas" style="flex:1 1 100%;min-width:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px;">
+              <sc-for list="{{ histList }}" as="h" hint-placeholder-count="8">
+                <li style="border:1px solid #E4E8EF;border-radius:12px;overflow:hidden;background:#FFFFFF;">
+                  <button type="button" onClick="{{ h.pick }}" aria-current="{{ h.cur }}" style="width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 16px;min-height:56px;border:0;border-left:3px solid {{ h.bar }};background:{{ h.bg }};font:inherit;cursor:pointer;" style-hover="background:#F2F6FE;">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5B6577;padding-top:2px;">{{ h.no }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15.5px;font-weight:500;color:{{ h.fg }};">{{ h.t }}</span><span style="font-size:13.5px;color:#5B6577;">{{ h.c }}</span></span>
+                  </button>
+                </li>
+              </sc-for>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+    <sc-if value="{{ show_equipe }}" hint-placeholder-val="{{ true }}">
+    <section id="equipe" data-screen-label="11 Equipe" style="padding:clamp(64px,9vw,112px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Equipe</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Quem pesquisa e desenvolve o Gérard.</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:20px;margin-top:clamp(40px,5vw,56px);">
+          <sc-for list="{{ team }}" as="m" hint-placeholder-count="4">
+            <article style="display:flex;flex-direction:column;">
+              <sc-if value="{{ m.hasPhoto }}" hint-placeholder-val="{{ true }}">
+                <img src="{{ m.photo }}" alt="{{ m.name }}" style="display:block;width:100%;aspect-ratio:1/1;border-radius:10px;object-fit:cover;object-position:50% 25%;background:#EEF1F5;">
+              </sc-if>
+              <sc-if value="{{ m.noPhoto }}" hint-placeholder-val="{{ false }}">
+                <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;border-radius:10px;background:#EEF3FE;color:#173A8C;font-size:56px;font-weight:600;letter-spacing:0.04em;">{{ m.initials }}</span>
+              </sc-if>
+              <h3 style="margin:18px 0 4px;font-size:18px;line-height:1.3;font-weight:600;color:#0E1726;">{{ m.name }}</h3>
+              <p style="margin:0;font-size:15px;color:#3D4759;">{{ m.role }}</p>
+              <p style="margin:8px 0 0;font-size:14px;color:#5B6577;">{{ m.org }}</p>
+              <sc-if value="{{ m.hasUrl }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ m.url }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:14.5px;font-weight:500;color:#1F56D6;text-decoration:none;" style-hover="text-decoration:underline;color:#173A8C;">Ver perfil<span aria-hidden="true" style="width:14px;height:14px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/external-link.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/external-link.svg) center/contain no-repeat;"></span></a>
+              </sc-if>
+            </article>
+          </sc-for>
+        </div>
+        <figure style="margin:32px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px;align-items:center;border:1px solid #E1E6EE;border-radius:14px;padding:16px;background:#F7F9FC;">
+          <img src="imagens/ufpe-2009.png" alt="A equipe com Gérard Vergnaud na UFPE, 2009." style="display:block;width:100%;max-width:520px;height:auto;border-radius:10px;">
+          <figcaption style="font-size:15.5px;line-height:1.6;color:#3D4759;padding:8px;"><strong style="display:block;font-weight:600;color:#0E1726;margin-bottom:4px;">UFPE, 2009</strong>A equipe com Gérard Vergnaud na Universidade Federal de Pernambuco.</figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_categorias }}" hint-placeholder-val="{{ false }}">
+    <section id="estruturas" data-screen-label="Sobre · Estruturas aditivas" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Estruturas aditivas</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Três classes de situação, uma mesma família de conceitos.</h2>
+        <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;">Na teoria de Vergnaud, o campo aditivo reúne as situações que se resolvem por adição, subtração ou pela combinação das duas. O que muda de uma classe para outra é a relação entre as quantidades.</p>
+        <div style="display:grid;grid-template-columns:1fr;gap:28px;margin-top:40px;">
+          <sc-for list="{{ categoriesDetail }}" as="c" hint-placeholder-count="3">
+            <article style="border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);padding:28px;background:#FFFFFF;display:flex;flex-direction:column;gap:14px;">
+              <a href="#/demonstracao" style="display:block;margin:-12px -12px 4px;border:1px solid #E1E6EE;border-radius:10px;overflow:hidden;"><img src="{{ c.img }}" alt="Tela do Gérard: {{ c.title }} resolvida." loading="lazy" style="display:block;width:100%;height:auto;"></a>
+              <h3 style="margin:0;font-size:21px;font-weight:600;color:#0E1726;">{{ c.title }}</h3>
+              <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:#173A8C;padding:8px 12px;border-radius:8px;background:#F2F6FE;">{{ c.rule }}</p>
+              <p style="margin:0;font-size:15.5px;line-height:1.6;color:#3D4759;">{{ c.body }}</p>
+              <p style="margin:auto 0 0;padding-top:14px;border-top:1px solid #EEF1F5;font-size:15px;line-height:1.55;color:#0E1726;font-style:italic;">“{{ c.example }}”</p>
+            </article>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_versoes }}" hint-placeholder-val="{{ false }}">
+    <section id="versoes" data-screen-label="Sobre · Versões" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Histórico</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Vinte anos de desenvolvimento.</h2>
+        <ol style="list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;">
+          <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+            <li style="display:flex;flex-direction:column;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);overflow:hidden;background:#FFFFFF;">
+              <div style="aspect-ratio:16/10;background:#F7F9FC;border-bottom:1px solid #E4E8EF;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="{{ v.img }}" alt="{{ v.alt }}" style="display:block;width:100%;height:100%;object-fit:contain;"></div>
+              <div style="padding:24px;display:flex;flex-direction:column;gap:8px;flex:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:#1F56D6;">{{ v.year }}</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;background:{{ v.badgeBg }};color:{{ v.badgeFg }};">{{ v.status }}</span></div>
+                <h3 style="margin:4px 0 0;font-size:19px;font-weight:600;color:#0E1726;">{{ v.title }}</h3>
+                <p style="margin:0;font-size:15px;line-height:1.6;color:#3D4759;flex:1;">{{ v.body }}</p>
+                <sc-if value="{{ v.hasReg }}" hint-placeholder-val="{{ false }}"><p style="margin:6px 0 0;font-size:13.5px;color:#5B6577;">{{ v.reg }}</p></sc-if>
+                <sc-if value="{{ v.hasDl }}" hint-placeholder-val="{{ false }}"><a href="{{ v.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:15px;font-weight:500;color:#1F56D6;text-decoration:none;min-height:36px;" style-hover="text-decoration:underline;color:#173A8C;"><span aria-hidden="true" style="width:16px;height:16px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>Baixar v1.0.0</a></sc-if>
+              </div>
+            </li>
+          </sc-for>
+        </ol>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_produtosDetalhe }}" hint-placeholder-val="{{ false }}">
+    <section id="produtos-detalhe" data-screen-label="Produtos · Detalhe" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);;display:flex;flex-direction:column;gap:clamp(56px,7vw,96px);">
+        <sc-for list="{{ pillars }}" as="pl" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:clamp(48px,6vw,80px);">
+            <header style="display:flex;align-items:center;gap:20px;padding:24px 28px;border:1px solid #C6D7FA;border-radius:18px;background:#F2F6FE;">
+              <span aria-hidden="true" style="flex:none;width:72px;height:72px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:600;">{{ pl.letter }}</span>
+              <div>
+                <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">C = (S, I, R)</p>
+                <h2 style="margin:0;font-size:clamp(24px,2.8vw,32px);line-height:1.2;font-weight:600;color:#0E1726;">{{ pl.name }} <span style="font-weight:400;color:#3D4759;">{{ pl.def }}</span></h2>
+                <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;color:#3D4759;max-width:70ch;">{{ pl.intro }}</p>
+              </div>
+            </header>
+            <sc-for list="{{ pl.items }}" as="p" hint-placeholder-count="2">
+          <article id="{{ p.slug }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(28px,4vw,56px);align-items:center;">
+            <div style="order:{{ p.textOrder }};">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:{{ p.tint }};"><span style="width:24px;height:24px;background:{{ p.accent }};-webkit-mask:url({{ p.icon }}) center/contain no-repeat;mask:url({{ p.icon }}) center/contain no-repeat;"></span></span>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;background:{{ p.badgeBg }};color:{{ p.badgeFg }};"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>{{ p.status }}</span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 4px;border-radius:999px;border:1px solid #C6D7FA;font-size:12.5px;font-weight:500;color:#173A8C;"><span aria-hidden="true" style="width:20px;height:20px;border-radius:50%;background:#173A8C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">{{ p.pillar }}</span>{{ p.pillarName }}</span>
+              </div>
+              <p style="margin:20px 0 2px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5B6577;">Gérard</p>
+              <h2 style="margin:0;font-size:clamp(28px,3vw,36px);line-height:1.15;font-weight:600;letter-spacing:-0.015em;color:#0E1726;border-bottom:3px solid {{ p.accent }};display:inline-block;padding-bottom:6px;">{{ p.name }}</h2>
+              <p style="margin:18px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:52ch;">{{ p.long }}</p>
+              <ul style="list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ p.features }}" as="it" hint-placeholder-count="4"><li style="display:flex;gap:10px;font-size:15.5px;line-height:1.5;color:#3D4759;"><span aria-hidden="true" style="flex:none;margin-top:4px;width:16px;height:16px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/check.svg) center/contain no-repeat;"></span><span>{{ it }}</span></li></sc-for>
+              </ul>
+              <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;"><sc-if value="{{ p.hasWeb }}" hint-placeholder-val="{{ false }}"><a href="{{ p.web }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/globe.svg) center/contain no-repeat;"></span>Abrir versão web</a></sc-if><sc-if value="{{ p.hasDl }}" hint-placeholder-val="{{ false }}"><a href="{{ p.dl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/download.svg) center/contain no-repeat;"></span>{{ p.dlLabel }}</a></sc-if></div>
+            </div>
+            <figure style="margin:0;order:{{ p.imgOrder }};">
+              <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ p.img }}" alt="{{ p.alt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ p.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ p.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
+              <figcaption style="margin-top:10px;font-size:13.5px;color:#5B6577;">{{ p.caption }}</figcaption>
+            </figure>
+          </article>
+        </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_projetos }}" hint-placeholder-val="{{ false }}">
+    <section id="projetos" data-screen-label="Pesquisa · Projetos" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Projetos e experimentos</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Pesquisa, extensão e formação de professores.</h2>
+        <ol style="list-style:none;margin:40px 0 0;padding:0;border-left:2px solid #C6D7FA;display:flex;flex-direction:column;gap:28px;">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="5">
+            <li style="position:relative;padding-left:28px;">
+              <span aria-hidden="true" style="position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:#FFFFFF;border:2px solid #1F56D6;"></span>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:#1F56D6;font-weight:500;">{{ p.period }}</span><span style="padding:2px 10px;border-radius:6px;background:#EEF3FE;color:#173A8C;font-size:12.5px;font-weight:500;">{{ p.kind }}</span></div>
+              <h3 style="margin:8px 0 6px;font-size:18px;line-height:1.35;font-weight:600;color:#0E1726;max-width:64ch;">{{ p.title }}</h3>
+              <p style="margin:0;font-size:15.5px;line-height:1.6;color:#3D4759;max-width:70ch;">{{ p.body }}</p>
+            </li>
+          </sc-for>
+        </ol>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_pubList }}" hint-placeholder-val="{{ false }}">
+    <section id="lista-publicacoes" data-screen-label="Publicações · Lista" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+          <div style="position:relative;flex:1 1 320px;max-width:480px;">
+            <span aria-hidden="true" style="position:absolute;left:14px;top:14px;width:18px;height:18px;background:#5B6577;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search.svg) center/contain no-repeat;"></span>
+            <input type="search" value="{{ q }}" onInput="{{ onSearch }}" aria-label="Buscar publicações" placeholder="Buscar por título, autor ou evento" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px 0 42px;border:1px solid #C5CCD8;border-radius:10px;font:inherit;font-size:15.5px;color:#0E1726;background:#FFFFFF;" style-focus="border-color:#1F56D6;outline:3px solid #C6D7FA;outline-offset:0;">
+          </div>
+          <div role="group" aria-label="Filtrar por tipo" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="5">
+              <button type="button" aria-pressed="{{ f.sel }}" onClick="{{ f.onClick }}" style="min-height:40px;padding:0 16px;border-radius:999px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font:inherit;font-size:14px;font-weight:500;cursor:pointer;" style-hover="border-color:#1F56D6;">{{ f.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <p role="status" style="margin:24px 0 0;font-size:14px;color:#5B6577;">{{ pubCountLabel }}</p>
+        <ol style="list-style:none;margin:12px 0 0;padding:0;border-top:1px solid #E4E8EF;">
+          <sc-for list="{{ pubsFull }}" as="p" hint-placeholder-count="8">
+            <li style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px 20px;padding:22px 0;border-bottom:1px solid #E4E8EF;">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;color:#1F56D6;">{{ p.year }}</span>
+              <div>
+                <span style="display:inline-block;padding:2px 10px;border-radius:6px;background:#EEF3FE;color:#173A8C;font-size:12.5px;font-weight:500;">{{ p.type }}</span>
+                <h3 style="margin:8px 0 6px;font-size:17.5px;line-height:1.4;font-weight:600;color:#0E1726;max-width:72ch;">{{ p.title }}</h3>
+                <p style="margin:0;font-size:14.5px;color:#3D4759;">{{ p.authors }}</p>
+                <p style="margin:4px 0 0;font-size:14px;color:#5B6577;font-style:italic;">{{ p.venue }}</p>
+              </div>
+            </li>
+          </sc-for>
+        </ol>
+        <sc-if value="{{ pubEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 16px;border:1.5px dashed #D5DBE5;border-radius:14px;">
+            <span aria-hidden="true" style="width:32px;height:32px;background:#5B6577;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search-x.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search-x.svg) center/contain no-repeat;"></span>
+            <p style="margin:12px 0 4px;font-size:17px;font-weight:600;color:#0E1726;">Nenhuma publicação encontrada</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#5B6577;">Tente outro termo ou limpe os filtros.</p>
+            <button type="button" onClick="{{ clearPub }}" style="height:44px;padding:0 18px;border:1px solid #C5CCD8;border-radius:10px;background:#FFFFFF;font:inherit;font-size:15px;font-weight:500;cursor:pointer;" style-hover="border-color:#1F56D6;color:#173A8C;">Limpar filtros</button>
+          </div>
+        </sc-if>
+        <p style="margin:28px 0 0;font-size:14px;color:#5B6577;">Fonte: Currículo Lattes da equipe. Atualizado em 2026.</p>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_galeria }}" hint-placeholder-val="{{ false }}">
+    <section id="percurso" data-screen-label="Demonstração · Percurso de resolução" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Percurso de resolução</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Do enunciado ao diagrama validado.</h2>
+        <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:62ch;text-wrap:pretty;">Escolha uma classe de situação e acompanhe, passo a passo, como o estudante modela o problema no diagrama de Vergnaud e como o Gérard responde.</p>
+        <div role="tablist" aria-label="Classe de situação" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:32px;">
+          <sc-for list="{{ seqTabs }}" as="t" hint-placeholder-count="4">
+            <button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="font:inherit;font-size:15px;font-weight:500;padding:10px 18px;border-radius:999px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};cursor:pointer;">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <ol style="list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;">
+          <sc-for list="{{ seqSteps }}" as="s" hint-placeholder-count="4">
+            <li style="display:flex;">
+              <button type="button" aria-pressed="{{ s.sel }}" onClick="{{ s.pick }}" style="font:inherit;text-align:left;width:100%;display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:1px solid {{ s.bd }};background:{{ s.bg }};cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:10px;"><span style="flex:none;width:28px;height:28px;border-radius:50%;border:2px solid #1F56D6;background:{{ s.nbg }};color:{{ s.nfg }};display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12.5px;box-sizing:border-box;">{{ s.no }}</span><strong style="font-size:15.5px;font-weight:600;color:#0E1726;">{{ s.title }}</strong></span>
+                <span style="font-size:14px;line-height:1.5;color:#3D4759;">{{ s.body }}</span>
+              </button>
+            </li>
+          </sc-for>
+        </ol>
+        <figure style="margin:24px 0 0;">
+          <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;box-shadow:0 20px 40px -28px rgba(14,23,38,0.25);"><img src="{{ seqImg }}" alt="{{ seqAlt }}" style="display:block;width:100%;height:auto;"><sc-if value="{{ seqHasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ seqStory }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
+          <figcaption style="margin-top:12px;font-size:14.5px;line-height:1.55;color:#3D4759;"><strong style="font-weight:600;color:#0E1726;">{{ seqLabel }}</strong> · “{{ seqText }}”</figcaption>
+        </figure>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_galeria }}" hint-placeholder-val="{{ false }}">
+    <section id="galeria" data-screen-label="Demonstração · Galeria" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Versão desktop</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Construir, validar e acompanhar.</h2>
+        <div style="display:grid;grid-template-columns:1fr;gap:40px;margin-top:40px;">
+          <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="6">
+            <figure style="margin:0;">
+              <div style="position:relative;border:4px solid #FFFFFF;border-radius:16px;background:#FFFFFF;overflow:hidden;outline:1px solid #C6D3E8;"><img src="{{ g.img }}" alt="{{ g.title }}" loading="lazy" style="display:block;width:100%;height:auto;"><sc-if value="{{ g.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ g.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
+              <figcaption style="margin-top:12px;"><strong style="display:block;font-size:16px;font-weight:600;color:#0E1726;">{{ g.title }}</strong><span style="font-size:14.5px;line-height:1.55;color:#3D4759;">{{ g.body }}</span></figcaption>
+            </figure>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_colaboradores }}" hint-placeholder-val="{{ false }}">
+    <section id="colaboradores" data-screen-label="Equipe · Colaboradores" style="padding:clamp(56px,8vw,104px) 0;background:#F7F9FC;border-top:1px solid #E4E8EF;border-bottom:1px solid #E4E8EF;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">Colaboradores</p>
+        <h2 style="margin:0;font-size:clamp(28px,3.4vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.01em;color:#0E1726;max-width:24ch;text-wrap:balance;">Estudantes e pesquisadores que contribuíram.</h2>
+        <ul style="list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;">
+          <sc-for list="{{ collaborators }}" as="c" hint-placeholder-count="8">
+            <li style="padding:16px 18px;border:1px solid #E1E6EE;border-radius:12px;background:#FFFFFF;"><strong style="display:block;font-size:15.5px;font-weight:600;color:#0E1726;">{{ c.name }}</strong><span style="font-size:14px;color:#5B6577;">{{ c.role }}</span></li>
+          </sc-for>
+        </ul>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_canais }}" hint-placeholder-val="{{ false }}">
+    <section id="canais" data-screen-label="Contato · Canais" style="padding:clamp(56px,8vw,104px) 0;">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px;">
+          <sc-for list="{{ channels }}" as="c" hint-placeholder-count="3">
+            <a href="{{ c.href }}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;padding:28px;border:1px solid #C9D6EB;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #D3DEF0,0 16px 28px -18px rgba(23,58,140,0.4);background:#FFFFFF;text-decoration:none;color:#0E1726;transition:border-color .2s ease;" style-hover="border-color:#1F56D6;color:#0E1726;">
+              <span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:#EEF3FE;"><span style="width:24px;height:24px;background:#1F56D6;-webkit-mask:url({{ c.icon }}) center/contain no-repeat;mask:url({{ c.icon }}) center/contain no-repeat;"></span></span>
+              <strong style="margin-top:8px;font-size:19px;font-weight:600;">{{ c.title }}</strong>
+              <span style="font-size:15.5px;line-height:1.6;color:#3D4759;flex:1;">{{ c.body }}</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:500;color:#1F56D6;">{{ c.cta }}<span aria-hidden="true" style="width:14px;height:14px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/external-link.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/external-link.svg) center/contain no-repeat;"></span></span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_telas }}" hint-placeholder-val="{{ false }}">
+    <section id="telas" data-screen-label="Telas do Gérard" style="padding:clamp(40px,6vw,72px) 0 clamp(56px,8vw,104px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <nav aria-label="Grupos de telas" style="display:flex;flex-wrap:wrap;gap:8px;">
+          <sc-for list="{{ telas }}" as="g" hint-placeholder-count="6">
+            <a href="{{ g.anchor }}" style="display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid #C6D3E8;background:#FFFFFF;font-size:14.5px;font-weight:600;color:#173A8C;text-decoration:none;" style-hover="border-color:#1F56D6;background:#F2F6FE;">{{ g.title }}</a>
+          </sc-for>
+        </nav>
+        <sc-for list="{{ telas }}" as="g" hint-placeholder-count="2">
+          <div id="{{ g.id }}" style="margin-top:clamp(40px,5vw,64px);padding-top:clamp(32px,4vw,48px);border-top:1px solid #E4E8EF;">
+            <p style="margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#1F56D6;">{{ g.kicker }}</p>
+            <h2 style="margin:0;font-size:clamp(24px,2.8vw,32px);line-height:1.2;font-weight:600;color:#0E1726;text-wrap:balance;">{{ g.title }}</h2>
+            <p style="margin:12px 0 0;font-size:16.5px;line-height:1.6;color:#3D4759;max-width:64ch;text-wrap:pretty;">{{ g.body }}</p>
+            <div style="display:grid;grid-template-columns:1fr;gap:40px;margin-top:24px;">
+              <sc-for list="{{ g.shots }}" as="s" hint-placeholder-count="3">
+                <figure style="margin:0;">
+                  <div style="position:relative;"><a href="{{ s.img }}" target="_blank" rel="noopener" aria-label="Abrir em tamanho real: {{ s.title }}" style="display:block;border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;" style-hover="border-color:#1F56D6;"><img src="{{ s.img }}" alt="{{ s.title }}: {{ s.body }}" loading="lazy" style="display:block;width:100%;height:auto;"></a><sc-if value="{{ s.hasStory }}" hint-placeholder-val="{{ false }}"><iframe src="{{ s.story }}" title="Historinha interativa" loading="lazy" allow="autoplay" style="position:absolute;left:61.61%;top:52.03%;width:33.34%;height:35.68%;border:0;background:#F2F2F2;"></iframe></sc-if></div>
+                  <figcaption style="margin-top:10px;"><strong style="display:block;font-size:15.5px;font-weight:600;color:#0E1726;">{{ s.title }}</strong><span style="font-size:14px;line-height:1.55;color:#3D4759;">{{ s.body }}</span></figcaption>
+                </figure>
+              </sc-for>
+            </div>
+            <sc-if value="{{ g.hasFeature }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:24px;padding:clamp(18px,2.4vw,28px);border:1px solid #C6D3E8;border-radius:16px;background:#F5F8FE;">
+                <a href="{{ g.feature.img }}" target="_blank" rel="noopener" aria-label="Abrir em tamanho real: {{ g.feature.title }}" style="display:block;max-width:960px;margin:0 auto 24px;border:1px solid #D5DBE5;border-radius:14px;background:#FFFFFF;overflow:hidden;" style-hover="border-color:#1F56D6;"><img src="{{ g.feature.img }}" alt="{{ g.feature.alt }}" loading="lazy" style="display:block;width:100%;height:auto;"></a>
+                <h3 style="margin:0;display:flex;align-items:center;gap:10px;font-size:clamp(19px,2vw,22px);font-weight:600;color:#0E1726;"><span aria-hidden="true" style="width:20px;height:20px;background:#1F56D6;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/search.svg) center/contain no-repeat;"></span>{{ g.feature.kicker }}</h3>
+                <ol style="margin:16px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px 24px;">
+                  <sc-for list="{{ g.feature.steps }}" as="st" hint-placeholder-count="4">
+                    <li style="display:flex;gap:10px;align-items:flex-start;"><span style="flex:none;width:24px;height:24px;border-radius:50%;background:#1F56D6;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:1px;">{{ st.no }}</span><span style="font-size:15px;line-height:1.6;color:#3D4759;text-wrap:pretty;">{{ st.text }}</span></li>
+                  </sc-for>
+                </ol>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+    </sc-if>
+
+    <sc-if value="{{ show_contato }}" hint-placeholder-val="{{ true }}">
+    <section id="contato" data-screen-label="12 CTA final" style="padding:0 0 clamp(64px,9vw,112px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,40px);">
+        <div style="border:1px solid #C6D7FA;border-radius:20px;background:#F2F6FE;padding:clamp(32px,5vw,64px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:32px;align-items:center;">
+          <div>
+            <h2 style="margin:0;font-size:clamp(26px,3vw,36px);line-height:1.2;font-weight:600;letter-spacing:-0.015em;color:#0E1726;text-wrap:balance;">Leve o Gérard para sua sala de aula ou grupo de pesquisa.</h2>
+            <p style="margin:14px 0 0;font-size:17px;line-height:1.6;color:#3D4759;max-width:52ch;">Converse com a equipe e com professores e pesquisadores de outras instituições.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            <a href="#/demonstracao" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#6A97FF 0%,#2F67EC 50%,#1F56D6 51%,#2B63E6 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 3px 0 #1442B0,0 10px 16px -8px rgba(20,66,176,0.55);color:#FFFFFF;text-shadow:0 1px 0 rgba(0,0,0,0.25);font-weight:800;transition:transform .12s, filter .12s;font-size:16px;font-weight:500;text-decoration:none;" style-hover="background:#1946B3;color:#FFFFFF;">Ver demonstração</a>
+            <a href="#/produtos" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;">Conhecer produtos</a>
+            <a href="https://github.com/anaemilia/Gerard/discussions" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#E6EDF8 100%);border:1px solid #B5C4DC;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C3CFE2;font-weight:800;color:#0E1726;font-size:16px;font-weight:500;text-decoration:none;" style-hover="border-color:#1F56D6;color:#173A8C;"><span aria-hidden="true" style="width:18px;height:18px;background:currentColor;-webkit-mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;mask:url(https://unpkg.com/lucide-static@0.469.0/icons/messages-square.svg) center/contain no-repeat;"></span>Entrar na comunidade</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+
+  </main>
+
+  <footer style="background:#F7F9FC;border-top:1px solid #E4E8EF;">
+    <div style="max-width:1200px;margin:0 auto;padding:clamp(48px,6vw,72px) clamp(20px,4vw,40px) 32px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:32px;">
+        <div style="grid-column:span 1;">
+          <span style="font-weight:600;font-size:18px;letter-spacing:0.1em;color:#0E1726;">GÉRARD</span>
+          <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3D4759;max-width:32ch;">Ambiente adaptativo de aprendizagem e pesquisa sobre Estruturas Aditivas.</p>
+        </div>
+        <sc-for list="{{ footerCols }}" as="col" hint-placeholder-count="3">
+          <nav aria-label="{{ col.title }}">
+            <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#0E1726;">{{ col.title }}</p>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ col.links }}" as="l" hint-placeholder-count="4">
+                <li><a href="{{ l.href }}" style="font-size:14.5px;color:#3D4759;text-decoration:none;" style-hover="color:#173A8C;text-decoration:underline;">{{ l.label }}</a></li>
+              </sc-for>
+            </ul>
+          </nav>
+        </sc-for>
+      </div>
+      <div style="margin-top:48px;padding-top:20px;border-top:1px solid #E4E8EF;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:13.5px;color:#5B6577;">
+        <span>© 2026 Projeto Gérard · UFPE · UNIVASF · Registro INPI BR512021000101‑0</span>
+        <div style="display:flex;gap:20px;">
+          <a href="#" style="color:#5B6577;" style-hover="color:#173A8C;">Política de privacidade</a>
+          <a href="#" style="color:#5B6577;" style-hover="color:#173A8C;">Acessibilidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showUtilityBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;heroOverlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero&quot;}}">
+class Component extends DCLogic {
+  state = { intro: true, introOut: false, introKey: 0, lab: { p1: null, p2: null, w: null }, drag: null, sel: null, flash: null, labMsg: '', labMsgKind: '', seq: 'comp', seqStep: 0, rep: 'texto', demo: 'mobile-composicao.html', pub: 'Todos', q: '', menu: false, scale: 1, w: typeof window !== 'undefined' ? window.innerWidth : 1200, page: this.routeFromHash() };
+  routeFromHash() { if (typeof window === 'undefined') return 'inicio'; const h = window.location.hash || ''; if (!h.startsWith('#/')) return (this.state && this.state.page) || 'inicio'; const p = h.slice(2).split('?')[0]; return p || 'inicio'; }
+  componentDidMount() {
+    this.labMove = e => { const d = this.dragStart; if (!d) return; const z = this.state.scale || 1; const dx = (e.clientX - d.x) / z, dy = (e.clientY - d.y) / z; if (Math.abs(dx) + Math.abs(dy) > 5) d.moved = true; if (d.moved) this.setState({ drag: { id: d.id, dx, dy } }); };
+    this.labUp = e => { const d = this.dragStart; if (!d) return; this.dragStart = null; this.suppressClick = true; setTimeout(() => { this.suppressClick = false; }, 0);
+      if (!d.moved) { this.setState({ drag: null }); this.toggleSel(d.id); return; }
+      const el = document.elementsFromPoint(e.clientX, e.clientY).map(x => x.closest && x.closest('[data-slot]')).find(Boolean);
+      this.setState({ drag: null });
+      if (el) this.place(d.id, el.getAttribute('data-slot')); else this.setState({ labMsg: 'Solte a peça dentro de um dos quadros do diagrama.', labMsgKind: '' }); };
+    window.addEventListener('pointermove', this.labMove); window.addEventListener('pointerup', this.labUp);
+    this.startIntro();
+    this.onResize = () => this.setState({ w: window.innerWidth });
+    this.onHash = () => { const h = window.location.hash || ''; if (!h.startsWith('#/')) return; this.setState({ page: this.routeFromHash(), menu: false }); window.scrollTo(0, 0); };
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('hashchange', this.onHash);
+    let t = 0;
+    this.iv = setInterval(() => { if (window.MOBILE_HTML_B64 || ++t > 100) { clearInterval(this.iv); this.forceUpdate(); } }, 60);
+  }
+  componentWillUnmount() { window.removeEventListener('pointermove', this.labMove); window.removeEventListener('pointerup', this.labUp); clearTimeout(this.introT); window.removeEventListener('resize', this.onResize); window.removeEventListener('hashchange', this.onHash); clearInterval(this.iv); }
+  dec(b) { try { return decodeURIComponent(Array.prototype.map.call(atob(b), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); } catch (_) { return ''; } }
+  startIntro() { clearTimeout(this.introT); this.introT = setTimeout(() => this.closeIntro(), 9000); }
+  closeIntro() { if (!this.state.intro || this.state.introOut) return; clearTimeout(this.introT); this.setState({ introOut: true }); setTimeout(() => this.setState({ intro: false, introOut: false }), 450); }
+  toggleSel(id) { const sel = this.state.sel === id ? null : id; this.setState({ sel, labMsg: sel ? 'Agora toque no quadro onde a peça deve ficar.' : '', labMsgKind: '' }); }
+  place(id, slot) {
+    const CH = { a: 'part', b: 'part', q: 'whole' }; const lab = this.state.lab; const n = (this.state.flash ? this.state.flash.n : 0) + 1;
+    if (lab[slot]) { this.setState({ sel: null, labMsg: 'Esse quadro já está ocupado. Toque nele para liberar.', labMsgKind: '' }); return; }
+    const ok = (CH[id] === 'part') === (slot !== 'w');
+    if (!ok) { this.setState({ sel: null, flash: { slot, kind: 'err', n }, labMsg: CH[id] === 'part' ? 'Quase! 12 e 25 são as partes: ficam à esquerda.' : 'O ? é o que queremos descobrir: o todo, à direita.', labMsgKind: 'err' }); clearTimeout(this.flT); this.flT = setTimeout(() => this.setState({ flash: null }), 900); return; }
+    const nl = { ...lab, [slot]: id }; const done = nl.p1 && nl.p2 && nl.w;
+    this.setState({ lab: nl, sel: null, flash: { slot: done ? 'w' : slot, kind: 'ok', n }, labMsg: done ? '✓ Muito bem! 12 + 25 = 37 figurinhas ao todo.' : (CH[id] === 'part' ? '✓ Isso! Esse valor é uma das partes.' : '✓ Isso! O ? é o todo que procuramos.'), labMsgKind: 'ok' });
+  }
+  introEl() {
+    if (!this.state.intro) return null;
+    const h = React.createElement; const W = 360;
+    const C = [['S', 'Situações', 180, 70, '0px', '-420px', true, 0.2], ['I', 'Invariantes', 76, 252, '-520px', '260px', false, 0.55], ['R', 'Representações', 284, 252, '520px', '260px', false, 0.9]];
+    const circ = ([L, cap, x, y, fx, fy, f, d]) => h('div', { key: L, style: { position: 'absolute', left: x - 50, top: y - 50, width: 100, height: 100, '--fx': fx, '--fy': fy, animation: 'gIntroFly .9s cubic-bezier(.2,1.3,.4,1) ' + d + 's both' } },
+      h('div', { style: { width: 100, height: 100, borderRadius: '50%', background: f ? 'radial-gradient(circle at 35% 28%,#9CBDFF 0%,#2F67EC 55%,#173A8C 100%)' : 'radial-gradient(circle at 35% 28%,#FFFFFF 0%,#DCE7FB 60%,#AFC4EC 100%)', boxShadow: 'inset 0 -6px 10px rgba(0,0,0,0.2),0 8px 0 rgba(4,14,46,0.45),0 0 30px rgba(120,170,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 50, fontWeight: 900, color: f ? '#FFFFFF' : '#1F56D6', textShadow: f ? '0 2px 0 rgba(0,0,0,0.3)' : 'none' } }, L),
+      h('div', { style: { position: 'absolute', top: 108, left: -40, right: -40, textAlign: 'center', fontSize: 14, fontWeight: 800, letterSpacing: '0.04em', color: '#CFE0FF', animation: 'gIntroOp .5s ' + (d + 0.7) + 's both' } }, cap));
+    const btn = (label, on, style) => h('button', { type: 'button', onClick: on, style: Object.assign({ font: 'inherit', cursor: 'pointer' }, style) }, label);
+    return h('div', { key: 'intro' + this.state.introKey, role: 'dialog', 'aria-label': 'Abertura do Gérard', style: { position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontFamily: "'Nunito',system-ui,sans-serif", background: 'radial-gradient(circle at 50% 38%,#2D60E0 0%,#0F2D7A 52%,#06143A 100%)', animation: this.state.introOut ? 'gIntroOut .45s ease forwards' : 'gIntroOp .3s both' } },
+      h('div', { 'aria-hidden': true, style: { position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(160,190,255,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(160,190,255,0.08) 1px,transparent 1px)', backgroundSize: '32px 32px' } }),
+      btn('Pular intro ▸▸', () => this.closeIntro(), { position: 'absolute', top: 20, right: 20, padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 14, fontWeight: 800 }),
+      h('div', { style: { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: 20, transform: 'scale(var(--k,1))' } },
+        h('div', { style: { position: 'relative', width: W, height: 330, maxWidth: '90vw' } },
+          h('svg', { 'aria-hidden': true, width: W, height: 330, viewBox: '0 0 360 330', style: { position: 'absolute', inset: 0, animation: 'gIntroOp .6s 1.5s both' } },
+            h('g', { style: { transformOrigin: '180px 192px', animation: 'gIntroSpin 14s linear 1.5s infinite' } },
+              h('circle', { cx: 180, cy: 192, r: 118, fill: 'none', stroke: '#7FA6FF', strokeWidth: 5, strokeDasharray: '14 12', strokeLinecap: 'round' }))),
+          C.map(circ)),
+        h('div', { style: { display: 'flex', gap: 2, fontSize: 64, fontWeight: 900, letterSpacing: '0.08em', color: '#FFFFFF', textShadow: '0 5px 0 #0B2366,0 0 28px rgba(120,170,255,0.7)', lineHeight: 1 } },
+          'GÉRARD'.split('').map((ch, i) => h('span', { key: i, style: { display: 'inline-block', animation: 'gIntroDrop .6s cubic-bezier(.2,1.5,.4,1) ' + (1.9 + i * 0.09) + 's both' } }, ch))),
+        h('div', { style: { fontSize: 18, fontWeight: 700, color: '#CFE0FF', textAlign: 'center', animation: 'gIntroFade .6s 2.7s both' } }, 'Ambiente adaptativo de aprendizagem e pesquisa · C = (S, I, R)'),
+        h('div', { style: { width: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'gIntroOp .3s .2s both' } },
+          h('div', { style: { width: '100%', height: 14, borderRadius: 999, background: 'rgba(0,0,0,0.35)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4)', overflow: 'hidden', padding: 2, boxSizing: 'border-box' } },
+            h('div', { style: { height: '100%', borderRadius: 999, background: 'linear-gradient(180deg,#B9D0FF 0%,#5E8FFF 50%,#2F67EC 51%,#4F82F5 100%)', animation: 'gIntroBar 3.2s .2s ease-out both' } })),
+          h('span', { style: { fontSize: 13, fontWeight: 700, color: '#9DB8EE', letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Carregando o laboratório')),
+        btn('Entrar ▸', () => this.closeIntro(), { marginTop: 4, padding: '14px 34px', borderRadius: 999, border: 'none', fontSize: 19, fontWeight: 900, color: '#3A2A00', background: 'linear-gradient(180deg,#FFF7D1 0%,#FFD95A 50%,#F5BC0E 51%,#FFCB2E 100%)', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.8),0 5px 0 #C48A00,0 14px 22px -8px rgba(0,0,0,0.5)', animation: 'gIntroFade .5s 3.5s both' })));
+  }
+  histVals() {
+    const ALL = [["01_andrea_boneca_linha.html","Andréa e a boneca","Transformação de medidas"],["01_carlos_joao_pedro_dinheiro_linha.html","Carlos, João e Pedro","Composição de relações"],["01_joao_bilas_linha.html","João e as duas partidas de bila","Composição das transformações"],["01_julia_maria_bonecas_linha.html","Julia, Maria e as bonecas","Transformação de relação"],["01_paulo_e_jose_linha.html","Paulo e José","Comparação de medidas"],["02_ana_bia_figurinhas_linha.html","Ana, Bia e as figurinhas","Transformação de relação"],["02_manuel_figurinhas_linha.html","Manuel e as figurinhas","Composição das transformações"],["02_marcus_e_jardel_linha.html","Marcus e Jardel","Comparação de medidas"],["02_maria_e_as_figurinhas_linha.html","Maria e as figurinhas","Transformação de medidas"],["02_maria_joao_carla_idades_linha.html","Maria, João e Carla","Composição de relações"],["03_geisa_chocolates_linha.html","Geisa e os chocolates","Composição das transformações"],["03_ingrid_e_ligianne_linha.html","Ingrid e Ligianne","Comparação de medidas"],["03_maria_na_feira_linha.html","Maria na feira","Transformação de medidas"],["04_jammes_e_gisele_linha.html","Jammes e Gisele","Comparação de medidas"],["04_nadia_e_os_morangos_linha.html","Nádia e os morangos","Transformação de medidas"],["04_vovo_rosas_linha.html","Vovó e as rosas","Composição das transformações"],["05_claudia_e_joana_linha.html","Claudia e Joana","Comparação de medidas"],["05_geisa_e_a_caixa_de_chocolates_linha.html","Geisa e a caixa de chocolates","Composição das transformações"],["05_leandro_e_as_balas_linha.html","Leandro e as balas","Transformação de medidas"],["06_claudenice_e_nadia_linha.html","Claudenice e Nádia","Comparação de medidas"],["06_paulo_e_as_bolas_linha.html","Paulo e as bolas","Transformação de medidas"],["07_lucas_e_as_figurinhas_do_tio_linha.html","Lucas e as figurinhas do tio","Transformação de medidas"]].map(([f, t, c]) => ({ f, t, c }));
+    const cats = ['Todas', 'Composição de medidas', 'Transformação de medidas', 'Comparação de medidas', 'Composição das transformações', 'Transformação de relação', 'Composição de relações'].filter(c => c === 'Todas' || ALL.some(x => x.c === c));
+    const cat = this.state.histCat || 'Todas';
+    const vis = ALL.filter(x => cat === 'Todas' || x.c === cat);
+    const curF = vis.some(x => x.f === this.state.histF) ? this.state.histF : vis[0].f;
+    const cur = ALL.find(x => x.f === curF);
+    return {
+      show_historinhas: this.state.page === 'historinhas',
+      histCats: cats.map(c => ({ label: c, n: c === 'Todas' ? ALL.length : ALL.filter(x => x.c === c).length, pressed: c === cat ? 'true' : 'false', bg: c === cat ? '#E3ECFD' : '#FFFFFF', fg: c === cat ? '#173A8C' : '#3D4759', bd: c === cat ? '#1F56D6' : '#D5DBE5', pick: () => this.setState({ histCat: c }) })),
+      histList: vis.map((x, i) => ({ ...x, no: String(i + 1).padStart(2, '0'), cur: x.f === curF ? 'true' : 'false', bg: x.f === curF ? '#F2F6FE' : 'transparent', fg: x.f === curF ? '#173A8C' : '#0E1726', bar: x.f === curF ? '#1F56D6' : 'transparent', pick: () => this.setState({ histF: x.f }) })),
+      histSrc: 'historinhas/' + curF, histTitle: cur.t, histCat: cur.c,
+      histPos: (vis.findIndex(x => x.f === curF) + 1) + ' de ' + vis.length,
+      histPrev: () => { const i = vis.findIndex(x => x.f === curF); this.setState({ histF: vis[(i - 1 + vis.length) % vis.length].f }); },
+      histNext: () => { const i = vis.findIndex(x => x.f === curF); this.setState({ histF: vis[(i + 1) % vis.length].f }); },
+    };
+  }
+  addStories(v) {
+    const ST = { '08_transformacao_concluida': '07_lucas_e_as_figurinhas_do_tio_linha.html', '09_comparacao_inicio': '03_ingrid_e_ligianne_linha.html', '10_comparacao_modelagem': '03_ingrid_e_ligianne_linha.html', '11_comparacao_erro': '03_ingrid_e_ligianne_linha.html' };
+    const find = (p) => { if (typeof p !== 'string') return null; const k = Object.keys(ST).find(k => p.includes(k + '.png') || p.includes(k + '-')); return k ? 'historinhas/' + ST[k] : null; };
+    const walk = (o, d) => { if (d > 4 || !o || typeof o !== 'object') return o; if (Array.isArray(o)) return o.map(x => walk(x, d + 1)); if (React.isValidElement(o)) return o; const r = {}; for (const k in o) r[k] = walk(o[k], d + 1); const st = find(o.img); if (st) { r.story = st; r.hasStory = true; } return r; };
+    Object.assign(v, this.histVals()); const out = {}; for (const k in v) out[k] = (Array.isArray(v[k]) || (v[k] && typeof v[k] === 'object' && !React.isValidElement(v[k]) && typeof v[k] !== 'function')) ? walk(v[k], 0) : v[k];
+    const ss = find(v.seqImg); out.seqStory = ss || ''; out.seqHasStory = !!ss;
+    return out;
+  }
+  renderVals() { return this.addStories(this._rv()); }
+  _rv() {
+    const I = n => `https://unpkg.com/lucide-static@0.469.0/icons/${n}.svg`;
+    const s = this.state;
+    const pages = {
+      inicio: { t: 'Início' },
+      sobre: { t: 'O Gérard', h1: 'Um ambiente adaptativo de aprendizagem e pesquisa.', lead: 'O Gérard integra educação, sistema adaptativo e pesquisa científica em torno das Estruturas Aditivas e da Teoria dos Campos Conceituais de Gérard Vergnaud.' },
+      produtos: { t: 'Produtos', h1: 'O ecossistema Gérard.', lead: 'Cinco produtos organizados pela tríade de Vergnaud — situações, invariantes operatórios e representações — sobre a mesma base científica e o mesmo modelo de dados.' },
+      'como-funciona': { t: 'Como funciona', h1: 'Da situação-problema ao acompanhamento da aprendizagem.', lead: 'O estudante representa e resolve; o sistema registra, analisa e responde. Veja cada etapa, as representações e a adaptatividade por trás delas.' },
+      pesquisa: { t: 'Pesquisa', h1: 'Pesquisa científica desde 2006.', lead: 'Fundamentação teórica, projetos de pesquisa e extensão e a formação de professores que deram origem ao Gérard.' },
+      publicacoes: { t: 'Publicações', h1: 'Publicações e produção científica.', lead: 'Artigos, trabalhos em anais, tese, capítulos, trabalho de conclusão de curso, registro de software e relatórios de pesquisa relacionados ao Gérard.' },
+      historinhas: { t: 'Historinhas', h1: 'Historinhas animadas.', lead: 'Cada situação-problema contada em quadros, com a operação na linha dos inteiros. Escolha uma historinha e use os controles para reproduzir, pausar ou avançar.' },
+      telas: { t: 'Telas', h1: 'As telas do Gérard.', lead: 'Todas as telas da versão desktop, organizadas por classe de situação e por etapa: diagramar, construir, validar e pesquisar. Clique em uma tela para vê-la em tamanho real.' },
+      demonstracao: { t: 'Demonstração', h1: 'Experimente o Gérard.', lead: 'Três demonstrações interativas para celular e as principais telas da versão desktop.' },
+      equipe: { t: 'Equipe', h1: 'Quem faz o Gérard.', lead: 'Pesquisadores, desenvolvedores, estudantes e instituições envolvidos no projeto.' },
+      contato: { t: 'Contato', h1: 'Fale com a equipe.', lead: 'Dúvidas, parcerias de pesquisa, uso em sala de aula ou formação de professores.' },
+    };
+    const page = pages[s.page] ? s.page : 'inicio';
+    const on = (...ps) => ps.includes(page);
+    const narrow = s.w < 1180;
+    const embeds = (typeof window !== 'undefined' && window.MOBILE_HTML_B64) || {};
+    const reps = [['texto','Texto'],['diagrama','Vergnaud'],['venn','Venn'],['barras','Barras'],['funis','Funis/Tábua'],['eixo','Eixo numérico'],['concreto','Material concreto']];
+    const repFlags = {}; reps.forEach(([id]) => { repFlags['rep_' + id] = s.rep === id; });
+    const demos = [['mobile-composicao.html','Composição'],['mobile-comparacao.html','Comparação'],['mobile-transformacao.html','Transformação']];
+    const pubsAll = [
+      { g: 'Artigos e anais', type: 'Artigo', year: '2008', title: 'Efeitos da manipulação direta reflexiva na resolução de problemas sobre estruturas aditivas', authors: 'Queiroz, A. E. M.; Gomes, A. S.', venue: 'Revista Brasileira de Informática na Educação, v. 16' },
+      { g: 'Artigos e anais', type: 'Anais', year: '2008', title: 'GERARD — Uma interface educativa para o ensino de estruturas aditivas', authors: 'Queiroz, A. E. M.; Gomes, A. S.', venue: '2º Simpósio Internacional de Pesquisa em Educação Matemática (SIPEMAT), Recife' },
+      { g: 'Artigos e anais', type: 'Anais', year: '2008', title: 'Design de software educacional baseado na Teoria dos Campos Conceituais', authors: 'Braga, M. M.; Queiroz, A. E. M.; Gomes, A. S.', venue: 'XIX Simpósio Brasileiro de Informática na Educação (SBIE), Fortaleza' },
+      { g: 'Artigos e anais', type: 'Anais', year: '2007', title: 'Design centrado no usuário de estratégia de ajuda adaptativa', authors: 'Queiroz, A. E. M.; Gomes, A. S.; Tedesco, P. C. A.', venue: 'Simpósio Brasileiro de Informática na Educação (SBIE), São Paulo' },
+      { g: 'Artigos e anais', type: 'Anais', year: '2007', title: 'Design centrado no usuário de estratégias de ajuda adaptativa em softwares educativos: estruturas aditivas', authors: 'Queiroz, A. E. M.; Gomes, A. S.; Tedesco, P. C. A.', venue: 'CLIHC 2007 — Human-Computer Interaction in Latin America, Rio de Janeiro' },
+      { g: 'Artigos e anais', type: 'Anais', year: '2019', title: 'Construindo e resolvendo situações-problema sobre estruturas aditivas usando diagramas de Vergnaud e Excel com professores de escolas públicas e privadas', authors: 'Queiroz, A. E. M.', venue: 'I Encontro Regional de Matemática Aplicada e Computacional do Nordeste, Petrolina' },
+      { g: 'Teses e trabalhos acadêmicos', type: 'Tese', year: '2012', title: 'A conceitualização sobre estruturas aditivas e multiplicativas no uso de formas de representação visual em uma interface educativa', authors: 'Queiroz, A. E. M. · Orientador: Sávio Silveira de Queiroz', venue: 'Doutorado em Psicologia — Universidade Federal do Espírito Santo (UFES)' },
+      { g: 'Teses e trabalhos acadêmicos', type: 'Dissertação', year: '2006', title: 'Primeira versão do Gérard', authors: 'Braga, M. M.', venue: 'Mestrado — Universidade Federal de Pernambuco (UFPE)' },
+      { g: 'Teses e trabalhos acadêmicos', type: 'TCC', year: '2010', title: 'Gérard: uma interface educativa para o ensino de estruturas aditivas e multiplicativas', authors: 'Moura, K. G. · Orientadora: Ana Emília de Melo Queiroz', venue: 'Engenharia de Computação — Universidade Federal do Vale do São Francisco (UNIVASF)' },
+      { g: 'Capítulos', type: 'Capítulo', year: '2013', title: 'A representação visual e o ensino das estruturas aditivas e multiplicativas', authors: 'Queiroz, A. E. M.; Queiroz, S. S.', venue: 'In: Sousa, G. M. C.; Abreu, E. F. (Org.). Olhares diversos… Encontros possíveis. CRV, p. 7–27' },
+      { g: 'Registros e relatórios', type: 'Registro', year: '2021', title: 'GERARD: Uma Interface Educativa para Estruturas Aditivas e Multiplicativas', authors: 'Queiroz, A. E. M.; Moura, K. G.; Braga, M. M.; Gomes, A. S.', venue: 'Programa de computador · INPI BR512021000101‑0 · registrado em 26/01/2021' },
+      { g: 'Registros e relatórios', type: 'Relatório', year: '2026', title: 'Análise de situações interativas no Gerard: subsídios para o design de uma interface inteligente em problemas de estruturas aditivas', authors: 'Queiroz, A. E. M.', venue: 'Relatório de pesquisa' },
+    ].sort((x, y) => y.year.localeCompare(x.year));
+    const groups = ['Todos', 'Artigos e anais', 'Teses e trabalhos acadêmicos', 'Capítulos', 'Registros e relatórios'];
+    const q = s.q.trim().toLowerCase();
+    const filtered = pubsAll.filter(p => (s.pub === 'Todos' || p.g === s.pub) && (!q || (p.title + ' ' + p.authors + ' ' + p.venue + ' ' + p.year).toLowerCase().includes(q)));
+    const E = ['Início', 'O enunciado aparece com os valores marcados e o diagrama vazio.'];
+    const M = ['Modelagem', 'O estudante arrasta os valores do texto para o diagrama; a incógnita recebe “?”.'];
+    const X = ['Erro', 'Um valor inconsistente fica em vermelho e o Gérard pergunta antes de validar.'];
+    const C = ['Concluída', 'O valor correto é confirmado em azul, com o sinal de validação.'];
+    const SEQ = [
+      { k: 'comp', label: 'Composição', text: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?', steps: [['01_composicao_inicio', ...E], ['02_composicao_modelagem', ...M], ['03_composicao_erro', ...X], ['04_composicao_concluida', ...C]] },
+      { k: 'trans', label: 'Transformação', text: 'Lucas ganhou 12 figurinhas de seu tio. Ele possui agora 17 figurinhas. Quantas figurinhas ele tinha antes?', steps: [['05_transformacao_inicio', ...E], ['06_transformacao_modelagem', ...M], ['07_transformacao_erro', ...X], ['08_transformacao_concluida', ...C]] },
+      { k: 'compar', label: 'Comparação', text: 'Ingrid tem 12 reais a mais que Ligianne. Se Ligianne possui 27 reais, quantos reais Ingrid tem?', steps: [['09_comparacao_inicio', ...E], ['10_comparacao_modelagem', ...M], ['11_comparacao_erro', ...X], ['12_comparacao_concluida', ...C], ['13_comparacao_concluida_material_concreto', 'Material concreto', 'Quadradinhos e eixo de inteiros tornam visível a diferença entre referido e referendo.']] },
+      { k: 'ctrans', label: 'Composição de transformações', text: 'Geisa tinha uma caixa com 35 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?', steps: [['14_composicao_transformacoes_inicio', ...E], ['15_composicao_transformacoes_modelagem', 'Modelagem', 'Duas transformações sucessivas se compõem numa transformação final, calculada pelo sistema.']] },
+    ];
+    const seq = SEQ.find(q => q.k === this.state.seq) || SEQ[0];
+    const seqI = Math.min(this.state.seqStep || 0, seq.steps.length - 1);
+    const products = [
+      { pillar: 'R', slug: 'estruturas-aditivas', accent: '#1F56D6', tint: '#EEF3FE', mark: [0,0,0,1], icon: I('layers'), web: 'https://gerard-web-deploy.onrender.com/', name: 'Estruturas Aditivas', status: 'Disponível', badgeBg: '#E7F5EE', badgeFg: '#16603C', body: 'Ambiente principal para resolução e representação de situações de composição, transformação e comparação.', long: 'O ambiente principal do ecossistema. O estudante resolve situações-problema do campo aditivo alternando entre enunciado, diagrama de Vergnaud e material concreto.', features: ['Composição, transformação e comparação de medidas', 'Diagrama de Vergnaud e quadradinhos manipuláveis', 'Escolha da categoria a partir do enunciado', 'Português e outros idiomas na interface'], img: 'imagens/prints_gerard/12_comparacao_concluida.png', alt: 'Tela de comparação de medidas.', caption: 'Comparação de medidas com eixo de inteiros.', hasDl: true, dl: 'https://github.com/anaemilia/Gerard-2011/releases/tag/v1.0.0', dlLabel: 'Baixar v1.0.0' },
+      { pillar: 'S', slug: 'professor', accent: '#0F6E80', tint: '#E6F4F6', mark: [1,0,0,0], icon: I('presentation'), name: 'Professor', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Ferramentas para criar, revisar e acompanhar situações-problema e analisar as resoluções da turma.', long: 'Ferramentas para o professor construir situações-problema a partir de um diagrama, revisá-las antes de liberar para a turma e acompanhar as estratégias dos estudantes.', features: ['Construção de enunciados a partir do diagrama', 'Curadoria e validação das situações', 'Organização por categoria e nível', 'Acompanhamento das resoluções'], img: 'imagens/prints_gerard/16_construir_situacao_problema.png', alt: 'Tela de construção de situação-problema.', caption: 'Construção de situação-problema a partir do diagrama preenchido.' },
+      { pillar: 'R', slug: 'aluno', accent: '#4338CA', tint: '#EEEDFB', mark: [0,1,0,0], icon: I('graduation-cap'), name: 'Aluno', status: 'Protótipo mobile', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'Ambiente de interação e resolução de problemas, no computador e no celular.', long: 'A experiência do estudante, simplificada para telas pequenas: só a modelagem formal da situação, com retorno imediato a cada ação.', features: ['Chat do Gérard: ajuda contextual durante a resolução', 'Composição, comparação e transformação no celular', 'Arrastar e soltar quadradinhos', 'Retorno imediato', 'Mesma linguagem visual do desktop'], img: 'imagens/prints_gerard/08_transformacao_concluida.png', alt: 'Tela de transformação de medidas.', caption: 'Transformação de medidas: estado inicial, transformação e estado final.' },
+      { pillar: 'I', slug: 'analise-modelagem', accent: '#2563A8', tint: '#E8F0F9', mark: [1,0,0,1], icon: I('message-square-text'), name: 'Análise da modelagem', status: 'Nova', badgeBg: '#E3ECFD', badgeFg: '#173A8C', body: 'O estudante explica as decisões tomadas em cada tentativa; os protocolos de interação são registrados.', long: 'Após cada tentativa, o estudante justifica como interpretou a situação-problema e onde posicionou cada elemento semântico no diagrama de Vergnaud. As respostas ficam vinculadas à tentativa, sem alterar o diagrama.', features: ['Papel semântico de cada elemento: referido, valor relativo, referendo', 'Dificuldade percebida e justificativa da conduta', 'Estratégia de modelagem descrita pelo estudante', 'Registro automático dos protocolos de interação e fotografia da modelagem'], img: 'imagens/analise-modelagem.png', alt: 'Tela Análise da modelagem.', caption: 'Análise da modelagem em uma situação de comparação de medidas.' },
+      { pillar: 'I', slug: 'pesquisa', accent: '#173A8C', tint: '#E8EDF7', mark: [0,0,1,0], icon: I('microscope'), name: 'Pesquisa', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Log de interação, tabelas do estudo sob demanda e modelagem para investigar dependências.', long: 'Recursos para investigação científica: cada interação é registrada e as tabelas do estudo são reconstruídas sob demanda a partir do log bruto.', features: ['Análise da modelagem com explicação do estudante', 'Log bruto de interação', 'Tabelas do estudo sob demanda', 'Agente Modelador: PART e Apriori', 'Exportação para análise'], img: 'imagens/visaoPesquisador_nitida.png', alt: 'Visão do pesquisador.', caption: 'Visão do pesquisador: tabelas reconstruídas a partir do log.' },
+    ].sort((a, b) => 'SIR'.indexOf(a.pillar) - 'SIR'.indexOf(b.pillar)).map((p, i) => ({ ...p, pillarName: { S: 'Situações', I: 'Invariantes operatórios', R: 'Representações' }[p.pillar], hasDl: !!p.hasDl, hasWeb: !!p.web, mark: p.mark.map(on => ({ bg: on ? p.accent : 'transparent' })), textOrder: i % 2, imgOrder: 1 - (i % 2) }));
+    const navDef = [['inicio','Início','#/'],['sobre','O Gérard','#/sobre'],['produtos','Produtos','#/produtos'],['como-funciona','Como funciona','#/como-funciona'],['telas','Telas','#/telas'],['historinhas','Historinhas','#/historinhas'],['pesquisa','Pesquisa','#/pesquisa'],['publicacoes','Publicações','#/publicacoes'],['equipe','Equipe','#/equipe']];
+    const P = pages[page];
+    return {
+      zoom: s.scale,
+      introEl: this.introEl(),
+      replayIntro: () => { this.setState({ intro: true, introOut: false, introKey: s.introKey + 1 }); this.startIntro(); },
+      labReset: () => this.setState({ lab: { p1: null, p2: null, w: null }, sel: null, flash: null, drag: null, labMsg: '', labMsgKind: '' }),
+      labMsg: s.labMsg || 'Arraste o 12, o 25 e o ? para os quadros.', labMsgFg: s.labMsgKind === 'ok' ? '#1F56D6' : s.labMsgKind === 'err' ? '#C42B2B' : '#3D4759',
+      chips: [['a', '12'], ['b', '25'], ['q', '?']].filter(([id]) => !Object.values(s.lab).includes(id)).map(([id, label]) => { const dg = s.drag && s.drag.id === id; return { id, label, sel: s.sel === id ? 'true' : 'false', dx: dg ? s.drag.dx : 0, dy: dg ? s.drag.dy : 0, sc: dg ? 1.12 : 1, z: dg ? 20 : 1, tr: dg ? 'none' : 'transform .35s cubic-bezier(.2,1.4,.4,1)', ol: s.sel === id ? '3px solid #1F56D6' : 'none', down: e => { if (e.button) return; e.preventDefault(); this.dragStart = { id, x: e.clientX, y: e.clientY, moved: false }; }, key: e => { if (this.suppressClick || e.detail) return; this.toggleSel(id); } }; }),
+      ...(() => { const o = {}; const LB = { a: '12', b: '25', q: '?' }; const done = s.lab.p1 && s.lab.p2 && s.lab.w; const CAP = { p1: 'parte', p2: 'parte', w: 'todo' };
+        ['p1', 'p2', 'w'].forEach(k => { const v = s.lab[k]; const fl = s.flash && s.flash.slot === k ? s.flash : null; const err = fl && fl.kind === 'err';
+          o['slot_' + k + '_label'] = v ? (k === 'w' && done ? '37' : LB[v]) : '';
+          o['slot_' + k + '_cap'] = k === 'w' && done ? '? = 37' : CAP[k];
+          o['slot_' + k + '_aria'] = 'Quadro ' + CAP[k] + (v ? ': ' + LB[v] : ': vazio');
+          o['slot_' + k + '_bs'] = v || err ? 'solid' : 'dashed';
+          o['slot_' + k + '_bd'] = err ? '#C42B2B' : v ? '#1F56D6' : '#93ABD6';
+          o['slot_' + k + '_bg'] = err ? '#FDE8E8' : v ? '#E3ECFD' : 'rgba(255,255,255,0.85)';
+          o['slot_' + k + '_fg'] = v ? '#173A8C' : '#93ABD6';
+          o['slot_' + k + '_anim'] = fl ? (fl.kind === 'ok' ? 'gPop' : 'gShake') + (fl.n % 2 ? 'A' : 'B') + ' .5s cubic-bezier(.2,1.4,.4,1)' : 'none';
+          o['slot_' + k + '_click'] = () => { if (s.sel) return this.place(s.sel, k); if (v) this.setState({ lab: { ...s.lab, [k]: null }, flash: null, labMsg: 'Peça devolvida. Tente outro lugar.', labMsgKind: '' }); };
+        }); return o; })(),
+      showUtilityBar: this.props.showUtilityBar ?? true,
+      heroOverlay: this.props.heroOverlay ?? false,
+      fontUp: () => this.setState(p => ({ scale: Math.min(1.3, +(p.scale + 0.1).toFixed(1)) })),
+      fontDown: () => this.setState(p => ({ scale: Math.max(0.9, +(p.scale - 0.1).toFixed(1)) })),
+      fontReset: () => this.setState({ scale: 1 }),
+      wide: !narrow, narrow,
+      menuOpen: s.menu ? 'true' : 'false', showDrawer: narrow && s.menu,
+      menuLabel: s.menu ? 'Fechar menu' : 'Abrir menu', menuIcon: I(s.menu ? 'x' : 'menu'),
+      toggleMenu: () => this.setState(p => ({ menu: !p.menu })), closeMenu: () => this.setState({ menu: false }),
+      nav: navDef.map(([id, label, href]) => ({ label, href, cur: id === page ? 'page' : 'false', fg: id === page ? '#173A8C' : '#3D4759', bg: id === page ? '#E3ECFD' : 'transparent' })),
+      isInner: page !== 'inicio', pageTitle: P.t, pageH1: P.h1 || '', pageLead: P.lead || '',
+      show_inicio: on('inicio'), show_dimensoes: on('inicio', 'sobre'), show_como_funciona: on('inicio', 'como-funciona'), show_representacoes: on('inicio', 'como-funciona'),
+      show_produtos: on('inicio'), show_publico: on('inicio'), show_fundamentacao: on('inicio', 'pesquisa'), show_inteligencia: on('inicio', 'como-funciona'),
+      show_pesquisa: on('inicio'), show_demonstracao: on('inicio', 'demonstracao'), show_instituicoes: on('inicio', 'equipe'), show_equipe: on('inicio', 'equipe'), show_contato: page !== 'contato',
+      show_categorias: on('sobre'), show_versoes: on('sobre'), show_produtosDetalhe: on('produtos'), show_projetos: on('pesquisa'), show_pubList: on('publicacoes', 'pesquisa'),
+      show_galeria: on('demonstracao'), show_telas: on('telas'), show_colaboradores: on('equipe'), show_canais: on('contato'),
+      entryPaths: [
+        { label: 'Sou estudante', href: '#p-estudantes', icon: I('graduation-cap') },
+        { label: 'Sou professor(a)', href: '#p-professores', icon: I('presentation') },
+        { label: 'Sou pesquisador(a)', href: '#p-pesquisadores', icon: I('microscope') },
+      ],
+      concepts: [
+        { icon: I('file-text'), title: 'Situações-problema', body: 'O ponto de partida: problemas com sentido, não contas soltas.' },
+        { icon: I('shapes'), title: 'Representações', body: 'Diagrama, texto e material concreto para a mesma relação.' },
+        { icon: I('mouse-pointer-click'), title: 'Interação', body: 'O estudante age sobre a situação e vê as consequências.' },
+        { icon: I('brain-circuit'), title: 'Adaptatividade educacional', body: 'Cada ação alimenta o modelo do estudante.' },
+      ],
+      logRows: [
+        { t: '00:04', e: 'lê enunciado · comparação' },
+        { t: '00:19', e: 'marca 12 como referente' },
+        { t: '00:31', e: 'arrasta 7 → relação' },
+        { t: '00:40', e: 'preenche referido = 5' },
+        { t: '00:41', e: 'feedback · inconsistente' },
+      ],
+      mastery: [['Composição', 82], ['Transformação', 54], ['Comparação', 31]].map(([label, v]) => ({ label, v, pct: v + '%' })),
+      instSlots: ['Laboratório / grupo de pesquisa', 'Agência de financiamento'],
+      dimensions: [
+        { no: '01', icon: I('book-open'), title: 'Ensino e aprendizagem', body: 'Aprendizagem pela resolução de situações-problema, com representações manipuláveis e acompanhamento do estudante.',
+          items: [{ t: 'Situações de composição, transformação e comparação' }, { t: 'Texto, diagrama e material concreto' }, { t: 'Construção e curadoria de situações pelo professor' }] },
+        { no: '2', icon: I('brain-circuit'), title: 'Sistema adaptativo', body: 'O sistema observa cada ação do estudante e usa esses dados para modelar, responder e adaptar.',
+          items: [{ t: 'Monitoramento de todas as interações' }, { t: 'Feedback imediato a cada ação' }, { t: 'Modelagem do estudante — Agente Modelador' }, { t: 'Adaptação do percurso', soon: true }] },
+        { no: '3', icon: I('flask-conical'), title: 'Pesquisa científica', body: 'Um laboratório para investigar como se constroem os conceitos do campo aditivo.',
+          items: [{ t: 'Teoria dos Campos Conceituais de Vergnaud' }, { t: 'Log bruto de interação e tabelas do estudo' }, { t: 'Indução de regras (PART) e associação (Apriori)' }] },
+      ],
+      steps: [
+        ['01','Estudante','Situação-problema','Lê um enunciado de composição, transformação ou comparação.'],
+        ['02','Estudante','Identificação dos papéis','Reconhece partes e todo, estados ou referente e referido.'],
+        ['03','Estudante','Representação','Constrói a relação no diagrama, no texto ou no material concreto.'],
+        ['04','Estudante','Interação','Manipula, corrige e testa hipóteses sobre a situação.'],
+        ['05','Sistema','Análise','Registra cada ação e compara com a estrutura da situação.'],
+        ['06','Sistema','Feedback','Devolve um retorno imediato sobre a coerência da representação.'],
+        ['07','Sistema','Acompanhamento','Atualiza o modelo do estudante para professor e pesquisador.'],
+      ].map(([no, actor, title, body]) => ({ no, actor, title, body, radius: actor === 'Sistema' ? '10px' : '50%', bg: actor === 'Sistema' ? '#1F56D6' : '#FFFFFF', fg: actor === 'Sistema' ? '#FFFFFF' : '#1F56D6' })),
+      repTabs: reps.map(([id, label]) => ({ label, sel: s.rep === id ? 'true' : 'false', fg: s.rep === id ? '#173A8C' : '#3D4759', bd: s.rep === id ? '#1F56D6' : 'transparent', onClick: () => this.setState({ rep: id }) })),
+      ...repFlags,
+      ticks: [0,5,10,15,20,25,30,35,40,12,37].map(n => ({ left: (n / 40 * 100) + '%', label: String(n), color: (n === 12 || n === 37) ? '#1F56D6' : '#5B6577', weight: (n === 12 || n === 37) ? 600 : 400 })),
+      sq12: Array.from({ length: 12 }, (_, i) => i), sq25: Array.from({ length: 25 }, (_, i) => i),
+      products,
+      pillars: [
+        { letter: 'S', name: 'Situações', def: 'que dão sentido ao conceito', intro: 'Produtos para criar, organizar e propor as situações-problema que dão sentido às estruturas aditivas.', items: products.filter(p => p.pillar === 'S') },
+        { letter: 'I', name: 'Invariantes operatórios', def: 'que o estudante mobiliza', intro: 'Produtos que tornam visíveis os conhecimentos que o estudante mobiliza — pelas suas ações e pelas suas explicações.', items: products.filter(p => p.pillar === 'I') },
+        { letter: 'R', name: 'Representações', def: 'texto, diagramas, símbolos', intro: 'Produtos em que o estudante lê, representa e manipula a situação: enunciado, diagrama de Vergnaud e material concreto.', items: products.filter(p => p.pillar === 'R') },
+      ],
+      audiences: [
+        { id: 'p-estudantes', kicker: 'Para estudantes', icon: I('graduation-cap'), title: 'Resolver entendendo a situação.', body: 'O estudante lê o enunciado, identifica o papel de cada quantidade e representa a relação antes de calcular.', items: ['Diagrama e material concreto manipuláveis', 'Retorno imediato a cada ação', 'No computador e no celular'], cta: 'Ver demonstração', href: '#/demonstracao', img: 'imagens/prints_gerard/08_transformacao_concluida.png', alt: 'Tela do Gérard: transformação de medidas.', caption: 'Transformação de medidas: estado inicial, transformação e estado final.', textOrder: 0, imgOrder: 1 },
+        { id: 'p-professores', kicker: 'Para professores', icon: I('presentation'), title: 'Acompanhar estratégias, não só respostas.', body: 'O professor constrói e revisa situações-problema e observa como cada estudante chega à solução.', items: ['Construção de situações a partir do diagrama', 'Curadoria antes de liberar para a turma', 'Situações organizadas por categoria'], cta: 'Conhecer Gérard Professor', href: '#/produtos', img: 'imagens/prints_gerard/17_validar_curadoria.png', alt: 'Tela de curadoria de situações-problema.', caption: 'Curadoria: revisão e validação das situações-problema.', textOrder: 1, imgOrder: 0 },
+        { id: 'p-pesquisadores', kicker: 'Para pesquisadores', icon: I('microscope'), title: 'Um laboratório sobre o campo aditivo.', body: 'Cada interação é registrada. As tabelas do estudo são reconstruídas sob demanda a partir do log bruto.', items: ['Log completo de interação', 'Agente Modelador: PART e Apriori', 'Validação de dependências por estudante'], cta: 'Ver pesquisas', href: '#/publicacoes', img: 'imagens/visaoPesquisador_nitida.png', alt: 'Visão do pesquisador com tabelas do estudo.', caption: 'Visão do pesquisador: tabelas reconstruídas a partir do log.', textOrder: 0, imgOrder: 1 },
+      ],
+      categoriesRel: [
+        { k: 'ctrans', title: 'Composição de transformações', rule: 'transformação + transformação = transformação composta' },
+        { k: 'trel', title: 'Transformação de relações', rule: 'relação inicial ± transformação = relação final' },
+        { k: 'crel', title: 'Composição de relações', rule: 'relação + relação = relação composta' },
+      ].map(c => ({ ...c, is_comp: c.k === 'comp', is_trans: c.k === 'trans', is_compar: c.k === 'compar', is_ctrans: c.k === 'ctrans', is_trel: c.k === 'trel', is_crel: c.k === 'crel' })),
+      categories: [
+        { k: 'comp', title: 'Composição de medidas', rule: 'parte + parte = todo' },
+        { k: 'trans', title: 'Transformação de medidas', rule: 'inicial ± transformação = final' },
+        { k: 'compar', title: 'Comparação de medidas', rule: 'referente ± relação = referido' },
+      ].map(c => ({ ...c, is_comp: c.k === 'comp', is_trans: c.k === 'trans', is_compar: c.k === 'compar', is_ctrans: c.k === 'ctrans', is_trel: c.k === 'trel', is_crel: c.k === 'crel' })),
+      categoriesDetail: [
+        { img: 'imagens/prints_gerard/04_composicao_concluida.png', title: 'Composição', rule: 'parte + parte = todo', body: 'Duas ou mais medidas se juntam para formar um todo. A incógnita pode ser o todo ou uma das partes.', example: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?' },
+        { img: 'imagens/prints_gerard/08_transformacao_concluida.png', title: 'Transformação', rule: 'estado inicial ± transformação = estado final', body: 'Uma medida inicial sofre um ganho ou uma perda. A incógnita pode ser o estado inicial, a transformação ou o estado final.', example: 'Ana tinha 18 bolinhas e ganhou 7. Com quantas bolinhas ela ficou?' },
+        { img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Comparação', rule: 'referente ± relação = referido', body: 'Duas medidas são confrontadas; a diferença entre elas é a relação. A incógnita pode ser o referente, a relação ou o referido.', example: 'Pedro tem 12 anos. Maria tem 5 anos a mais que Pedro. Quantos anos tem Maria?' },
+      ],
+      versions: [
+        { year: '2006', title: 'Primeira versão', status: 'Concluída', badgeBg: '#EEF1F5', badgeFg: '#3D4759', body: 'Desenvolvida por Maurício Motta Braga (mestrado, UFPE), com percurso fixo de situações.', img: 'imagens/gerard-2006.png', alt: 'Tela da versão 2006 do Gérard.' },
+        { year: '2011', title: 'Segunda versão', status: 'Disponível', badgeBg: '#E7F5EE', badgeFg: '#16603C', body: 'Desenvolvida por Kécia Gomes de Moura (TCC, UNIVASF), ampliando as situações e a interface.', img: 'imagens/gerard-2011.png', alt: 'Tela da versão 2011 do Gérard.', reg: 'Registrada no INPI · BR512021000101‑0', dl: 'https://github.com/anaemilia/Gerard-2011/releases/tag/v1.0.0' },
+        { year: '2026', title: 'Versão adaptativa', status: 'Em desenvolvimento', badgeBg: '#FDF3E1', badgeFg: '#8A4B06', body: 'Por Alex Sandro Gomes e Ana Emília de Melo Queiroz: modelagem do estudante e adaptação do percurso.', img: 'imagens/gerard-2026.png', alt: 'Tela da versão 2026 do Gérard.' },
+      ].map(v => ({ ...v, hasReg: !!v.reg, hasDl: !!v.dl })),
+      projects: [
+        { period: '2025–2026', kind: 'Pesquisa', title: 'Análise de situações interativas no Gérard', body: 'Subsídios para o design de uma interface inteligente em problemas de estruturas aditivas: log de interação, modelagem do estudante e adaptação.' },
+        { period: '2009–2010', kind: 'Pesquisa', title: 'GERARD — Uma interface educativa para o ensino de estruturas aditivas e multiplicativas', body: 'Desenvolvimento da interface e avaliação do seu potencial como ferramenta para a aprendizagem de conceitos.' },
+        { period: '2009', kind: 'Iniciação científica', title: 'Caracterização das formas de representação visual utilizadas em matemática do Ensino Fundamental I', body: 'Levantamento na literatura das representações visuais para estruturas aditivas e multiplicativas, agrupadas por características comuns.' },
+        { period: '2008–2011', kind: 'Extensão', title: 'Formação continuada de professores do Ensino Fundamental: estruturas aditivas e multiplicativas', body: 'Oficinas e cursos com professores de escolas públicas de Juazeiro (BA) e Petrolina (PE).' },
+        { period: '2007–2008', kind: 'Pesquisa', title: 'Design centrado no usuário de estratégias de ajuda adaptativa em softwares educativos', body: 'Refinamento das estratégias de ajuda em softwares de matemática sobre estruturas aditivas e multiplicativas.' },
+      ],
+      pubFilters: groups.map(t => ({ label: t, sel: s.pub === t ? 'true' : 'false', bg: s.pub === t ? '#1F56D6' : '#FFFFFF', fg: s.pub === t ? '#FFFFFF' : '#3D4759', bd: s.pub === t ? '#1F56D6' : '#D5DBE5', onClick: () => this.setState({ pub: t }) })),
+      pubs: filtered.slice(0, 4), pubTotal: pubsAll.length,
+      pubsFull: filtered, pubEmpty: filtered.length === 0,
+      pubCountLabel: filtered.length === 1 ? '1 publicação' : filtered.length + ' publicações',
+      q: s.q, onSearch: e => this.setState({ q: e.target.value }), clearPub: () => this.setState({ q: '', pub: 'Todos' }),
+      demoTabs: demos.map(([id, label]) => ({ label, sel: s.demo === id ? 'true' : 'false', bg: s.demo === id ? '#FFFFFF' : 'transparent', fg: s.demo === id ? '#0B1A3D' : '#FFFFFF', bd: s.demo === id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', onClick: () => this.setState({ demo: id }) })),
+      demoPhones: demos.map(([id, label]) => ({ label, title: 'Demonstração interativa — ' + label, srcdoc: embeds[id] ? this.dec(embeds[id]) : '' })),
+      demoSrcdoc: embeds[s.demo] ? this.dec(embeds[s.demo]) : '',
+      demoTitle: 'Demonstração interativa — ' + (demos.find(d => d[0] === s.demo) || [, ''])[1],
+      demoCtaHref: page === 'demonstracao' ? '#galeria' : '#/demonstracao',
+      demoCtaLabel: page === 'demonstracao' ? 'Ver telas do desktop' : 'Explorar demonstração',
+      seqTabs: SEQ.map(q => ({ label: q.label, sel: q.k === seq.k ? 'true' : 'false', bd: q.k === seq.k ? '#1F56D6' : '#D5DBE5', bg: q.k === seq.k ? '#1F56D6' : '#FFFFFF', fg: q.k === seq.k ? '#FFFFFF' : '#0E1726', pick: () => this.setState({ seq: q.k, seqStep: 0 }) })),
+      seqSteps: seq.steps.map((st, i) => ({ no: String(i + 1).padStart(2, '0'), title: st[1], body: st[2], sel: i === seqI ? 'true' : 'false', bd: i === seqI ? '#1F56D6' : '#E1E6EE', bg: i === seqI ? '#F2F6FE' : '#FFFFFF', nbg: i === seqI ? '#1F56D6' : '#FFFFFF', nfg: i === seqI ? '#FFFFFF' : '#1F56D6', pick: () => this.setState({ seqStep: i }) })),
+      seqImg: 'imagens/prints_gerard/' + seq.steps[seqI][0] + '.png', seqAlt: seq.label + ' — ' + seq.steps[seqI][1] + ': ' + seq.steps[seqI][2], seqLabel: seq.label + ' — ' + seq.steps[seqI][1], seqText: seq.text,
+      telas: [
+        { id: 'telas-composicao', kicker: 'Diagramar', title: 'Composição de medidas', body: 'Lucas tem 12 figurinhas do Pokémon e 25 do Digimon. Quantas figurinhas ele tem ao todo?', shots: [{ img: 'imagens/prints_gerard/01_composicao_inicio.png', title: 'Início', body: 'Enunciado com os valores marcados e o diagrama vazio.' }, { img: 'imagens/prints_gerard/02_composicao_modelagem.png', title: 'Modelagem', body: 'As partes recebem 12 e 25; o todo recebe a incógnita.' }, { img: 'imagens/prints_gerard/03_composicao_erro.png', title: 'Erro', body: 'Valor inconsistente em vermelho; o Gérard pergunta antes de validar.' }, { img: 'imagens/prints_gerard/04_composicao_concluida.png', title: 'Concluída', body: 'O todo é confirmado em azul: 37.' }] },
+        { id: 'telas-transformacao', kicker: 'Diagramar', title: 'Transformação de medidas', body: 'Lucas ganhou 12 figurinhas de seu tio. Ele possui agora 17 figurinhas. Quantas ele tinha antes?', shots: [{ img: 'imagens/prints_gerard/05_transformacao_inicio.png', title: 'Início', body: 'Estado inicial, transformação e estado final ainda vazios.' }, { img: 'imagens/prints_gerard/06_transformacao_modelagem.png', title: 'Modelagem', body: '+12 na transformação, 17 no estado final e ? no estado inicial.' }, { img: 'imagens/prints_gerard/07_transformacao_erro.png', title: 'Erro', body: 'O estado inicial proposto não fecha a relação.' }, { img: 'imagens/prints_gerard/08_transformacao_concluida.png', title: 'Concluída', body: 'Estado inicial confirmado: 5.' }] },
+        { id: 'telas-comparacao', kicker: 'Diagramar', title: 'Comparação de medidas', body: 'Ingrid tem 12 reais a mais que Ligianne. Se Ligianne possui 27 reais, quantos reais Ingrid tem?', shots: [{ img: 'imagens/prints_gerard/10_comparacao_modelagem.png', title: 'Modelagem', body: '27 no referido, +12 no valor relativo e ? no referendo.' }, { img: 'imagens/prints_gerard/11_comparacao_erro.png', title: 'Erro', body: 'Valor do referendo inconsistente com a relação.' }, { img: 'imagens/prints_gerard/13_comparacao_concluida_material_concreto.png', title: 'Concluída', body: 'Referendo confirmado: 39. Quadradinhos e eixo tornam visível a diferença entre as medidas.' }] },
+        { id: 'telas-composicao-transformacoes', feature: { img: 'imagens/prints_gerard/lupa_eixo_inteiros.png', alt: 'Lupa da Transformação 1 aberta: o eixo x dos inteiros, de −5 a 5, com o ponto em −2; o círculo da transformação mostra −2.', kicker: 'O papel da lupa', title: 'A lupa abre o eixo dos inteiros', steps: [{ no: '1', text: 'Cada transformação tem uma lupa no canto do círculo. Ao clicar nela, o Gérard abre o painel “Eixo x – universo dos inteiros”.' }, { no: '02', text: 'O eixo separa inteiros negativos e positivos. O estudante arrasta o ponto de controle, ou clica no eixo, para escolher o valor da transformação.' }, { no: '03', text: 'Geisa comeu 2 chocolates ontem: é uma perda, então o ponto vai para −2, e o círculo da Transformação 1 passa a mostrar −2.' }, { no: '4', text: 'Assim, o sinal do número relativo é explicitado durante o processo de modelagem por meio da manipulação de um ponto de controle.' }] }, kicker: 'Diagramar', title: 'Composição de transformações', body: 'Geisa tinha uma caixa com 35 chocolates. Comeu 2 ontem e 5 hoje. Quantos chocolates ainda tem?', shots: [{ img: 'imagens/prints_gerard/14_composicao_transformacoes_inicio.png', title: 'Início', body: 'Duas transformações sucessivas e a transformação final.' }, { img: 'imagens/prints_gerard/15_composicao_transformacoes_modelagem.png', title: 'Modelagem', body: 'As transformações se compõem numa transformação final.' }] },
+        { id: 'telas-construir-validar', kicker: 'Construir e validar', title: 'Situações-problema a partir do diagrama', body: 'O caminho inverso: do diagrama preenchido ao enunciado, e a curadoria humana das situações.', shots: [{ img: 'imagens/prints_gerard/16_construir_situacao_problema.png', title: 'Construir', body: 'Blocos de texto organizados para compor uma situação compatível com o diagrama.' }, { img: 'imagens/prints_gerard/17_validar_curadoria.png', title: 'Validar', body: 'Curadoria por categoria de Vergnaud, idioma e contexto.' }] },
+        { id: 'telas-apoio', kicker: 'Apoio e pesquisa', title: 'Chat, análise e visão do pesquisador', body: 'Ferramentas que acompanham a resolução e alimentam o estudo.', shots: [{ img: 'imagens/chat-gerard.png', title: 'Chat do Gérard', body: 'Ajuda por área: texto, diagrama de Vergnaud e diagrama complementar.' }, { img: 'imagens/analise-modelagem.png', title: 'Análise da modelagem', body: 'O estudante explica suas decisões; os protocolos são registrados.' }, { img: 'imagens/visaoPesquisador_nitida.png', title: 'Visão do pesquisador', body: 'Tabelas do estudo reconstruídas a partir do log de interação.' }] },
+        { id: 'telas-anterior', kicker: 'Interface anterior', title: 'Versão anterior da interface', body: 'Telas da interface anterior, com barra de botões em texto, mantidas como registro da evolução do Gérard.', shots: [{ img: 'imagens/prints_gerard/12_comparacao_concluida.png', title: 'Comparação de medidas', body: 'Diagrama, eixo dos inteiros e menu de apoio “E agora?”.' }, { img: 'imagens/prints_gerard/16_construir_situacao_problema.png', title: 'Construir situação-problema', body: 'Primeira versão da construção de enunciados por blocos.' }] },
+      ].map(g => ({ ...g, anchor: '#' + g.id, hasFeature: !!g.feature, feature: g.feature || { steps: [] } })),
+      gallery: [
+        ['imagens/prints_gerard/16_construir_situacao_problema.png', 'Construir', 'O estudante organiza blocos de texto para compor uma situação-problema compatível com o diagrama preenchido.'],
+        ['imagens/prints_gerard/17_validar_curadoria.png', 'Validar', 'Curadoria humana das situações-problema por categoria de Vergnaud, idioma e contexto.'],
+        ['imagens/chat-gerard.png', 'Chat do Gérard', 'Ajuda por área — texto, diagrama de Vergnaud e diagrama complementar.'],
+        ['imagens/analise-modelagem.png', 'Análise da modelagem', 'O estudante explica suas decisões; os protocolos de interação são registrados.'],
+        ['imagens/visaoPesquisador_nitida.png', 'Visão do pesquisador', 'Tabelas do estudo reconstruídas a partir do log de interação.'],
+      ].map(([img, title, body]) => ({ img, title, body })),
+      institutions: [
+        { short: 'UFPE', name: 'Universidade Federal de Pernambuco' },
+        { short: 'UNIVASF', name: 'Universidade Federal do Vale do São Francisco' },
+        { short: 'INPI', name: 'Software registrado · BR512021000101‑0' },
+      ],
+      team: [
+        { name: 'Alex Sandro Gomes', role: 'Pesquisador', org: 'Universidade Federal de Pernambuco', url: 'https://www.cin.ufpe.br/~asg', photo: 'imagens/alex_melhorada.png' },
+        { name: 'Ana Emília de Melo Queiroz', role: 'Pesquisadora e desenvolvedora', org: 'Universidade Federal do Vale do São Francisco', photo: 'imagens/anaemilia.jpg' },
+        { name: 'Kécia Gomes de Moura', role: 'Desenvolvedora — segunda versão', org: 'TCC em Engenharia de Computação, UNIVASF', photo: '' },
+        { name: 'Maurício Motta Braga', role: 'Desenvolvedor — primeira versão', org: 'Mestrado, UFPE', photo: 'imagens/mauricio.png' },
+      ].map(m => ({ ...m, hasPhoto: !!m.photo, noPhoto: !m.photo, hasUrl: !!m.url, initials: m.name.split(' ').filter(w => w.length > 2).map(w => w[0]).slice(0, 2).join('') })),
+      collaborators: [
+        { name: 'Patrícia Tedesco', role: 'Coautora — estratégias de ajuda adaptativa (UFPE)' },
+        { name: 'Sávio Silveira de Queiroz', role: 'Orientador do doutorado (UFES)' },
+        { name: 'Soraia de Oliveira Mota Barreto', role: 'Iniciação científica e extensão, 2007–2010' },
+        { name: 'Jamily Sanara Gomes Bezerra', role: 'Engenharia de Computação, UNIVASF, 2010' },
+        { name: 'Felipe Bezerra de Souza', role: 'Engenharia de Computação, UNIVASF, 2010' },
+        { name: 'Felipe Augusto Wanderley', role: 'Formação continuada de professores, 2009–2010' },
+        { name: 'Clara Raqueline Rodrigues', role: 'Formação continuada de professores, 2007' },
+      ],
+      channels: [
+        { icon: I('globe'), title: 'Gérard na web', body: 'Use a versão web do Gérard direto no navegador, sem instalar nada.', cta: 'Abrir versão web', href: 'https://gerard-web-deploy.onrender.com/' },
+        { icon: I('messages-square'), title: 'Comunidade', body: 'Tire dúvidas, compartilhe situações-problema e converse com professores e pesquisadores.', cta: 'GitHub Discussions', href: 'https://github.com/anaemilia/Gerard/discussions' },
+        { icon: I('bug'), title: 'Relatar um problema', body: 'Encontrou um erro no software ou no site? Abra um relato para a equipe.', cta: 'GitHub Issues', href: 'https://github.com/anaemilia/Gerard/issues' },
+        { icon: I('code'), title: 'Código-fonte', body: 'Acompanhe o desenvolvimento, as versões e os registros do projeto.', cta: 'Repositório', href: 'https://github.com/anaemilia/Gerard' },
+      ],
+      footerCols: [
+        { title: 'Navegação', links: [{ label: 'Início', href: '#/' }, { label: 'O Gérard', href: '#/sobre' }, { label: 'Como funciona', href: '#/como-funciona' }, { label: 'Demonstração', href: '#/demonstracao' }] },
+        { title: 'Produtos', links: products.map(p => ({ label: p.name, href: '#/produtos' })) },
+        { title: 'Pesquisa', links: [{ label: 'Pesquisa', href: '#/pesquisa' }, { label: 'Publicações', href: '#/publicacoes' }, { label: 'Equipe', href: '#/equipe' }, { label: 'Instituições', href: '#/equipe' }] },
+        { title: 'Contato', links: [{ label: 'Fale com a equipe', href: '#/contato' }, { label: 'Comunidade', href: 'https://github.com/anaemilia/Gerard/discussions' }, { label: 'Código-fonte', href: 'https://github.com/anaemilia/Gerard' }] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

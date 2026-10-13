@@ -113,8 +113,7 @@ public final class ServidorPrototipoWeb {
         servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
         servidor.createContext("/api/acoes/conclusao", aplicacao::escolherConclusao);
         servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
-        servidor.createContext("/api/acoes/posicionar-conhecido", aplicacao::posicionarConhecido);
-        servidor.createContext("/api/acoes/engatar-incognita", aplicacao::engatarIncognita);
+        servidor.createContext("/api/acoes/soltar-numero", aplicacao::soltarNumero);
         servidor.createContext("/api/acoes/escolher-sinal", aplicacao::escolherSinal);
         servidor.createContext("/api/acoes/revelar-eixo", aplicacao::revelarEixo);
         servidor.createContext("/api/acoes/ocultar-eixo", aplicacao::ocultarEixo);
@@ -559,7 +558,7 @@ public final class ServidorPrototipoWeb {
     }
 
     @SuppressWarnings("unchecked")
-    private void posicionarConhecido(HttpExchange troca) throws IOException {
+    private void soltarNumero(HttpExchange troca) throws IOException {
         if (!"POST".equals(troca.getRequestMethod())) {
             responder(troca, 405, erro("Método não permitido"));
             return;
@@ -570,25 +569,7 @@ public final class ServidorPrototipoWeb {
             String papelId = String.valueOf(analisado.get("papel_id"));
             Object origemBruta = analisado.get("origem_papel_id");
             String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
-            responder(troca, 200, sorteios.posicionarValorConhecido(papelId, origemPapelId));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void engatarIncognita(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            Object origemBruta = analisado.get("origem_papel_id");
-            String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
-            responder(troca, 200, sorteios.engatarIncognita(papelId, origemPapelId));
+            responder(troca, 200, sorteios.soltarNumero(papelId, origemPapelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }

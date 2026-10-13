@@ -88,6 +88,14 @@ public final class EscopoTentativaWeb {
         }
     }
 
+    public List<String> chavesParticipantes() {
+        List<String> chaves = new ArrayList<String>();
+        for (PapelQuantitativo papel : participantesAtuais) {
+            chaves.add(papel.getChave());
+        }
+        return chaves;
+    }
+
     public PosicionamentoQuestionadoWeb getPosicionamentoQuestionado() {
         return posicionamentoQuestionado;
     }

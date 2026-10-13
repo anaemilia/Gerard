@@ -28,27 +28,20 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Tentativa web portátil de Transformação de Medidas. */
-public final class ServicoAtividadeWebTransformacaoMedidas
-        implements ServicoAtividadeWeb, ServicoAtividadeWebComSinal {
+public final class ServicoAtividadeWebTransformacaoMedidas extends ServicoAtividadeWebModelagemPapeis
+        implements ServicoAtividadeWebComSinal {
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
     private final EscopoTentativaWeb escopo;
-    private final AvaliadorOrigemDestinoWeb avaliadorOrigemDestino;
     private IncognitaQuantitativa incognita;
     private SinalNumeroRelativoWeb sinais;
     private PapelQuantitativo estadoInicial;
     private PapelQuantitativo transformacao;
     private PapelQuantitativo estadoFinal;
-    private PapelQuantitativo papelDesconhecido;
     private RelacaoEstruturalTransformacao relacao;
-    // Draft do servidor (nunca grava em papelDesconhecido) — "?" arrastado
-    // até a caixa, ainda sem valor digitado/confirmado (ver
-    // ServicoAtividadeWebComposicao.incognitaEngatada).
-    private boolean incognitaEngatada;
     // Ver ServicoAtividadeWebComparacaoMedidas — mesmo protocolo de
     // sinal-aguardando-escolha para o papel "transformacao" (que precisa de
     // representação de sinal nesta categoria).
-    private PapelQuantitativo papelAguardandoSinal;
     private Integer valorCuradoAguardandoSinal;
 
     public ServicoAtividadeWebTransformacaoMedidas(String tentativaId,
@@ -72,7 +65,6 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         this.tentativaId = tentativaId;
         this.situacao = situacao;
         this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
-        this.avaliadorOrigemDestino = new AvaliadorOrigemDestinoWeb(questionamento);
         reiniciar();
     }
 
@@ -135,39 +127,6 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         return true;
     }
 
-    /**
-     * Posiciona um papel conhecido (nunca a incógnita) com o valor curado —
-     * ação que soltar um elemento não-incógnita do enunciado sobre sua caixa
-     * dispara (protocolo de mouse é posicionar, ver ServicoAtividadeWebComposicao).
-     */
-    public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
-        PapelQuantitativo papel = papelPorChave(papelId);
-        if (papel == papelDesconhecido) {
-            throw new IllegalArgumentException(
-                    "papel é a incógnita desta situação, use PROPOR_VALOR_PAPEL: " + papelId);
-        }
-        ResultadoQuestionamentoPosicionamento questionamento =
-                avaliadorOrigemDestino.avaliar(origemPapelId, papel.getChave(), situacao.getTipo(),
-                        participantes(), escopo);
-        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
-            Map<String, Object> rejeitado = mapa();
-            rejeitado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
-            rejeitado.put("aceita", Boolean.FALSE);
-            rejeitado.put("chave_mensagem", questionamento.getMensagem());
-            rejeitado.put("estado", estadoAtual());
-            return rejeitado;
-        }
-        if (!papel.estaPreenchido() && papel != papelAguardandoSinal) {
-            posicionarConhecido(papel);
-        }
-        Map<String, Object> resultado = mapa();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
-        resultado.put("aceita", Boolean.TRUE);
-        resultado.put("chave_mensagem", null);
-        resultado.put("estado", estadoAtual());
-        return resultado;
-    }
-
     /** Ver ServicoAtividadeWebComparacaoMedidas.escolherSinalNumeroRelativo. */
     public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
         if (papelAguardandoSinal == null || !papelAguardandoSinal.getChave().equals(papelId)) {
@@ -195,34 +154,6 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         resultado.put("mensagem_sinal_divergente", sinalDivergeDoCurado
                 ? ServicoLocalizacao.getInstancia().formatar("ui.tooltip.relativeSign.confirm", sinal)
                 : null);
-        resultado.put("estado", estadoAtual());
-        return resultado;
-    }
-
-    /** Engata o "?" na caixa da incógnita (protocolo mouse-texto, Main.java). */
-    public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
-        if (!papelDesconhecido.getChave().equals(papelId)) {
-            throw new IllegalArgumentException(
-                    "papel não é a incógnita desta situação: " + papelId);
-        }
-        ResultadoQuestionamentoPosicionamento questionamento =
-                avaliadorOrigemDestino.avaliar(origemPapelId, papelDesconhecido.getChave(), situacao.getTipo(),
-                        participantes(), escopo);
-        if (questionamento.isAplicavel() && !questionamento.isCorreto()) {
-            Map<String, Object> rejeitado = mapa();
-            rejeitado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
-            rejeitado.put("aceita", Boolean.FALSE);
-            rejeitado.put("chave_mensagem", questionamento.getMensagem());
-            rejeitado.put("estado", estadoAtual());
-            return rejeitado;
-        }
-        if (!papelDesconhecido.estaPreenchido()) {
-            incognitaEngatada = true;
-        }
-        Map<String, Object> resultado = mapa();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
-        resultado.put("aceita", Boolean.TRUE);
-        resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());
         return resultado;
     }
@@ -294,7 +225,8 @@ public final class ServicoAtividadeWebTransformacaoMedidas
         return estadoAtual();
     }
 
-    private void posicionarConhecido(PapelQuantitativo papel) {
+    @Override
+    protected void posicionarConhecido(PapelQuantitativo papel) {
         Integer valor = SemanticaCuradaSituacao.buscarValorInteiroVisivel(
                 situacao, null, papel.getChave());
         if (valor == null) {
@@ -316,7 +248,8 @@ public final class ServicoAtividadeWebTransformacaoMedidas
                 OrigemAcao.ORIGEM_USUARIO, contexto);
     }
 
-    private PapelQuantitativo papelPorChave(String chave) {
+    @Override
+    protected PapelQuantitativo papelPorChave(String chave) {
         if (estadoInicial.getChave().equals(chave)) return estadoInicial;
         if (transformacao.getChave().equals(chave)) return transformacao;
         if (estadoFinal.getChave().equals(chave)) return estadoFinal;

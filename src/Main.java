@@ -93,6 +93,7 @@ import gerard.interacao.eixo.PoliticaRestauracaoValorRelativo;
 import gerard.ui.interacao.DicaControleQuadradinho;
 import gerard.ui.interacao.CadeiaDeAtendimento;
 import gerard.ui.interacao.DecisaoAnotacaoMouseOver;
+import gerard.ui.interacao.QuestionamentoPersistente;
 import gerard.aplicacao.EstadoNumericoComparacaoCategorias;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.RegistroAcaoClassificacaoCategoria;
@@ -124,7 +125,6 @@ import gerard.Scaffolding.proximidade.EstadoRealceAlvo;
 import gerard.Scaffolding.proximidade.EstiloRealceAlvo;
 import gerard.estilointeracao.EstiloInteracao;
 import gerard.Scaffolding.proximidade.ScaffoldingProximidade;
-import gerard.Scaffolding.automatizacao.ScaffoldingAutomatizacaoPassos;
 import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
 import gerard.Scaffolding.venn.ControleAdicionarQuadradinhoVenn;
@@ -1225,28 +1225,13 @@ public class Main extends JFrame {
         // criarBotaoAtalhoCategoria), para garantir que a caixa apareça
         // sempre abaixo da faixa inteira, nunca atrás de um botão vizinho.
         boolean forcarAnotacaoMouseOverAbaixo = false;
-        boolean mostrarQuestionamentoPersistente = false;
-        String textoQuestionamentoPersistente = "";
-        ItemTextoArrastavel itemQuestionadoPersistente = null;
-        // AG_AE (automatização de passos, item 7 do levantamento de
-        // 2026-08-07) — dica de posicionamento sob demanda, um papel por
-        // vez: mesmo padrão de anotação persistente de
-        // itemQuestionadoPersistente acima, mas ancorada num
-        // ElementoVergnaud (o alvo correto), não num ItemTextoArrastavel.
-        boolean mostrarDicaPosicionamentoPersistente = false;
-        String papelDicaPosicionamentoAtual = null;
-        ElementoVergnaud elementoDicaPosicionamentoPersistente = null;
-        // Correlação ação:evento (REFERENCE.md §4.8, 1:N) e
-        // "qual o próximo papel resolvido/não resolvido" são regras
-        // semânticas, não de interface (gerard-domain-model-first,
-        // gerard-knowledge-locality-principle) — vivem em
-        // AvaliadorConclusaoModelagem (já existente, reaproveitado) e
-        // ScaffoldingAutomatizacaoPassos (política pedagógica dedicada),
-        // não como um Map solto aqui.
+        final QuestionamentoPersistente questionamentoPersistente = new QuestionamentoPersistente();
+        // Correlação ação:evento (REFERENCE.md §4.8, 1:N) e "o papel já está
+        // resolvido?" são regras semânticas, não de interface
+        // (gerard-domain-model-first, gerard-knowledge-locality-principle) —
+        // vivem em AvaliadorConclusaoModelagem, não como um Map solto aqui.
         final AvaliadorConclusaoModelagem avaliadorConclusaoModelagem =
                 new AvaliadorConclusaoModelagem();
-        final ScaffoldingAutomatizacaoPassos scaffoldingAutomatizacaoPassos =
-                new ScaffoldingAutomatizacaoPassos();
         boolean sincronizacaoEstadoFinalHabilitada = false;
         ItemTextoArrastavel itemIncognitaEstadoFinal = null;
         ElementoVergnaud elementoEstadoFinalSincronizado = null;
@@ -3969,7 +3954,6 @@ public class Main extends JFrame {
             marcadoresFixosTexto.clear();
             elementosTexto.clear();
             elementosVergnaud.clear();
-            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             circulosVenn.clear();
             quadradinhosVenn.clear();
@@ -4365,7 +4349,7 @@ public class Main extends JFrame {
             desenharPaineisEixoRelacoes(g2);
             desenharPickupEmPrimeiroPlano(g2);
             desenharFeedbackExplicitoProximidade(g2);
-            desenharAnotacaoMouseOver(g2, reconciliarAnotacaoDoMouseOver());
+            desenharAnotacaoMouseOver(g2, decidirFonteDaAnotacao());
         }
 
         /** Texto do status do cabeçalho e onde ele começa (decididos por prepararCabecalho). */
@@ -4644,7 +4628,7 @@ public class Main extends JFrame {
                     if (item == itemFocado) {
                         itemFocado = null;
                     }
-                    if (item == itemQuestionadoPersistente) {
+                    if (questionamentoPersistente.ehSobre(item)) {
                         limparQuestionamentoPersistente();
                     }
                     iterador.remove();
@@ -4704,7 +4688,6 @@ public class Main extends JFrame {
             marcadoresFixosTexto.clear();
             elementosTexto.clear();
             elementosVergnaud.clear();
-            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             circulosVenn.clear();
             quadradinhosVenn.clear();
@@ -4879,96 +4862,6 @@ public class Main extends JFrame {
             return estados;
         }
 
-        /**
-         * AG_AE — próximo papel-dado ainda não resolvido, em ordem canônica
-         * (mesma ordem de elementosVergnaud/capturarPapeisEsperadosConclusao)
-         * — nunca a incógnita atual (a dica indica onde uma frase-dado
-         * pertence; o valor da incógnita nunca é antecipado, ver
-         * gerard-consistencia-estado). null quando não há mais nenhum papel
-         * pendente para dica (todos os papéis-dado já resolvidos, ou só
-         * resta a incógnita).
-         *
-         * "Resolvido ou não" é regra semântica, não de interface
-         * (gerard-domain-model-first) — delega a
-         * AvaliadorConclusaoModelagem.obterProximoPapelNaoResolvido, a
-         * mesma classe (e o mesmo critério de compatibilidade de papéis)
-         * que já decide a conclusão da modelagem inteira; esta função só
-         * acrescenta o filtro de representação — só ofereça dica quando
-         * houver, de fato, uma frase para mostrar, senão o botão "Ver
-         * dica" apareceria visível e, ao clicar, nada aconteceria
-         * (situação digitada livremente, sem curadoria, ou papel sem
-         * token semântico próprio) — e isso É uma questão de
-         * representação/interface, não de domínio.
-         */
-        private String obterProximoPapelNaoResolvidoParaDica() {
-            String papelIncognita = obterPapelIncognitaAtual();
-            java.util.List<EstadoPosicionamentoModelagem> posicionamentos =
-                    capturarPosicionamentosConclusao();
-            for (String papel : capturarPapeisEsperadosConclusao()) {
-                if (papel.equals(papelIncognita)) {
-                    continue;
-                }
-                if (!avaliadorConclusaoModelagem.papelResolvido(papel, posicionamentos)
-                        && obterFraseParaDicaPosicionamento(papel) != null) {
-                    return papel;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * AG_AE — texto exato do trecho do enunciado vinculado ao papel
-         * indicado (a mesma frase/token que o participante vê e arrasta do
-         * texto para o diagrama) — não reconstrói o texto a partir da
-         * curadoria numérica, só localiza o elemento de texto já existente
-         * cujo vínculo semântico é esse papel. null se não houver (situação
-         * digitada livremente, sem curadoria, ou papel sem token próprio).
-         */
-        private String obterFraseParaDicaPosicionamento(String papel) {
-            if (papel == null) {
-                return null;
-            }
-            // Fonte primária: elementosTexto — os pedaços do enunciado
-            // ainda não arrastados para o diagrama (é isso que o
-            // participante precisa localizar e mover). Só considera
-            // elementos com vínculo semântico explícito (não usa o
-            // fallback posicional de obterChavePapelExataDoElemento, que
-            // arriscaria apontar uma palavra qualquer do texto como se
-            // fosse a frase do papel).
-            for (ElementoTextoMovel elemento : elementosTexto) {
-                if (elemento == null || !elemento.possuiVinculoSemantico()
-                        || elemento.representaIncognitaOriginal()) {
-                    continue;
-                }
-                if (papel.equals(elemento.chavePapelSemantico)
-                        && elemento.valor != null && elemento.valor.trim().length() > 0) {
-                    return elemento.valor;
-                }
-            }
-            // Fallback: o item já foi arrastado (para o lugar certo ou
-            // errado) — ainda mostra a dica com o texto que ele carrega.
-            for (ItemTextoArrastavel item : itensArrastaveis) {
-                if (item != null && !item.representaIncognitaOriginal()
-                        && papel.equals(obterChavePapelExataDoItem(item))
-                        && item.valor != null && item.valor.trim().length() > 0) {
-                    return item.valor;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * AG_AE — chamado sempre que elementosVergnaud é limpo para um novo
-         * diagrama: nenhuma dica exibida (nem ação aberta) deve sobreviver
-         * à troca de situação-problema, senão a âncora ficaria apontando
-         * para um ElementoVergnaud de uma modelagem anterior.
-         */
-        private void limparEstadoDicaPosicionamento() {
-            mostrarDicaPosicionamentoPersistente = false;
-            elementoDicaPosicionamentoPersistente = null;
-            papelDicaPosicionamentoAtual = null;
-            scaffoldingAutomatizacaoPassos.limpar();
-        }
 
                         /**
          * "Estado modificado" (2026-08-06): true quando o valor atual do
@@ -6568,18 +6461,11 @@ public class Main extends JFrame {
         }
 
         /**
-         * Reconcilia o estado das anotações persistentes e decide qual delas a tela mostra agora. A prioridade entre as
-         * fontes é de DecisaoAnotacaoMouseOver; aqui só se responde, por fonte, "ainda é válida?". Efeito: a dica de
-         * posicionamento (AG_AE) que deixou de valer — papel resolvido, diagrama trocado ou superada por outra fonte —
-         * é encerrada junto com a ação correlacionada (mesmo action_id, §4.8). Roda uma vez por pintura, ANTES do
-         * desenho do balão (que não altera nada).
+         * Decide qual anotação a tela mostra agora. A prioridade entre as fontes é de DecisaoAnotacaoMouseOver; aqui só
+         * se responde, por fonte, "ainda é válida?". Não altera nada: roda uma vez por pintura, ANTES do desenho do balão.
          */
-        private DecisaoAnotacaoMouseOver.Fonte reconciliarAnotacaoDoMouseOver() {
-            boolean questionamentoValido = mostrarQuestionamentoPersistente
-                    && itemQuestionadoPersistente != null
-                    && itensArrastaveis.contains(itemQuestionadoPersistente)
-                    && textoQuestionamentoPersistente != null
-                    && textoQuestionamentoPersistente.trim().length() > 0;
+        private DecisaoAnotacaoMouseOver.Fonte decidirFonteDaAnotacao() {
+            boolean questionamentoValido = questionamentoPersistente.estaValida(itensArrastaveis);
             boolean limiteQuantidadeValido = mostrarLimiteQuantidadeQuestionado
                     && agrupamentoLimiteQuantidadeQuestionado != null
                     && circulosVenn.contains(agrupamentoLimiteQuantidadeQuestionado)
@@ -6587,41 +6473,19 @@ public class Main extends JFrame {
                     && textoLimiteQuantidadeQuestionado.trim().length() > 0;
             // Aviso de sinal divergente do número relativo (2026-08-18): ancorado no item OU no elemento.
             boolean sinalDivergenteValido = avisoSinalDivergente.estaVisivel(itensArrastaveis, elementosVergnaud);
-            String fraseDicaPosicionamento = mostrarDicaPosicionamentoPersistente
-                    && papelDicaPosicionamentoAtual != null
-                    ? obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual) : null;
-            boolean dicaPosicionamentoValida = mostrarDicaPosicionamentoPersistente
-                    && elementoDicaPosicionamentoPersistente != null
-                    && elementosVergnaud.contains(elementoDicaPosicionamentoPersistente)
-                    && papelDicaPosicionamentoAtual != null
-                    && fraseDicaPosicionamento != null
-                    && !avaliadorConclusaoModelagem.papelResolvido(
-                            papelDicaPosicionamentoAtual, capturarPosicionamentosConclusao());
-            DecisaoAnotacaoMouseOver.Fonte fonte = DecisaoAnotacaoMouseOver.decidir(
-                    questionamentoValido, limiteQuantidadeValido, sinalDivergenteValido,
-                    dicaPosicionamentoValida, mostrarAnotacaoMouseOver);
-            if (mostrarDicaPosicionamentoPersistente
-                    && fonte != DecisaoAnotacaoMouseOver.Fonte.DICA_POSICIONAMENTO) {
-                scaffoldingAutomatizacaoPassos.encerrarAcao(papelDicaPosicionamentoAtual);
-                mostrarDicaPosicionamentoPersistente = false;
-                elementoDicaPosicionamentoPersistente = null;
-                papelDicaPosicionamentoAtual = null;
-            }
-            return fonte;
+            return DecisaoAnotacaoMouseOver.decidir(
+                    questionamentoValido, limiteQuantidadeValido, sinalDivergenteValido, mostrarAnotacaoMouseOver);
         }
 
         /** Texto da fonte decidida (null se a fonte não tem texto). */
         private String obterMensagemAnotacao(DecisaoAnotacaoMouseOver.Fonte fonte) {
             switch (fonte) {
                 case QUESTIONAMENTO_PERSISTENTE:
-                    return textoQuestionamentoPersistente;
+                    return questionamentoPersistente.getTexto();
                 case LIMITE_QUANTIDADE:
                     return textoLimiteQuantidadeQuestionado;
                 case SINAL_DIVERGENTE:
                     return avisoSinalDivergente.getTexto();
-                case DICA_POSICIONAMENTO:
-                    return localizacao.formatar("ui.hint.stepPlacement",
-                            obterFraseParaDicaPosicionamento(papelDicaPosicionamentoAtual));
                 case MOUSE_OVER:
                     return textoAnotacaoMouseOver;
                 default:
@@ -6634,8 +6498,9 @@ public class Main extends JFrame {
             switch (fonte) {
                 case QUESTIONAMENTO_PERSISTENTE:
                     return new java.awt.Point(
-                            itemQuestionadoPersistente.x + itemQuestionadoPersistente.largura,
-                            Math.max(50, itemQuestionadoPersistente.y + itemQuestionadoPersistente.altura / 2));
+                            questionamentoPersistente.getItem().x + questionamentoPersistente.getItem().largura,
+                            Math.max(50, questionamentoPersistente.getItem().y
+                                    + questionamentoPersistente.getItem().altura / 2));
                 case LIMITE_QUANTIDADE:
                     RepresentacaoComUnidadesAdicionaveis representacaoLimite =
                             criarRepresentacaoVennEditavel(
@@ -6651,17 +6516,12 @@ public class Main extends JFrame {
                             Math.max(50, areaControle.y + areaControle.height / 2));
                 case SINAL_DIVERGENTE:
                     return avisoSinalDivergente.ancora();
-                case DICA_POSICIONAMENTO:
-                    return new java.awt.Point(
-                            elementoDicaPosicionamentoPersistente.x + elementoDicaPosicionamentoPersistente.largura,
-                            Math.max(50, elementoDicaPosicionamentoPersistente.y
-                                    + elementoDicaPosicionamentoPersistente.altura / 2));
                 default:
                     return new java.awt.Point(mouseOverX, mouseOverY);
             }
         }
 
-        /** Só desenha: não altera estado nem decide a mensagem (ver reconciliarAnotacaoDoMouseOver). */
+        /** Só desenha: não altera estado nem decide a mensagem (ver decidirFonteDaAnotacao). */
         private void desenharAnotacaoMouseOver(Graphics2D g2, DecisaoAnotacaoMouseOver.Fonte fonte) {
             if (fonte == DecisaoAnotacaoMouseOver.Fonte.NENHUMA) {
                 return;
@@ -7421,7 +7281,6 @@ public class Main extends JFrame {
         private void inicializarDiagramaVergnaud() {
             Rectangle area = obterAreaConteudoDiagramaVergnaud();
             elementosVergnaud.clear();
-            limparEstadoDicaPosicionamento();
             conectoresVergnaud.clear();
             // Situação nova (mesma categoria ou não) começa sem erro
             // registrado — o selo vermelho de uma tentativa da situação
@@ -10006,7 +9865,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 // de tip persistente, som sutil e tremor leve. Assim, o usuário
                 // pode arrastá-lo para outro papel sem precisar voltar ao texto.
                 processarQuestionamentoPosicionamento(itemSolto);
-            } else if (itemSolto == itemQuestionadoPersistente
+            } else if (questionamentoPersistente.ehSobre(itemSolto)
                     && scaffoldingQuestionamento
                             .deveLimparQuestionamentoPersistente(
                                     resultadoPosicionamento)) {
@@ -10488,7 +10347,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 return true;
             }
 
-            if (item == itemQuestionadoPersistente) {
+            if (questionamentoPersistente.ehSobre(item)) {
                 limparQuestionamentoPersistente();
             }
             return false;
@@ -10514,25 +10373,20 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
         }
 
         private void registrarQuestionamentoPersistente(ItemTextoArrastavel item, ResultadoQuestionamento resultado) {
-            if (item == null || resultado == null || resultado.getMensagem() == null || resultado.getMensagem().trim().length() == 0) {
+            if (resultado == null || !questionamentoPersistente.abrir(item, resultado.getMensagem())) {
                 return;
             }
-            itemQuestionadoPersistente = item;
-            textoQuestionamentoPersistente = resultado.getMensagem();
-            mostrarQuestionamentoPersistente = true;
             textoAnotacaoMouseOver = resultado.getMensagem();
             mostrarAnotacaoMouseOver = false;
         }
 
         private void limparQuestionamentoPersistente() {
             scaffoldingFeedbackMultissensorialErro.pararTremor();
-            mostrarQuestionamentoPersistente = false;
-            textoQuestionamentoPersistente = "";
-            itemQuestionadoPersistente = null;
+            questionamentoPersistente.fechar();
         }
 
         private void atualizarQuestionamentoPersistenteDuranteMovimento(ItemTextoArrastavel item) {
-            if (item == null || item != itemQuestionadoPersistente) {
+            if (!questionamentoPersistente.ehSobre(item)) {
                 return;
             }
 
@@ -10543,8 +10397,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 return;
             }
 
-            textoQuestionamentoPersistente = resultado.getMensagem();
-            mostrarQuestionamentoPersistente = true;
+            questionamentoPersistente.atualizarTexto(resultado.getMensagem());
         }
 
         /**
@@ -10883,7 +10736,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     },
                     new Runnable() {
                         public void run() {
-                            if (!mostrarQuestionamentoPersistente
+                            if (!questionamentoPersistente.estaAberta()
                                     && !mostrarLimiteQuantidadeQuestionado) {
                                 mostrarAnotacaoMouseOver = false;
                                 textoAnotacaoMouseOver = "";
@@ -11623,8 +11476,8 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             }
             itemFocado = item;
             mostrarAnotacaoMouseOver = true;
-            if (mostrarQuestionamentoPersistente && item == itemQuestionadoPersistente) {
-                textoAnotacaoMouseOver = textoQuestionamentoPersistente;
+            if (questionamentoPersistente.ehSobre(item)) {
+                textoAnotacaoMouseOver = questionamentoPersistente.getTexto();
             } else {
                 textoAnotacaoMouseOver = criarMensagemPapelItemArrastavel(item);
             }
@@ -11855,7 +11708,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 }
 
                 if (itemFocado != null) {
-                    if (itemFocado == itemQuestionadoPersistente) {
+                    if (questionamentoPersistente.ehSobre(itemFocado)) {
                         limparQuestionamentoPersistente();
                     }
                     if (itemFocado == itemIncognitaEstadoFinal) {

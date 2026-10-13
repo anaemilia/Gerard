@@ -342,6 +342,52 @@ public final class ServicoSorteioAtividadeWeb {
     }
 
     /**
+     * Único lugar que julga o posicionamento de um número solto sobre uma figura: o critério é só se o
+     * posicionamento está certo ou errado (AvaliadorOrigemDestinoWeb), nunca qual é a caixa. Guarda o
+     * posicionamento incorreto no escopo da tentativa e devolve a rejeição; {@code null} quando o posicionamento
+     * está correto (ou não há critério aplicável).
+     */
+    private Map<String, Object> julgarSoltura(String papelAlvoId, String origemPapelId) {
+        if (escopoTentativa == null || contextoAtual == null) {
+            throw new IllegalStateException("não há atividade em curso");
+        }
+        ResultadoQuestionamentoPosicionamento julgamento = new AvaliadorOrigemDestinoWeb(portaQuestionamento)
+                .avaliar(origemPapelId, papelAlvoId, contextoAtual.getSituacao().getTipo(),
+                        escopoTentativa.chavesParticipantes(), escopoTentativa);
+        if (!julgamento.isAplicavel() || julgamento.isCorreto()) {
+            return null;
+        }
+        Map<String, Object> rejeitado = mapa();
+        rejeitado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        rejeitado.put("aceita", Boolean.FALSE);
+        rejeitado.put("chave_mensagem", julgamento.getMensagem());
+        rejeitado.put("estado", projetarEstado());
+        return rejeitado;
+    }
+
+    /**
+     * Soltura de um número sobre uma figura: um só caminho para qualquer caixa. Julga o posicionamento (certo ou
+     * errado) e, só se estiver correto, aplica o efeito que a figura admite naquele momento (posicionar o valor
+     * conhecido ou engatar a incógnita); sem efeito oferecido, o posicionamento correto não muda nada.
+     */
+    public synchronized Map<String, Object> soltarNumero(String papelAlvoId, String origemPapelId) {
+        Map<String, Object> rejeitado = julgarSoltura(papelAlvoId, origemPapelId);
+        if (rejeitado != null) {
+            return rejeitado;
+        }
+        ServicoAtividadeWeb ativa = atividadeModelagem != null ? atividadeModelagem
+                : atividadeEscolhaOperacao instanceof ServicoAtividadeWeb ? (ServicoAtividadeWeb) atividadeEscolhaOperacao
+                : null;
+        if (ativa == null) {
+            throw new IllegalStateException("a situação atual não aceita número solto sobre uma figura");
+        }
+        Map<String, Object> resultado = ativa.soltarNumero(papelAlvoId, origemPapelId);
+        encerrarTentativaSeConcluida();
+        resultado.put("estado", projetarEstado());
+        return resultado;
+    }
+
+    /**
      * Posiciona um papel conhecido (nunca a incógnita) — a ação que soltar
      * qualquer elemento não-incógnita do enunciado sobre sua caixa dispara
      * (protocolo de mouse é posicionar). Vale para as 4 categorias com
@@ -351,6 +397,14 @@ public final class ServicoSorteioAtividadeWeb {
      * nesse sentido.
      */
     public synchronized Map<String, Object> posicionarValorConhecido(String papelId, String origemPapelId) {
+        Map<String, Object> rejeitado = julgarSoltura(papelId, origemPapelId);
+        if (rejeitado != null) {
+            return rejeitado;
+        }
+        return aplicarPosicionamentoConhecido(papelId, origemPapelId);
+    }
+
+    private Map<String, Object> aplicarPosicionamentoConhecido(String papelId, String origemPapelId) {
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
             resultado = atividadeModelagem.posicionarValorConhecido(papelId, origemPapelId);
@@ -501,6 +555,14 @@ public final class ServicoSorteioAtividadeWeb {
      * atual não tem incógnita curada nenhuma.
      */
     public synchronized Map<String, Object> engatarIncognita(String papelId, String origemPapelId) {
+        Map<String, Object> rejeitado = julgarSoltura(papelId, origemPapelId);
+        if (rejeitado != null) {
+            return rejeitado;
+        }
+        return aplicarEngateIncognita(papelId, origemPapelId);
+    }
+
+    private Map<String, Object> aplicarEngateIncognita(String papelId, String origemPapelId) {
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
             resultado = atividadeModelagem.engatarIncognita(papelId, origemPapelId);

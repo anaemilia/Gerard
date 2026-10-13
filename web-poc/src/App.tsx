@@ -348,50 +348,23 @@ export default function App() {
   }
 
   async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
-    // A compatibilidade semântica entre o que foi arrastado (papelId) e o
-    // papel da figura-alvo não é mais decidida aqui — o servidor valida
-    // (AvaliadorOrigemDestinoWeb, mesma regra de
-    // ScaffoldingQuestionamento.avaliarPosicionamento do desktop, que não é
-    // igualdade estrita: papéis genéricos de família podem ocupar papéis
-    // específicos). Isso evita que o cliente seja a única fonte de verdade
-    // e que uma soltura incorreta simplesmente não chegue a lugar nenhum.
-
-    // Soltar o "?" só engata a incógnita na caixa (protocolo mouse-texto,
-    // Main.java) — marcado no servidor (ver ConfirmacaoValorWeb/
-    // engatarIncognita), não só no cliente: a digitação em si abre com o
-    // duplo-clique subsequente sobre a caixa já engatada (ver
-    // FiguraCenaGerard), nunca automaticamente ao soltar.
-    const engatar = figura.interacoes_permitidas.find((item) => item.tipo === "ENGATAR_INCOGNITA");
-    if (engatar) {
-      setOcupado(true);
-      try {
-        const resultado = await api.engatarIncognita({
-          id: "ENGATAR_INCOGNITA", metodo: "POST",
-          href: "/api/acoes/engatar-incognita", corpo: { papel_id: engatar.papel_id }
-        }, papelId);
-        receberSnapshot(resultado.estado);
-        if (resultado.aceita) {
-          const figuraEngatada = resultado.estado.cena?.figuras.find(
-            (item) => item.id === figura.id);
-          const editar = figuraEngatada?.interacoes_permitidas.find(
-            (item) => item.tipo === "EDITAR_VALOR");
-          if (figuraEngatada && editar) iniciarEdicaoValor(figuraEngatada, editar);
-        }
-      } catch (erro) { console.error(erro); }
-      finally { setOcupado(false); }
-      return;
-    }
-    const posicionar = figura.interacoes_permitidas.find((item) => item.tipo === "POSICIONAR_CONHECIDO");
-    if (!posicionar) {
-      return;
-    }
+    // Um só caminho para qualquer caixa: o servidor julga se o posicionamento está certo ou errado
+    // (AvaliadorOrigemDestinoWeb, mesma regra de ScaffoldingQuestionamento.avaliarPosicionamento do desktop, que não é
+    // igualdade estrita) e, só se estiver certo, aplica o efeito que a figura admite (posicionar o valor ou engatar a
+    // incógnita). O posicionamento incorreto volta na cena (posicionamento_questionado) e fica até ser corrigido.
+    // Soltar o "?" engata a incógnita (protocolo mouse-texto, Main.java); a digitação abre com o duplo-clique ou, ao
+    // engatar, aqui mesmo (ver FiguraCenaGerard).
+    if (!figura.chave_papel_semantico) return;
+    const engatava = figura.interacoes_permitidas.find((item) => item.tipo === "ENGATAR_INCOGNITA");
     setOcupado(true);
     try {
-      const resultado = await api.posicionarConhecido({
-        id: "POSICIONAR_CONHECIDO", metodo: "POST",
-        href: "/api/acoes/posicionar-conhecido", corpo: { papel_id: posicionar.papel_id }
-      }, papelId);
+      const resultado = await api.soltarNumero(figura.chave_papel_semantico, papelId);
       receberSnapshot(resultado.estado);
+      if (resultado.aceita && engatava) {
+        const figuraEngatada = resultado.estado.cena?.figuras.find((item) => item.id === figura.id);
+        const editar = figuraEngatada?.interacoes_permitidas.find((item) => item.tipo === "EDITAR_VALOR");
+        if (figuraEngatada && editar) iniciarEdicaoValor(figuraEngatada, editar);
+      }
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }

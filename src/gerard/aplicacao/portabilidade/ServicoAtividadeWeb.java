@@ -26,6 +26,11 @@ public interface ServicoAtividadeWeb {
      * o mesmo contrato de posicionarValorConhecido.
      */
     Map<String, Object> engatarIncognita(String papelId, String origemPapelId);
+    /**
+     * Número solto sobre uma figura cujo posicionamento já foi julgado correto: aplica o efeito que a
+     * atividade oferece agora para esse papel (posicionar o valor conhecido, engatar a incógnita ou nada).
+     */
+    Map<String, Object> soltarNumero(String papelId, String origemPapelId);
     default Map<String, Object> responderConfirmacaoValor(
             String papelId, boolean confirmou, int valor) {
         throw new IllegalStateException("confirmação de valor não implementada para esta categoria");
