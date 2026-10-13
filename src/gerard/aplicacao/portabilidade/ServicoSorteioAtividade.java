@@ -515,6 +515,15 @@ public final class ServicoSorteioAtividade {
         if (indiceAlterado < 0) {
             return resultado;
         }
+        // Mesma regra do desktop (EstadoSemanticoCompartilhado.tentativaPreservaDominios): o papel que a pessoa mexeu e o
+        // que será recalculado têm que continuar nos seus domínios. Sem isso, um valor que o domínio recusa (zero numa
+        // transformação, por exemplo) era aceito e ficava sozinho, sem que o resto do diagrama o acompanhasse.
+        if (!new gerard.campoaditivo.sincronizacao.ResolvedorRelacoesEstruturaisAditivas()
+                .tentativaPreservaDominios(tipo, numeros, indiceAlterado, Integer.valueOf(valor))) {
+            resultado.put("aceita", Boolean.FALSE);
+            valores.clear();
+            return resultado;
+        }
         gerard.dominio.campoaditivo.ResultadoCalculo calculo = catalogo.criar(tipo, numeros)
                 .recalcularParaConsistencia(indiceAlterado);
         if (calculo != null && calculo.temValorCalculavel()
@@ -529,8 +538,41 @@ public final class ServicoSorteioAtividade {
             valores.put(calculo.getPapelCalculado().getChave(),
                     Integer.valueOf(((Number) calculo.getValorCalculado().valorOuNull()).intValue()));
         }
+        if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES
+                && !acompanharComOsEstados(valores, atuais)) {
+            resultado.put("aceita", Boolean.FALSE);
+            valores.clear();
+            return resultado;
+        }
         resultado.put("aceita", Boolean.TRUE);
         return resultado;
+    }
+
+    /**
+     * Na Composição de Transformações os estados acompanham as transformações (ver
+     * EstadosDaComposicaoDeTransformacoes). Acrescenta aos valores projetados os dos estados; false se algum sairia do
+     * domínio.
+     */
+    private static boolean acompanharComOsEstados(Map<String, Object> valores, Map<String, Object> atuais) {
+        Integer transformacao1 = inteiroOuNull(valores.containsKey("papel.transformacao1")
+                ? valores.get("papel.transformacao1") : atuais.get("papel.transformacao1"));
+        Integer resultante = inteiroOuNull(valores.containsKey("papel.transformacaoFinal")
+                ? valores.get("papel.transformacaoFinal") : atuais.get("papel.transformacaoFinal"));
+        Integer inicial = inteiroOuNull(atuais.get(
+                gerard.campoaditivo.sincronizacao.EstadosDaComposicaoDeTransformacoes.ESTADO_INICIAL));
+        boolean temIntermediario = atuais.get(
+                gerard.campoaditivo.sincronizacao.EstadosDaComposicaoDeTransformacoes.ESTADO_INTERMEDIARIO) instanceof Number;
+        Map<String, Integer> estados = gerard.campoaditivo.sincronizacao.EstadosDaComposicaoDeTransformacoes
+                .recalcular(inicial, transformacao1, resultante, temIntermediario);
+        if (estados == null) {
+            return false;
+        }
+        valores.putAll(estados);
+        return true;
+    }
+
+    private static Integer inteiroOuNull(Object valor) {
+        return valor instanceof Number ? Integer.valueOf(((Number) valor).intValue()) : null;
     }
 
     private Map<String, Object> aplicarTransicaoEixo(String papelId, boolean revelar) {
@@ -1263,6 +1305,14 @@ public final class ServicoSorteioAtividade {
                     }
                 }
                 projecoesPorPapel.put(chave, projecoesPorValor);
+            }
+            if (contexto.getSituacao().getTipo() == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
+                // Os estados acompanham as transformações: participam da relação exploratória (só os que a cena tem).
+                for (String chaveEstado : gerard.campoaditivo.sincronizacao.EstadosDaComposicaoDeTransformacoes.chavesDosEstados()) {
+                    if (valoresAtuais.get(chaveEstado) instanceof Number) {
+                        papeisRelacao.add(chaveEstado);
+                    }
+                }
             }
             descritorRelacao.put("papeis", papeisRelacao);
             // Projeções finitas da geometria publicada para a reta. São

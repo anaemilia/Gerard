@@ -111,7 +111,7 @@ export class EstadoSemanticoExploratorio {
   private readonly papeis = new Map<string, PapelSemanticoExploratorio>();
   private readonly projecao: ProjecaoEstadoExploratorio;
 
-  constructor(relacao: RelacaoExploratoria, valoresIniciais: SnapshotExploratorio) {
+  constructor(private readonly relacao: RelacaoExploratoria, valoresIniciais: SnapshotExploratorio) {
     const canal = new CanalBroadcastMudancaPapel();
     relacao.papeis.forEach((papelId) => {
       const valor = valoresIniciais[papelId];
@@ -128,6 +128,10 @@ export class EstadoSemanticoExploratorio {
   }
 
   alterarPapel(papelId: string, novoValor: number) {
+    // O servidor só publica as projeções que o domínio aceita (o papel alterado e os recalculados continuam nos seus
+    // domínios): um valor sem projeção é um valor que o domínio recusa, e a reta não o aplica.
+    const projecoes = this.relacao.projecoes[papelId];
+    if (projecoes && !(String(novoValor) in projecoes)) return false;
     return this.papeis.get(papelId)?.alterarPelaReta(novoValor) ?? false;
   }
 }
