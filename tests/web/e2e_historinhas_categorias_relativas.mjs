@@ -26,6 +26,11 @@ async function arrastar(de,para){await page.mouse.move(de.x,de.y);await page.mou
 function figura(papel){return estado.cena.figuras.find(f=>f.chave_papel_semantico===papel);}
 function valorCurado(papel,c){const campos={ 'papel.relacaoInicial':'estado_inicial','papel.transformacao':'transformacao','papel.relacaoFinal':c.tipo==='TRANSFORMACAO_RELACAO'?'estado_final':'resultado','papel.relacao1':'quantidade_1','papel.relacao2':'quantidade_2','papel.transformacao1':'quantidade_1','papel.transformacao2':'quantidade_2','papel.transformacaoFinal':'resultado','papel.estadoInicial':'estado_inicial','papel.estadoIntermediario':'estado_intermediario','papel.estadoFinal':'estado_final','papel.estadoInicialParte1':'estado_inicial_parte1','papel.estadoInicialParte2':'estado_inicial_parte2'};let v=c[campos[papel]];if(papel==='papel.transformacao'&&c.sinal_transformacao==='negativo'&&!v.startsWith('-'))v='-'+v;return Number(v);}
 function respostaDaRelacao(alvo,c){
+  if(c.tipo==='COMPOSICAO_TRANSFORMACOES'){ // a categoria publica transformacao_1, transformacao_2 e transformacao_final (final = t1 + t2)
+    const m=estado.modelagem;const w=Object.fromEntries([m.transformacao_1,m.transformacao_2,m.transformacao_final].filter(Boolean).map(p=>[p.id,p.valor]));
+    return alvo==='papel.transformacaoFinal'?w['papel.transformacao1']+w['papel.transformacao2']
+      :alvo==='papel.transformacao1'?w['papel.transformacaoFinal']-w['papel.transformacao2']:w['papel.transformacaoFinal']-w['papel.transformacao1'];
+  }
   const papeis=estado.modelagem.papeis??['relacao_1','relacao_2','relacao_final'].map(k=>estado.modelagem[k]);
   const v=Object.fromEntries(papeis.filter(p=>p.id!==alvo).map(p=>[p.id,p.valor]));
   if(c.tipo==='TRANSFORMACAO_RELACAO')return alvo==='papel.relacaoFinal'?v['papel.relacaoInicial']+v['papel.transformacao']

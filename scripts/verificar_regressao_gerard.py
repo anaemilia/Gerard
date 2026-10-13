@@ -1932,11 +1932,13 @@ check('ESPACAMENTO_BOTOES = 70' in seletor_op,
 
 print('== Item 23 (2026-08-18): lupa generalizada para todo número relativo ==')
 elemento_vergnaud = text('src/gerard/campoaditivo/diagrama/elementos/ElementoVergnaud.java')
+montador_elementos_vergnaud = text('src/gerard/campoaditivo/diagrama/apresentacao/MontadorElementosVergnaud.java')
 check('public boolean exibirLupa' in elemento_vergnaud
       and 'this.exibirLupa = exibirLupa;' in elemento_vergnaud
-      and 'figura.isExibirLupa(),' in main,
-      'descritor vindo da cena decide quem ganha painel/lupa; Main apenas materializa a decisão '
-      '(passado ao construtor de ElementoVergnaud, não atribuído depois)')
+      and 'figura.isExibirLupa(),' in montador_elementos_vergnaud
+      and 'figura.isExibirLupa()' not in main,
+      'descritor vindo da cena decide quem ganha painel/lupa; o MontadorElementosVergnaud (não a Main) '
+      'o passa ao construtor de ElementoVergnaud, sem atribuir depois')
 check('DecisaoExibicaoPaineisEixo.existeAlgumComLupa(elementosVergnaud)' in main,
       'devemExibirPaineisEixosRelacoes não filtra mais por TipoSituacaoAditiva — qualquer categoria '
       'com pelo menos um descritor exibirLupa no diagrama atual ganha os painéis (redução extraída '
@@ -2496,36 +2498,18 @@ check('Resultado(String chaveExplicita, String chaveEfetiva,\n'
       'o construtor anterior de Resultado delega para o novo com "" — mesmo padrão de sobrecarga '
       'usado no modelo, nenhum chamador existente muda')
 
-print('== Item 36 (2026-08-23): "Ver dica" avisa quando falta o seletor de operação ==')
-check('private boolean existeSeletorOperacaoPendenteParaDica() {\n'
-      '            return obterProximoPapelNaoResolvidoParaDica() == null\n'
-      '                    && !operacoesDeSomaSubtracaoRespondidasCorretamente();\n'
-      '        }' in main,
-      '"e se o usuário não for notificado que tem que escolher a operação e ficar esperando '
-      'infinitamente?" — novo predicado responde se não resta papel-dado pendente mas ainda falta '
-      'responder (ou foi respondido errado) algum seletor de soma/subtração ativo')
-check('boolean exibir = categoriaSelecionadaParaAtividade\n'
-      '                    && !elementosVergnaud.isEmpty()\n'
-      '                    && (obterProximoPapelNaoResolvidoParaDica() != null\n'
-      '                            || existeSeletorOperacaoPendenteParaDica());' in main,
-      'o botão "Ver dica" continua visível quando só falta responder o seletor de operação — antes '
-      'ele simplesmente sumia nesse momento, sem avisar nada')
-check('if (existeSeletorOperacaoPendenteParaDica()) {\n'
-      '                    mostrarDicaSeletorOperacaoPendente();\n'
-      '                }\n'
-      '                return;' in main,
-      'clicar em "Ver dica" quando só falta o seletor mostra a dica nova, em vez de não fazer nada')
-check('private void mostrarDicaSeletorOperacaoPendente() {\n'
-      '            JOptionPane.showMessageDialog(this,\n'
-      '                    localizacao.texto("ui.hint.pendingOperationSelector"),' in main
-      and 'registrarFeedbackExibido("AG_AE",\n'
-      '                    gerard.dominio.campoaditivo.ModalidadeEntregaScaffolding.VISUAL,\n'
-      '                    "dica: falta responder o seletor de soma/subtracao pendente");' in main,
-      'mesmo padrão de exibição (JOptionPane) e de auditoria (registrarFeedbackExibido) já usado por '
-      'mostrarDicaOperacaoIncognita — não introduz um terceiro estilo de dica')
+print('== Item 36 (2026-08-23), superado em 2026-10-11: o botão "Ver dica" de posicionamento saiu do desktop ==')
+check('existeSeletorOperacaoPendenteParaDica' not in main
+      and 'mostrarDicaSeletorOperacaoPendente' not in main
+      and 'obterProximoPapelNaoResolvidoParaDica' not in main
+      and 'obterFraseParaDicaPosicionamento' not in main
+      and 'ScaffoldingAutomatizacaoPassos' not in main,
+      'o botão "Ver dica" e o que existia só para ele (dica do seletor pendente, próximo papel, frase) '
+      'não estão mais na Main — a web nunca teve esse botão')
 for lang in ('pt', 'en', 'es', 'fr'):
-    check(len(props[lang].get('ui.hint.pendingOperationSelector', '')) > 0,
-          f'chave ui.hint.pendingOperationSelector presente e não vazia em {lang}')
+    check('ui.hint.pendingOperationSelector' not in props[lang]
+          and 'ui.hint.stepPlacement' not in props[lang],
+          f'as chaves da dica removida não ficam órfãs em {lang}')
 
 print('== Item 37 (2026-08-29): relação orientada não confunde transformação com operação ==')
 conversor_rico = text('src/gerard/campoaditivo/curadoria/ConversorSituacaoProblemaRica.java')

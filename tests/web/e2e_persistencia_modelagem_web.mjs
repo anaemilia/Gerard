@@ -143,15 +143,20 @@ verificar('diagrama azul (concluída)', estado.modelagem?.concluida === true
   && await page.locator('.diagram-panel-concluido').count() === 1);
 await page.screenshot({ path: path.join(EVIDENCIAS, 'composicao_medidas_azul.png') });
 
+// Regra de 2026-10-02: toda primeira modelagem persiste; depois da conclusão correta a exploração não persiste, mas
+// restaurar (ou sortear) reabre a primeira modelagem — a restauração é gravada e o valor errado volta a perguntar.
 const noAzul = linhasLog('WEB_'); const restAzul = linhasLog('tipo_restauracao=');
 await clicar('button[aria-label="Limpar a área do diagrama e recomeçar a modelagem"]');
 await page.waitForTimeout(600);
+verificar(`restaurar depois do azul reabre a primeira modelagem: restauração gravada (${restAzul}->${linhasLog('tipo_restauracao=')})`,
+  linhasLog('tipo_restauracao=') === restAzul + 1);
 await posicionarTudo(alvo);
 await digitar(alvo, correto + 3);
-const perguntaExploratoria = await page.locator('.valor-figura-confirmacao').count();
-verificar(`após o azul: restauração não gravada (${restAzul}->${linhasLog('tipo_restauracao=')})`, linhasLog('tipo_restauracao=') === restAzul);
-verificar('após o azul: sem pergunta de confirmação', perguntaExploratoria === 0);
-verificar(`após o azul: nenhuma ação gravada (${noAzul}->${linhasLog('WEB_')})`, linhasLog('WEB_') === noAzul);
+const perguntaAposRestaurar = await page.locator('.valor-figura-confirmacao').count();
+verificar('depois de restaurar, o valor errado volta a perguntar a confirmação', perguntaAposRestaurar === 1);
+verificar(`depois de restaurar, as ações voltam a ser gravadas (${noAzul}->${linhasLog('WEB_')})`, linhasLog('WEB_') > noAzul);
+const opcaoAposRestaurar = page.locator('.valor-figura-confirmacao label').first();
+if (await opcaoAposRestaurar.count()) { await opcaoAposRestaurar.click(); await page.waitForTimeout(600); }
 
 verificar('nova situação sorteada', await classificarComposicao());
 await posicionarTudo(estado.modelagem.papel_desconhecido_original);
