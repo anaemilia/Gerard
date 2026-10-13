@@ -93,7 +93,7 @@ public final class TesteWebRegistroParaNoLimite {
                         new gerard.campoaditivo.curadoria.ConstrutorResultadoCurado()),
                 new java.util.Random(5), gerard.idioma.IdiomaInterface.PORTUGUES, porta,
                 new gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb(),
-                new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
+                new gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento());
         Map<String, Object> estado = null;
         for (int i = 0; i < 200 && estado == null; i++) {
             servico.sortearMedidas();

@@ -18,7 +18,7 @@ import java.util.Map;
  * AjudaContextual.projetarArea/nomeArea/mensagem/rotuloOpcao produziam
  * antes de saírem da camada de aplicação. Vive na infraestrutura web, não em
  * gerard.aplicacao nem em gerard.Scaffolding — ver o comentário equivalente
- * em AdaptadorQuestionamentoPosicionamentoWeb.
+ * em AdaptadorQuestionamentoPosicionamento.
  */
 public final class AdaptadorAjudaContextualWeb implements PortaAjudaContextual {
     private final ScaffoldingAjudaContextual scaffolding = new ScaffoldingAjudaContextual();

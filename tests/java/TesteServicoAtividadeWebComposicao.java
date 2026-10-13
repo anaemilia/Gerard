@@ -6,7 +6,7 @@ public class TesteServicoAtividadeWebComposicao {
     public static void main(String[] args) {
         ServicoAtividadeComposicao servico =
                 new ServicoAtividadeComposicao("tentativa.teste.web",
-                        new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
+                        new gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento());
         Map<String, Object> inicial = servico.estadoAtual();
         checar(!concluida(inicial), "começa incompleta");
         checar("PO_COMPOSICAO_MEDIDAS_bolas_1098018440".equals(

@@ -78,7 +78,7 @@ public final class TesteWebConclusaoFluxo {
                         new gerard.campoaditivo.curadoria.ConstrutorResultadoCurado()),
                 new java.util.Random(5), gerard.idioma.IdiomaInterface.PORTUGUES, porta,
                 new gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb(),
-                new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
+                new gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento());
     }
 
     @SuppressWarnings("unchecked")

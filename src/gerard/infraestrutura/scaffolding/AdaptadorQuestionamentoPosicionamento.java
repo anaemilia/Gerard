@@ -1,4 +1,4 @@
-package gerard.infraestrutura.web.scaffolding;
+package gerard.infraestrutura.scaffolding;
 
 import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
 import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
@@ -6,7 +6,7 @@ import gerard.aplicacao.portabilidade.PortaQuestionamentoPosicionamento;
 import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
 
 /**
- * Único ponto que instancia {@link ScaffoldingQuestionamento} para a web,
+ * Único ponto que instancia {@link ScaffoldingQuestionamento} para os dois clientes (Swing e web),
  * traduzindo o resultado para o tipo neutro da porta — assim a camada de
  * aplicação (gerard.aplicacao.portabilidade) não precisa importar o pacote
  * concreto do scaffolding (ver AvaliadorOrigemDestino). Vive na
@@ -15,7 +15,7 @@ import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
  * "camada de aplicação não importa gerard.Scaffolding.*" — um adaptador
  * dentro do próprio pacote Scaffolding continuaria do lado errado dela.
  */
-public final class AdaptadorQuestionamentoPosicionamentoWeb
+public final class AdaptadorQuestionamentoPosicionamento
         implements PortaQuestionamentoPosicionamento {
     private final ScaffoldingQuestionamento scaffolding = new ScaffoldingQuestionamento();
 

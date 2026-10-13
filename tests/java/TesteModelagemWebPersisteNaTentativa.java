@@ -130,7 +130,7 @@ public final class TesteModelagemWebPersisteNaTentativa {
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
                 new Random(semente), IdiomaInterface.PORTUGUES, porta,
                 new gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb(),
-                new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
+                new gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento());
     }
 
     @SuppressWarnings("unchecked")

@@ -1,61 +1,48 @@
 package gerard.aplicacao.portabilidade;
 
+import gerard.aplicacao.interacao.PortaPersistenciaAcaoInstrumental;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.campoaditivo.semantica.CatalogoPapeisSemanticosAditivos;
+import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.i18n.ServicoLocalizacao;
 
-import java.util.List;
+import java.util.function.Supplier;
 
 /**
- * Compatibilidade semântica entre o elemento arrastado do enunciado (origem)
- * e o papel da figura-alvo (destino) — mesma avaliação usada pelo desktop em
- * avaliarQuestionamentoPosicionamento/Main.java, via o scaffolding portátil
- * já existente (ScaffoldingQuestionamento, sem Swing), aqui só pela porta
- * neutra {@link PortaQuestionamentoPosicionamento} — quem instancia o
- * scaffolding concreto é o adaptador, entregue pela raiz de composição
- * (ServidorPrototipoWeb); a aplicação não importa infraestrutura. Sem isso,
- * a versão web decidia essa compatibilidade só no cliente (papelId !==
- * figura.chave_papel_semantico em App.tsx) e o servidor aceitava cegamente
- * qualquer papel_id de destino, sem saber o que foi arrastado.
+ * O juiz único do posicionamento de um número sobre uma figura, para os dois clientes (Swing e web): o critério é só
+ * se o posicionamento está certo ou incorreto, via o scaffolding portátil (ScaffoldingQuestionamento, sem Swing) pela
+ * porta neutra {@link PortaQuestionamentoPosicionamento}. Quem instancia o scaffolding concreto é o adaptador,
+ * entregue pela raiz de composição; a aplicação não importa infraestrutura. Cada cliente decide o que fazer com o
+ * veredito (a web publica o posicionamento incorreto na cena; o desktop abre a pergunta persistente) — aqui só se
+ * julga e, quando aplicável, entrega à tentativa o registro de posicionamento constituído pelo descritor do papel de
+ * origem.
  */
-final class AvaliadorOrigemDestino {
+public final class AvaliadorOrigemDestino {
     private static final CatalogoPapeisSemanticosAditivos CATALOGO =
             new CatalogoPapeisSemanticosAditivos();
 
     private final PortaQuestionamentoPosicionamento scaffolding;
 
-    AvaliadorOrigemDestino(PortaQuestionamentoPosicionamento scaffolding) {
+    public AvaliadorOrigemDestino(PortaQuestionamentoPosicionamento scaffolding) {
         this.scaffolding = scaffolding == null
                 ? PortaQuestionamentoPosicionamento.NAO_APLICAVEL : scaffolding;
     }
 
     /**
-     * Avalia a soltura e, quando o questionamento é aplicável, entrega à
-     * tentativa o registro de posicionamento constituído pelo descritor do
-     * papel de origem (mesmo proprietário usado pelo desktop em
-     * avaliarQuestionamentoPosicionamento).
+     * @param contextoDoRegistro descreve a ação para o log do cliente; avaliado só se o questionamento for
+     *        aplicável. {@code null}, ou persistência {@code null}, avalia sem registrar (reavaliações que não são
+     *        uma ação nova do usuário).
      */
-    ResultadoQuestionamentoPosicionamento avaliar(
+    public ResultadoQuestionamentoPosicionamento avaliar(
             String origemPapelId, String chavePapelAlvo, TipoSituacaoAditiva categoria,
-            List<String> participantes, EscopoTentativa escopo) {
+            Supplier<ContextoAcaoInstrumental> contextoDoRegistro, PortaPersistenciaAcaoInstrumental persistencia) {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
-        String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
-        String categoriaEscolhida = localizacao.descricaoTipo(categoria);
         ResultadoQuestionamentoPosicionamento resultado = scaffolding.avaliar(
-                origemPapelId, chavePapelAlvo, papelDoElementoNoDiagrama, categoriaEscolhida);
-        if (resultado != null && resultado.isAplicavel() && categoria != null && escopo != null) {
-            escopo.persistir(CATALOGO.obterDescritor(origemPapelId).avaliarPosicionamento(
-                    CATALOGO.obterDescritor(chavePapelAlvo), categoria,
-                    ContextosAcaoInstrumental.posicionamento(
-                            origemPapelId, chavePapelAlvo, participantes)));
-        }
-        if (resultado != null && resultado.isAplicavel() && escopo != null) {
-            if (resultado.isCorreto()) {
-                escopo.resolverPosicionamentoDe(origemPapelId);
-            } else {
-                escopo.questionarPosicionamento(new PosicionamentoQuestionado(
-                        origemPapelId, chavePapelAlvo, resultado.getMensagem()));
-            }
+                origemPapelId, chavePapelAlvo, localizacao.texto(chavePapelAlvo), localizacao.descricaoTipo(categoria));
+        if (resultado != null && resultado.isAplicavel() && categoria != null
+                && contextoDoRegistro != null && persistencia != null) {
+            persistencia.persistir(CATALOGO.obterDescritor(origemPapelId).avaliarPosicionamento(
+                    CATALOGO.obterDescritor(chavePapelAlvo), categoria, contextoDoRegistro.get()));
         }
         return resultado;
     }

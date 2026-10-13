@@ -56,4 +56,14 @@ public final class ResultadoQuestionamentoPosicionamento {
     public String getMensagem() {
         return mensagem;
     }
+
+    /** Um questionamento anterior deve desaparecer assim que o item deixa de representar um posicionamento incorreto. */
+    public boolean deveLimparQuestionamentoPersistente() {
+        return !aplicavel || correto;
+    }
+
+    /** O menu do número relativo fica bloqueado enquanto o posicionamento do item sobre ele está incorreto. */
+    public boolean deveBloquearMenuNumeroRelativo(boolean itemSobreNumeroRelativo) {
+        return itemSobreNumeroRelativo && aplicavel && !correto;
+    }
 }

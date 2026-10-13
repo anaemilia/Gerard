@@ -125,8 +125,9 @@ import gerard.Scaffolding.proximidade.EstadoRealceAlvo;
 import gerard.Scaffolding.proximidade.EstiloRealceAlvo;
 import gerard.estilointeracao.EstiloInteracao;
 import gerard.Scaffolding.proximidade.ScaffoldingProximidade;
-import gerard.Scaffolding.questionamento.ResultadoQuestionamento;
-import gerard.Scaffolding.questionamento.ScaffoldingQuestionamento;
+import gerard.aplicacao.portabilidade.AvaliadorOrigemDestino;
+import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
+import gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento;
 import gerard.Scaffolding.venn.ControleAdicionarQuadradinhoVenn;
 import gerard.Scaffolding.venn.ControleRemoverQuadradinhoVenn;
 import gerard.Scaffolding.venn.ScaffoldingLimiteQuantidadeVenn;
@@ -701,7 +702,8 @@ public class Main extends JFrame {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         ScaffoldingNumeroRelativo scaffoldingNumeroRelativo = new ScaffoldingNumeroRelativo();
         ScaffoldingProximidade scaffoldingProximidade = new ScaffoldingProximidade();
-        ScaffoldingQuestionamento scaffoldingQuestionamento = new ScaffoldingQuestionamento();
+        final AvaliadorOrigemDestino avaliadorOrigemDestino =
+                new AvaliadorOrigemDestino(new AdaptadorQuestionamentoPosicionamento());
         // Fluxo de tentativas rejeitadas (REFERENCE.md §4.8;
         // TAREFA_PENDENTE_FLUXO_TENTATIVAS_E_SCAFFOLDING.md): contagem,
         // action_id por submissão e rejection_sequence_id por sequência
@@ -9852,7 +9854,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             gerard.pesquisador.auditoria.OrigemAvaliacao origemSoltura = itemRealmenteMoveu
                     ? gerard.pesquisador.auditoria.OrigemAvaliacao.SOLTURA_USUARIO
                     : gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA;
-            ResultadoQuestionamento resultadoPosicionamento =
+            ResultadoQuestionamentoPosicionamento resultadoPosicionamento =
                     avaliarQuestionamentoPosicionamento(itemSolto, origemSoltura);
             boolean posicionamentoIncorreto = resultadoPosicionamento.isAplicavel()
                     && !resultadoPosicionamento.isCorreto();
@@ -9866,9 +9868,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 // pode arrastá-lo para outro papel sem precisar voltar ao texto.
                 processarQuestionamentoPosicionamento(itemSolto);
             } else if (questionamentoPersistente.ehSobre(itemSolto)
-                    && scaffoldingQuestionamento
-                            .deveLimparQuestionamentoPersistente(
-                                    resultadoPosicionamento)) {
+                    && resultadoPosicionamento.deveLimparQuestionamentoPersistente()) {
                 // Ao corrigir o posicionamento, o tip do erro anterior não
                 // pode permanecer associado ao item já compatível.
                 limparQuestionamentoPersistente();
@@ -10181,7 +10181,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
 
         private void registrarLogSolturaItem(ItemTextoArrastavel item,
                 boolean houveMovimento,
-                ResultadoQuestionamento resultadoPosicionamento) {
+                ResultadoQuestionamentoPosicionamento resultadoPosicionamento) {
             if (item == null || !houveMovimento
                     || resultadoPosicionamento == null
                     || !resultadoPosicionamento.isAplicavel()) {
@@ -10276,10 +10276,10 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
          * nova ação. Somente a soltura canônica constitui o registro factual
          * POSICIONAR encaminhado ao Modelador.
          */
-        private ResultadoQuestionamento avaliarQuestionamentoPosicionamento(
+        private ResultadoQuestionamentoPosicionamento avaliarQuestionamentoPosicionamento(
                 ItemTextoArrastavel item, gerard.pesquisador.auditoria.OrigemAvaliacao origem) {
             if (item == null || !item.estaNoDiagrama()) {
-                return ResultadoQuestionamento.naoAplicavel();
+                return ResultadoQuestionamentoPosicionamento.naoAplicavel();
             }
 
             String chavePapelElementoTexto = obterChavePapelExataDoItem(item);
@@ -10288,53 +10288,43 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     ? item.origemValor : item.valor;
             if (!politicaElementoMatematicoTexto.deveValidar(
                     valorParaValidacao, chavePapelElementoTexto)) {
-                return ResultadoQuestionamento.naoAplicavel();
+                return ResultadoQuestionamentoPosicionamento.naoAplicavel();
             }
 
             ElementoVergnaud elementoAlvo = encontrarElementoVergnaudPorItem(item);
             if (elementoAlvo == null) {
-                return ResultadoQuestionamento.naoAplicavel();
+                return ResultadoQuestionamentoPosicionamento.naoAplicavel();
             }
 
             String chavePapelNumeral = chavePapelElementoTexto;
             String chavePapelAlvo = obterPapelSemanticoDoElemento(elementoAlvo);
-            String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
-
-            ResultadoQuestionamento resultado = scaffoldingQuestionamento.avaliarPosicionamento(
-                    chavePapelNumeral,
-                    chavePapelAlvo,
-                    papelDoElementoNoDiagrama,
-                    localizacao.descricaoTipo(tipoSituacaoSelecionada)
-            );
-            if (resultado != null && resultado.isAplicavel()
-                    && origem.isCanonica() && tipoSituacaoSelecionada != null) {
-                ContextoAcaoInstrumental contextoInstrumental =
-                        new ContextoAcaoInstrumental(
-                                "Posicionar elemento semântico do enunciado",
-                                "Arrastar e soltar",
-                                "Texto e diagrama de Vergnaud",
-                                "Associar o elemento textual ao papel quantitativo correspondente",
-                                chavePapelAlvo,
-                                origem.name(),
-                                "origem=" + chavePapelNumeral
-                                        + "; destino=" + chavePapelAlvo,
-                                "Elemento posicionado sobre um papel do diagrama",
-                                participantesSemanticosDaSituacaoAtual());
-                gerard.dominio.campoaditivo.RegistroAcaoPosicionamentoPapelQuantitativo
-                        registro = catalogoPapeisSemanticos
-                                .obterDescritor(chavePapelNumeral)
-                                .avaliarPosicionamento(
-                                        catalogoPapeisSemanticos
-                                                .obterDescritor(chavePapelAlvo),
-                                        tipoSituacaoSelecionada,
-                                        contextoInstrumental);
-                persistirAcaoDaTentativa(registro, gerard.agente.modelousuario.NivelSuporte.NENHUM);
-            }
-            return resultado;
+            final String origemDaAvaliacao = origem.name();
+            return avaliadorOrigemDestino.avaliar(
+                    chavePapelNumeral, chavePapelAlvo, tipoSituacaoSelecionada,
+                    !origem.isCanonica() ? null : new java.util.function.Supplier<ContextoAcaoInstrumental>() {
+                        public ContextoAcaoInstrumental get() {
+                            return new ContextoAcaoInstrumental(
+                                    "Posicionar elemento semântico do enunciado",
+                                    "Arrastar e soltar",
+                                    "Texto e diagrama de Vergnaud",
+                                    "Associar o elemento textual ao papel quantitativo correspondente",
+                                    chavePapelAlvo,
+                                    origemDaAvaliacao,
+                                    "origem=" + chavePapelNumeral
+                                            + "; destino=" + chavePapelAlvo,
+                                    "Elemento posicionado sobre um papel do diagrama",
+                                    participantesSemanticosDaSituacaoAtual());
+                        }
+                    },
+                    new gerard.aplicacao.interacao.PortaPersistenciaAcaoInstrumental() {
+                        public void persistir(gerard.dominio.atividade.RegistroFactualAcaoInstrumental registro) {
+                            persistirAcaoDaTentativa(registro, gerard.agente.modelousuario.NivelSuporte.NENHUM);
+                        }
+                    });
         }
 
         private boolean processarQuestionamentoPosicionamento(ItemTextoArrastavel item) {
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+            ResultadoQuestionamentoPosicionamento resultado = avaliarQuestionamentoPosicionamento(item,
                     gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
 
             if (resultado.isAplicavel() && !resultado.isCorreto()) {
@@ -10354,12 +10344,12 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
         }
 
         private boolean deveBloquearMenuNumeroRelativoPorQuestionamento(ItemTextoArrastavel item, ElementoVergnaud numeroRelativo) {
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+            ResultadoQuestionamentoPosicionamento resultado = avaliarQuestionamentoPosicionamento(item,
                     gerard.pesquisador.auditoria.OrigemAvaliacao.SINCRONIZACAO_REPRESENTACOES);
             ElementoVergnaud elementoAlvo = encontrarElementoVergnaudPorItem(item);
             boolean itemSobreNumeroRelativo = numeroRelativo != null && numeroRelativo == elementoAlvo;
 
-            if (scaffoldingQuestionamento.deveBloquearMenuNumeroRelativo(resultado, itemSobreNumeroRelativo)) {
+            if (resultado.deveBloquearMenuNumeroRelativo(itemSobreNumeroRelativo)) {
                 registrarQuestionamentoPersistente(item, resultado);
                 scaffoldingFeedbackMultissensorialErro.sinalizarErro(item, new Runnable() {
                     public void run() {
@@ -10372,7 +10362,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             return false;
         }
 
-        private void registrarQuestionamentoPersistente(ItemTextoArrastavel item, ResultadoQuestionamento resultado) {
+        private void registrarQuestionamentoPersistente(ItemTextoArrastavel item, ResultadoQuestionamentoPosicionamento resultado) {
             if (resultado == null || !questionamentoPersistente.abrir(item, resultado.getMensagem())) {
                 return;
             }
@@ -10390,7 +10380,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 return;
             }
 
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+            ResultadoQuestionamentoPosicionamento resultado = avaliarQuestionamentoPosicionamento(item,
                     gerard.pesquisador.auditoria.OrigemAvaliacao.SINCRONIZACAO_REPRESENTACOES);
             if (!resultado.isAplicavel() || resultado.isCorreto()) {
                 limparQuestionamentoPersistente();
@@ -10472,7 +10462,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 return;
             }
 
-            ResultadoQuestionamento resultado = avaliarQuestionamentoPosicionamento(item,
+            ResultadoQuestionamentoPosicionamento resultado = avaliarQuestionamentoPosicionamento(item,
                     gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
             if (resultado.isAplicavel() && !resultado.isCorreto()) {
                 return;
@@ -11153,7 +11143,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                     // ação instrumental nem um novo gesto canônico.
                     String ceIncognita = "-";
                     String regrasIncognita = "A ação não foi avaliada como acerto ou erro matemático.";
-                    ResultadoQuestionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item,
+                    ResultadoQuestionamentoPosicionamento resultadoIncognita = avaliarQuestionamentoPosicionamento(item,
                             gerard.pesquisador.auditoria.OrigemAvaliacao.REAVALIACAO_CONSISTENCIA);
                     if (resultadoIncognita.isAplicavel()) {
                         ceIncognita = resultadoIncognita.isCorreto() ? "C" : "E";

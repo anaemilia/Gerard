@@ -1,7 +1,7 @@
 package gerard.infraestrutura.web;
 
 import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
-import gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb;
+import gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
@@ -43,7 +43,7 @@ public final class ServidorPrototipoWeb {
     private final ServicoSorteioAtividade sorteios =
             new ServicoSorteioAtividade(new RegistradorAtividadeWebLogGerard(),
                     new AdaptadorAjudaContextualWeb(),
-                    new AdaptadorQuestionamentoPosicionamentoWeb());
+                    new AdaptadorQuestionamentoPosicionamento());
     private final Path raizWeb;
     private final AtomicLong gestosRecebidos = new AtomicLong();
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();

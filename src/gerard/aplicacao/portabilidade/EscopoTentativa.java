@@ -20,11 +20,12 @@ import java.util.List;
  * semânticos; aqui só se entrega o que ela constituiu à mesma porta de
  * persistência usada pelo desktop.
  */
-public final class EscopoTentativa {
+public final class EscopoTentativa implements PortaPersistenciaAcaoInstrumental {
 
     private static final PortaPersistenciaAcaoInstrumental SEM_PERSISTENCIA =
             new PortaPersistenciaAcaoInstrumental() {
-                public void persistir(RegistroFactualAcaoInstrumental registro) { }
+                @Override
+    public void persistir(RegistroFactualAcaoInstrumental registro) { }
             };
 
     private final TentativaModelagemAditiva tentativa;
@@ -112,6 +113,7 @@ public final class EscopoTentativa {
                 participantesAtuais.toArray(new PapelQuantitativo[0]));
     }
 
+    @Override
     public void persistir(RegistroFactualAcaoInstrumental registro) {
         if (tentativa.constituir(registro).isPresent()) {
             persistencia.persistir(registro);

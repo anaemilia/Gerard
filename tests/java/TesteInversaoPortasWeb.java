@@ -4,7 +4,7 @@ import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
 import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
 import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
-import gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb;
+import gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -57,11 +57,11 @@ public class TesteInversaoPortasWeb {
         ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 PortaRegistroAtividade.NENHUMA,
                 new AdaptadorAjudaContextualWeb(),
-                new AdaptadorQuestionamentoPosicionamentoWeb());
+                new AdaptadorQuestionamentoPosicionamento());
         Object mensagem = servico.ajudaContextual("TEXTO", "DUVIDA").get("mensagem");
         exigir(mensagem instanceof String && ((String) mensagem).trim().length() > 0,
                 "com o adaptador real, a ajuda contextual deve responder com texto do i18n");
-        ResultadoQuestionamentoPosicionamento real = new AdaptadorQuestionamentoPosicionamentoWeb()
+        ResultadoQuestionamentoPosicionamento real = new AdaptadorQuestionamentoPosicionamento()
                 .avaliar("papel.parte2", "papel.parte1", "Parte 1", "Composição de medidas");
         exigir(real.isAplicavel() && !real.isCorreto(),
                 "o adaptador real deve questionar origem incompatível com o destino");

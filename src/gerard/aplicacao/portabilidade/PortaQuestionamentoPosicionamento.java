@@ -5,7 +5,7 @@ package gerard.aplicacao.portabilidade;
  * (ver {@code AvaliadorOrigemDestino}). A implementação concreta, que de
  * fato instancia o scaffolding de questionamento, vive fora da camada de
  * aplicação (ver {@code gerard.infraestrutura.web.scaffolding.
- * AdaptadorQuestionamentoPosicionamentoWeb}), entregue pela raiz de composição.
+ * AdaptadorQuestionamentoPosicionamento}), entregue pela raiz de composição.
  */
 public interface PortaQuestionamentoPosicionamento {
 

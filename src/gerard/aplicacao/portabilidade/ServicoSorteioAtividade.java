@@ -353,7 +353,17 @@ public final class ServicoSorteioAtividade {
         }
         ResultadoQuestionamentoPosicionamento julgamento = new AvaliadorOrigemDestino(portaQuestionamento)
                 .avaliar(origemPapelId, papelAlvoId, contextoAtual.getSituacao().getTipo(),
-                        escopoTentativa.chavesParticipantes(), escopoTentativa);
+                        () -> ContextosAcaoInstrumental.posicionamento(
+                                origemPapelId, papelAlvoId, escopoTentativa.chavesParticipantes()),
+                        escopoTentativa);
+        if (julgamento.isAplicavel()) {
+            if (julgamento.isCorreto()) {
+                escopoTentativa.resolverPosicionamentoDe(origemPapelId);
+            } else {
+                escopoTentativa.questionarPosicionamento(new PosicionamentoQuestionado(
+                        origemPapelId, papelAlvoId, julgamento.getMensagem()));
+            }
+        }
         if (!julgamento.isAplicavel() || julgamento.isCorreto()) {
             return null;
         }
