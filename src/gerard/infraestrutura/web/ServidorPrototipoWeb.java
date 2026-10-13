@@ -2,6 +2,12 @@ package gerard.infraestrutura.web;
 
 import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
 import gerard.infraestrutura.scaffolding.AdaptadorQuestionamentoPosicionamento;
+import gerard.aplicacao.FachadaCarregamentoAtividade;
+import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
+import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
+import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
+import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
+import gerard.idioma.IdiomaInterface;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
@@ -40,15 +46,14 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class ServidorPrototipoWeb {
     // Raiz de composição: a infraestrutura fornece as implementações das portas
     // da aplicação (registro, ajuda contextual e questionamento de posicionamento).
-    private final ServicoSorteioAtividade sorteios =
-            new ServicoSorteioAtividade(new RegistradorAtividadeWebLogGerard(),
-                    new AdaptadorAjudaContextualWeb(),
-                    new AdaptadorQuestionamentoPosicionamento());
+    // Catálogo curado compartilhado por todas as sessões (o upload de curadoria o substitui para todas); o estado
+    // da tentativa e o usuário que entrou são de cada visitante (ver SessoesWeb).
+    private final FachadaCarregamentoAtividade catalogo = new FachadaCarregamentoAtividade(
+            new RepositorioSituacoesAditivas(), new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado());
+    private final SessoesWeb sessoes;
     private final Path raizWeb;
     private final AtomicLong gestosRecebidos = new AtomicLong();
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
-    private final SessaoAdaptativaUsuario sessaoUsuario = new SessaoAdaptativaUsuario(
-            usuarios, new RepositorioRegrasAdaptativasPublicadas());
     private final RepositorioEventosLogPesquisa logPesquisa = new RepositorioEventosLogPesquisa(
             new File(diretorioGerard(), "pesquisa_log.db").getAbsolutePath());
     private final AgendadorEnvioLogPesquisa agendadorLogPesquisa =
@@ -67,10 +72,28 @@ public final class ServidorPrototipoWeb {
 
     private ServidorPrototipoWeb(Path raizWeb) {
         this.raizWeb = raizWeb.toAbsolutePath().normalize();
+        long ociosidadeMinutos = Long.parseLong(System.getenv().getOrDefault("SESSAO_OCIOSIDADE_MINUTOS", "120"));
+        int limiteSessoes = Integer.parseInt(System.getenv().getOrDefault("SESSAO_LIMITE", "500"));
+        this.sessoes = new SessoesWeb(this::novaSessao, ociosidadeMinutos * 60_000L, limiteSessoes);
+        new java.util.Timer("expiracao-sessoes-web", true).scheduleAtFixedRate(new java.util.TimerTask() {
+            public void run() {
+                sessoes.expirar();
+            }
+        }, 60_000L, 60_000L);
         long intervaloMinutos = Long.parseLong(
                 System.getenv().getOrDefault("PESQUISA_LOG_INTERVALO_MINUTOS", "5"));
         agendadorLogPesquisa.iniciar(intervaloMinutos);
         iniciarVerificacaoInatividade();
+    }
+
+    // Raiz de composição: a infraestrutura fornece as implementações das portas da aplicação (registro, ajuda
+    // contextual e questionamento de posicionamento) para a tentativa de cada visitante.
+    private SessaoWeb novaSessao() {
+        ServicoSorteioAtividade sorteios = new ServicoSorteioAtividade(new PoliticaSorteioSituacoesAditivas(),
+                catalogo, new java.util.Random(), IdiomaInterface.PORTUGUES, new RegistradorAtividadeWebLogGerard(),
+                new AdaptadorAjudaContextualWeb(), new AdaptadorQuestionamentoPosicionamento());
+        return new SessaoWeb(SessoesWeb.novoId(), sorteios,
+                new SessaoAdaptativaUsuario(usuarios, new RepositorioRegrasAdaptativasPublicadas()));
     }
 
     private void iniciarVerificacaoInatividade() {
@@ -148,7 +171,7 @@ public final class ServidorPrototipoWeb {
         // Carga inicial entra pelo fluxo de classificação (sorteios), nunca
         // pelo widget fixo legado (atividade) — diagrama só depois de a
         // categoria ser acertada, ver ServicoSorteioAtividade.estadoInicial.
-        responder(troca, 200, sorteios.estadoInicial());
+        responder(troca, 200, sessoes.de(troca).sorteios().estadoInicial());
     }
 
     @SuppressWarnings("unchecked")
@@ -231,7 +254,7 @@ public final class ServidorPrototipoWeb {
     @SuppressWarnings("unchecked")
     private void entrarUsuario(HttpExchange troca) throws IOException {
         if ("GET".equals(troca.getRequestMethod())) {
-            Optional<String> idAtual = sessaoUsuario.fotografiaAtual().map(f -> f.getUsuarioId());
+            Optional<String> idAtual = sessoes.de(troca).usuario().fotografiaAtual().map(f -> f.getUsuarioId());
             Map<String, Object> resposta = new LinkedHashMap<String, Object>();
             resposta.put("schema", "gerard.sessao-usuario-web.v1");
             resposta.put("usuario_id", idAtual.orElse(null));
@@ -247,11 +270,11 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
                     new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             String id = textoObrigatorio(corpo, "usuario_id");
-            if (sessaoUsuario.fotografiaAtual().isPresent()
-                    && !id.equals(sessaoUsuario.fotografiaAtual().get().getUsuarioId())) {
-                sessaoUsuario.encerrarNoLogout();
+            if (sessoes.de(troca).usuario().fotografiaAtual().isPresent()
+                    && !id.equals(sessoes.de(troca).usuario().fotografiaAtual().get().getUsuarioId())) {
+                sessoes.de(troca).usuario().encerrarNoLogout();
             }
-            String versao = sessaoUsuario.iniciarNoLogin(id).getVersaoModelo();
+            String versao = sessoes.de(troca).usuario().iniciarNoLogin(id).getVersaoModelo();
             Map<String, Object> resposta = new LinkedHashMap<String, Object>();
             resposta.put("schema", "gerard.sessao-usuario-web.v1");
             resposta.put("usuario_id", id);
@@ -294,15 +317,15 @@ public final class ServidorPrototipoWeb {
             responder(troca, 400, erro("Conteúdo vazio"));
             return;
         }
-        boolean aceito = sorteios.substituirSituacoesCuradas(conteudo);
+        boolean aceito = catalogo.substituirSituacoesCuradas(conteudo);
         if (!aceito) {
             responder(troca, 422, erro("Conteúdo inválido: nenhuma situação foi carregada"));
             return;
         }
         Map<String, Object> resposta = new LinkedHashMap<String, Object>();
         resposta.put("aceito", Boolean.TRUE);
-        resposta.put("total_situacoes", Integer.valueOf(sorteios.contarSituacoesCuradas()));
-        resposta.put("total_validadas", Integer.valueOf(sorteios.contarSituacoesValidadas()));
+        resposta.put("total_situacoes", Integer.valueOf(catalogo.contarSituacoesCuradas()));
+        resposta.put("total_validadas", Integer.valueOf(catalogo.contarSituacoesValidadas()));
         responder(troca, 200, resposta);
     }
 
@@ -480,7 +503,7 @@ public final class ServidorPrototipoWeb {
             String papelId = String.valueOf(analisado.get("papel_id"));
             boolean confirmou = Boolean.TRUE.equals(analisado.get("confirmou"));
             int valor = ((Number) analisado.get("valor")).intValue();
-            responder(troca, 200, sorteios.responderConfirmacaoValor(papelId, confirmou, valor));
+            responder(troca, 200, sessoes.de(troca).sorteios().responderConfirmacaoValor(papelId, confirmou, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -498,7 +521,7 @@ public final class ServidorPrototipoWeb {
             Object bruto = ((Map<String, Object>) analisado).get("valor");
             String papelId = String.valueOf(((Map<String, Object>) analisado).get("papel_id"));
             int valor = ((Number) bruto).intValue();
-            responder(troca, 200, sorteios.proporValor(papelId, valor));
+            responder(troca, 200, sessoes.de(troca).sorteios().proporValor(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -515,11 +538,11 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String seletor = String.valueOf(analisado.get("seletor"));
             String operacao = String.valueOf(analisado.get("operacao"));
-            if (!sorteios.possuiAtividadeEscolhaOperacaoAtiva()) {
+            if (!sessoes.de(troca).sorteios().possuiAtividadeEscolhaOperacaoAtiva()) {
                 responder(troca, 422, erro("a situação atual não possui escolha de operação implementada"));
                 return;
             }
-            responder(troca, 200, sorteios.escolherOperacao(seletor, operacao));
+            responder(troca, 200, sessoes.de(troca).sorteios().escolherOperacao(seletor, operacao));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -534,7 +557,7 @@ public final class ServidorPrototipoWeb {
         try {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            responder(troca, 200, sorteios.escolherConclusao(String.valueOf(analisado.get("escolha"))));
+            responder(troca, 200, sessoes.de(troca).sorteios().escolherConclusao(String.valueOf(analisado.get("escolha"))));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -551,7 +574,7 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             int delta = ((Number) analisado.get("delta")).intValue();
-            responder(troca, 200, sorteios.ajustarQuadradinho(papelId, delta));
+            responder(troca, 200, sessoes.de(troca).sorteios().ajustarQuadradinho(papelId, delta));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -569,7 +592,7 @@ public final class ServidorPrototipoWeb {
             String papelId = String.valueOf(analisado.get("papel_id"));
             Object origemBruta = analisado.get("origem_papel_id");
             String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
-            responder(troca, 200, sorteios.soltarNumero(papelId, origemPapelId));
+            responder(troca, 200, sessoes.de(troca).sorteios().soltarNumero(papelId, origemPapelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -586,7 +609,7 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             String sinal = String.valueOf(analisado.get("sinal"));
-            responder(troca, 200, sorteios.escolherSinalNumeroRelativo(papelId, sinal));
+            responder(troca, 200, sessoes.de(troca).sorteios().escolherSinalNumeroRelativo(papelId, sinal));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -602,7 +625,7 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sorteios.revelarEixo(papelId));
+            responder(troca, 200, sessoes.de(troca).sorteios().revelarEixo(papelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -619,7 +642,7 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
             int valor = ((Number) analisado.get("valor")).intValue();
-            responder(troca, 200, sorteios.projetarAlteracaoEixo(papelId, valor));
+            responder(troca, 200, sessoes.de(troca).sorteios().projetarAlteracaoEixo(papelId, valor));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -635,7 +658,7 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sorteios.ocultarEixo(papelId));
+            responder(troca, 200, sessoes.de(troca).sorteios().ocultarEixo(papelId));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -652,7 +675,7 @@ public final class ServidorPrototipoWeb {
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String area = String.valueOf(analisado.get("area"));
             String intencao = String.valueOf(analisado.get("intencao"));
-            responder(troca, 200, sorteios.ajudaContextual(area, intencao));
+            responder(troca, 200, sessoes.de(troca).sorteios().ajudaContextual(area, intencao));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -664,7 +687,7 @@ public final class ServidorPrototipoWeb {
             return;
         }
         try {
-            responder(troca, 200, sorteios.reiniciarAtividadeAtual());
+            responder(troca, 200, sessoes.de(troca).sorteios().reiniciarAtividadeAtual());
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -680,7 +703,7 @@ public final class ServidorPrototipoWeb {
             String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
             String codigo = String.valueOf(analisado.get("codigo"));
-            responder(troca, 200, sorteios.trocarIdiomaSituacao(codigo));
+            responder(troca, 200, sessoes.de(troca).sorteios().trocarIdiomaSituacao(codigo));
         } catch (RuntimeException erro) {
             responder(troca, 400, erro(erro.getMessage()));
         }
@@ -701,7 +724,7 @@ public final class ServidorPrototipoWeb {
         }
         try {
             responder(troca, 200, medidas
-                    ? sorteios.sortearMedidas() : sorteios.sortearRelacoes());
+                    ? sessoes.de(troca).sorteios().sortearMedidas() : sessoes.de(troca).sorteios().sortearRelacoes());
         } catch (RuntimeException erro) {
             responder(troca, 422, erro(erro.getMessage()));
         }
@@ -715,7 +738,7 @@ public final class ServidorPrototipoWeb {
         try {
             Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples
                     .analisar(new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            responder(troca, 200, sorteios.escolherCategoria(String.valueOf(corpo.get("categoria"))));
+            responder(troca, 200, sessoes.de(troca).sorteios().escolherCategoria(String.valueOf(corpo.get("categoria"))));
         } catch (RuntimeException ex) { responder(troca, 400, erro(ex.getMessage())); }
     }
 
@@ -727,7 +750,7 @@ public final class ServidorPrototipoWeb {
         try {
             Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples
                     .analisar(new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            responder(troca, 200, sorteios.confirmarCategoria(
+            responder(troca, 200, sessoes.de(troca).sorteios().confirmarCategoria(
                     Boolean.TRUE.equals(corpo.get("concordou"))));
         } catch (RuntimeException ex) { responder(troca, 400, erro(ex.getMessage())); }
     }
