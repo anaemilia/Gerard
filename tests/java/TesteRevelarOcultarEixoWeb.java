@@ -1,6 +1,6 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
@@ -14,14 +14,14 @@ import java.util.Random;
  * LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md, "próxima fronteira
  * recomendada") — cobre o mesmo estado de domínio que o desktop já usa
  * (gerard.interacao.eixo.ControleVisibilidadeEixoPapel), agora publicado e
- * acionável pela API web via ServicoSorteioAtividadeWeb.revelarEixo/
+ * acionável pela API web via ServicoSorteioAtividade.revelarEixo/
  * ocultarEixo.
  */
 @SuppressWarnings("unchecked")
 public final class TesteRevelarOcultarEixoWeb {
 
     public static void main(String[] args) {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(new Random(11)),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -111,7 +111,7 @@ public final class TesteRevelarOcultarEixoWeb {
      */
     @SuppressWarnings("unchecked")
     private static void verificarEixoAposConfirmarTransformacao(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         Map<String, Object> estado = acertarTransformacaoComIncognitaNaTransformacao(servico);
         Map<String, Object> modelagem = (Map<String, Object>) estado.get("modelagem");
         String alvo = "papel.transformacao";
@@ -177,7 +177,7 @@ public final class TesteRevelarOcultarEixoWeb {
 
     @SuppressWarnings("unchecked")
     private static Map<String, Object> acertarTransformacaoComIncognitaNaTransformacao(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         for (int tentativa = 0; tentativa < 60; tentativa++) {
             servico.sortearMedidas();
             Map<String, Object> resultado = servico.escolherCategoria("TRANSFORMACAO_MEDIDAS");
@@ -253,7 +253,7 @@ public final class TesteRevelarOcultarEixoWeb {
      */
     @SuppressWarnings("unchecked")
     private static Map<String, Object> acertarUmaCategoriaDeMedidas(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         String[] candidatas = {"TRANSFORMACAO_MEDIDAS", "COMPARACAO_MEDIDAS",
                 "COMPOSICAO_MEDIDAS"};
         for (int tentativa = 0; tentativa < 30; tentativa++) {

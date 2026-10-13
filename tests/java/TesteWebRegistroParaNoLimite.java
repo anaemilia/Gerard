@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Regra de 2026-10-10 pela camada que as rotas web chamam (ServicoAtividadeWeb*, a mesma que /api/acoes/propor-valor
+ * Regra de 2026-10-10 pela camada que as rotas web chamam (ServicoAtividade*, a mesma que /api/acoes/propor-valor
  * e /api/acoes/escolher-operacao usam): ao atingir o limite de 3 rejeições consecutivas (valor da incógnita ou escolha
  * de operação) o registro para; a ação que atinge o limite ainda é persistida; reiniciar reabre.
  */
@@ -31,16 +31,16 @@ public final class TesteWebRegistroParaNoLimite {
         System.out.println("APROVADO: a web para de registrar no limite de 3 rejeições (incógnita e operação), registra a ação do limite e reabre ao reiniciar.");
     }
 
-    private static ServicoAtividadeWebComposicaoRelacoes preparar(Gravador g, EscopoTentativaWeb[] escopoSaida,
+    private static ServicoAtividadeComposicaoRelacoes preparar(Gravador g, EscopoTentativa[] escopoSaida,
             String[] alvoSaida, int[] valorSaida) {
         SituacaoProblemaAditiva situacao = null;
         for (SituacaoProblemaAditiva s : new RepositorioSituacoesAditivas().listarValidadas()) {
             if ("PO_COMPOSICAO_RELACOES_idades_642701604".equals(s.getId())) situacao = s;
         }
         exigir(situacao != null, "situação curada não encontrada");
-        EscopoTentativaWeb escopo = new EscopoTentativaWeb(new TentativaModelagemAditiva("t.web.limite"), g);
-        ServicoAtividadeWebComposicaoRelacoes servico =
-                new ServicoAtividadeWebComposicaoRelacoes("t.web.limite", situacao, escopo);
+        EscopoTentativa escopo = new EscopoTentativa(new TentativaModelagemAditiva("t.web.limite"), g);
+        ServicoAtividadeComposicaoRelacoes servico =
+                new ServicoAtividadeComposicaoRelacoes("t.web.limite", situacao, escopo);
         String alvo = new ResolvedorIncognitaCurada().resolver(situacao).getChaveEfetiva();
         @SuppressWarnings("unchecked")
         Map<String, Object> estado = servico.estadoAtual();
@@ -57,8 +57,8 @@ public final class TesteWebRegistroParaNoLimite {
     }
 
     private static void operacao() {
-        Gravador g = new Gravador(); EscopoTentativaWeb[] e = new EscopoTentativaWeb[1]; String[] a = new String[1]; int[] v = new int[1];
-        ServicoAtividadeWebComposicaoRelacoes servico = preparar(g, e, a, v);
+        Gravador g = new Gravador(); EscopoTentativa[] e = new EscopoTentativa[1]; String[] a = new String[1]; int[] v = new int[1];
+        ServicoAtividadeComposicaoRelacoes servico = preparar(g, e, a, v);
         servico.proporValor(a[0], v[0]);
         int base = g.registros.size();
         StringBuilder passos = new StringBuilder();
@@ -79,14 +79,14 @@ public final class TesteWebRegistroParaNoLimite {
     @SuppressWarnings("unchecked")
     private static void incognita() {
         final List<RegistroFactualAcaoInstrumental> registros = new ArrayList<RegistroFactualAcaoInstrumental>();
-        PortaRegistroAtividadeWeb porta = new PortaRegistroAtividadeWeb() {
+        PortaRegistroAtividade porta = new PortaRegistroAtividade() {
             public void registrarNovaSituacao(SituacaoProblemaAditiva s, String c, String e) { }
             public void registrarAcaoGranularUsuario(String a, String b, String c, String d,
                     String e, String f, String g, String h, String i) { }
             public void persistir(RegistroFactualAcaoInstrumental r) { registros.add(r); }
             public void registrarRestauracaoModelagem(gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem r) { }
         };
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new gerard.aplicacao.PoliticaSorteioSituacoesAditivas(),
                 new gerard.aplicacao.FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new gerard.campoaditivo.servico.CatalogoDefinicoesAditivas(),

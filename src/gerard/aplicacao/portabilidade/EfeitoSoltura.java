@@ -6,30 +6,30 @@ import java.util.Map;
 /**
  * O que acontece, depois de julgado correto, com um número solto sobre uma figura. Cada constante sabe aplicar o
  * seu efeito na atividade — quem solta não ramifica por tipo de figura. Os nomes são os ids das ações publicadas em
- * {@code acoes_disponiveis} (AcoesDisponiveisAtividadeWeb), que é o que a atividade oferece naquele momento.
+ * {@code acoes_disponiveis} (AcoesDisponiveisAtividade), que é o que a atividade oferece naquele momento.
  */
 public enum EfeitoSoltura {
     POSICIONAR_CONHECIDO {
         @Override
-        Map<String, Object> aplicar(ServicoAtividadeWebModelagemPapeis atividade, String papelId, String origemPapelId) {
+        Map<String, Object> aplicar(ServicoAtividadeModelagemPapeis atividade, String papelId, String origemPapelId) {
             return atividade.posicionarValorConhecido(papelId, origemPapelId);
         }
     },
     ENGATAR_INCOGNITA {
         @Override
-        Map<String, Object> aplicar(ServicoAtividadeWebModelagemPapeis atividade, String papelId, String origemPapelId) {
+        Map<String, Object> aplicar(ServicoAtividadeModelagemPapeis atividade, String papelId, String origemPapelId) {
             return atividade.engatarIncognita(papelId, origemPapelId);
         }
     },
     /** Posicionamento correto sem efeito oferecido agora: nada muda. */
     NENHUM {
         @Override
-        Map<String, Object> aplicar(ServicoAtividadeWebModelagemPapeis atividade, String papelId, String origemPapelId) {
+        Map<String, Object> aplicar(ServicoAtividadeModelagemPapeis atividade, String papelId, String origemPapelId) {
             return atividade.resultadoAceito();
         }
     };
 
-    abstract Map<String, Object> aplicar(ServicoAtividadeWebModelagemPapeis atividade, String papelId,
+    abstract Map<String, Object> aplicar(ServicoAtividadeModelagemPapeis atividade, String papelId,
             String origemPapelId);
 
     /** O efeito que a lista de ações disponíveis oferece para o papel; {@link #NENHUM} se nenhum. */

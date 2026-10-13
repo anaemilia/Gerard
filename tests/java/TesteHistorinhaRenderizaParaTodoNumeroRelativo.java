@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb;
+import gerard.aplicacao.portabilidade.ProjetorAjudaVisual;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
@@ -23,7 +23,7 @@ public class TesteHistorinhaRenderizaParaTodoNumeroRelativo {
         for (final SituacaoProblemaAditiva s : new RepositorioSituacoesAditivas().listarValidadas()) {
             boolean esperada = SemanticaCuradaSituacao.possuiNumeroRelativo(s) || s.getTipo().envolveTransformacao();
             if (!esperada) continue;
-            final List<Object> apoios = ProjetorAjudaVisualWeb.projetar(s, true);
+            final List<Object> apoios = ProjetorAjudaVisual.projetar(s, true);
             SwingUtilities.invokeAndWait(new Runnable() { public void run() {
                 try {
                     Dimension d = new Dimension(780, 520);

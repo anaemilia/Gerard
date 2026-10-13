@@ -18,13 +18,13 @@ import java.util.List;
  * figura.chave_papel_semantico em App.tsx) e o servidor aceitava cegamente
  * qualquer papel_id de destino, sem saber o que foi arrastado.
  */
-final class AvaliadorOrigemDestinoWeb {
+final class AvaliadorOrigemDestino {
     private static final CatalogoPapeisSemanticosAditivos CATALOGO =
             new CatalogoPapeisSemanticosAditivos();
 
     private final PortaQuestionamentoPosicionamento scaffolding;
 
-    AvaliadorOrigemDestinoWeb(PortaQuestionamentoPosicionamento scaffolding) {
+    AvaliadorOrigemDestino(PortaQuestionamentoPosicionamento scaffolding) {
         this.scaffolding = scaffolding == null
                 ? PortaQuestionamentoPosicionamento.NAO_APLICAVEL : scaffolding;
     }
@@ -37,7 +37,7 @@ final class AvaliadorOrigemDestinoWeb {
      */
     ResultadoQuestionamentoPosicionamento avaliar(
             String origemPapelId, String chavePapelAlvo, TipoSituacaoAditiva categoria,
-            List<String> participantes, EscopoTentativaWeb escopo) {
+            List<String> participantes, EscopoTentativa escopo) {
         ServicoLocalizacao localizacao = ServicoLocalizacao.getInstancia();
         String papelDoElementoNoDiagrama = localizacao.texto(chavePapelAlvo);
         String categoriaEscolhida = localizacao.descricaoTipo(categoria);
@@ -46,14 +46,14 @@ final class AvaliadorOrigemDestinoWeb {
         if (resultado != null && resultado.isAplicavel() && categoria != null && escopo != null) {
             escopo.persistir(CATALOGO.obterDescritor(origemPapelId).avaliarPosicionamento(
                     CATALOGO.obterDescritor(chavePapelAlvo), categoria,
-                    ContextosAcaoInstrumentalWeb.posicionamento(
+                    ContextosAcaoInstrumental.posicionamento(
                             origemPapelId, chavePapelAlvo, participantes)));
         }
         if (resultado != null && resultado.isAplicavel() && escopo != null) {
             if (resultado.isCorreto()) {
                 escopo.resolverPosicionamentoDe(origemPapelId);
             } else {
-                escopo.questionarPosicionamento(new PosicionamentoQuestionadoWeb(
+                escopo.questionarPosicionamento(new PosicionamentoQuestionado(
                         origemPapelId, chavePapelAlvo, resultado.getMensagem()));
             }
         }

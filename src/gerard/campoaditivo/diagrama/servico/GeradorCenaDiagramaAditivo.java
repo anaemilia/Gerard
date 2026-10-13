@@ -203,7 +203,7 @@ public class GeradorCenaDiagramaAditivo {
 
     /**
      * Direção em que o diagrama deve ser visualmente deslocado (via margem
-     * assimétrica no viewport, ver ServicoSorteioAtividadeWeb.projetarViewport)
+     * assimétrica no viewport, ver ServicoSorteioAtividade.projetarViewport)
      * quando o material concreto desta categoria está disponível — nunca uma
      * posição fixa igual para todas. Cada valor aqui vem de uma instrução
      * explícita da usuária, comparando a referência do desktop (onde o
@@ -214,7 +214,7 @@ public class GeradorCenaDiagramaAditivo {
      * - TRANSFORMACAO_MEDIDAS: DIREITA (2026-09-04, captura do desktop —
      *   mesma ideia, mas a colisão real fica do lado oposto nesta categoria).
      * As demais categorias ainda não têm material concreto portado para o
-     * web (ver comentário em ServicoSorteioAtividadeWeb.projetarAjudaContextual)
+     * web (ver comentário em ServicoSorteioAtividade.projetarAjudaContextual)
      * e não têm referência confirmada de direção — permanecem SEM_DESLOCAMENTO
      * até serem verificadas contra o desktop, em vez de inventar um valor.
      */
@@ -301,7 +301,7 @@ public class GeradorCenaDiagramaAditivo {
     /**
      * Palavras do enunciado marcadas/arrastáveis, via o mesmo
      * SegmentadorTextoSemantico já usado por Main.java
-     * (inicializarElementosTexto) e por ServicoSorteioAtividadeWeb — uma só
+     * (inicializarElementosTexto) e por ServicoSorteioAtividade — uma só
      * fonte para as duas plataformas, em vez de cada uma re-tokenizar por
      * conta própria. Sem geometria (x/y/largura/altura): quem consome decide
      * a apresentação (ver PainelEditorNarrativa no desktop).

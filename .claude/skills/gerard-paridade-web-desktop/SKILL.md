@@ -1,6 +1,6 @@
 ---
 name: gerard-paridade-web-desktop
-description: Verificação constante de paridade entre o Gérard desktop (Swing) e a web (API + React). Use SEMPRE que resolver, corrigir ou implementar qualquer coisa de modelagem, interação, log, ajuda ou conclusão em um dos dois lados — Main.java, handlers, src/gerard/ui, ServicoSorteioAtividadeWeb, ServidorPrototipoWeb, web-poc — porque o mesmo comportamento tem que ser verificado no outro cliente antes de declarar a questão resolvida. A web precisa ter toda a parte de modelagem que existe no desktop.
+description: Verificação constante de paridade entre o Gérard desktop (Swing) e a web (API + React). Use SEMPRE que resolver, corrigir ou implementar qualquer coisa de modelagem, interação, log, ajuda ou conclusão em um dos dois lados — Main.java, handlers, src/gerard/ui, ServicoSorteioAtividade, ServidorPrototipoWeb, web-poc — porque o mesmo comportamento tem que ser verificado no outro cliente antes de declarar a questão resolvida. A web precisa ter toda a parte de modelagem que existe no desktop.
 ---
 
 # Paridade web ↔ desktop
@@ -19,14 +19,14 @@ lado passe.
 1. **Classifique onde o comportamento vive**, em uma destas camadas:
    - *Domínio* (objeto rico: `TentativaModelagemAditiva`, `PapelQuantitativo`,
      `EscolhaConclusaoModelagem`…): corrige-se **uma vez**; os dois clientes herdam.
-   - *Projeção/API* (`ServicoSorteioAtividadeWeb`, `Projetor*Web`, gerador de cena): o
+   - *Projeção/API* (`ServicoSorteioAtividade`, `Projetor*Web`, gerador de cena): o
      servidor decide o que aparece e publica; vale para a web e, pela cena, para o desktop.
    - *Realização* (Swing em `Main`/`ui`, React em `web-poc/src`): só materializa o que o
      domínio e a API mandaram. Decisão na realização é defeito (ver
      `gerard-tela-via-gerador-de-cena` e `gerard-domain-model-first`).
 2. **Se está no domínio:** localize os consumidores nos dois lados e confira que **ambos**
-   passam pelo ponto corrigido (desktop: `Main`, handlers; web: `EscopoTentativaWeb.persistir`,
-   `ServicoAtividadeWeb*`). Cuidado com **várias portas para a mesma ação** (persistir,
+   passam pelo ponto corrigido (desktop: `Main`, handlers; web: `EscopoTentativa.persistir`,
+   `ServicoAtividade*`). Cuidado com **várias portas para a mesma ação** (persistir,
    encaminhar, logger): um fechamento só em uma delas perde a ação do limite — já aconteceu
    (2026-10-10). Verifique o resultado final no **log real**, não só no `constituir`.
 3. **Se está na realização:** olhe se o outro cliente tem o equivalente. Se não tem, **não

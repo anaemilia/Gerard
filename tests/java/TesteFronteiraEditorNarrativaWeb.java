@@ -8,7 +8,7 @@ public final class TesteFronteiraEditorNarrativaWeb {
         Path raiz = localizarRaiz();
         String editor = ler(raiz.resolve("web-poc/src/EditorNarrativa.tsx"));
         String servico = ler(raiz.resolve(
-                "src/gerard/aplicacao/portabilidade/ServicoSorteioAtividadeWeb.java"));
+                "src/gerard/aplicacao/portabilidade/ServicoSorteioAtividade.java"));
 
         exigir(servico.contains("modelo_palavra_comum"),
                 "A API deve publicar o descritor para palavras comuns novas.");

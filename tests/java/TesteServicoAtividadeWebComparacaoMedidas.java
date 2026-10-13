@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebComparacaoMedidas;
+import gerard.aplicacao.portabilidade.ServicoAtividadeComparacaoMedidas;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -18,8 +18,8 @@ public final class TesteServicoAtividadeWebComparacaoMedidas {
             }
         }
         exigir(situacao != null, "situação curada de comparação ausente");
-        ServicoAtividadeWebComparacaoMedidas servico =
-                new ServicoAtividadeWebComparacaoMedidas(
+        ServicoAtividadeComparacaoMedidas servico =
+                new ServicoAtividadeComparacaoMedidas(
                         "tentativa.web.teste.comparacao", situacao);
         Map<String, Object> estado = servico.estadoAtual();
         String alvo = String.valueOf(estado.get("papel_desconhecido_original"));

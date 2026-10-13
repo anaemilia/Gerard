@@ -1,7 +1,7 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
@@ -22,7 +22,7 @@ public final class TesteRestauracaoWebEncerraSequencia {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         PortaGravadora porta = new PortaGravadora();
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -99,7 +99,7 @@ public final class TesteRestauracaoWebEncerraSequencia {
         if (!condicao) throw new AssertionError(mensagem);
     }
 
-    private static final class PortaGravadora implements PortaRegistroAtividadeWeb {
+    private static final class PortaGravadora implements PortaRegistroAtividade {
         final List<RegistroFactualAcaoInstrumental> registros = new ArrayList<RegistroFactualAcaoInstrumental>();
         RegistroAcaoRestauracaoModelagem ultimaRestauracao;
         RegistroFactualAcaoInstrumental ultimo() { return registros.get(registros.size() - 1); }

@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebTransformacaoMedidas;
+import gerard.aplicacao.portabilidade.ServicoAtividadeTransformacaoMedidas;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -18,8 +18,8 @@ public final class TesteServicoAtividadeWebTransformacaoMedidas {
             }
         }
         exigir(situacao != null, "situação curada de transformação ausente");
-        ServicoAtividadeWebTransformacaoMedidas servico =
-                new ServicoAtividadeWebTransformacaoMedidas(
+        ServicoAtividadeTransformacaoMedidas servico =
+                new ServicoAtividadeTransformacaoMedidas(
                         "tentativa.web.teste.transformacao", situacao);
         Map<String, Object> estado = servico.estadoAtual();
         String alvo = String.valueOf(estado.get("papel_desconhecido_original"));

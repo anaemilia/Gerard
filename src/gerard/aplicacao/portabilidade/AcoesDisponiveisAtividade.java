@@ -7,8 +7,8 @@ import java.util.Map;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 
 /** Controles HTTP publicados pela aplicação; clientes apenas os materializam. */
-public final class AcoesDisponiveisAtividadeWeb {
-    private AcoesDisponiveisAtividadeWeb() {
+public final class AcoesDisponiveisAtividade {
+    private AcoesDisponiveisAtividade() {
     }
 
     public static List<Object> sorteios() {
@@ -75,11 +75,11 @@ public final class AcoesDisponiveisAtividadeWeb {
 
     /**
      * Vira a interação EDITAR_VALOR na figura (ver
-     * ServicoSorteioAtividadeWeb.projetarInteracoesPermitidas) — sem essa
+     * ServicoSorteioAtividade.projetarInteracoesPermitidas) — sem essa
      * ação em acoes_disponiveis, a caixa da incógnita fica engatada (o "?"
      * aparece) mas o duplo-clique nunca abre a digitação: achado ao
-     * comparar ServicoAtividadeWebComposicaoRelacoes (só chamava
-     * acaoEngatarIncognita) com ServicoAtividadeWebComparacaoMedidas (usa
+     * comparar ServicoAtividadeComposicaoRelacoes (só chamava
+     * acaoEngatarIncognita) com ServicoAtividadeComparacaoMedidas (usa
      * modelagemPapel, que já inclui isso).
      */
     public static List<Object> acaoProporValorPapel(String papelAlvo) {
@@ -102,7 +102,7 @@ public final class AcoesDisponiveisAtividadeWeb {
      * Duas opções pré-preenchidas (mesmo padrão de confirmacaoCategoria) —
      * escolher explicitamente positivo ou negativo para o papel revelado
      * que precisa de representação de sinal (ver
-     * ServicoAtividadeWebComSinal.escolherSinalNumeroRelativo).
+     * ServicoAtividadeComSinal.escolherSinalNumeroRelativo).
      */
     public static List<Object> acaoEscolherSinal(String papelAlvo) {
         List<Object> acoes = new ArrayList<Object>();
@@ -132,9 +132,9 @@ public final class AcoesDisponiveisAtividadeWeb {
     /**
      * Só o item ESCOLHER_OPERACAO_RELACAO (sem sorteios/reiniciar) — para
      * categorias que já montam sua própria lista base por outro caminho
-     * (ver ServicoAtividadeWebTransformacaoRelacao, cujo segundo gate de
+     * (ver ServicoAtividadeTransformacaoRelacao, cujo segundo gate de
      * conclusão é independente da modelagem por incógnita, e
-     * ServicoAtividadeWebComposicaoTransformacoes, cujas duas etapas podem
+     * ServicoAtividadeComposicaoTransformacoes, cujas duas etapas podem
      * estar ativas/inativas de forma independente).
      */
     public static List<Object> acaoEscolherOperacaoRelacao() {

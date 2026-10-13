@@ -1,5 +1,5 @@
 import gerard.aplicacao.DecisorAjudaVisual;
-import gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb;
+import gerard.aplicacao.portabilidade.ProjetorAjudaVisual;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.ConectorDiagrama;
 import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
@@ -31,7 +31,7 @@ public class TesteArgumentosHistorinhaPorIdioma {
             CenaDiagramaAditivo base = new CenaDiagramaAditivo(null, "",
                     new ArrayList<FiguraDiagrama>(), new ArrayList<ConectorDiagrama>());
             CenaDiagramaAditivo cena = gerador.comApoiosVisuais(base, decididos, s.getTipo(), s, s.getCodigoIdioma());
-            Map<String, Object> item = (Map<String, Object>) ProjetorAjudaVisualWeb.projetar(cena).get(0);
+            Map<String, Object> item = (Map<String, Object>) ProjetorAjudaVisual.projetar(cena).get(0);
             String[] esperados = {s.getFragmentoTexto1(), s.getFragmentoTexto2(), s.getFragmentoTexto3(),
                     s.getFragmentoTexto4(), s.getFragmentoTexto5(), s.getFragmentoTexto6()};
             List<String> curados = new ArrayList<String>();
@@ -61,7 +61,7 @@ public class TesteArgumentosHistorinhaPorIdioma {
             // O idioma pedido diferente do da situação não empresta texto de outro idioma.
             CenaDiagramaAditivo outra = gerador.comApoiosVisuais(base, decididos, s.getTipo(), s,
                     "xx-YY");
-            exigir(!((Map<String, Object>) ProjetorAjudaVisualWeb.projetar(outra).get(0)).containsKey("trechos"),
+            exigir(!((Map<String, Object>) ProjetorAjudaVisual.projetar(outra).get(0)).containsKey("trechos"),
                     "idioma diferente do da situação não entrega trechos: " + s.getId());
             // A decisão em si não muda com o idioma.
             exigir(item.get("tipo").equals("HISTORINHA_ILUSTRADA"), "ilustração independente do idioma: " + s.getId());

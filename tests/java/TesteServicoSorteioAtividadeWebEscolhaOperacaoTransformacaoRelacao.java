@@ -1,6 +1,6 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
@@ -12,11 +12,11 @@ import java.util.Random;
 /**
  * Cobre o segundo gate de Transformação de Relação (auditoria de
  * acoplamento Main/web, 2026-09-19) passando pela camada de fato exposta ao
- * HTTP -- {@link ServicoSorteioAtividadeWeb}, não
- * {@code ServicoAtividadeWebTransformacaoRelacao} direto.
+ * HTTP -- {@link ServicoSorteioAtividade}, não
+ * {@code ServicoAtividadeTransformacaoRelacao} direto.
  *
  * Essa distinção importa de verdade: um bug real só apareceu aqui.
- * {@link ServicoSorteioAtividadeWeb#possuiAtividadeEscolhaOperacaoAtiva()}
+ * {@link ServicoSorteioAtividade#possuiAtividadeEscolhaOperacaoAtiva()}
  * checava só o slot antigo (atividadeEscolhaOperacao), nunca
  * atividadeModelagem -- e {@code ServidorPrototipoWeb.escolherOperacao}
  * consulta exatamente esse método antes de despachar a requisição HTTP.
@@ -27,7 +27,7 @@ import java.util.Random;
 public final class TesteServicoSorteioAtividadeWebEscolhaOperacaoTransformacaoRelacao {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -81,11 +81,11 @@ public final class TesteServicoSorteioAtividadeWebEscolhaOperacaoTransformacaoRe
         servico.proporValor(alvo, somaEstrutural);
 
         System.out.println("APROVADO: escolha de operação de Transformação de Relação "
-                + "funciona pela camada ServicoSorteioAtividadeWeb (mesmo portão do HTTP).");
+                + "funciona pela camada ServicoSorteioAtividade (mesmo portão do HTTP).");
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> localizarBonecas(ServicoSorteioAtividadeWeb servico) {
+    private static Map<String, Object> localizarBonecas(ServicoSorteioAtividade servico) {
         for (int tentativa = 0; tentativa < 60; tentativa++) {
             Map<String, Object> estado = servico.sortearRelacoes();
             String enunciado = String.valueOf(estado.get("enunciado"));

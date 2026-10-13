@@ -1,6 +1,6 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
@@ -13,7 +13,7 @@ import java.util.Random;
 @SuppressWarnings("unchecked")
 public final class TesteAjusteEixoComparacaoWeb {
     public static void main(String[] args) {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -104,7 +104,7 @@ public final class TesteAjusteEixoComparacaoWeb {
     }
 
     private static Map<String, Object> acertarComparacaoMedidas(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         for (int tentativa = 0; tentativa < 40; tentativa++) {
             servico.sortearMedidas();
             Map<String, Object> resultado = servico.escolherCategoria("COMPARACAO_MEDIDAS");

@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoTransformacoes;
+import gerard.aplicacao.portabilidade.ServicoAtividadeComposicaoTransformacoes;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor;
 import gerard.campoaditivo.curadoria.sinal.OpcaoOperacaoCuradoria;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * Fase 2 da retomada da versão web: cobre
- * {@link ServicoAtividadeWebComposicaoTransformacoes}, o serviço de
+ * {@link ServicoAtividadeComposicaoTransformacoes}, o serviço de
  * aplicação que expõe Composição de Transformações na web com o paradigma
  * fiel ao desktop — os papéis posicionados antes da escolha, aluno escolhe a
  * operação certa em duas etapas sequenciais. Usa a mesma situação curada real
@@ -31,8 +31,8 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
         // estados não — situacoes_vergnaud.tsv não cura estado_inicial/
         // estado_intermediario/estado_final para COMPOSICAO_TRANSFORMACOES,
         // e AvaliacaoEscolhaOperacaoRelacao não precisa deles ---
-        ServicoAtividadeWebComposicaoTransformacoes servico =
-                new ServicoAtividadeWebComposicaoTransformacoes(
+        ServicoAtividadeComposicaoTransformacoes servico =
+                new ServicoAtividadeComposicaoTransformacoes(
                         "tentativa.teste.composicao_transformacoes", situacao);
         String alvoIncognita = new gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada()
                 .resolver(situacao).getChaveEfetiva();
@@ -53,7 +53,7 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
             // Toda transformação precisa de representação de sinal
             // (auditoria de acoplamento Main/web, 2026-09-19) — posicionar
             // só revela a magnitude; o sinal exige escolha explícita, mesmo
-            // protocolo já usado por ServicoAtividadeWebComparacaoMedidas.
+            // protocolo já usado por ServicoAtividadeComparacaoMedidas.
             if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
                 int valorCurado = SemanticaCuradaSituacao.buscar(situacao, null, id).getValorInteiro();
                 servico.escolherSinalNumeroRelativo(id, valorCurado < 0 ? "-" : "+");
@@ -150,7 +150,7 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
         incognitaSemOperacaoCurada(validadas, "PO_COMPOSICAO_TRANSFORMACOES_figurinhas_2105853102");
         incognitaSemOperacaoCurada(validadas, "PO_COMPOSICAO_TRANSFORMACAO_MEDIDAS_flores_422431114");
 
-        System.out.println("APROVADO: ServicoAtividadeWebComposicaoTransformacoes cobre "
+        System.out.println("APROVADO: ServicoAtividadeComposicaoTransformacoes cobre "
                 + "sequenciamento, acerto/erro nas duas etapas, a incógnita sem operação curada e reinício.");
     }
 
@@ -160,8 +160,8 @@ public final class TesteServicoAtividadeWebComposicaoTransformacoes {
      */
     private static void incognitaSemOperacaoCurada(List<SituacaoProblemaAditiva> validadas, String id) {
         SituacaoProblemaAditiva situacao = localizar(validadas, id);
-        ServicoAtividadeWebComposicaoTransformacoes servico =
-                new ServicoAtividadeWebComposicaoTransformacoes("tentativa.teste." + id, situacao);
+        ServicoAtividadeComposicaoTransformacoes servico =
+                new ServicoAtividadeComposicaoTransformacoes("tentativa.teste." + id, situacao);
         String alvo = new gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada()
                 .resolver(situacao).getChaveEfetiva();
         exigir(Boolean.FALSE.equals(servico.estadoAtual().get("concluida")),

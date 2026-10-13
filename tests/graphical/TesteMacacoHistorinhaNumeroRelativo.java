@@ -19,7 +19,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb;
+import gerard.aplicacao.portabilidade.ProjetorAjudaVisual;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.diagrama.elementos.ElementoTextoMovel;
 import gerard.campoaditivo.diagrama.elementos.ElementoVergnaud;
@@ -173,8 +173,8 @@ public class TesteMacacoHistorinhaNumeroRelativo {
     static void conduzir(SituacaoProblemaAditiva s) throws Exception {
         String id = s.getId();
         String tipo = s.getTipo().name();
-        String esperado = ProjetorAjudaVisualWeb.projetar(s, true).isEmpty() ? "-"
-                : String.valueOf(((Map<?, ?>) ProjetorAjudaVisualWeb.projetar(s, true).get(0)).get("tipo"));
+        String esperado = ProjetorAjudaVisual.projetar(s, true).isEmpty() ? "-"
+                : String.valueOf(((Map<?, ?>) ProjetorAjudaVisual.projetar(s, true).get(0)).get("tipo"));
         boolean porOperacao = seletorOperacaoAtivo();
         String caminho = porOperacao ? "operacao" : "valor";
         System.out.println("== " + id + " (" + caminho + ")");
@@ -245,7 +245,7 @@ public class TesteMacacoHistorinhaNumeroRelativo {
     static String[] apoioNaTela() throws Exception {
         final String[] v = {"", "", ""};
         SwingUtilities.invokeAndWait(new Runnable() { public void run() {
-            java.util.List<Object> proj = ProjetorAjudaVisualWeb.projetar(t.cenaDiagramaAtual);
+            java.util.List<Object> proj = ProjetorAjudaVisual.projetar(t.cenaDiagramaAtual);
             if (!proj.isEmpty()) {
                 Map<?, ?> m = (Map<?, ?>) proj.get(0);
                 v[0] = String.valueOf(m.get("tipo"));

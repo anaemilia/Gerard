@@ -10,9 +10,9 @@ import gerard.dominio.campoaditivo.PapelQuantitativo;
  * Esqueleto comum das atividades de modelagem por papéis: o que acontece com um número solto sobre uma figura é
  * decidido aqui, uma vez, para todas as categorias. Cada categoria só declara o que é dela — quais são os seus
  * papéis ({@link #papelPorChave}) e como revela o valor curado de um papel conhecido ({@link #posicionarConhecido}).
- * O julgamento (posicionamento certo ou incorreto) acontece antes, em ServicoSorteioAtividadeWeb.julgarSoltura.
+ * O julgamento (posicionamento certo ou incorreto) acontece antes, em ServicoSorteioAtividade.julgarSoltura.
  */
-abstract class ServicoAtividadeWebModelagemPapeis implements ServicoAtividadeWeb {
+abstract class ServicoAtividadeModelagemPapeis implements ServicoAtividade {
     /** null quando a situação não tem incógnita curada resolvível. */
     protected PapelQuantitativo papelDesconhecido;
     /**
@@ -21,7 +21,7 @@ abstract class ServicoAtividadeWebModelagemPapeis implements ServicoAtividadeWeb
      */
     protected boolean incognitaEngatada;
     /**
-     * Papel conhecido que precisa de representação de sinal (ver ServicoAtividadeWebComSinal), já revelado mas ainda
+     * Papel conhecido que precisa de representação de sinal (ver ServicoAtividadeComSinal), já revelado mas ainda
      * sem sinal escolhido; nunca aplicado de imediato como os demais. null nas categorias sem sinal.
      */
     protected PapelQuantitativo papelAguardandoSinal;
@@ -85,7 +85,7 @@ abstract class ServicoAtividadeWebModelagemPapeis implements ServicoAtividadeWeb
 
     final Map<String, Object> resultadoAceito() {
         Map<String, Object> resultado = new LinkedHashMap<String, Object>();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("schema", ServicoAtividadeComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.TRUE);
         resultado.put("chave_mensagem", null);
         resultado.put("estado", estadoAtual());

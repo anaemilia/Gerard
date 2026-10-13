@@ -25,9 +25,9 @@ import java.util.Map;
  * {@link HistorinhaAjudaVisual}): aqui ela é entregue como está; resolvê-la em arquivo,
  * incluindo variante de idioma, é trabalho do adaptador de cada plataforma.
  */
-public final class ProjetorAjudaVisualWeb {
+public final class ProjetorAjudaVisual {
 
-    private ProjetorAjudaVisualWeb() {
+    private ProjetorAjudaVisual() {
     }
 
     public static boolean deveAcionar(SituacaoProblemaAditiva situacao, boolean escaladaNoLimite) {

@@ -6,11 +6,11 @@ import gerard.i18n.ServicoLocalizacao;
  * Único ponto do pacote portabilidade que resolve texto localizado dos tips
  * de i18n puro (dica de pré-classificação, material concreto) — sem
  * depender do scaffolding concreto do menu "E agora?", que hoje fica atrás
- * de {@link PortaAjudaContextual} (ver ServicoSorteioAtividadeWeb). Mesmo
- * padrão já usado por MensagemFeedbackIncognitaWeb neste pacote.
+ * de {@link PortaAjudaContextual} (ver ServicoSorteioAtividade). Mesmo
+ * padrão já usado por MensagemFeedbackIncognita neste pacote.
  */
-final class AjudaContextualWeb {
-    private AjudaContextualWeb() {
+final class AjudaContextual {
+    private AjudaContextual() {
     }
 
     /**

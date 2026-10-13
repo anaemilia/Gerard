@@ -12,11 +12,11 @@ import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
 import gerard.dominio.campoaditivo.CatalogoNecessidadeRepresentacaoDeSinal;
 import gerard.dominio.campoaditivo.ContextoAcao;
 import gerard.dominio.campoaditivo.DiagnosticoErroPapel;
-import gerard.dominio.campoaditivo.FabricaPapeisComparacaoMedidas;
+import gerard.dominio.campoaditivo.FabricaPapeisTransformacaoMedidas;
 import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
-import gerard.dominio.campoaditivo.RelacaoEstruturalComparacao;
+import gerard.dominio.campoaditivo.RelacaoEstruturalTransformacao;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
 import gerard.dominio.campoaditivo.evento.PublicadorEventoDominio;
 import gerard.i18n.ServicoLocalizacao;
@@ -27,63 +27,63 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Tentativa web portátil de Comparação de Medidas. */
-public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividadeWebModelagemPapeis
-        implements ServicoAtividadeWebComSinal {
+/** Tentativa web portátil de Transformação de Medidas. */
+public final class ServicoAtividadeTransformacaoMedidas extends ServicoAtividadeModelagemPapeis
+        implements ServicoAtividadeComSinal {
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
-    private final EscopoTentativaWeb escopo;
+    private final EscopoTentativa escopo;
     private IncognitaQuantitativa incognita;
-    private SinalNumeroRelativoWeb sinais;
-    private PapelQuantitativo referido;
-    private PapelQuantitativo valorRelativo;
-    private PapelQuantitativo referendo;
-    private RelacaoEstruturalComparacao relacao;
-    // Papel conhecido que precisa de representação de sinal (ver
-    // ServicoAtividadeWebComSinal) já revelado (arrastado) mas ainda sem
-    // sinal escolhido — mesmo protocolo do desktop (menu de escolha de
-    // sinal), nunca aplicado de imediato como os demais papéis conhecidos.
+    private SinalNumeroRelativo sinais;
+    private PapelQuantitativo estadoInicial;
+    private PapelQuantitativo transformacao;
+    private PapelQuantitativo estadoFinal;
+    private RelacaoEstruturalTransformacao relacao;
+    // Ver ServicoAtividadeComparacaoMedidas — mesmo protocolo de
+    // sinal-aguardando-escolha para o papel "transformacao" (que precisa de
+    // representação de sinal nesta categoria).
     private Integer valorCuradoAguardandoSinal;
 
-    public ServicoAtividadeWebComparacaoMedidas(String tentativaId,
+    public ServicoAtividadeTransformacaoMedidas(String tentativaId,
             SituacaoProblemaAditiva situacao) {
-        this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
+        this(tentativaId, situacao, EscopoTentativa.isolado(tentativaId));
     }
 
-    public ServicoAtividadeWebComparacaoMedidas(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+    public ServicoAtividadeTransformacaoMedidas(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo) {
         this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
     }
 
-    public ServicoAtividadeWebComparacaoMedidas(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+    public ServicoAtividadeTransformacaoMedidas(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo,
             PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null
-                || situacao.getTipo() != TipoSituacaoAditiva.COMPARACAO_MEDIDAS) {
+                || situacao.getTipo() != TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS) {
             throw new IllegalArgumentException(
-                    "situação de Comparação de Medidas é obrigatória");
+                    "situação de Transformação de Medidas é obrigatória");
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
-        this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.escopo = escopo == null ? EscopoTentativa.isolado(tentativaId) : escopo;
         reiniciar();
     }
 
     public synchronized Map<String, Object> estadoAtual() {
         Map<String, Object> estado = mapa();
-        estado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_ESTADO);
+        estado.put("schema", ServicoAtividadeComposicao.SCHEMA_ESTADO);
         estado.put("situacao_id", situacao.getId());
         estado.put("tentativa_id", tentativaId);
-        estado.put("categoria", TipoSituacaoAditiva.COMPARACAO_MEDIDAS.name());
+        estado.put("categoria", TipoSituacaoAditiva.TRANSFORMACAO_MEDIDAS.name());
         estado.put("relacao", relacao.descreverRelacao());
         estado.put("papel_desconhecido_original", papelDesconhecido.getChave());
         List<Object> papeis = new ArrayList<Object>();
-        papeis.add(projetarPapel(referido));
-        papeis.add(projetarPapel(valorRelativo));
-        papeis.add(projetarPapel(referendo));
+        papeis.add(projetarPapel(estadoInicial));
+        papeis.add(projetarPapel(transformacao));
+        papeis.add(projetarPapel(estadoFinal));
         estado.put("papeis", papeis);
         boolean concluida = papelDesconhecido.estaPreenchido()
-                && relacao.verificarConsistencia(referido, valorRelativo, referendo)
+                && relacao.verificarConsistencia(
+                        estadoInicial, transformacao, estadoFinal)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
         estado.put("papel_aguardando_sinal",
@@ -97,33 +97,29 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
                 Boolean.valueOf(papelDesconhecido.estaBloqueadoPorLimiteTentativas()));
         estado.put("magnitude_aguardando_sinal", valorCuradoAguardandoSinal == null
                 ? null : Integer.valueOf(Math.abs(valorCuradoAguardandoSinal.intValue())));
-        // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
+        // Protocolo de mouse é posicionar (ver ServicoAtividadeComposicao):
         // os papéis conhecidos não vêm pré-preenchidos, só a incógnita fica
         // disponível depois dos outros dois estarem posicionados.
         boolean papeisConhecidosProntos = todosOsConhecidosPreenchidos();
-        List<Object> acoes = AcoesDisponiveisAtividadeWeb.modelagemPapel(
+        List<Object> acoes = AcoesDisponiveisAtividade.modelagemPapel(
                 concluida || !papeisConhecidosProntos, papelDesconhecido.getChave());
         if (papelAguardandoSinal != null) {
-            // Enquanto o sinal não é escolhido, nenhuma outra ação de
-            // posicionamento fica disponível para este papel — mesmo
-            // protocolo do desktop (o menu de escolha de sinal é modal à
-            // interação, ainda que não bloqueie o restante da tela).
-            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherSinal(papelAguardandoSinal.getChave()));
+            acoes.addAll(AcoesDisponiveisAtividade.acaoEscolherSinal(papelAguardandoSinal.getChave()));
         } else if (!papeisConhecidosProntos) {
-            for (PapelQuantitativo papel : new PapelQuantitativo[] {referido, valorRelativo, referendo}) {
+            for (PapelQuantitativo papel : new PapelQuantitativo[] {estadoInicial, transformacao, estadoFinal}) {
                 if (papel != papelDesconhecido && !papel.estaPreenchido()) {
-                    acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
+                    acoes.addAll(AcoesDisponiveisAtividade.acaoPosicionarConhecido(papel.getChave()));
                 }
             }
         } else if (!concluida) {
-            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
+            acoes.addAll(AcoesDisponiveisAtividade.acaoEngatarIncognita(papelDesconhecido.getChave()));
         }
         estado.put("acoes_disponiveis", acoes);
         return estado;
     }
 
     private boolean todosOsConhecidosPreenchidos() {
-        for (PapelQuantitativo papel : new PapelQuantitativo[] {referido, valorRelativo, referendo}) {
+        for (PapelQuantitativo papel : new PapelQuantitativo[] {estadoInicial, transformacao, estadoFinal}) {
             if (papel != papelDesconhecido && !papel.estaPreenchido()) {
                 return false;
             }
@@ -131,16 +127,7 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
         return true;
     }
 
-    /**
-     * Escolhe explicitamente o sinal do papel revelado por
-     * posicionarConhecido/posicionarValorConhecido que precisa de
-     * representação de sinal — mesmo protocolo do desktop
-     * (ScaffoldingNumeroRelativo.mostrarMenuEscolhaSinal, Main.java): a
-     * escolha do estudante é sempre aplicada (nunca desfeita), e só diverge
-     * do sinal curado gera um aviso não-bloqueante (mesma chave
-     * ui.tooltip.relativeSign.confirm do desktop,
-     * informarSuspeitaSinalIncorretoNumeroRelativo).
-     */
+    /** Ver ServicoAtividadeComparacaoMedidas.escolherSinalNumeroRelativo. */
     public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
         if (papelAguardandoSinal == null || !papelAguardandoSinal.getChave().equals(papelId)) {
             throw new IllegalStateException(
@@ -162,7 +149,7 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
         papelAguardandoSinal = null;
         valorCuradoAguardandoSinal = null;
         Map<String, Object> resultado = mapa();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("schema", ServicoAtividadeComposicao.SCHEMA_RESULTADO);
         resultado.put("aceita", Boolean.valueOf(!diagnostico.isPresent()));
         resultado.put("mensagem_sinal_divergente", sinalDivergeDoCurado
                 ? ServicoLocalizacao.getInstancia().formatar("ui.tooltip.relativeSign.confirm", sinal)
@@ -178,9 +165,9 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
         }
-        Map<String, Object> resultado = RespostaConfirmacaoValorWeb.responder(
+        Map<String, Object> resultado = RespostaConfirmacaoValor.responder(
                 incognita, confirmou, new NumeroInteiro(valor), valorEsperado(),
-                ContextosAcaoInstrumentalWeb.respostaConfirmacao(
+                ContextosAcaoInstrumental.respostaConfirmacao(
                         papelId, confirmou, valor, participantes()),
                 escopo);
         resultado.put("estado", estadoAtual());
@@ -193,9 +180,9 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
                     "papel não é a incógnita desta situação: " + papelId);
         }
         NumeroInteiro proposta = new NumeroInteiro(valor);
-        ValorIncognitaWeb.Resultado avaliacao = ValorIncognitaWeb.propor(
+        ValorIncognita.Resultado avaliacao = ValorIncognita.propor(
                 incognita, proposta, valorEsperado(),
-                ContextosAcaoInstrumentalWeb.valorIncognita(papelId, valor, participantes()),
+                ContextosAcaoInstrumental.valorIncognita(papelId, valor, participantes()),
                 escopo);
         if (avaliacao.isAceita()) {
             ContextoAcao contexto = new ContextoAcao(
@@ -210,12 +197,12 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
 
 
     public synchronized Map<String, Object> reiniciar() {
-        referido = FabricaPapeisComparacaoMedidas
-                .referido(PublicadorEventoDominio.NENHUM);
-        valorRelativo = FabricaPapeisComparacaoMedidas
-                .valorRelativo(PublicadorEventoDominio.NENHUM);
-        referendo = FabricaPapeisComparacaoMedidas
-                .referendo(PublicadorEventoDominio.NENHUM);
+        estadoInicial = FabricaPapeisTransformacaoMedidas
+                .estadoInicial(PublicadorEventoDominio.NENHUM);
+        transformacao = FabricaPapeisTransformacaoMedidas
+                .transformacao(PublicadorEventoDominio.NENHUM);
+        estadoFinal = FabricaPapeisTransformacaoMedidas
+                .estadoFinal(PublicadorEventoDominio.NENHUM);
         ResolvedorIncognitaCurada.Resultado incognita =
                 new ResolvedorIncognitaCurada().resolver(situacao);
         if (!incognita.possuiIncognita() || incognita.possuiConflito()) {
@@ -226,15 +213,15 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
         // Nada é pré-posicionado — protocolo de mouse é posicionar: o aluno
         // arrasta cada papel (conhecido ou incógnita) do enunciado até o
         // diagrama (ver posicionarValorConhecido / proporValor).
-        relacao = RelacaoEstruturalComparacao.comparacaoDeMedidas();
+        relacao = RelacaoEstruturalTransformacao.transformacaoDeMedidas();
         incognitaEngatada = false;
         papelAguardandoSinal = null;
         valorCuradoAguardandoSinal = null;
-        escopo.incorporar(referido, valorRelativo, referendo);
+        escopo.incorporar(estadoInicial, transformacao, estadoFinal);
         this.incognita = papelDesconhecido == null ? null
                 : new IncognitaQuantitativa(papelDesconhecido.getChave(),
                         situacao.getTipo(), papelDesconhecido);
-        sinais = new SinalNumeroRelativoWeb(situacao);
+        sinais = new SinalNumeroRelativo(situacao);
         return estadoAtual();
     }
 
@@ -263,11 +250,11 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
 
     @Override
     protected PapelQuantitativo papelPorChave(String chave) {
-        if (referido.getChave().equals(chave)) return referido;
-        if (valorRelativo.getChave().equals(chave)) return valorRelativo;
-        if (referendo.getChave().equals(chave)) return referendo;
+        if (estadoInicial.getChave().equals(chave)) return estadoInicial;
+        if (transformacao.getChave().equals(chave)) return transformacao;
+        if (estadoFinal.getChave().equals(chave)) return estadoFinal;
         throw new IllegalStateException(
-                "papel incompatível com Comparação de Medidas: " + chave);
+                "papel incompatível com Transformação de Medidas: " + chave);
     }
 
     private Map<String, Object> projetarPapel(PapelQuantitativo papel) {
@@ -289,12 +276,12 @@ public final class ServicoAtividadeWebComparacaoMedidas extends ServicoAtividade
     /** O valor esperado da incógnita é calculado pela relação estrutural. */
     private ValorNumerico valorEsperado() {
         gerard.dominio.campoaditivo.ResultadoCalculo calculo =
-                relacao.calcularValorAusente(referido, valorRelativo, referendo);
+                relacao.calcularValorAusente(estadoInicial, transformacao, estadoFinal);
         return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
     }
 
     private List<String> participantes() {
-        return Arrays.asList(referido.getChave(), valorRelativo.getChave(), referendo.getChave());
+        return Arrays.asList(estadoInicial.getChave(), transformacao.getChave(), estadoFinal.getChave());
     }
 
 }

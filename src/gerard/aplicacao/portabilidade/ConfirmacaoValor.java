@@ -10,7 +10,7 @@ import java.util.Map;
  * {0}?"), usado por confirmarValorIncognitaAceito/confirmarValorIncognitaTexto
  * (Main.java) ao final do protocolo mouse-texto. Único ponto do pacote
  * portabilidade que resolve esse texto — mesmo padrão de centralização já
- * aplicado a AjudaContextualWeb: ServicoSorteioAtividadeWeb decide apenas
+ * aplicado a AjudaContextual: ServicoSorteioAtividade decide apenas
  * onde/quando esse campo aparece no estado, nunca chama ServicoLocalizacao
  * diretamente para isso.
  *
@@ -21,8 +21,8 @@ import java.util.Map;
  * é o nome conceitual localizado do papel (mesmo texto que
  * localizacao.texto(papelAlvo) resolveria no desktop).
  */
-final class ConfirmacaoValorWeb {
-    private ConfirmacaoValorWeb() {
+final class ConfirmacaoValor {
+    private ConfirmacaoValor() {
     }
 
     static String perguntaParaCena(Object cena) {

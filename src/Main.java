@@ -7211,7 +7211,7 @@ public class Main extends JFrame {
                     tipoSituacaoSelecionada, situacaoProblemaAtual,
                     situacaoProblemaAtual == null ? null : situacaoProblemaAtual.getCodigoIdioma());
             java.util.List<Object> ajudaVisual =
-                    gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb.projetar(cenaDiagramaAtual);
+                    gerard.aplicacao.portabilidade.ProjetorAjudaVisual.projetar(cenaDiagramaAtual);
             if (ajudaVisual.isEmpty()) {
                 ocultarHistorinhasDoPainelComplementar();
                 return;

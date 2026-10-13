@@ -5,7 +5,7 @@ import gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamen
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.adaptacao.sessao.SessaoAdaptativaUsuario;
 import gerard.agente.modelador.RepositorioRegrasAdaptativasPublicadas;
 import gerard.agente.modelousuario.Genero;
@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class ServidorPrototipoWeb {
     // Raiz de composição: a infraestrutura fornece as implementações das portas
     // da aplicação (registro, ajuda contextual e questionamento de posicionamento).
-    private final ServicoSorteioAtividadeWeb sorteios =
-            new ServicoSorteioAtividadeWeb(new RegistradorAtividadeWebLogGerard(),
+    private final ServicoSorteioAtividade sorteios =
+            new ServicoSorteioAtividade(new RegistradorAtividadeWebLogGerard(),
                     new AdaptadorAjudaContextualWeb(),
                     new AdaptadorQuestionamentoPosicionamentoWeb());
     private final Path raizWeb;
@@ -147,7 +147,7 @@ public final class ServidorPrototipoWeb {
         }
         // Carga inicial entra pelo fluxo de classificação (sorteios), nunca
         // pelo widget fixo legado (atividade) — diagrama só depois de a
-        // categoria ser acertada, ver ServicoSorteioAtividadeWeb.estadoInicial.
+        // categoria ser acertada, ver ServicoSorteioAtividade.estadoInicial.
         responder(troca, 200, sorteios.estadoInicial());
     }
 

@@ -81,8 +81,8 @@ em silêncio (sem tip nem sequenciador). Não há trava em controlador
 (`foiAtingida`/`RETOMADA_EXPLORACAO` foram revertidos). Na web, após a
 conclusão só restam sorteios, reiniciar e o eixo (projeção exploratória).
 Desde a persistência web (mesmo dia), a web usa o mesmo dono: cada sorteio
-cria uma `TentativaModelagemAditiva` (`EscopoTentativaWeb`), os papéis dos
-serviços web são incorporados a ela e `ServicoSorteioAtividadeWeb` a encerra
+cria uma `TentativaModelagemAditiva` (`EscopoTentativa`), os papéis dos
+serviços web são incorporados a ela e `ServicoSorteioAtividade` a encerra
 quando a atividade da categoria fica concluída; após isso nada é gravado e a
 web não pergunta Sim/Não (o cliente só pergunta quando o servidor devolve a
 pergunta).
@@ -93,9 +93,9 @@ contra 0→1 antes do azul).
 
 ## Restauração web antes da recriação dos papéis (2026-09-29)
 
-`EscopoTentativaWeb` conhece por `incorporar` os papéis da atividade corrente
+`EscopoTentativa` conhece por `incorporar` os papéis da atividade corrente
 e entrega essa fotografia a `TentativaModelagemAditiva.restaurar`, que captura
-e encerra as sequências abertas antes de `ServicoAtividadeWeb.reiniciar`
+e encerra as sequências abertas antes de `ServicoAtividade.reiniciar`
 recriar os objetos. A mudança não altera
 valores reconciliados, fórmulas ou o modo exploratório após a conclusão.
 

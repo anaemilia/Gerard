@@ -23,7 +23,7 @@ import java.util.Map;
  * Medidas. Coordena a ação, mas deixa o diagnóstico com a relação estrutural
  * e a validação local com o papel quantitativo.
  */
-public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebModelagemPapeis {
+public final class ServicoAtividadeComposicao extends ServicoAtividadeModelagemPapeis {
     private static final String SITUACAO_CURADA_ID =
             "PO_COMPOSICAO_MEDIDAS_bolas_1098018440";
     public static final String SCHEMA_ESTADO = "gerard.atividade-web.estado.v1";
@@ -35,7 +35,7 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
     private RelacaoEstruturalComposicao relacao;
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
-    private final EscopoTentativaWeb escopo;
+    private final EscopoTentativa escopo;
     private IncognitaQuantitativa incognita;
     // Rascunho da contagem de quadradinhos — NUNCA grava em papelDesconhecido
     // (PapelQuantitativo.posicionar marcaria o papel como preenchido, tirando-o
@@ -46,40 +46,40 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
     // PROPOR_VALOR_PAPEL grava de verdade.
     private int contagemMaterialConcreto;
 
-    public ServicoAtividadeWebComposicao() {
+    public ServicoAtividadeComposicao() {
         this("tentativa.web.composicao-medidas");
     }
 
-    public ServicoAtividadeWebComposicao(String tentativaId) {
+    public ServicoAtividadeComposicao(String tentativaId) {
         this(tentativaId, carregarSituacaoCurada());
     }
 
     /** Situação curada padrão com a porta de questionamento fornecida pela composição. */
-    public ServicoAtividadeWebComposicao(String tentativaId,
+    public ServicoAtividadeComposicao(String tentativaId,
             PortaQuestionamentoPosicionamento questionamento) {
         this(tentativaId, carregarSituacaoCurada(),
-                EscopoTentativaWeb.isolado(tentativaId), questionamento);
+                EscopoTentativa.isolado(tentativaId), questionamento);
     }
 
-    public ServicoAtividadeWebComposicao(String tentativaId,
+    public ServicoAtividadeComposicao(String tentativaId,
             SituacaoProblemaAditiva situacao) {
-        this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
+        this(tentativaId, situacao, EscopoTentativa.isolado(tentativaId));
     }
 
-    public ServicoAtividadeWebComposicao(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+    public ServicoAtividadeComposicao(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo) {
         this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
     }
 
-    public ServicoAtividadeWebComposicao(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+    public ServicoAtividadeComposicao(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo,
             PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_MEDIDAS) {
             throw new IllegalArgumentException("situação de Composição de Medidas é obrigatória");
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
-        this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.escopo = escopo == null ? EscopoTentativa.isolado(tentativaId) : escopo;
         reiniciar();
     }
 
@@ -114,12 +114,12 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
         boolean materialConcretoDisponivel = papelDesconhecido.estaBloqueadoPorLimiteTentativas();
         estado.put("material_concreto_disponivel", Boolean.valueOf(materialConcretoDisponivel));
         // Texto do material concreto resolvido no mesmo lugar que os tips
-        // (AjudaContextualWeb) — nunca hardcoded no componente web, porque
+        // (AjudaContextual) — nunca hardcoded no componente web, porque
         // será internacionalizado junto com o resto da interface.
         if (materialConcretoDisponivel) {
-            estado.put("material_concreto_texto", AjudaContextualWeb.textoInstrucaoMaterialConcreto());
-            estado.put("material_concreto_texto_adicionar", AjudaContextualWeb.textoAdicionarQuadradinho());
-            estado.put("material_concreto_texto_remover", AjudaContextualWeb.textoRemoverQuadradinho());
+            estado.put("material_concreto_texto", AjudaContextual.textoInstrucaoMaterialConcreto());
+            estado.put("material_concreto_texto_adicionar", AjudaContextual.textoAdicionarQuadradinho());
+            estado.put("material_concreto_texto_remover", AjudaContextual.textoRemoverQuadradinho());
         }
         // Protocolo de mouse é posicionar: os papéis conhecidos (parte1/parte2)
         // não vêm pré-preenchidos — o aluno arrasta cada um do enunciado até o
@@ -129,19 +129,19 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
         // também precondição de RelacaoEstruturalX.diagnosticarValorProposto
         // ("exatamente um papel incógnito entre os três").
         boolean papeisConhecidosProntos = parte1.estaPreenchido() && parte2.estaPreenchido();
-        List<Object> acoes = AcoesDisponiveisAtividadeWeb.modelagemPapel(
+        List<Object> acoes = AcoesDisponiveisAtividade.modelagemPapel(
                 concluida || !papeisConhecidosProntos, papelDesconhecido.getChave());
         if (!papeisConhecidosProntos) {
             if (!parte1.estaPreenchido()) {
-                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(parte1.getChave()));
+                acoes.addAll(AcoesDisponiveisAtividade.acaoPosicionarConhecido(parte1.getChave()));
             }
             if (!parte2.estaPreenchido()) {
-                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(parte2.getChave()));
+                acoes.addAll(AcoesDisponiveisAtividade.acaoPosicionarConhecido(parte2.getChave()));
             }
         } else if (!concluida) {
-            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
+            acoes.addAll(AcoesDisponiveisAtividade.acaoEngatarIncognita(papelDesconhecido.getChave()));
             if (materialConcretoDisponivel) {
-                acoes.addAll(AcoesDisponiveisAtividadeWeb
+                acoes.addAll(AcoesDisponiveisAtividade
                         .acaoAjustarQuadradinho(papelDesconhecido.getChave()));
             }
         }
@@ -160,9 +160,9 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
         }
-        Map<String, Object> resultado = RespostaConfirmacaoValorWeb.responder(
+        Map<String, Object> resultado = RespostaConfirmacaoValor.responder(
                 incognita, confirmou, new NumeroNatural(valor), valorEsperado(),
-                ContextosAcaoInstrumentalWeb.respostaConfirmacao(
+                ContextosAcaoInstrumental.respostaConfirmacao(
                         papelId, confirmou, valor, participantes()),
                 escopo);
         resultado.put("estado", estadoAtual());
@@ -174,9 +174,9 @@ public final class ServicoAtividadeWebComposicao extends ServicoAtividadeWebMode
             throw new IllegalArgumentException("papel não é a incógnita desta situação: " + papelId);
         }
         NumeroNatural proposta = new NumeroNatural(valor);
-        ValorIncognitaWeb.Resultado avaliacao = ValorIncognitaWeb.propor(
+        ValorIncognita.Resultado avaliacao = ValorIncognita.propor(
                 incognita, proposta, valorEsperado(),
-                ContextosAcaoInstrumentalWeb.valorIncognita(papelId, valor, participantes()),
+                ContextosAcaoInstrumental.valorIncognita(papelId, valor, participantes()),
                 escopo);
         if (avaliacao.isAceita()) {
             ContextoAcao contexto = new ContextoAcao(

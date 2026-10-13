@@ -17,7 +17,7 @@ public final class TesteWebConclusaoFluxo {
     private static final int[] registrosGravados = new int[1];
 
     public static void main(String[] args) {
-        ServicoSorteioAtividadeWeb servico = novoServico();
+        ServicoSorteioAtividade servico = novoServico();
         Map<String, Object> estado = classificarComposicao(servico);
         exigir(estado.get("conclusao") == null, "antes do azul o estado não publica o fluxo de conclusão");
         try {
@@ -64,15 +64,15 @@ public final class TesteWebConclusaoFluxo {
     @SuppressWarnings("unchecked")
     private static Map<String, Object> map(Object o) { return (Map<String, Object>) o; }
 
-    private static ServicoSorteioAtividadeWeb novoServico() {
-        PortaRegistroAtividadeWeb porta = new PortaRegistroAtividadeWeb() {
+    private static ServicoSorteioAtividade novoServico() {
+        PortaRegistroAtividade porta = new PortaRegistroAtividade() {
             public void registrarNovaSituacao(SituacaoProblemaAditiva s, String c, String e) { }
             public void registrarAcaoGranularUsuario(String a, String b, String c, String d,
                     String e, String f, String g, String h, String i) { registrosGravados[0]++; }
             public void persistir(RegistroFactualAcaoInstrumental r) { registrosGravados[0]++; }
             public void registrarRestauracaoModelagem(gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem r) { registrosGravados[0]++; }
         };
-        return new ServicoSorteioAtividadeWeb(new gerard.aplicacao.PoliticaSorteioSituacoesAditivas(),
+        return new ServicoSorteioAtividade(new gerard.aplicacao.PoliticaSorteioSituacoesAditivas(),
                 new gerard.aplicacao.FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new gerard.campoaditivo.servico.CatalogoDefinicoesAditivas(),
                         new gerard.campoaditivo.curadoria.ConstrutorResultadoCurado()),
@@ -82,7 +82,7 @@ public final class TesteWebConclusaoFluxo {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> classificarComposicao(ServicoSorteioAtividadeWeb servico) {
+    private static Map<String, Object> classificarComposicao(ServicoSorteioAtividade servico) {
         for (int i = 0; i < 300; i++) {
             servico.sortearMedidas();
             Map<String, Object> r = servico.escolherCategoria("COMPOSICAO_MEDIDAS");
@@ -92,7 +92,7 @@ public final class TesteWebConclusaoFluxo {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> concluir(ServicoSorteioAtividadeWeb servico, Map<String, Object> estado) {
+    private static Map<String, Object> concluir(ServicoSorteioAtividade servico, Map<String, Object> estado) {
         Map<String, Object> modelagem = (Map<String, Object>) estado.get("modelagem");
         String alvo = String.valueOf(modelagem.get("papel_desconhecido_original"));
         int todo = 0, outras = 0;

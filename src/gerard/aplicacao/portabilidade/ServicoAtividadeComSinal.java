@@ -3,16 +3,16 @@ package gerard.aplicacao.portabilidade;
 import java.util.Map;
 
 /**
- * Capacidade adicional de uma tentativa web (ServicoAtividadeWeb ou
- * ServicoAtividadeWebEscolhaOperacao) cujo esquema tem pelo menos um papel
+ * Capacidade adicional de uma tentativa web (ServicoAtividade ou
+ * ServicoAtividadeEscolhaOperacao) cujo esquema tem pelo menos um papel
  * que precisa de representação de sinal
  * (PapelQuantitativo.necessitaRepresentacaoDeSinal(), catalogado por
  * CatalogoNecessidadeRepresentacaoDeSinal — ver comentário de
- * ServicoSorteioAtividadeWeb.escolherSinalNumeroRelativo). Categorias sem
+ * ServicoSorteioAtividade.escolherSinalNumeroRelativo). Categorias sem
  * nenhum papel assim (Composição de Medidas) simplesmente não implementam
  * esta interface — mesmo padrão de capacidade opcional já usado para
- * material concreto (ver instanceof ServicoAtividadeWebComposicao em
- * ServicoSorteioAtividadeWeb.ajustarQuadradinho).
+ * material concreto (ver instanceof ServicoAtividadeComposicao em
+ * ServicoSorteioAtividade.ajustarQuadradinho).
  *
  * Mesmo protocolo do desktop (ScaffoldingNumeroRelativo.mostrarMenuEscolhaSinal
  * / MenuSinalNumeroRelativo, Main.java): ao posicionar (arrastar) um papel
@@ -24,6 +24,6 @@ import java.util.Map;
  * ui.tooltip.relativeSign.confirm que o desktop já usa
  * (informarSuspeitaSinalIncorretoNumeroRelativo).
  */
-public interface ServicoAtividadeWebComSinal {
+public interface ServicoAtividadeComSinal {
     Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal);
 }

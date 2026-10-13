@@ -9,7 +9,7 @@ import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
  * Único ponto que instancia {@link ScaffoldingQuestionamento} para a web,
  * traduzindo o resultado para o tipo neutro da porta — assim a camada de
  * aplicação (gerard.aplicacao.portabilidade) não precisa importar o pacote
- * concreto do scaffolding (ver AvaliadorOrigemDestinoWeb). Vive na
+ * concreto do scaffolding (ver AvaliadorOrigemDestino). Vive na
  * infraestrutura web, não em gerard.aplicacao nem em gerard.Scaffolding,
  * porque a fronteira que o verificador de localidade protege é justamente
  * "camada de aplicação não importa gerard.Scaffolding.*" — um adaptador

@@ -32,23 +32,23 @@ import java.util.UUID;
 
 /**
  * Fachada de aplicação portátil para Composição de Relações na web, mesmo
- * paradigma de {@link ServicoAtividadeWebComposicaoTransformacoes}: os 3
+ * paradigma de {@link ServicoAtividadeComposicaoTransformacoes}: os 3
  * papéis aparecem revelados desde o início e o aluno escolhe a operação
  * certa (soma/subtração), avaliada por {@link AvaliacaoEscolhaOperacaoRelacao}.
  * Mais simples que Composição de Transformações — uma única relação, sem
  * segunda etapa — por isso sempre usa
  * {@link TipoOperacaoSeletor#ENTRE_TRANSFORMACOES}.
  */
-public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividadeWebModelagemPapeis
-        implements ServicoAtividadeWebEscolhaOperacao, ServicoAtividadeWebComSinal {
-    public static final String SCHEMA_ESTADO = ServicoAtividadeWebComposicao.SCHEMA_ESTADO;
-    public static final String SCHEMA_RESULTADO = ServicoAtividadeWebComposicao.SCHEMA_RESULTADO;
+public final class ServicoAtividadeComposicaoRelacoes extends ServicoAtividadeModelagemPapeis
+        implements ServicoAtividadeEscolhaOperacao, ServicoAtividadeComSinal {
+    public static final String SCHEMA_ESTADO = ServicoAtividadeComposicao.SCHEMA_ESTADO;
+    public static final String SCHEMA_RESULTADO = ServicoAtividadeComposicao.SCHEMA_RESULTADO;
 
     private final String tentativaId;
     private final SituacaoProblemaAditiva situacao;
-    private final EscopoTentativaWeb escopo;
+    private final EscopoTentativa escopo;
     private IncognitaQuantitativa incognita;
-    private SinalNumeroRelativoWeb sinais;
+    private SinalNumeroRelativo sinais;
     private final RelacaoEstruturalComposicaoDeRelacoes relacaoDiagnostico =
             RelacaoEstruturalComposicaoDeRelacoes.composicaoDeRelacoes();
     private PapelQuantitativo relacao1;
@@ -56,23 +56,23 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
     private PapelQuantitativo relacaoFinal;
     private OpcaoOperacaoCuradoria escolha;
     // Papel conhecido que precisa de representação de sinal (ver
-    // ServicoAtividadeWebComSinal) já revelado (arrastado) mas ainda sem
+    // ServicoAtividadeComSinal) já revelado (arrastado) mas ainda sem
     // sinal escolhido — mesmo protocolo do desktop e mesmo padrão já usado
-    // por ServicoAtividadeWebComparacaoMedidas/TransformacaoMedidas.
+    // por ServicoAtividadeComparacaoMedidas/TransformacaoMedidas.
     private Integer valorCuradoAguardandoSinal;
 
-    public ServicoAtividadeWebComposicaoRelacoes(String tentativaId,
+    public ServicoAtividadeComposicaoRelacoes(String tentativaId,
             SituacaoProblemaAditiva situacao) {
-        this(tentativaId, situacao, EscopoTentativaWeb.isolado(tentativaId));
+        this(tentativaId, situacao, EscopoTentativa.isolado(tentativaId));
     }
 
-    public ServicoAtividadeWebComposicaoRelacoes(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo) {
+    public ServicoAtividadeComposicaoRelacoes(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo) {
         this(tentativaId, situacao, escopo, PortaQuestionamentoPosicionamento.NAO_APLICAVEL);
     }
 
-    public ServicoAtividadeWebComposicaoRelacoes(String tentativaId,
-            SituacaoProblemaAditiva situacao, EscopoTentativaWeb escopo,
+    public ServicoAtividadeComposicaoRelacoes(String tentativaId,
+            SituacaoProblemaAditiva situacao, EscopoTentativa escopo,
             PortaQuestionamentoPosicionamento questionamento) {
         if (situacao == null
                 || situacao.getTipo() != TipoSituacaoAditiva.COMPOSICAO_RELACOES) {
@@ -81,7 +81,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
         }
         this.tentativaId = tentativaId;
         this.situacao = situacao;
-        this.escopo = escopo == null ? EscopoTentativaWeb.isolado(tentativaId) : escopo;
+        this.escopo = escopo == null ? EscopoTentativa.isolado(tentativaId) : escopo;
         reiniciar();
     }
 
@@ -117,7 +117,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
         // situação, distinto de "a ação ESCOLHER_OPERACAO_RELACAO está em
         // acoes_disponiveis agora" (que também some quando já respondida
         // corretamente) -- ver mesmo campo em
-        // ServicoAtividadeWebTransformacaoRelacao (mesmo componente React).
+        // ServicoAtividadeTransformacaoRelacao (mesmo componente React).
         estado.put("operacao_disponivel", Boolean.valueOf(seletorAtivo));
         estado.put("correta", !seletorAtivo || escolha == null
                 || escolha == OpcaoOperacaoCuradoria.NAO_SELECIONADO
@@ -127,13 +127,13 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
         // explícita da pesquisadora) -- concluida não pode ligar o destaque
         // azul só por causa da operação certa enquanto a incógnita (quando
         // esta situação tem uma) continua sem valor. Mesmo requisito que
-        // ServicoAtividadeWebTransformacaoRelacao já aplicava (concluidaPosicionamento
+        // ServicoAtividadeTransformacaoRelacao já aplicava (concluidaPosicionamento
         // && operacaoCorreta) -- só faltava replicar aqui.
         boolean incognitaOk = papelDesconhecido == null || papelDesconhecido.estaPreenchido();
         estado.put("concluida", Boolean.valueOf(correta && incognitaOk));
         estado.put("escalada_no_limite", Boolean.valueOf(
                 escopo.getTentativa().estaNoLimiteAjudaVisual()));
-        // Protocolo de mouse é posicionar (ver ServicoAtividadeWebComposicao):
+        // Protocolo de mouse é posicionar (ver ServicoAtividadeComposicao):
         // relação 1 e relação 2 não vêm pré-preenchidas; escolher a operação
         // só libera depois delas estarem posicionadas. A incógnita é
         // arrastável em toda categoria, nas duas versões (desktop e web) —
@@ -144,23 +144,23 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
                 papelAguardandoSinal == null ? null : papelAguardandoSinal.getChave());
         estado.put("magnitude_aguardando_sinal", valorCuradoAguardandoSinal == null
                 ? null : Integer.valueOf(Math.abs(valorCuradoAguardandoSinal.intValue())));
-        List<Object> acoes = AcoesDisponiveisAtividadeWeb.sorteios();
-        acoes.add(AcoesDisponiveisAtividadeWeb.acaoReiniciar());
+        List<Object> acoes = AcoesDisponiveisAtividade.sorteios();
+        acoes.add(AcoesDisponiveisAtividade.acaoReiniciar());
         if (papelAguardandoSinal != null) {
             // Enquanto o sinal não é escolhido, nenhuma outra ação de
             // posicionamento fica disponível para este papel — mesmo
             // protocolo do desktop e do padrão já usado em
-            // ServicoAtividadeWebComparacaoMedidas/TransformacaoMedidas.
-            acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherSinal(papelAguardandoSinal.getChave()));
+            // ServicoAtividadeComparacaoMedidas/TransformacaoMedidas.
+            acoes.addAll(AcoesDisponiveisAtividade.acaoEscolherSinal(papelAguardandoSinal.getChave()));
         } else if (!papeisConhecidosProntos) {
             for (PapelQuantitativo papel : papeisPosicionaveis()) {
                 if (!papel.estaPreenchido()) {
-                    acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoPosicionarConhecido(papel.getChave()));
+                    acoes.addAll(AcoesDisponiveisAtividade.acaoPosicionarConhecido(papel.getChave()));
                 }
             }
         } else {
             if (seletorAtivo && !correta) {
-                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEscolherOperacaoRelacao());
+                acoes.addAll(AcoesDisponiveisAtividade.acaoEscolherOperacaoRelacao());
             }
             if (papelDesconhecido != null && !papelDesconhecido.estaPreenchido()) {
                 // As duas juntas: ENGATAR_INCOGNITA vira a interação que o
@@ -169,8 +169,8 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
                 // habilita depois de engatada=true (FiguraCenaGerard) — sem
                 // essa segunda, o "?" engata mas o duplo-clique nunca abre a
                 // digitação (mesmo padrão de ComparacaoMedidas.modelagemPapel).
-                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoEngatarIncognita(papelDesconhecido.getChave()));
-                acoes.addAll(AcoesDisponiveisAtividadeWeb.acaoProporValorPapel(papelDesconhecido.getChave()));
+                acoes.addAll(AcoesDisponiveisAtividade.acaoEngatarIncognita(papelDesconhecido.getChave()));
+                acoes.addAll(AcoesDisponiveisAtividade.acaoProporValorPapel(papelDesconhecido.getChave()));
             }
         }
         estado.put("acoes_disponiveis", acoes);
@@ -184,9 +184,9 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
             throw new IllegalArgumentException(
                     "papel não é a incógnita desta situação: " + papelId);
         }
-        Map<String, Object> resultado = RespostaConfirmacaoValorWeb.responder(
+        Map<String, Object> resultado = RespostaConfirmacaoValor.responder(
                 incognita, confirmou, new NumeroInteiro(valor), valorEsperado(),
-                ContextosAcaoInstrumentalWeb.respostaConfirmacao(
+                ContextosAcaoInstrumental.respostaConfirmacao(
                         papelId, confirmou, valor, participantes()),
                 escopo);
         resultado.put("estado", estadoAtual());
@@ -199,9 +199,9 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
                     "papel não é a incógnita desta situação: " + papelId);
         }
         NumeroInteiro proposta = new NumeroInteiro(valor);
-        ValorIncognitaWeb.Resultado avaliacao = ValorIncognitaWeb.propor(
+        ValorIncognita.Resultado avaliacao = ValorIncognita.propor(
                 incognita, proposta, valorEsperado(),
-                ContextosAcaoInstrumentalWeb.valorIncognita(papelId, valor, participantes()),
+                ContextosAcaoInstrumental.valorIncognita(papelId, valor, participantes()),
                 escopo);
         if (avaliacao.isAceita()) {
             ContextoAcao contexto = new ContextoAcao(
@@ -220,7 +220,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
         OpcaoOperacaoCuradoria escolhaCorreta = AvaliacaoEscolhaOperacaoRelacao
                 .determinarOperacaoCorreta(TipoSituacaoAditiva.COMPOSICAO_RELACOES,
                         situacao, TipoOperacaoSeletor.ENTRE_TRANSFORMACOES);
-        ResultadoEscolhaOperacaoModelagem registroOperacao = EscolhaOperacaoWeb.registrar(
+        ResultadoEscolhaOperacaoModelagem registroOperacao = EscolhaOperacao.registrar(
                 TipoSituacaoAditiva.COMPOSICAO_RELACOES, TipoOperacaoSeletor.ENTRE_TRANSFORMACOES, escolhaAluno, escolhaCorreta, escopo);
         boolean aceita = registroOperacao != null && registroOperacao.foiCorreta();
         escolha = escolhaAluno;
@@ -261,7 +261,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
         this.incognita = papelDesconhecido == null ? null
                 : new IncognitaQuantitativa(papelDesconhecido.getChave(),
                         situacao.getTipo(), papelDesconhecido);
-        sinais = new SinalNumeroRelativoWeb(situacao);
+        sinais = new SinalNumeroRelativo(situacao);
         return estadoAtual();
     }
 
@@ -281,7 +281,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
 
     /**
      * Todos os papéis exceto a incógnita curada (se houver) — mesmo padrão
-     * de ServicoAtividadeWebComparacaoMedidas.todosOsConhecidosPreenchidos:
+     * de ServicoAtividadeComparacaoMedidas.todosOsConhecidosPreenchidos:
      * qualquer um dos três pode ser a incógnita, dependendo da situação
      * curada, então a exclusão é por identidade de papelDesconhecido, nunca
      * por posição fixa.
@@ -327,7 +327,7 @@ public final class ServicoAtividadeWebComposicaoRelacoes extends ServicoAtividad
      * Escolhe explicitamente o sinal do papel revelado por
      * posicionarValorConhecido que precisa de representação de sinal —
      * mesmo protocolo/padrão de
-     * ServicoAtividadeWebComparacaoMedidas.escolherSinalNumeroRelativo.
+     * ServicoAtividadeComparacaoMedidas.escolherSinalNumeroRelativo.
      */
     public synchronized Map<String, Object> escolherSinalNumeroRelativo(String papelId, String sinal) {
         if (papelAguardandoSinal == null || !papelAguardandoSinal.getChave().equals(papelId)) {

@@ -1,8 +1,8 @@
 import gerard.aplicacao.portabilidade.PortaAjudaContextual;
 import gerard.aplicacao.portabilidade.PortaQuestionamentoPosicionamento;
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
 import gerard.aplicacao.portabilidade.ResultadoQuestionamentoPosicionamento;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.infraestrutura.web.scaffolding.AdaptadorAjudaContextualWeb;
 import gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb;
 
@@ -42,7 +42,7 @@ public class TesteInversaoPortasWeb {
     }
 
     private static void semPortasAAplicacaoNaoInventaConteudo() {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb();
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade();
         Map<String, Object> ajuda = servico.ajudaContextual("TEXTO", "DUVIDA");
         exigir("".equals(ajuda.get("mensagem")),
                 "sem porta de ajuda, a aplicação não pode fabricar mensagem: " + ajuda.get("mensagem"));
@@ -54,8 +54,8 @@ public class TesteInversaoPortasWeb {
     }
 
     private static void comPortasDaRaizDeComposicaoAAjudaResponde() {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
-                PortaRegistroAtividadeWeb.NENHUMA,
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
+                PortaRegistroAtividade.NENHUMA,
                 new AdaptadorAjudaContextualWeb(),
                 new AdaptadorQuestionamentoPosicionamentoWeb());
         Object mensagem = servico.ajudaContextual("TEXTO", "DUVIDA").get("mensagem");

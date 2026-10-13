@@ -78,7 +78,7 @@ public class TesteConversorTransformacaoRelacaoRica {
         // 2026-09-04: a ponte rica (ConversorSituacaoProblemaRica, provada
         // acima) é mecanismo de CURADORIA/validação — confirmado que
         // Main.java nunca a referencia — não o caminho de atividade em
-        // tempo real do aluno. A web usa ServicoAtividadeWebTransformacaoRelacao
+        // tempo real do aluno. A web usa ServicoAtividadeTransformacaoRelacao
         // (básica), o mesmo caminho canônico de CatalogoRelacoesEstruturaisAditivas
         // usado pelo desktop de verdade; ver TesteServicoSorteioAtividadeWeb
         // para a prova desse caminho.

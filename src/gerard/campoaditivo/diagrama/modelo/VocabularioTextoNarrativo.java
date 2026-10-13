@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Vocabulário de apoio à edição do enunciado: candidatos a organizador da
  * informação (arrastáveis para dentro do texto a partir de um "saco"), mesmo
- * repertório que {@code ServicoSorteioAtividadeWeb} publica em
+ * repertório que {@code ServicoSorteioAtividade} publica em
  * "vocabulario_texto" para o protótipo web — agora também disponível ao
  * desktop através do gerador de cena (ver
  * {@code GeradorCenaDiagramaAditivo.gerarVocabularioTextoNarrativa}), em vez

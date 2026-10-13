@@ -20,7 +20,7 @@ import java.util.List;
  * semânticos; aqui só se entrega o que ela constituiu à mesma porta de
  * persistência usada pelo desktop.
  */
-public final class EscopoTentativaWeb {
+public final class EscopoTentativa {
 
     private static final PortaPersistenciaAcaoInstrumental SEM_PERSISTENCIA =
             new PortaPersistenciaAcaoInstrumental() {
@@ -32,9 +32,9 @@ public final class EscopoTentativaWeb {
     private final List<PapelQuantitativo> participantesAtuais =
             new ArrayList<PapelQuantitativo>();
     private boolean feedbackDeErroDaIncognita;
-    private PosicionamentoQuestionadoWeb posicionamentoQuestionado;
+    private PosicionamentoQuestionado posicionamentoQuestionado;
 
-    public EscopoTentativaWeb(TentativaModelagemAditiva tentativa,
+    public EscopoTentativa(TentativaModelagemAditiva tentativa,
             PortaPersistenciaAcaoInstrumental persistencia) {
         if (tentativa == null) {
             throw new IllegalArgumentException("tentativa é obrigatória");
@@ -44,8 +44,8 @@ public final class EscopoTentativaWeb {
     }
 
     /** Escopo sem persistência, para usos isolados (testes, serviço avulso). */
-    public static EscopoTentativaWeb isolado(String tentativaId) {
-        return new EscopoTentativaWeb(new TentativaModelagemAditiva(tentativaId), null);
+    public static EscopoTentativa isolado(String tentativaId) {
+        return new EscopoTentativa(new TentativaModelagemAditiva(tentativaId), null);
     }
 
     public void incorporar(PapelQuantitativo... papeis) {
@@ -76,7 +76,7 @@ public final class EscopoTentativaWeb {
     }
 
     /** Soltura incompatível: o número permanece na caixa e a pergunta aberta, até a correção ou a restauração. */
-    public void questionarPosicionamento(PosicionamentoQuestionadoWeb questionado) {
+    public void questionarPosicionamento(PosicionamentoQuestionado questionado) {
         posicionamentoQuestionado = questionado;
     }
 
@@ -96,7 +96,7 @@ public final class EscopoTentativaWeb {
         return chaves;
     }
 
-    public PosicionamentoQuestionadoWeb getPosicionamentoQuestionado() {
+    public PosicionamentoQuestionado getPosicionamentoQuestionado() {
         return posicionamentoQuestionado;
     }
 

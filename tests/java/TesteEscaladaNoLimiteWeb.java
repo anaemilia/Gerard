@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebTransformacaoMedidas;
+import gerard.aplicacao.portabilidade.ServicoAtividadeTransformacaoMedidas;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -25,8 +25,8 @@ public final class TesteEscaladaNoLimiteWeb {
             }
         }
         exigir(situacao != null, "situação curada de transformação ausente");
-        ServicoAtividadeWebTransformacaoMedidas servico =
-                new ServicoAtividadeWebTransformacaoMedidas(
+        ServicoAtividadeTransformacaoMedidas servico =
+                new ServicoAtividadeTransformacaoMedidas(
                         "tentativa.web.teste.escalada", situacao);
 
         Map<String, Object> estado = servico.estadoAtual();
@@ -68,7 +68,7 @@ public final class TesteEscaladaNoLimiteWeb {
     }
 
     @SuppressWarnings("unchecked")
-    private static void preparar(ServicoAtividadeWebTransformacaoMedidas servico,
+    private static void preparar(ServicoAtividadeTransformacaoMedidas servico,
             SituacaoProblemaAditiva situacao, String alvo) {
         for (Object item : (List<Object>) servico.estadoAtual().get("papeis")) {
             String id = String.valueOf(((Map<String, Object>) item).get("id"));

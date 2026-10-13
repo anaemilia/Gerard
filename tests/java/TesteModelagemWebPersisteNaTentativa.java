@@ -1,7 +1,7 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
@@ -28,7 +28,7 @@ public final class TesteModelagemWebPersisteNaTentativa {
 
     public static void main(String[] args) {
         PortaGravadora porta = new PortaGravadora();
-        ServicoSorteioAtividadeWeb servico = novoServico(porta, 5);
+        ServicoSorteioAtividade servico = novoServico(porta, 5);
         Map<String, Object> estado = classificarComposicao(servico);
         exigir(porta.ultimo() != null && gerard.dominio.campoaditivo.TentativaClassificacaoCategoriaAditiva
                         .CHAVE_PROPRIETARIO.equals(proprietario(porta.ultimo())),
@@ -113,7 +113,7 @@ public final class TesteModelagemWebPersisteNaTentativa {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> classificarComposicao(ServicoSorteioAtividadeWeb servico) {
+    private static Map<String, Object> classificarComposicao(ServicoSorteioAtividade servico) {
         for (int i = 0; i < 200; i++) {
             servico.sortearMedidas();
             Map<String, Object> r = servico.escolherCategoria("COMPOSICAO_MEDIDAS");
@@ -124,8 +124,8 @@ public final class TesteModelagemWebPersisteNaTentativa {
         throw new AssertionError("não sorteou Composição de Medidas");
     }
 
-    private static ServicoSorteioAtividadeWeb novoServico(PortaRegistroAtividadeWeb porta, int semente) {
-        return new ServicoSorteioAtividadeWeb(new PoliticaSorteioSituacoesAditivas(),
+    private static ServicoSorteioAtividade novoServico(PortaRegistroAtividade porta, int semente) {
+        return new ServicoSorteioAtividade(new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
                 new Random(semente), IdiomaInterface.PORTUGUES, porta,
@@ -180,7 +180,7 @@ public final class TesteModelagemWebPersisteNaTentativa {
 
     private static void exigir(boolean c, String m) { if (!c) throw new AssertionError(m); }
 
-    private static final class PortaGravadora implements PortaRegistroAtividadeWeb {
+    private static final class PortaGravadora implements PortaRegistroAtividade {
         final List<RegistroFactualAcaoInstrumental> registros = new ArrayList<RegistroFactualAcaoInstrumental>();
         int restauracoes;
         RegistroFactualAcaoInstrumental ultimo() { return registros.isEmpty() ? null : registros.get(registros.size() - 1); }

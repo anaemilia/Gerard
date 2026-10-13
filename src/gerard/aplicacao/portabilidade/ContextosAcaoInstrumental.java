@@ -9,9 +9,9 @@ import java.util.List;
  * ações instrumentais da modelagem web. Espelham os contextos do desktop,
  * com origem de evento própria da web para distinguir a plataforma.
  */
-final class ContextosAcaoInstrumentalWeb {
+final class ContextosAcaoInstrumental {
 
-    private ContextosAcaoInstrumentalWeb() {
+    private ContextosAcaoInstrumental() {
     }
 
     static ContextoAcaoInstrumental posicionamento(String origemPapelId,

@@ -1,7 +1,7 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
@@ -18,7 +18,7 @@ public final class TestePortaRegistroAtividadeWeb {
 
     public static void main(String[] args) {
         PortaFalsa porta = new PortaFalsa();
-        ServicoSorteioAtividadeWeb servico = novoServico(porta);
+        ServicoSorteioAtividade servico = novoServico(porta);
 
         servico.sortearMedidas();
         aceitarCategoriaCurada(servico);
@@ -44,15 +44,15 @@ public final class TestePortaRegistroAtividadeWeb {
                         && "area=TEXTO; intencao=DUVIDA".equals(porta.detalhes),
                 "adaptador deve transportar os nove campos sem reinterpretá-los");
 
-        ServicoSorteioAtividadeWeb semRegistro = novoServico(null);
+        ServicoSorteioAtividade semRegistro = novoServico(null);
         semRegistro.ajudaContextual("VERGNAUD", "CONTINUAR");
 
         System.out.println("APROVADO: porta web preserva situação e ação factual sem possuir suas regras.");
     }
 
-    private static ServicoSorteioAtividadeWeb novoServico(
-            PortaRegistroAtividadeWeb porta) {
-        return new ServicoSorteioAtividadeWeb(
+    private static ServicoSorteioAtividade novoServico(
+            PortaRegistroAtividade porta) {
+        return new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(
                         new RepositorioSituacoesAditivas(),
@@ -63,7 +63,7 @@ public final class TestePortaRegistroAtividadeWeb {
 
     @SuppressWarnings("unchecked")
     private static void aceitarCategoriaCurada(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         String[] candidatas = {"COMPOSICAO_MEDIDAS", "TRANSFORMACAO_MEDIDAS",
                 "COMPARACAO_MEDIDAS"};
         for (String candidata : candidatas) {
@@ -84,7 +84,7 @@ public final class TestePortaRegistroAtividadeWeb {
         }
     }
 
-    private static final class PortaFalsa implements PortaRegistroAtividadeWeb {
+    private static final class PortaFalsa implements PortaRegistroAtividade {
         private int situacoes;
         private SituacaoProblemaAditiva situacao;
         private String categoriaFallback;

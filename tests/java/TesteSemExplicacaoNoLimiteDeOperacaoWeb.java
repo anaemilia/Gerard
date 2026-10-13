@@ -20,7 +20,7 @@ public final class TesteSemExplicacaoNoLimiteDeOperacaoWeb {
             }
         }
         exigir(situacao != null, "situação curada não encontrada");
-        ServicoAtividadeWebComposicaoRelacoes servico = new ServicoAtividadeWebComposicaoRelacoes(
+        ServicoAtividadeComposicaoRelacoes servico = new ServicoAtividadeComposicaoRelacoes(
                 "tentativa.teste.sem_explicacao_no_limite", situacao);
         String alvo = new ResolvedorIncognitaCurada().resolver(situacao).getChaveEfetiva();
         @SuppressWarnings("unchecked")

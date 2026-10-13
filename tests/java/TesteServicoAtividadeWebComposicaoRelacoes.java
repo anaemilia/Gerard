@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoRelacoes;
+import gerard.aplicacao.portabilidade.ServicoAtividadeComposicaoRelacoes;
 import gerard.campoaditivo.curadoria.ResolvedorIncognitaCurada;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.curadoria.sinal.AvaliacaoEscolhaOperacaoRelacao.TipoOperacaoSeletor;
@@ -13,9 +13,9 @@ import java.util.Map;
 
 /**
  * Continuação da Fase 2 da retomada da versão web: cobre
- * {@link ServicoAtividadeWebComposicaoRelacoes}, a versão mais simples (3
+ * {@link ServicoAtividadeComposicaoRelacoes}, a versão mais simples (3
  * papéis, uma única etapa) do mesmo paradigma "escolher operação" de
- * {@link gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicaoTransformacoes}.
+ * {@link gerard.aplicacao.portabilidade.ServicoAtividadeComposicaoTransformacoes}.
  * Usa a mesma situação curada real já usada por
  * {@code TesteAvaliacaoEscolhaOperacaoRelacao} (Fase 1).
  */
@@ -27,8 +27,8 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
         SituacaoProblemaAditiva situacao = localizar(
                 validadas, "PO_COMPOSICAO_RELACOES_idades_642701604");
 
-        ServicoAtividadeWebComposicaoRelacoes servico =
-                new ServicoAtividadeWebComposicaoRelacoes(
+        ServicoAtividadeComposicaoRelacoes servico =
+                new ServicoAtividadeComposicaoRelacoes(
                         "tentativa.teste.composicao_relacoes", situacao);
         String alvo = new ResolvedorIncognitaCurada().resolver(situacao).getChaveEfetiva();
 
@@ -48,7 +48,7 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
             // Toda relação precisa de representação de sinal (auditoria de
             // acoplamento Main/web, 2026-09-19) — posicionar só revela a
             // magnitude; o sinal exige escolha explícita, mesmo protocolo já
-            // usado por ServicoAtividadeWebComparacaoMedidas.
+            // usado por ServicoAtividadeComparacaoMedidas.
             if (id.equals(servico.estadoAtual().get("papel_aguardando_sinal"))) {
                 int valorCurado = SemanticaCuradaSituacao.buscar(situacao, null, id).getValorInteiro();
                 servico.escolherSinalNumeroRelativo(id, valorCurado < 0 ? "-" : "+");
@@ -104,7 +104,7 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
         exigir(estadoReiniciado.get("escolha_operacao") == null,
                 "reiniciar deveria zerar escolha_operacao.");
 
-        System.out.println("APROVADO: ServicoAtividadeWebComposicaoRelacoes cobre "
+        System.out.println("APROVADO: ServicoAtividadeComposicaoRelacoes cobre "
                 + "acerto/erro e reinício.");
 
         testarSituacaoSemOperacaoRelacaoCurada();
@@ -123,8 +123,8 @@ public final class TesteServicoAtividadeWebComposicaoRelacoes {
         SituacaoProblemaAditiva situacao = localizar(
                 new RepositorioSituacoesAditivas().listarValidadas(),
                 "PO_COMPOSICAO_RELACOES_dinheiro_161113042");
-        ServicoAtividadeWebComposicaoRelacoes servico =
-                new ServicoAtividadeWebComposicaoRelacoes(
+        ServicoAtividadeComposicaoRelacoes servico =
+                new ServicoAtividadeComposicaoRelacoes(
                         "tentativa.teste.composicao_relacoes.sem_operacao", situacao);
 
         for (String chave : new String[] {"relacao_1", "relacao_2"}) {

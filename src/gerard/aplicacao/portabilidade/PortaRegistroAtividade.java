@@ -10,9 +10,9 @@ import gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem;
  * Estende a mesma porta de persistência de ações instrumentais do desktop
  * (decisão da usuária, 2026-09-29: a modelagem web precisa persistir).
  */
-public interface PortaRegistroAtividadeWeb extends PortaPersistenciaAcaoInstrumental {
+public interface PortaRegistroAtividade extends PortaPersistenciaAcaoInstrumental {
 
-    PortaRegistroAtividadeWeb NENHUMA = new PortaRegistroAtividadeWeb() {
+    PortaRegistroAtividade NENHUMA = new PortaRegistroAtividade() {
         public void registrarNovaSituacao(SituacaoProblemaAditiva situacao,
                 String categoriaFallback, String enunciado) { }
         public void registrarAcaoGranularUsuario(String tipoAcao, String tarefa,

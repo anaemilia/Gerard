@@ -13,10 +13,10 @@ import java.util.Map;
  * (mensagens_pt.properties: ui.completion.*), a pausa entre o azul e o selo, e as ações HTTP que o selo/tip publicam.
  * Não decide nada: quem decide o que cada escolha faz é {@link EscolhaConclusaoModelagem}; o cliente só realiza.
  */
-public final class ProjetorConclusaoWeb {
+public final class ProjetorConclusao {
     public static final String ROTA_ESCOLHA = "/api/acoes/conclusao";
 
-    private ProjetorConclusaoWeb() {
+    private ProjetorConclusao() {
     }
 
     public static Map<String, Object> projetar(ServicoLocalizacao localizacao) {

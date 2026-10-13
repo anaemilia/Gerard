@@ -13,14 +13,14 @@ import gerard.dominio.campoaditivo.situacao.ResultadoEscolhaOperacaoModelagem;
  * a correção; o registro segue pela tentativa até a persistência. Sem
  * operação curada válida não há critério: nada é constituído.
  */
-final class EscolhaOperacaoWeb {
+final class EscolhaOperacao {
 
-    private EscolhaOperacaoWeb() {
+    private EscolhaOperacao() {
     }
 
     static ResultadoEscolhaOperacaoModelagem registrar(TipoSituacaoAditiva categoria,
             TipoOperacaoSeletor seletor, OpcaoOperacaoCuradoria escolha,
-            OpcaoOperacaoCuradoria esperada, EscopoTentativaWeb escopo) {
+            OpcaoOperacaoCuradoria esperada, EscopoTentativa escopo) {
         if (escolha == null || esperada == null
                 || !escolha.isEscolhaValida() || !esperada.isEscolhaValida()) {
             return null;

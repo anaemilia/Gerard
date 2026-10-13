@@ -20,9 +20,9 @@ import java.util.Map;
  * conclusão (modo exploratório) a incógnita não avalia nem registra; a
  * correspondência, também dela, só decide o que a figura mostra.
  */
-final class ValorIncognitaWeb {
+final class ValorIncognita {
 
-    private ValorIncognitaWeb() {
+    private ValorIncognita() {
     }
 
     static final class Resultado {
@@ -40,7 +40,7 @@ final class ValorIncognitaWeb {
 
     static Resultado propor(IncognitaQuantitativa incognita, ValorNumerico proposta,
             ValorNumerico esperado, ContextoAcaoInstrumental contexto,
-            EscopoTentativaWeb escopo) {
+            EscopoTentativa escopo) {
         RegistroAcaoInstrumental registro = incognita.avaliarAcao(
                 incognita.getFluxoTentativas().iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO),
                 TarefaInteracao.TEXTO, proposta, esperado, contexto);
@@ -52,17 +52,17 @@ final class ValorIncognitaWeb {
         ResultadoRegistroTentativaPapel tentativa = registro.getResultadoTentativa().orElse(null);
         boolean rejeitada = !aceita && tentativa != null;
         Map<String, Object> resultado = new LinkedHashMap<String, Object>();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("schema", ServicoAtividadeComposicao.SCHEMA_RESULTADO);
         resultado.put("action_id", registro.getActionId());
         resultado.put("aceita", Boolean.valueOf(aceita));
         resultado.put("diagnostico", aceita ? null : registro.getTipoDiagnosticoFactual());
         // O texto real exibido (aviso de limite ou pergunta de confirmação)
-        // vem de MensagemFeedbackIncognitaWeb, como no desktop.
+        // vem de MensagemFeedbackIncognita, como no desktop.
         resultado.put("chave_mensagem", rejeitada
-                ? MensagemFeedbackIncognitaWeb.resolver(incognita.getFluxoTentativas(), tentativa)
+                ? MensagemFeedbackIncognita.resolver(incognita.getFluxoTentativas(), tentativa)
                 : null);
         resultado.put("limite_atingido", Boolean.valueOf(
-                rejeitada && MensagemFeedbackIncognitaWeb.limiteAtingido(tentativa)));
+                rejeitada && MensagemFeedbackIncognita.limiteAtingido(tentativa)));
         resultado.put("rejeicoes_consecutivas", Integer.valueOf(
                 tentativa == null ? 0 : tentativa.getRejeicoesConsecutivas()));
         return new Resultado(resultado, aceita);

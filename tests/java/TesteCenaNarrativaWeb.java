@@ -1,6 +1,6 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.diagrama.modelo.CenaDiagramaAditivo;
 import gerard.campoaditivo.diagrama.modelo.EstadoFeedbackDiagrama;
@@ -25,7 +25,7 @@ public final class TesteCenaNarrativaWeb {
                 throw new AssertionError("Situação curada de referência ausente");
             }
         };
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(repositorio,
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),

@@ -7,20 +7,20 @@ import java.util.Map;
 
 /**
  * O julgamento do posicionamento de um número solto vale para qualquer caixa (conhecida, já preenchida ou incógnita):
- * um só lugar decide (ServicoSorteioAtividadeWeb.julgarSoltura), o posicionamento incorreto fica publicado na cena até
+ * um só lugar decide (ServicoSorteioAtividade.julgarSoltura), o posicionamento incorreto fica publicado na cena até
  * ser corrigido e a restauração o limpa.
  */
 public final class TesteWebJulgamentoPosicionamento {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        PortaRegistroAtividadeWeb porta = new PortaRegistroAtividadeWeb() {
+        PortaRegistroAtividade porta = new PortaRegistroAtividade() {
             public void registrarNovaSituacao(SituacaoProblemaAditiva s, String c, String e) { }
             public void registrarAcaoGranularUsuario(String a, String b, String c, String d,
                     String e, String f, String g, String h, String i) { }
             public void persistir(RegistroFactualAcaoInstrumental r) { }
             public void registrarRestauracaoModelagem(gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem r) { }
         };
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new gerard.aplicacao.PoliticaSorteioSituacoesAditivas(),
                 new gerard.aplicacao.FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new gerard.campoaditivo.servico.CatalogoDefinicoesAditivas(),

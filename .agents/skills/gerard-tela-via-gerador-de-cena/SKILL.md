@@ -30,8 +30,8 @@ Se é tela, passa pelo gerador de cena. Se é regra, pertence a um objeto rico.
   (`FiguraDiagrama`, `ConectorDiagrama`, narrativa, estado de feedback).
 - Diagrama complementar (Venn): `GeradorCenaDiagramaVenn`
   (`src/gerard/campoaditivo/venn/servico/`) → `CenaDiagramaVenn`.
-- Consumidores: `Main.java` (desktop) e `ServicoSorteioAtividadeWeb` /
-  `ProjetorAjudaVisualWeb` (web) leem a mesma cena e as mesmas decisões.
+- Consumidores: `Main.java` (desktop) e `ServicoSorteioAtividade` /
+  `ProjetorAjudaVisual` (web) leem a mesma cena e as mesmas decisões.
 
 ## Como acrescentar um recurso visual
 
@@ -77,7 +77,7 @@ Exemplo (apoio visual / historinha, 2026-10-02) — regra geral, sem tratamento 
 - Decisor de aplicação: `gerard.aplicacao.DecisorAjudaVisual` — única fonte da decisão.
 - Cena: `CenaDiagramaAditivo.getApoiosVisuais()` (lista de `ApoioVisual` tipados), carregada por
   `GeradorCenaDiagramaAditivo.comApoiosVisuais`.
-- Projeção: `ProjetorAjudaVisualWeb.projetar(cena)` — itens com `tipo` e `referencia`/`texto`.
+- Projeção: `ProjetorAjudaVisual.projetar(cena)` — itens com `tipo` e `referencia`/`texto`.
 - Clientes: Swing (`RenderizadorApoiosVisuaisSwing`) e React (`HistorinhaPassiva`)
   renderizam a **primeira** entrada pelo `tipo`. Nenhum escolhe a narrativa: o antigo
   `find(da_situacao_atual) ?? [0]` no cliente era decisão fora do backend e foi removido.

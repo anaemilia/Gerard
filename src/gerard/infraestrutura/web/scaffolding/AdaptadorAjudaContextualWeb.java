@@ -14,8 +14,8 @@ import java.util.Map;
  * recebendo área/intenção por nome (mesma representação já usada na
  * fronteira HTTP) — assim a camada de aplicação (gerard.aplicacao.
  * portabilidade) não precisa importar os enums deste pacote concreto (ver
- * ServicoSorteioAtividadeWeb). Mesmo texto/estrutura que
- * AjudaContextualWeb.projetarArea/nomeArea/mensagem/rotuloOpcao produziam
+ * ServicoSorteioAtividade). Mesmo texto/estrutura que
+ * AjudaContextual.projetarArea/nomeArea/mensagem/rotuloOpcao produziam
  * antes de saírem da camada de aplicação. Vive na infraestrutura web, não em
  * gerard.aplicacao nem em gerard.Scaffolding — ver o comentário equivalente
  * em AdaptadorQuestionamentoPosicionamentoWeb.

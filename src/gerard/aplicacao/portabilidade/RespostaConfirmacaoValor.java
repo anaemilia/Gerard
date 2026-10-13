@@ -19,14 +19,14 @@ import java.util.Map;
  * projeta o resultado. Nunca reabre a pergunta: após a resposta só há aviso
  * quando o limite é atingido.
  */
-final class RespostaConfirmacaoValorWeb {
+final class RespostaConfirmacaoValor {
 
-    private RespostaConfirmacaoValorWeb() {
+    private RespostaConfirmacaoValor() {
     }
 
     static Map<String, Object> responder(IncognitaQuantitativa incognita,
             boolean confirmou, ValorNumerico proposta, ValorNumerico esperado,
-            ContextoAcaoInstrumental contexto, EscopoTentativaWeb escopo) {
+            ContextoAcaoInstrumental contexto, EscopoTentativa escopo) {
         RegistroAcaoInstrumental registro = incognita.avaliarRespostaConfirmacao(
                 incognita.getFluxoTentativas().iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO),
                 confirmou, proposta, esperado, contexto);
@@ -36,9 +36,9 @@ final class RespostaConfirmacaoValorWeb {
             escopo.persistir(registro);
         }
         boolean registrada = tentativa != null && tentativa.isAcaoRegistrada();
-        boolean limite = registrada && MensagemFeedbackIncognitaWeb.limiteAtingido(tentativa);
+        boolean limite = registrada && MensagemFeedbackIncognita.limiteAtingido(tentativa);
         Map<String, Object> resultado = new LinkedHashMap<String, Object>();
-        resultado.put("schema", ServicoAtividadeWebComposicao.SCHEMA_RESULTADO);
+        resultado.put("schema", ServicoAtividadeComposicao.SCHEMA_RESULTADO);
         resultado.put("registrada", Boolean.valueOf(registrada));
         resultado.put("action_id", registrada ? tentativa.getActionId() : null);
         resultado.put("rejection_sequence_id", registrada ? tentativa.getRejectionSequenceId() : null);
@@ -48,7 +48,7 @@ final class RespostaConfirmacaoValorWeb {
                 Integer.valueOf(tentativa == null ? 0 : tentativa.getRejeicoesConsecutivas()));
         resultado.put("limite_atingido", Boolean.valueOf(limite));
         resultado.put("chave_mensagem", limite
-                ? MensagemFeedbackIncognitaWeb.resolver(incognita.getFluxoTentativas(), tentativa)
+                ? MensagemFeedbackIncognita.resolver(incognita.getFluxoTentativas(), tentativa)
                 : null);
         return resultado;
     }

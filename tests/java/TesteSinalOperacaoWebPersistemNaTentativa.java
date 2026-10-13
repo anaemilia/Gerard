@@ -1,7 +1,7 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
 import gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem;
@@ -24,7 +24,7 @@ public final class TesteSinalOperacaoWebPersistemNaTentativa {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         PortaGravadora porta = new PortaGravadora();
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -100,7 +100,7 @@ public final class TesteSinalOperacaoWebPersistemNaTentativa {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> localizarBonecas(ServicoSorteioAtividadeWeb servico) {
+    private static Map<String, Object> localizarBonecas(ServicoSorteioAtividade servico) {
         for (int tentativa = 0; tentativa < 60; tentativa++) {
             Map<String, Object> estado = servico.sortearRelacoes();
             String enunciado = String.valueOf(estado.get("enunciado"));
@@ -117,7 +117,7 @@ public final class TesteSinalOperacaoWebPersistemNaTentativa {
         }
     }
 
-    private static final class PortaGravadora implements PortaRegistroAtividadeWeb {
+    private static final class PortaGravadora implements PortaRegistroAtividade {
         final List<RegistroFactualAcaoInstrumental> registros = new ArrayList<RegistroFactualAcaoInstrumental>();
         RegistroFactualAcaoInstrumental ultimo() { return registros.get(registros.size() - 1); }
         public void registrarNovaSituacao(SituacaoProblemaAditiva s, String c, String e) { }

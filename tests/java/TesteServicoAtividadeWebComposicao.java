@@ -1,11 +1,11 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebComposicao;
+import gerard.aplicacao.portabilidade.ServicoAtividadeComposicao;
 import java.util.List;
 import java.util.Map;
 
 public class TesteServicoAtividadeWebComposicao {
     public static void main(String[] args) {
-        ServicoAtividadeWebComposicao servico =
-                new ServicoAtividadeWebComposicao("tentativa.teste.web",
+        ServicoAtividadeComposicao servico =
+                new ServicoAtividadeComposicao("tentativa.teste.web",
                         new gerard.infraestrutura.web.scaffolding.AdaptadorQuestionamentoPosicionamentoWeb());
         Map<String, Object> inicial = servico.estadoAtual();
         checar(!concluida(inicial), "começa incompleta");
@@ -17,7 +17,7 @@ public class TesteServicoAtividadeWebComposicao {
                 "não oferece digitação antes do posicionamento e engate");
         checar(possuiAcao(inicial, "POSICIONAR_CONHECIDO"), "oferece posicionamento");
         checar(!possuiAcao(inicial, "ENGATAR_INCOGNITA"), "engate aguarda as partes");
-        // O julgamento semântico de origem/destino da soltura mora em ServicoSorteioAtividadeWeb (um só lugar, qualquer caixa):
+        // O julgamento semântico de origem/destino da soltura mora em ServicoSorteioAtividade (um só lugar, qualquer caixa):
         // ver TesteWebJulgamentoPosicionamento.
         servico.posicionarValorConhecido("papel.parte1", "papel.parte1");
         servico.posicionarValorConhecido("papel.parte2", "papel.parte2");

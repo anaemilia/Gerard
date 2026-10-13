@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ServicoAtividadeWebTransformacaoRelacao;
+import gerard.aplicacao.portabilidade.ServicoAtividadeTransformacaoRelacao;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Cobre {@link ServicoAtividadeWebTransformacaoRelacao} (caminho básico, sem
+ * Cobre {@link ServicoAtividadeTransformacaoRelacao} (caminho básico, sem
  * narrativa rica), incluindo a escolha explícita de sinal recém-adicionada
  * (auditoria de acoplamento Main/web, 2026-09-19 — "toda relação/
  * transformação precisa de representação de sinal", mesmo protocolo já
- * usado por {@code ServicoAtividadeWebComparacaoMedidas}). Antes desta
+ * usado por {@code ServicoAtividadeComparacaoMedidas}). Antes desta
  * correção, posicionar um papel conhecido aplicava o valor curado com sinal
  * direto, sem o combobox positivo/negativo que o desktop sempre exigiu.
  */
@@ -31,8 +31,8 @@ public final class TesteServicoAtividadeWebTransformacaoRelacao {
                 "PO_TRANSFORMACAO_RELACAO_figurinhas_1283157032");
         exigir(situacao.getTipo() == TipoSituacaoAditiva.TRANSFORMACAO_RELACAO,
                 "situação escolhida não é Transformação de Relação");
-        ServicoAtividadeWebTransformacaoRelacao servico =
-                new ServicoAtividadeWebTransformacaoRelacao(
+        ServicoAtividadeTransformacaoRelacao servico =
+                new ServicoAtividadeTransformacaoRelacao(
                         "tentativa.web.teste.transformacao_relacao", situacao);
         Map<String, Object> estado = servico.estadoAtual();
         exigir("TRANSFORMACAO_RELACAO".equals(estado.get("categoria")),
@@ -113,8 +113,8 @@ public final class TesteServicoAtividadeWebTransformacaoRelacao {
         SituacaoProblemaAditiva situacao = localizar(
                 new RepositorioSituacoesAditivas().listarValidadas(),
                 "PO_TRANSFORMACAO_RELACAO_bonecas_620955739");
-        ServicoAtividadeWebTransformacaoRelacao servico =
-                new ServicoAtividadeWebTransformacaoRelacao(
+        ServicoAtividadeTransformacaoRelacao servico =
+                new ServicoAtividadeTransformacaoRelacao(
                         "tentativa.web.teste.transformacao_relacao.bonecas", situacao);
         Map<String, Object> estado = servico.estadoAtual();
         String alvo = String.valueOf(estado.get("papel_desconhecido_original"));

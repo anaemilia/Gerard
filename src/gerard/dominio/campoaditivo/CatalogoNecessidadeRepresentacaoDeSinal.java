@@ -21,7 +21,7 @@ import java.util.Map;
  * nova) — esta classe centraliza a consulta no objeto de domínio real,
  * eliminando o literal hardcoded como fonte paralela. Usada tanto pelo
  * desktop (Main.java, via GeradorCenaDiagramaAditivo) quanto pelo web
- * (ServicoSorteioAtividadeWeb), já que ambos compartilham o mesmo pipeline de
+ * (ServicoSorteioAtividade), já que ambos compartilham o mesmo pipeline de
  * geração de cena.
  *
  * A mesma chave de papel pode existir em mais de uma categoria (ex.:

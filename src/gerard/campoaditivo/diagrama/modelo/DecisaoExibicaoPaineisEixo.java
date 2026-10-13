@@ -13,7 +13,7 @@ import java.util.List;
  * (ver {@code LEVANTAMENTO_ACOPLAMENTO_MAIN_WEB_2026-08-31.md}, "Próxima
  * fronteira recomendada"): a mesma regra precisa valer tanto para o
  * adaptador Swing quanto para a API web — hoje
- * {@code ServicoSorteioAtividadeWeb} publica {@code exibir_lupa} por figura,
+ * {@code ServicoSorteioAtividade} publica {@code exibir_lupa} por figura,
  * mas não a decisão agregada da cena; sem um ponto único, um futuro
  * consumidor web (React, por exemplo) teria que recalculá-la de forma
  * independente, reintroduzindo a mesma duplicação já eliminada de `Main`

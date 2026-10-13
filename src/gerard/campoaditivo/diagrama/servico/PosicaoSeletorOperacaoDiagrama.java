@@ -10,7 +10,7 @@ import gerard.campoaditivo.diagrama.modelo.FiguraDiagrama;
  * valores), só reescritas em termos de FiguraDiagrama/ConectorDiagrama (o
  * modelo de cena compartilhado com o cliente web) em vez de ElementoVergnaud
  * (modelo exclusivo do desktop). Serve de fonte única tanto para o cálculo
- * do viewport da cena (ServicoSorteioAtividadeWeb.projetarViewport) quanto
+ * do viewport da cena (ServicoSorteioAtividade.projetarViewport) quanto
  * para a posição real dos botões enviada ao cliente — o cliente não deriva
  * mais essa geometria por conta própria.
  */

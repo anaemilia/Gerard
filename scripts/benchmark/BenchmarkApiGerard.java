@@ -392,7 +392,7 @@ public final class BenchmarkApiGerard {
                 pensar(cfg.thinkMinMs, cfg.thinkMaxMs); // ver o feedback
             }
             // TRANSFORMACAO_RELACAO sem dado "rica" curado (possuiSituacaoRicaValida()=false em
-            // ServicoSorteioAtividadeWeb.escolherCategoria) classifica certo mas não ativa
+            // ServicoSorteioAtividade.escolherCategoria) classifica certo mas não ativa
             // nenhuma sub-atividade — nem posicionar, nem escolher-operação. Achado real do
             // benchmark, não bug do harness: nesse caso não há nada para reiniciar depois.
             boolean possuiSubAtividadeAtiva = temPosicionar || temEscolherOperacao;

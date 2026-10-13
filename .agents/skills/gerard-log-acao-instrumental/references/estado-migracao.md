@@ -112,7 +112,7 @@ Implementado em 2026-09-28:
   `opcao`; fechar o diálogo sem responder não é registrado; limite atingido
   na resposta chama `processarLimiteTentativasAtingido`;
 - web: rota `/api/acoes/responder-confirmacao-valor`, comum às cinco
-  categorias com incógnita (`RespostaConfirmacaoValorWeb`); a pergunta não
+  categorias com incógnita (`RespostaConfirmacaoValor`); a pergunta não
   reaparece quando o limite é atingido.
 
 Evidências: `TesteRespostaConfirmacaoValorRejeitado`; log real do desktop
@@ -128,16 +128,16 @@ persistência:
 | Ação web | Proprietário que constitui o registro |
 |---|---|
 | Classificar categoria | `TentativaClassificacaoCategoriaAditiva` |
-| Posicionar papel / engatar "?" | `DescritorPapelQuantitativo.avaliarPosicionamento` (via `AvaliadorOrigemDestinoWeb`) |
+| Posicionar papel / engatar "?" | `DescritorPapelQuantitativo.avaliarPosicionamento` (via `AvaliadorOrigemDestino`) |
 | Valor da incógnita | `IncognitaQuantitativa.avaliarAcao` (valor esperado da relação estrutural) |
 | Resposta Sim/Não | `IncognitaQuantitativa.avaliarRespostaConfirmacao` |
 | Sinal do número relativo | `TentativaEscolhaSinalPapelQuantitativo` |
 | Operação soma/subtração | `CriterioOperacaoModelagem` (via `AvaliacaoEscolhaOperacaoRelacao.registrarEscolha`) |
 | Reiniciar modelagem | `TentativaModelagemAditiva.restaurar` |
 
-Roteamento: `EscopoTentativaWeb` (contraparte de
+Roteamento: `EscopoTentativa` (contraparte de
 `Main.persistirAcaoDaTentativa`) entrega só o que a `TentativaModelagemAditiva`
-constitui; `PortaRegistroAtividadeWeb` estende `PortaPersistenciaAcaoInstrumental`
+constitui; `PortaRegistroAtividade` estende `PortaPersistenciaAcaoInstrumental`
 e `RegistradorAtividadeWebLogGerard` usa `PersistidorAcaoInstrumentalLogGerard`.
 A restauração usa `PersistidorRestauracaoModelagemLogGerard`, agora único para
 desktop e web. Origens de evento `WEB_*` distinguem a plataforma. Caminhos
@@ -147,7 +147,7 @@ operações avaliadas.
 
 ## Restauração web preserva sequências abertas (2026-09-29)
 
-`EscopoTentativaWeb` conserva a fotografia dos `PapelQuantitativo` recebidos
+`EscopoTentativa` conserva a fotografia dos `PapelQuantitativo` recebidos
 na chamada mais recente de `incorporar` e a entrega a
 `TentativaModelagemAditiva.restaurar`. A tentativa captura
 `rejection_sequence_id`, constitui um único

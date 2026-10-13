@@ -1,4 +1,4 @@
-import gerard.aplicacao.portabilidade.ProjetorAjudaVisualWeb;
+import gerard.aplicacao.portabilidade.ProjetorAjudaVisual;
 import gerard.campoaditivo.curadoria.SemanticaCuradaSituacao;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.modelo.TipoSituacaoAditiva;
@@ -24,11 +24,11 @@ public class TesteAjudaVisualPorCategoriaWeb {
             boolean relativo = SemanticaCuradaSituacao.possuiNumeroRelativo(situacao);
             boolean esperada = relativo || tipo.envolveTransformacao();
             String id = situacao.getId();
-            exigir(!ProjetorAjudaVisualWeb.deveAcionar(situacao, false), "antes do limite não aciona: " + id);
-            exigir(ProjetorAjudaVisualWeb.projetar(situacao, false).isEmpty(), "sem limite não há apoio: " + id);
-            exigir(ProjetorAjudaVisualWeb.deveAcionar(situacao, true) == esperada,
+            exigir(!ProjetorAjudaVisual.deveAcionar(situacao, false), "antes do limite não aciona: " + id);
+            exigir(ProjetorAjudaVisual.projetar(situacao, false).isEmpty(), "sem limite não há apoio: " + id);
+            exigir(ProjetorAjudaVisual.deveAcionar(situacao, true) == esperada,
                     "aciona com número relativo ou transformação, independente do acervo: " + id);
-            List<Object> apoios = ProjetorAjudaVisualWeb.projetar(situacao, true);
+            List<Object> apoios = ProjetorAjudaVisual.projetar(situacao, true);
             exigir(apoios.size() == (esperada ? 1 : 0),
                     "o backend entrega exatamente um apoio decidido quando aciona: " + id);
             if (!esperada) {

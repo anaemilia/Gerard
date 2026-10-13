@@ -1,6 +1,6 @@
 import gerard.aplicacao.FachadaCarregamentoAtividade;
 import gerard.aplicacao.PoliticaSorteioSituacoesAditivas;
-import gerard.aplicacao.portabilidade.ServicoSorteioAtividadeWeb;
+import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.campoaditivo.curadoria.ConstrutorResultadoCurado;
 import gerard.campoaditivo.servico.CatalogoDefinicoesAditivas;
 import gerard.campoaditivo.servico.RepositorioSituacoesAditivas;
@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class TesteServicoSorteioAtividadeWeb {
     public static void main(String[] args) {
-        ServicoSorteioAtividadeWeb servico = new ServicoSorteioAtividadeWeb(
+        ServicoSorteioAtividade servico = new ServicoSorteioAtividade(
                 new PoliticaSorteioSituacoesAditivas(),
                 new FachadaCarregamentoAtividade(new RepositorioSituacoesAditivas(),
                         new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado()),
@@ -58,7 +58,7 @@ public class TesteServicoSorteioAtividadeWeb {
                 exigir(!"EDITAR_VALOR".equals(interacao.get("tipo")),
                         "a digitação não é oferecida antes do engate");
                 // REVELAR_EIXO/OCULTAR_EIXO (protocolo do eixo dos inteiros,
-                // ver ServicoSorteioAtividadeWeb.revelarEixo/ocultarEixo) é
+                // ver ServicoSorteioAtividade.revelarEixo/ocultarEixo) é
                 // decidido localmente por figura (isExibirLupa + estado do
                 // mapa de visibilidade), não publicado em acoes_disponiveis
                 // por nenhuma atividade — não tem o que casar ali.
@@ -81,7 +81,7 @@ public class TesteServicoSorteioAtividadeWeb {
 
     @SuppressWarnings("unchecked")
     private static Map<String, Object> acertarUmaCategoriaDeMedidas(
-            ServicoSorteioAtividadeWeb servico) {
+            ServicoSorteioAtividade servico) {
         String[] candidatas = {"COMPOSICAO_MEDIDAS", "TRANSFORMACAO_MEDIDAS",
                 "COMPARACAO_MEDIDAS"};
         for (String candidata : candidatas) {
@@ -99,7 +99,7 @@ public class TesteServicoSorteioAtividadeWeb {
 
     @SuppressWarnings("unchecked")
     private static void verificar(Map<String, Object> estado, String grupo) {
-        exigir(ServicoSorteioAtividadeWeb.SCHEMA.equals(estado.get("schema")), "schema");
+        exigir(ServicoSorteioAtividade.SCHEMA.equals(estado.get("schema")), "schema");
         exigir(grupo.equals(estado.get("grupo_sorteio")), "grupo");
         exigir(Boolean.TRUE.equals(estado.get("situacao_validada")), "validação curada");
         exigir(estado.get("situacao_id") != null, "identidade da situação");

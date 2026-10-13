@@ -1,6 +1,6 @@
 package gerard.pesquisador.log;
 
-import gerard.aplicacao.portabilidade.PortaRegistroAtividadeWeb;
+import gerard.aplicacao.portabilidade.PortaRegistroAtividade;
 import gerard.campoaditivo.modelo.SituacaoProblemaAditiva;
 import gerard.campoaditivo.servico.ControladorContextoSituacao;
 import gerard.dominio.atividade.RegistroFactualAcaoInstrumental;
@@ -8,7 +8,7 @@ import gerard.dominio.campoaditivo.RegistroAcaoRestauracaoModelagem;
 
 /** Adaptador técnico entre a atividade web e o log existente do Gérard. */
 public final class RegistradorAtividadeWebLogGerard
-        implements PortaRegistroAtividadeWeb {
+        implements PortaRegistroAtividade {
 
     private final LoggerInteracaoGerard logger;
     private final ControladorContextoSituacao contexto;

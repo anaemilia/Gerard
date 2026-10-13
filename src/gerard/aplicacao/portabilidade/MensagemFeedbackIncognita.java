@@ -11,8 +11,8 @@ import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
  * limite de tentativas (sem texto: o aviso foi retirado) ou a pergunta genérica
  * de confirmação (ui.question.valueMismatch, AG_EMLQ).
  */
-final class MensagemFeedbackIncognitaWeb {
-    private MensagemFeedbackIncognitaWeb() {
+final class MensagemFeedbackIncognita {
+    private MensagemFeedbackIncognita() {
     }
 
     /**
