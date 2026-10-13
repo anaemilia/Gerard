@@ -82,7 +82,7 @@ public final class ServicoAtividadeComparacaoMedidas extends ServicoAtividadeMod
         papeis.add(projetarPapel(valorRelativo));
         papeis.add(projetarPapel(referendo));
         estado.put("papeis", papeis);
-        boolean concluida = papelDesconhecido.estaPreenchido()
+        boolean concluida = posicionamentoConcluido()
                 && relacao.verificarConsistencia(referido, valorRelativo, referendo)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
@@ -293,7 +293,8 @@ public final class ServicoAtividadeComparacaoMedidas extends ServicoAtividadeMod
         return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
     }
 
-    private List<String> participantes() {
+    @Override
+    protected List<String> participantes() {
         return Arrays.asList(referido.getChave(), valorRelativo.getChave(), referendo.getChave());
     }
 

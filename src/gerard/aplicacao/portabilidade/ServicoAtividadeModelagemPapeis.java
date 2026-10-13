@@ -1,9 +1,12 @@
 package gerard.aplicacao.portabilidade;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gerard.campoaditivo.conclusao.AvaliadorConclusaoModelagem;
+import gerard.campoaditivo.conclusao.EstadoPosicionamentoModelagem;
 import gerard.dominio.campoaditivo.PapelQuantitativo;
 
 /**
@@ -13,6 +16,8 @@ import gerard.dominio.campoaditivo.PapelQuantitativo;
  * O julgamento (posicionamento certo ou incorreto) acontece antes, em ServicoSorteioAtividade.julgarSoltura.
  */
 abstract class ServicoAtividadeModelagemPapeis implements ServicoAtividade {
+    private static final AvaliadorConclusaoModelagem AVALIADOR_CONCLUSAO = new AvaliadorConclusaoModelagem();
+
     /** null quando a situação não tem incógnita curada resolvível. */
     protected PapelQuantitativo papelDesconhecido;
     /**
@@ -28,6 +33,27 @@ abstract class ServicoAtividadeModelagemPapeis implements ServicoAtividade {
 
     /** Os papéis da categoria; lança IllegalStateException para uma chave que não é dela. */
     protected abstract PapelQuantitativo papelPorChave(String chave);
+
+    /** As chaves dos papéis da categoria, na ordem canônica. */
+    protected abstract List<String> participantes();
+
+    /**
+     * O posicionamento está concluído pela mesma regra do desktop (AvaliadorConclusaoModelagem): todos os papéis no
+     * diagrama, cada um no papel que lhe cabe, e a incógnita original preenchida com o valor aceito. Aqui a
+     * tentativa só guarda posicionamentos já julgados corretos e o valor da incógnita só entra se aceito.
+     */
+    protected final boolean posicionamentoConcluido() {
+        List<EstadoPosicionamentoModelagem> estados = new ArrayList<EstadoPosicionamentoModelagem>();
+        for (String chave : participantes()) {
+            PapelQuantitativo papel = papelPorChave(chave);
+            boolean preenchido = papel.estaPreenchido();
+            boolean incognita = papel == papelDesconhecido;
+            String valor = preenchido && papel.valorAtual() != null ? papel.valorAtual().formatar(false) : "";
+            estados.add(new EstadoPosicionamentoModelagem(chave, chave, valor, preenchido, incognita,
+                    incognita && preenchido, incognita ? Boolean.TRUE : null, null));
+        }
+        return AVALIADOR_CONCLUSAO.estaConcluida(participantes(), estados);
+    }
 
     /** Revela o valor curado de um papel conhecido da categoria (pode deixá-lo aguardando o sinal). */
     protected abstract void posicionarConhecido(PapelQuantitativo papel);

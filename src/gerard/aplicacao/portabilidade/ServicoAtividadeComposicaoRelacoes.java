@@ -424,7 +424,8 @@ public final class ServicoAtividadeComposicaoRelacoes extends ServicoAtividadeMo
         return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
     }
 
-    private List<String> participantes() {
+    @Override
+    protected List<String> participantes() {
         return Arrays.asList(relacao1.getChave(), relacao2.getChave(), relacaoFinal.getChave());
     }
 

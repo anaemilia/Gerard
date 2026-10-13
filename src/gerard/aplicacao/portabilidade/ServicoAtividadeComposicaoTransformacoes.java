@@ -592,7 +592,8 @@ public final class ServicoAtividadeComposicaoTransformacoes extends ServicoAtivi
         return new LinkedHashMap<String, Object>();
     }
 
-    private List<String> participantes() {
+    @Override
+    protected List<String> participantes() {
         return Arrays.asList(estadoInicial.getChave(), transformacao1.getChave(), estadoIntermediario.getChave(), transformacao2.getChave(), transformacaoFinal.getChave(), estadoFinal.getChave(), estadoInicialParte1.getChave(), estadoInicialParte2.getChave());
     }
 

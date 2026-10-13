@@ -81,7 +81,7 @@ public final class ServicoAtividadeTransformacaoMedidas extends ServicoAtividade
         papeis.add(projetarPapel(transformacao));
         papeis.add(projetarPapel(estadoFinal));
         estado.put("papeis", papeis);
-        boolean concluida = papelDesconhecido.estaPreenchido()
+        boolean concluida = posicionamentoConcluido()
                 && relacao.verificarConsistencia(
                         estadoInicial, transformacao, estadoFinal)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
@@ -280,7 +280,8 @@ public final class ServicoAtividadeTransformacaoMedidas extends ServicoAtividade
         return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
     }
 
-    private List<String> participantes() {
+    @Override
+    protected List<String> participantes() {
         return Arrays.asList(estadoInicial.getChave(), transformacao.getChave(), estadoFinal.getChave());
     }
 

@@ -101,7 +101,7 @@ public final class ServicoAtividadeComposicao extends ServicoAtividadeModelagemP
         estado.put("parte1", projetarPapelParaEstado(parte1));
         estado.put("parte2", projetarPapelParaEstado(parte2));
         estado.put("todo", projetarPapelParaEstado(todo));
-        boolean concluida = papelDesconhecido.estaPreenchido()
+        boolean concluida = posicionamentoConcluido()
                 && relacao.verificarConsistencia(parte1, parte2, todo)
                         == gerard.dominio.campoaditivo.EstadoConsistencia.CONSISTENTE;
         estado.put("concluida", Boolean.valueOf(concluida));
@@ -196,7 +196,8 @@ public final class ServicoAtividadeComposicao extends ServicoAtividadeModelagemP
         return calculo.temValorCalculavel() ? calculo.getValorCalculado() : null;
     }
 
-    private List<String> participantes() {
+    @Override
+    protected List<String> participantes() {
         return Arrays.asList(parte1.getChave(), parte2.getChave(), todo.getChave());
     }
 
