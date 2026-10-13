@@ -34,17 +34,17 @@ try{
   await input.press('Enter');await pausa();
   exigir(await page.locator('.valor-figura-confirmacao').count()===1,'pergunta após valor errado');
   await clicar(page.locator('.valor-figura-confirmacao input').first());
-  const confirmacao=chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).at(-1).resposta;
+  const confirmacao=chamadas.filter(c=>/\/valor\/confirmacao$/.test(c.url)).at(-1).resposta;
   exigir(confirmacao.rejeicoes_consecutivas===1,'Sim preserva primeira tentativa');
   for(const valor of (process.env.GERARD_TESTAR_DECISAO==='1'?['2','3']:['2','3','4','6'])){
    await page.mouse.dblclick(p.x,p.y);await pausa();await input.fill(valor);await input.press('Enter');await pausa();
-   const resultado=chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).at(-1).resposta;
+   const resultado=chamadas.filter(c=>/\/valor$/.test(c.url)).at(-1).resposta;
    console.log('VALOR='+valor+' CONTAGEM='+resultado.rejeicoes_consecutivas+' LIMITE='+resultado.limite_atingido+' DIAGNOSTICO='+resultado.diagnostico);
    if(valor==='2'){
     exigir(resultado.rejeicoes_consecutivas===2&&!resultado.limite_atingido,'segunda proposta ainda não atinge limite');
     exigir(await page.getByRole('status').filter({hasText:'Você tentou várias vezes'}).count()===0,'sem aviso na segunda tentativa');
     await clicar(page.locator('.valor-figura-confirmacao input').first());
-    const resposta=chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).at(-1).resposta;
+    const resposta=chamadas.filter(c=>/\/valor\/confirmacao$/.test(c.url)).at(-1).resposta;
     exigir(resposta.rejeicoes_consecutivas===2&&!resposta.limite_atingido,'segundo Sim não altera a contagem');
     continue;
    }
@@ -64,23 +64,23 @@ try{
     'resposta correta limpa o feedback de limite');
   await page.screenshot({path:dir+'/lucas_concluida.png'});
  }else{
- await page.route('**/api/acoes/posicionar',async route=>{
+ await page.route('**/papeis/*/valor',async route=>{
   const response=await route.fetch();await page.waitForTimeout(600);await route.fulfill({response});
  });
  // Tecla mantida: eventos reais de repetição, sem uma nova intenção de envio.
  await input.focus();await page.keyboard.down('Enter');await page.keyboard.down('Enter');await page.keyboard.down('Enter');await page.keyboard.up('Enter');
  await page.waitForTimeout(6500);
  console.log('DIALOGO_APOS_6500MS='+await page.locator('.valor-figura-confirmacao').count());
- console.log('SUBMISSOES='+chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).length);
- console.log('CONFIRMACOES='+chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).length);
+ console.log('SUBMISSOES='+chamadas.filter(c=>/\/valor$/.test(c.url)).length);
+ console.log('CONFIRMACOES='+chamadas.filter(c=>/\/valor\/confirmacao$/.test(c.url)).length);
  exigir(await page.locator('.valor-figura-confirmacao').count()===1,'pergunta permanece sem resposta');
- exigir(chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).length===1,'Enter repetido produz somente uma submissão');
- exigir(chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).length===0,'não registra confirmação automática');
+ exigir(chamadas.filter(c=>/\/valor$/.test(c.url)).length===1,'Enter repetido produz somente uma submissão');
+ exigir(chamadas.filter(c=>/\/valor\/confirmacao$/.test(c.url)).length===0,'não registra confirmação automática');
  await page.screenshot({path:dir+'/apos_enter.png'});
- await page.route('**/api/acoes/responder-confirmacao-valor',route=>route.abort());
+ await page.route('**/papeis/*/valor/confirmacao',route=>route.abort());
  await clicar(page.locator('.valor-figura-confirmacao input').last());
  exigir(await page.locator('.valor-figura-confirmacao').count()===1,'falha de rede mantém pergunta');
- await page.unroute('**/api/acoes/responder-confirmacao-valor');
+ await page.unroute('**/papeis/*/valor/confirmacao');
  // Resposta explícita, agora com a rede disponível.
  await clicar(page.locator('.valor-figura-confirmacao input').last());
  if(await input.count()){
@@ -89,7 +89,7 @@ try{
   await clicar(page.locator('.valor-figura-confirmacao input').last());
   await input.fill('3');await input.press('Enter');await page.waitForTimeout(1100);
   console.log('DIALOGO_NO_LIMITE='+await page.locator('.valor-figura-confirmacao').count());
-  console.log('CONFIRMACOES_NO_LIMITE='+chamadas.filter(c=>c.url.endsWith('/api/acoes/responder-confirmacao-valor')).length);
+  console.log('CONFIRMACOES_NO_LIMITE='+chamadas.filter(c=>/\/valor\/confirmacao$/.test(c.url)).length);
   await page.screenshot({path:dir+'/limite.png'});
   await page.mouse.dblclick(p.x,p.y);await pausa();
   const editor=page.locator(`[id="valor-${f.id}"]`);await editor.fill('7');await editor.press('Enter');await page.waitForTimeout(1100);

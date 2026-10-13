@@ -27,7 +27,7 @@ export function IconeAjudaContextual() {
   </svg>;
 }
 
-export function MenuAjudaContextual({ item }: { item: ItemAjudaContextual | undefined }) {
+export function MenuAjudaContextual({ item, tentativaId }: { item: ItemAjudaContextual | undefined; tentativaId: string }) {
   const [aberto, setAberto] = useState(false);
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
@@ -49,7 +49,7 @@ export function MenuAjudaContextual({ item }: { item: ItemAjudaContextual | unde
     setCarregando(true);
     setErro(null);
     try {
-      const resultado = await api.ajudaContextual(item!.area, intencao);
+      const resultado = await api.ajudaContextual(tentativaId, item!.area, intencao);
       setMensagem(resultado.mensagem);
     } catch (erroRequisicao) {
       setErro((erroRequisicao as Error).message);

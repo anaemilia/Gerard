@@ -51,7 +51,7 @@ async function posicionar(c){const es=estado.cena.elementos_texto.filter(e=>e.pa
 }
 async function operacao(qual,op){const seletores=page.locator('.op-seletor');const s=seletores.nth(qual);
   const b=s.locator(`[role="button"][aria-label="${op==='soma'?'Soma':'Subtração'}"] circle.op-anel`);
-  const resposta=page.waitForResponse(r=>r.url().includes('/api/acoes/escolher-operacao')&&r.request().method()==='POST',{timeout:5000});
+  const resposta=page.waitForResponse(r=>r.url().endsWith('/operacoes')&&r.request().method()==='POST',{timeout:5000});
   await clicar(b); await resposta;
 }
 try{
@@ -75,7 +75,7 @@ try{
     if(alvo){const f=figura(alvo);const p=await centro(page.locator(`[data-figura-id="${f.id}"]`));await page.mouse.dblclick(p.x,p.y);await pausa();
       const resposta=respostaDaRelacao(alvo,c);
       const input=page.locator(`[id="valor-${f.id}"]`);await input.fill(String(Math.abs(resposta)));await pausa();
-      const enviada=page.waitForResponse(r=>r.url().endsWith('/api/acoes/posicionar')&&r.request().method()==='POST');
+      const enviada=page.waitForResponse(r=>/\/valor$/.test(r.url())&&r.request().method()==='POST');
       await input.press('Enter');await pausa();await sinal(resposta<0);await (await enviada).finished();await pausa();
     }
     exigir(estado.modelagem.concluida===true,tipo+' conclusão real');

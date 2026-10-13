@@ -57,7 +57,7 @@ autorização própria.
 
 "Mexer no eixo é mecanismo exploratório, não precisa persistir." A reta não
 grava na tentativa. A web projeta o dependente pela relação estrutural do
-domínio (`/api/acoes/projetar-eixo` → `CatalogoRelacoesEstruturaisAditivas`),
+domínio (`/api/v1/tentativas/{id}/papeis/{papel}/eixo/projecao` → `CatalogoRelacoesEstruturaisAditivas`),
 sem cálculo no cliente; o domínio do papel dependente recusa projeções
 inválidas (ex.: medida negativa). A antiga rota de persistência
 (`ajustar-valor-eixo`) foi removida.

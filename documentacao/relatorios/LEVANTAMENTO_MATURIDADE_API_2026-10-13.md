@@ -4,7 +4,22 @@ Escopo: as 26 rotas registradas (25 de API e a raiz estática) em `ServidorProto
 Base da avaliação: leitura do código do servidor e do cliente, e um teste local com dois clientes simultâneos
 (sem teste de carga e sem teste de segurança).
 
-## Resultado
+## Andamento (2026-10-13)
+
+| Item | Situação |
+|---|---|
+| P0 isolamento por usuário | **feito**: sessão por visitante (cookie `gerard_sessao`), log num arquivo só com usuário e contexto por visitante, índice de tentativas em memória. 100 usuários simultâneos: 0 erros, 0 julgamentos cruzados, p99 10 ms (`scripts/benchmark/CargaMultiusuarioGerard.java`). |
+| P1 nível 1: recursos | **feito**: a tentativa é um recurso (`/api/v1/tentativas/{id}/...`, ver `RotasTentativa`); a pessoa também (`/api/v1/usuarios/{id}`). Rotas com verbo removidas (23, mais `GET /api/situacao`, que sorteava). `TesteRecursosTentativaWeb` (HTTP), `e2e_recursos_tentativa_web.mjs` e os e2e existentes (mouse real). |
+| P2 nível 2 | não iniciado (só vale começar com o nível 1 fechado) |
+| P3, P4 | não iniciados |
+
+Pontos que o P1 deixou de propósito para os níveis seguintes: os verbos ainda são quase todos `POST` (o P2 troca por `PUT`/`GET`
+conforme a idempotência), os status continuam os de antes (400/422 genéricos, com 404 só para tentativa inexistente ou
+substituída e rota desconhecida) e o cliente ainda monta algumas URIs (o P3 passa a seguir links). `/api/pesquisa/log` e
+`/api/curadoria/situacoes` ficaram onde estavam (já eram recursos e têm clientes fora do repositório); entram na versão
+`/api/v1` no P4, com depreciação.
+
+## Resultado (antes do P0 e do P1)
 
 | Nível | Exigência | Situação | Evidência |
 |---|---|---|---|

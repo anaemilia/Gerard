@@ -148,7 +148,7 @@ export default function App() {
     if (!controle) return;
     setOcupado(true);
     try {
-      receberSnapshot(await api.reiniciar());
+      receberSnapshot(await api.executar(controle));
       setAvisoLimite(null);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
@@ -156,9 +156,10 @@ export default function App() {
 
   async function trocarIdioma(codigo: string) {
     setMenuIdiomaAberto(false);
+    if (!estado) return;
     setOcupado(true);
     try {
-      receberSnapshot(await api.trocarIdiomaSituacao(codigo));
+      receberSnapshot(await api.trocarIdiomaSituacao(estado.tentativa_id, codigo));
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -286,12 +287,12 @@ export default function App() {
     const snapshotRejeitado = snapshotPropostaRejeitada;
     let limiteAtingido = false;
     let estadoServidor: EstadoWeb | null = null;
-    if (proposta) {
+    if (proposta && estado) {
       envioValorEmCurso.current = true;
       setOcupado(true);
       try {
         const resultado = await api.responderConfirmacaoValor(
-          proposta.papelId, confirmou, proposta.valor);
+          estado.tentativa_id, proposta.papelId, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
         estadoServidor = resultado.estado;
         if (limiteAtingido && resultado.chave_mensagem && representacoes.elementoEmEdicao) {
@@ -349,16 +350,16 @@ export default function App() {
 
   async function aoSoltarElementoNoDiagrama(figura: FiguraCena, papelId: string) {
     // Um só caminho para qualquer caixa: o servidor julga se o posicionamento está certo ou errado
-    // (AvaliadorOrigemDestinoWeb, mesma regra de ScaffoldingQuestionamento.avaliarPosicionamento do desktop, que não é
+    // (AvaliadorOrigemDestino, mesma regra de ScaffoldingQuestionamento.avaliarPosicionamento do desktop, que não é
     // igualdade estrita) e, só se estiver certo, aplica o efeito que a figura admite (posicionar o valor ou engatar a
     // incógnita). O posicionamento incorreto volta na cena (posicionamento_questionado) e fica até ser corrigido.
     // Soltar o "?" engata a incógnita (protocolo mouse-texto, Main.java); a digitação abre com o duplo-clique ou, ao
     // engatar, aqui mesmo (ver FiguraCenaGerard).
-    if (!figura.chave_papel_semantico) return;
+    if (!figura.chave_papel_semantico || !estado) return;
     const engatava = figura.interacoes_permitidas.find((item) => item.tipo === "ENGATAR_INCOGNITA");
     setOcupado(true);
     try {
-      const resultado = await api.soltarNumero(figura.chave_papel_semantico, papelId);
+      const resultado = await api.soltarNumero(estado.tentativa_id, figura.chave_papel_semantico, papelId);
       receberSnapshot(resultado.estado);
       if (resultado.aceita && engatava) {
         const figuraEngatada = resultado.estado.cena?.figuras.find((item) => item.id === figura.id);
@@ -409,9 +410,10 @@ export default function App() {
       difusorExploratorio.current.alterarPapel(papelId, valor);
       return;
     }
+    if (!estado) return;
     const sequencia = ++sequenciaProjecaoEixo.current;
     try {
-      const resultado = await api.projetarEixo(papelId, valor);
+      const resultado = await api.projetarEixo(estado.tentativa_id, papelId, valor);
       if (sequencia === sequenciaProjecaoEixo.current) {
         if (resultado.aceita === false) {
           // Domínio recusou (ex.: medida negativa): volta à última projeção aceita.
@@ -428,12 +430,11 @@ export default function App() {
   async function alternarEixo(figura: FiguraCena) {
     const interacao = figura.interacoes_permitidas.find(
       (item) => item.tipo === (figura.lupa_habilitada ? "OCULTAR_EIXO" : "REVELAR_EIXO"));
-    if (!interacao) return;
+    if (!interacao || !estado) return;
     setOcupado(true);
     try {
-      const resultado = figura.lupa_habilitada
-        ? await api.ocultarEixo(interacao.papel_id)
-        : await api.revelarEixo(interacao.papel_id);
+      const resultado = await api.alterarVisibilidadeEixo(
+        estado.tentativa_id, interacao.papel_id, !figura.lupa_habilitada);
       receberSnapshot(resultado.estado);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
@@ -550,7 +551,7 @@ export default function App() {
               {dicaVisivel && <p className="help-tip" role="status">{estado.dica_proximo_passo}</p>}
             </div>
           : itemAjuda("TEXTO")
-            ? <MenuAjudaContextual item={itemAjuda("TEXTO")} />
+            ? <MenuAjudaContextual item={itemAjuda("TEXTO")} tentativaId={estado.tentativa_id} />
             : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
         <div className="help-mark-wrap language-switch-wrap">
           <button type="button" className="help-mark" aria-expanded={menuIdiomaAberto}
@@ -585,7 +586,7 @@ export default function App() {
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className={`diagram-panel${estado.modelagem?.concluida === true ? " diagram-panel-concluido" : ""}${feedbackErroDoDiagrama ? " diagram-panel-erro" : ""}`} aria-label="Área do diagrama">
-          <MenuAjudaContextual item={itemAjuda("VERGNAUD")} />
+          <MenuAjudaContextual item={itemAjuda("VERGNAUD")} tentativaId={estado.tentativa_id} />
           {acao("REINICIAR_TENTATIVA") && <span className="help-mark-wrap diagram-restore-wrap">
             <button type="button" className="help-mark"
               aria-label="Limpar a área do diagrama e recomeçar a modelagem"
@@ -644,7 +645,7 @@ export default function App() {
               conclusao={estado.conclusao} ocupado={ocupado} aoEscolher={escolherConclusao} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
-          <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} />
+          <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} tentativaId={estado.tentativa_id} />
           {estado?.ajuda_visual_acionada && historinhasAjudaVisual.length > 0 &&
             <HistorinhaPassiva historinhas={historinhasAjudaVisual}
               codigoIdioma={codigoIdiomaSituacao} />}

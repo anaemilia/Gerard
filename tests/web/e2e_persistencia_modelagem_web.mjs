@@ -55,7 +55,7 @@ async function classificarComposicao() {
   for (let i = 0; i < 60; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -73,7 +73,7 @@ async function classificarTransformacaoComIncognitaAssinada() {
   for (let i = 0; i < 120; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(400);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Transformação de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -207,7 +207,7 @@ await clicar(`[data-figura-id="${figuraEixo.id}"] [aria-label="Ver o eixo x dest
 await page.waitForSelector('.eixo-ponto-controle');
 let requisicoesProjecaoEixo = 0;
 const contarProjecaoEixo = req => {
-  if (req.url().includes('/api/acoes/projetar-eixo')) requisicoesProjecaoEixo++;
+  if (req.url().endsWith('/eixo/projecao')) requisicoesProjecaoEixo++;
 };
 page.on('request', contarProjecaoEixo);
 const idsPapeisEixo = estado.modelagem.papeis.map(p => p.id);

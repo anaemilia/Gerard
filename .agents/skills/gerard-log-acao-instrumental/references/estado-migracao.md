@@ -111,7 +111,7 @@ Implementado em 2026-09-28:
 - desktop: as duas perguntas `ui.question.valueMismatch` deixam de ignorar
   `opcao`; fechar o diálogo sem responder não é registrado; limite atingido
   na resposta chama `processarLimiteTentativasAtingido`;
-- web: rota `/api/acoes/responder-confirmacao-valor`, comum às cinco
+- web: rota `/api/v1/tentativas/{id}/papeis/{papel}/valor/confirmacao`, comum às cinco
   categorias com incógnita (`RespostaConfirmacaoValor`); a pergunta não
   reaparece quando o limite é atingido.
 

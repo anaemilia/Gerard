@@ -39,7 +39,7 @@ async function visitante() {
     if (!r.url().includes('/api/')) return;
     try {
       const j = await r.json();
-      if (r.url().includes('/api/classificacao/categoria')) v.veredito = j;
+      if (r.url().includes('/classificacao')) v.veredito = j;
       const e = j && j.estado ? j.estado : (j && j.schema === 'gerard.atividade-web.estado.v1' ? j : null);
       if (e && e.situacao_id) v.estado = e;
     } catch { /* não-JSON */ }

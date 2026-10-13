@@ -109,9 +109,9 @@ public class TesteServicoSorteioAtividadeWeb {
         List<Object> acoes = (List<Object>) estado.get("acoes_disponiveis");
         exigir(acoes != null && acoes.size() == 8,
                 "dois sorteios e seis escolhas publicados como controles");
-        exigir(possuiAcao(acoes, "SORTEAR_MEDIDAS", "/api/sorteios/medidas"),
+        exigir(possuiAcao(acoes, "SORTEAR_MEDIDAS", "/api/v1/tentativas"),
                 "controle de sorteio de medidas");
-        exigir(possuiAcao(acoes, "SORTEAR_RELACOES", "/api/sorteios/relacoes"),
+        exigir(possuiAcao(acoes, "SORTEAR_RELACOES", "/api/v1/tentativas"),
                 "controle de sorteio de relações");
         exigir(contarAcoes(acoes, "ESCOLHER_CATEGORIA") == 6,
                 "seis categorias começam disponíveis e desmarcadas");

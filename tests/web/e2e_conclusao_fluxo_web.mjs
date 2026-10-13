@@ -55,7 +55,7 @@ async function classificarComposicao() {
   for (let i = 0; i < 60; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -73,7 +73,7 @@ async function classificarTransformacaoComIncognitaAssinada() {
   for (let i = 0; i < 120; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(400);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Transformação de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -126,7 +126,7 @@ const TXT = {
   sim: propriedade('ui.completion.yes'), nao: propriedade('ui.completion.no'), proxima: propriedade('ui.completion.next')
 };
 const chamadasConclusao = [];
-page.on('request', (r) => { if (r.url().includes('/api/acoes/conclusao')) chamadasConclusao.push(r.postData()); });
+page.on('request', (r) => { if (r.url().includes('/conclusao')) chamadasConclusao.push(r.postData()); });
 
 function valorCorreto() {
   const v = {};

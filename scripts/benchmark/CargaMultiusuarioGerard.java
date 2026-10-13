@@ -29,6 +29,7 @@ public final class CargaMultiusuarioGerard {
     static final List<String> CATEGORIAS = List.of("COMPOSICAO_MEDIDAS", "TRANSFORMACAO_MEDIDAS",
             "COMPARACAO_MEDIDAS");
     static final Pattern SITUACAO = Pattern.compile("\"situacao_id\":\"([^\"]+)\"");
+    static final Pattern TENTATIVA = Pattern.compile("\"tentativa_id\":\"([^\"]+)\"");
     static final Pattern CORRETA = Pattern.compile("\"correta\":(true|false)");
 
     static final List<Long> latencias = new CopyOnWriteArrayList<Long>();
@@ -120,9 +121,11 @@ public final class CargaMultiusuarioGerard {
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager())
                 .connectTimeout(Duration.ofSeconds(5)).build();
         Thread.sleep(ThreadLocalRandom.current().nextLong(2000));
-        chamar(http, base, "GET", "/api/sessao/usuario", null);
+        chamar(http, base, "GET", "/api/v1/sessao/usuario", null);
         while (System.currentTimeMillis() < fim) {
-            String estado = chamar(http, base, "POST", "/api/sorteios/medidas", "{}");
+            String estado = chamar(http, base, "POST", "/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
+            Matcher idT = TENTATIVA.matcher(estado);
+            String tentativa = idT.find() ? idT.group(1) : null;
             Matcher m = SITUACAO.matcher(estado);
             if (!m.find()) {
                 erros.incrementAndGet();
@@ -138,7 +141,7 @@ public final class CargaMultiusuarioGerard {
             ordem.remove(tipo.group(1));
             ordem.add(0, tipo.group(1)); // como quem conhece o domínio: acerta de primeira
             for (String categoria : ordem) {
-                String r = chamar(http, base, "POST", "/api/classificacao/categoria",
+                String r = chamar(http, base, "POST", "/api/v1/tentativas/" + tentativa + "/classificacao",
                         "{\"categoria\":\"" + categoria + "\"}");
                 Matcher c = CORRETA.matcher(r);
                 if (c.find() && "true".equals(c.group(1))) {
@@ -153,13 +156,13 @@ public final class CargaMultiusuarioGerard {
                     break;
                 }
                 pensar(pMin, pMax);
-                chamar(http, base, "POST", "/api/classificacao/confirmacao", "{\"concordou\":false}");
+                chamar(http, base, "POST", "/api/v1/tentativas/" + tentativa + "/classificacao/confirmacao", "{\"concordou\":false}");
             }
             if (!acertou) {
                 continue;
             }
             pensar(pMin, pMax);
-            String estadoModelagem = chamar(http, base, "POST", "/api/reiniciar", "{}");
+            String estadoModelagem = chamar(http, base, "POST", "/api/v1/tentativas/" + tentativa + "/reinicio", "{}");
             Matcher s = SITUACAO.matcher(estadoModelagem);
             if (s.find() && !s.group(1).equals(minha)) {
                 cruzados.incrementAndGet();

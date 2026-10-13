@@ -52,7 +52,7 @@ async function classificarComposicao() {
   for (let i = 0; i < 60; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -70,7 +70,7 @@ async function classificarTransformacaoComIncognitaAssinada() {
   for (let i = 0; i < 120; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(400);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Transformação de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);

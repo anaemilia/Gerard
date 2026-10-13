@@ -52,7 +52,7 @@ async function classificarComposicao() {
   for (let i = 0; i < 60; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -70,7 +70,7 @@ async function classificarTransformacaoComIncognitaAssinada() {
   for (let i = 0; i < 120; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(400);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Transformação de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -118,7 +118,7 @@ const v = {}; for (const p of papeis()) if (p && p.id !== alvo) v[p.id] = p.valo
 const correto = alvo.includes('todo') ? Object.values(v).reduce((a, b) => a + b, 0)
   : v['papel.todo'] - Object.entries(v).find(([k]) => k !== 'papel.todo')[1];
 const chamadas = [];
-page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/acoes/')) chamadas.push(r.url().split('/api/acoes/')[1]); });
+page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/tentativas/')) chamadas.push(r.url().replace(/^.*\/tentativas\/[^/]+\//, '')); });
 
 const base = linhasLog('WEB_');
 const serie = [];

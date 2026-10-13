@@ -63,15 +63,15 @@ public class TesteIsolamentoSessoesWeb {
         int comparaveis = 0;
         int julgamentosCruzados = 0;
         for (int i = 0; i < 12 && comparaveis < 5; i++) {
-            Map<String, Object> estadoA = a.post("/api/sorteios/medidas", "{}");
-            Map<String, Object> estadoB = b.post("/api/sorteios/medidas", "{}");
+            Map<String, Object> estadoA = a.post("/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
+            Map<String, Object> estadoB = b.post("/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
             String catA = categoriaDe(estadoA.get("situacao_id"));
             String catB = categoriaDe(estadoB.get("situacao_id"));
             if (catA.equals(catB)) {
                 continue;
             }
             comparaveis++;
-            Map<String, Object> resultado = a.post("/api/classificacao/categoria", "{\"categoria\":\"" + catA + "\"}");
+            Map<String, Object> resultado = a.post("/api/v1/tentativas/" + estadoA.get("tentativa_id") + "/classificacao", "{\"categoria\":\"" + catA + "\"}");
             if (!Boolean.TRUE.equals(resultado.get("correta"))) {
                 julgamentosCruzados++;
             }
@@ -83,7 +83,7 @@ public class TesteIsolamentoSessoesWeb {
                 "a resposta de A é julgada contra a situação de A (cruzados: " + julgamentosCruzados + ")");
 
         Visitante semCookie = new Visitante();
-        Map<String, Object> primeiro = semCookie.post("/api/sorteios/medidas", "{}");
+        Map<String, Object> primeiro = semCookie.post("/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
         conferir(semCookie.cookie != null && primeiro.get("situacao_id") != null,
                 "quem chega sem cookie recebe uma sessão nova");
 

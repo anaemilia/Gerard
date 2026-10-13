@@ -50,6 +50,8 @@ public final class ServicoSorteioAtividade {
     private final PortaRegistroAtividade registroAtividade;
     private ContextoCarregamentoAtividade contextoAtual;
     private Grupo grupoAtual;
+    // Identidade da tentativa como recurso (ver RotasTentativa): nova a cada sorteio; reiniciar a modelagem não a troca.
+    private String tentativaId;
     private TentativaClassificacaoCategoriaAditiva tentativaClassificacao;
     private TipoSituacaoAditiva categoriaSelecionada;
     private String questionamento;
@@ -174,6 +176,11 @@ public final class ServicoSorteioAtividade {
         return sortear(Grupo.RELACOES);
     }
 
+    /** O id da tentativa em curso (recurso /tentativas/{id}); null antes do primeiro sorteio. */
+    public synchronized String getTentativaId() {
+        return tentativaId;
+    }
+
     private Map<String, Object> sortear(Grupo grupo) {
         TipoSituacaoAditiva categoria = politica.sortearCategoria(grupo, aleatorio);
         ContextoCarregamentoAtividade contexto = carregamento.carregarNova(idioma, categoria);
@@ -182,6 +189,7 @@ public final class ServicoSorteioAtividade {
         }
         contextoAtual = contexto;
         grupoAtual = grupo;
+        tentativaId = java.util.UUID.randomUUID().toString();
         escopoTentativa = new EscopoTentativa(
                 new gerard.dominio.campoaditivo.TentativaModelagemAditiva(
                         "tentativa.web." + contexto.getSituacao().getId()),
@@ -835,6 +843,7 @@ public final class ServicoSorteioAtividade {
 
     private Map<String, Object> projetarEstado() {
         Map<String, Object> estado = projetar(contextoAtual, grupoAtual);
+        estado.put("tentativa_id", tentativaId);
         estado.put("idiomas_situacao", listarIdiomasSituacao());
         estado.put("categoria_selecionada",
                 categoriaSelecionada == null ? null : categoriaSelecionada.name());
@@ -965,13 +974,15 @@ public final class ServicoSorteioAtividade {
         // Fluxo de decisão depois do azul (selo + tip Sim/Não): textos e ações publicados pela
         // aplicação; o cliente só os realiza (ProjetorConclusao, EscolhaConclusaoModelagem).
         if (Boolean.TRUE.equals(estado.get("concluida"))) {
-            estado.put("conclusao", ProjetorConclusao.projetar(ServicoLocalizacao.getInstancia()));
+            estado.put("conclusao", ProjetorConclusao.projetar(ServicoLocalizacao.getInstancia(), tentativaId));
         } else {
             estado.remove("conclusao");
         }
         // A curadoria bruta contém a resposta da incógnita e nunca integra o
         // contrato público do participante, mesmo após a classificação.
         estado.remove("curadoria");
+        // As ações publicadas apontam para os recursos desta tentativa (a lista da modelagem é a mesma instância).
+        RotasTentativa.resolver(listaDeAcoes(estado.get("acoes_disponiveis")), tentativaId);
         return estado;
     }
 

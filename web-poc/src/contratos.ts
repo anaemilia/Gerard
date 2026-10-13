@@ -65,6 +65,9 @@ export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |
     "AGUARDANDO_CONFIRMACAO_CATEGORIA" | "CATEGORIA_CLASSIFICADA" | "REEXPLICACAO_CATEGORIA";
   grupo_sorteio: "MEDIDAS" | "RELACOES"; situacao_id: string;
+  // Id da tentativa como recurso (/api/v1/tentativas/{id}); o tentativa_id de dentro de "modelagem" é o da
+  // tentativa de domínio registrada no log.
+  tentativa_id: string;
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   idiomas_situacao: readonly IdiomaSituacaoWeb[];

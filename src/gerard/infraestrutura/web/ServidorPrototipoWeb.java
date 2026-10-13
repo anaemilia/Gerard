@@ -11,6 +11,7 @@ import gerard.idioma.IdiomaInterface;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import gerard.agente.conhecimento.AnalisadorJsonSimples;
+import gerard.aplicacao.portabilidade.RotasTentativa;
 import gerard.aplicacao.portabilidade.ServicoSorteioAtividade;
 import gerard.adaptacao.sessao.SessaoAdaptativaUsuario;
 import gerard.agente.modelador.RepositorioRegrasAdaptativasPublicadas;
@@ -52,7 +53,6 @@ public final class ServidorPrototipoWeb {
             new RepositorioSituacoesAditivas(), new CatalogoDefinicoesAditivas(), new ConstrutorResultadoCurado());
     private final SessoesWeb sessoes;
     private final Path raizWeb;
-    private final AtomicLong gestosRecebidos = new AtomicLong();
     private final RepositorioModeloUsuario usuarios = new RepositorioModeloUsuario();
     private final RepositorioEventosLogPesquisa logPesquisa = new RepositorioEventosLogPesquisa(
             new File(diretorioGerard(), "pesquisa_log.db").getAbsolutePath());
@@ -133,48 +133,28 @@ public final class ServidorPrototipoWeb {
         ServidorPrototipoWeb aplicacao = new ServidorPrototipoWeb(
                 Files.isDirectory(distribuicao) ? distribuicao : Paths.get("web-poc"));
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
-        servidor.createContext("/api/situacao", aplicacao::situacao);
-        servidor.createContext("/api/acoes/posicionar", aplicacao::posicionar);
-        servidor.createContext("/api/acoes/responder-confirmacao-valor", aplicacao::responderConfirmacaoValor);
-        servidor.createContext("/api/acoes/escolher-operacao", aplicacao::escolherOperacao);
-        servidor.createContext("/api/acoes/conclusao", aplicacao::escolherConclusao);
-        servidor.createContext("/api/acoes/quadradinho", aplicacao::ajustarQuadradinho);
-        servidor.createContext("/api/acoes/soltar-numero", aplicacao::soltarNumero);
-        servidor.createContext("/api/acoes/escolher-sinal", aplicacao::escolherSinal);
-        servidor.createContext("/api/acoes/revelar-eixo", aplicacao::revelarEixo);
-        servidor.createContext("/api/acoes/ocultar-eixo", aplicacao::ocultarEixo);
-        servidor.createContext("/api/acoes/projetar-eixo", aplicacao::projetarEixo);
-        servidor.createContext("/api/acoes/ajuda-contextual", aplicacao::ajudaContextual);
-        servidor.createContext("/api/gestos", aplicacao::registrarGesto);
-        servidor.createContext("/api/reiniciar", aplicacao::reiniciar);
-        servidor.createContext("/api/situacao/idioma", aplicacao::trocarIdiomaSituacao);
-        servidor.createContext("/api/sorteios/medidas", aplicacao::sortearMedidas);
-        servidor.createContext("/api/sorteios/relacoes", aplicacao::sortearRelacoes);
-        servidor.createContext("/api/classificacao/categoria", aplicacao::escolherCategoria);
-        servidor.createContext("/api/classificacao/confirmacao", aplicacao::confirmarCategoria);
-        servidor.createContext("/api/usuarios", aplicacao::usuarios);
-        servidor.createContext("/api/sessao/usuario", aplicacao::entrarUsuario);
-        servidor.createContext("/api/acoes/relato-bug", aplicacao::relatoBug);
+        servidor.createContext(RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes,
+                new RecursosTentativa.Respondedor() {
+                    public void responder(HttpExchange troca, int status, Map<String, Object> corpo) throws IOException {
+                        aplicacao.responder(troca, status, corpo);
+                    }
+
+                    public Map<String, Object> erro(String mensagem) {
+                        return ServidorPrototipoWeb.erro(mensagem);
+                    }
+                }));
+        servidor.createContext("/api/v1/usuarios", aplicacao::usuarios);
+        servidor.createContext("/api/v1/sessao/usuario", aplicacao::entrarUsuario);
+        servidor.createContext("/api/v1/relatos", aplicacao::relatoBug);
         servidor.createContext("/api/curadoria/situacoes", aplicacao::situacoesCuradoria);
         servidor.createContext("/api/pesquisa/log", aplicacao::logPesquisa);
-        servidor.createContext("/api/pesquisa/log/sincronizar", aplicacao::sincronizarLogSessao);
+        servidor.createContext("/api/v1/pesquisa/sincronizacoes", aplicacao::sincronizarLogSessao);
         servidor.createContext("/", aplicacao::arquivoEstatico);
         int threadsHttp = Integer.parseInt(System.getenv().getOrDefault("HTTP_THREADS", "64"));
         servidor.setExecutor(Executors.newFixedThreadPool(threadsHttp));
         servidor.start();
         System.out.println("Gérard web funcional em http://localhost:" + porta
                 + " (" + threadsHttp + " threads HTTP)");
-    }
-
-    private void situacao(HttpExchange troca) throws IOException {
-        if (!"GET".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        // Carga inicial entra pelo fluxo de classificação (sorteios), nunca
-        // pelo widget fixo legado (atividade) — diagrama só depois de a
-        // categoria ser acertada, ver ServicoSorteioAtividade.estadoInicial.
-        responder(troca, 200, sessoes.de(troca).sorteios().estadoInicial());
     }
 
     @SuppressWarnings("unchecked")
@@ -195,7 +175,15 @@ public final class ServidorPrototipoWeb {
             try {
                 Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples.analisar(
                         new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-                String id = textoObrigatorio(corpo, "usuario_id");
+                // A pessoa é o recurso: /api/v1/usuarios/{id}.
+                String caminhoUsuario = troca.getRequestURI().getPath();
+                String id = caminhoUsuario.length() > "/api/v1/usuarios/".length()
+                        && caminhoUsuario.startsWith("/api/v1/usuarios/")
+                        ? caminhoUsuario.substring("/api/v1/usuarios/".length()) : null;
+                if (id == null || id.isEmpty() || id.contains("/")) {
+                    responder(troca, 404, erro("Usuário inexistente: informe /api/v1/usuarios/{id}"));
+                    return;
+                }
                 String nome = textoObrigatorio(corpo, "nome");
                 int idade = ((Number) corpo.get("idade")).intValue();
                 if (idade < 1 || idade > 120) throw new IllegalArgumentException("idade inválida");
@@ -493,294 +481,6 @@ public final class ServidorPrototipoWeb {
         String texto = valor == null ? "" : String.valueOf(valor).trim();
         if (texto.isEmpty()) throw new IllegalArgumentException(campo + " é obrigatório");
         return texto;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void responderConfirmacaoValor(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            boolean confirmou = Boolean.TRUE.equals(analisado.get("confirmou"));
-            int valor = ((Number) analisado.get("valor")).intValue();
-            responder(troca, 200, sessoes.de(troca).sorteios().responderConfirmacaoValor(papelId, confirmou, valor));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void posicionar(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Object analisado = AnalisadorJsonSimples.analisar(corpo);
-            Object bruto = ((Map<String, Object>) analisado).get("valor");
-            String papelId = String.valueOf(((Map<String, Object>) analisado).get("papel_id"));
-            int valor = ((Number) bruto).intValue();
-            responder(troca, 200, sessoes.de(troca).sorteios().proporValor(papelId, valor));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void escolherOperacao(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String seletor = String.valueOf(analisado.get("seletor"));
-            String operacao = String.valueOf(analisado.get("operacao"));
-            if (!sessoes.de(troca).sorteios().possuiAtividadeEscolhaOperacaoAtiva()) {
-                responder(troca, 422, erro("a situação atual não possui escolha de operação implementada"));
-                return;
-            }
-            responder(troca, 200, sessoes.de(troca).sorteios().escolherOperacao(seletor, operacao));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void escolherConclusao(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            responder(troca, 200, sessoes.de(troca).sorteios().escolherConclusao(String.valueOf(analisado.get("escolha"))));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void ajustarQuadradinho(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            int delta = ((Number) analisado.get("delta")).intValue();
-            responder(troca, 200, sessoes.de(troca).sorteios().ajustarQuadradinho(papelId, delta));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void soltarNumero(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            Object origemBruta = analisado.get("origem_papel_id");
-            String origemPapelId = origemBruta == null ? null : String.valueOf(origemBruta);
-            responder(troca, 200, sessoes.de(troca).sorteios().soltarNumero(papelId, origemPapelId));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void escolherSinal(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            String sinal = String.valueOf(analisado.get("sinal"));
-            responder(troca, 200, sessoes.de(troca).sorteios().escolherSinalNumeroRelativo(papelId, sinal));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void revelarEixo(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sessoes.de(troca).sorteios().revelarEixo(papelId));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void projetarEixo(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            int valor = ((Number) analisado.get("valor")).intValue();
-            responder(troca, 200, sessoes.de(troca).sorteios().projetarAlteracaoEixo(papelId, valor));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void ocultarEixo(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String papelId = String.valueOf(analisado.get("papel_id"));
-            responder(troca, 200, sessoes.de(troca).sorteios().ocultarEixo(papelId));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void ajudaContextual(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String area = String.valueOf(analisado.get("area"));
-            String intencao = String.valueOf(analisado.get("intencao"));
-            responder(troca, 200, sessoes.de(troca).sorteios().ajudaContextual(area, intencao));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    private void reiniciar(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            responder(troca, 200, sessoes.de(troca).sorteios().reiniciarAtividadeAtual());
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void trocarIdiomaSituacao(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> analisado = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            String codigo = String.valueOf(analisado.get("codigo"));
-            responder(troca, 200, sessoes.de(troca).sorteios().trocarIdiomaSituacao(codigo));
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
-    }
-
-    private void sortearMedidas(HttpExchange troca) throws IOException {
-        sortear(troca, true);
-    }
-
-    private void sortearRelacoes(HttpExchange troca) throws IOException {
-        sortear(troca, false);
-    }
-
-    private void sortear(HttpExchange troca, boolean medidas) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            responder(troca, 200, medidas
-                    ? sessoes.de(troca).sorteios().sortearMedidas() : sessoes.de(troca).sorteios().sortearRelacoes());
-        } catch (RuntimeException erro) {
-            responder(troca, 422, erro(erro.getMessage()));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void escolherCategoria(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido")); return;
-        }
-        try {
-            Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples
-                    .analisar(new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            responder(troca, 200, sessoes.de(troca).sorteios().escolherCategoria(String.valueOf(corpo.get("categoria"))));
-        } catch (RuntimeException ex) { responder(troca, 400, erro(ex.getMessage())); }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void confirmarCategoria(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido")); return;
-        }
-        try {
-            Map<String, Object> corpo = (Map<String, Object>) AnalisadorJsonSimples
-                    .analisar(new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            responder(troca, 200, sessoes.de(troca).sorteios().confirmarCategoria(
-                    Boolean.TRUE.equals(corpo.get("concordou"))));
-        } catch (RuntimeException ex) { responder(troca, 400, erro(ex.getMessage())); }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void registrarGesto(HttpExchange troca) throws IOException {
-        if (!"POST".equals(troca.getRequestMethod())) {
-            responder(troca, 405, erro("Método não permitido"));
-            return;
-        }
-        try {
-            String corpo = new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            Map<String, Object> gesto = (Map<String, Object>) AnalisadorJsonSimples.analisar(corpo);
-            if (!"gerard.gesto-web.v1".equals(gesto.get("schema"))
-                    || gesto.get("gesture_id") == null
-                    || gesto.get("destino_geometrico") == null) {
-                throw new IllegalArgumentException("registro físico de gesto incompleto");
-            }
-            Map<String, Object> confirmacao = new java.util.LinkedHashMap<String, Object>();
-            confirmacao.put("gesture_id", gesto.get("gesture_id"));
-            confirmacao.put("recebido", Boolean.TRUE);
-            confirmacao.put("sequencia", Long.valueOf(gestosRecebidos.incrementAndGet()));
-            responder(troca, 202, confirmacao);
-        } catch (RuntimeException erro) {
-            responder(troca, 400, erro(erro.getMessage()));
-        }
     }
 
     private void arquivoEstatico(HttpExchange troca) throws IOException {

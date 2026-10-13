@@ -1053,13 +1053,13 @@ check('class TesteRobotLupaEixoRelacao' in robot_lupa_relacao,
 
 print('== Decisão 2026-09-29: modelagem web persiste pela tentativa ==')
 port_dir='src/gerard/aplicacao/portabilidade/'
-escopo_web=text(port_dir+'EscopoTentativaWeb.java')
-valor_web=text(port_dir+'ValorIncognitaWeb.java')
-sorteio_web=text(port_dir+'ServicoSorteioAtividadeWeb.java')
+escopo_web=text(port_dir+'EscopoTentativa.java')
+valor_web=text(port_dir+'ValorIncognita.java')
+sorteio_web=text(port_dir+'ServicoSorteioAtividade.java')
 servicos_web=''.join(text(port_dir+n) for n in (
-    'ServicoAtividadeWebComposicao.java','ServicoAtividadeWebTransformacaoMedidas.java',
-    'ServicoAtividadeWebComparacaoMedidas.java','ServicoAtividadeWebTransformacaoRelacao.java',
-    'ServicoAtividadeWebComposicaoRelacoes.java','ServicoAtividadeWebComposicaoTransformacoes.java'))
+    'ServicoAtividadeComposicao.java','ServicoAtividadeTransformacaoMedidas.java',
+    'ServicoAtividadeComparacaoMedidas.java','ServicoAtividadeTransformacaoRelacao.java',
+    'ServicoAtividadeComposicaoRelacoes.java','ServicoAtividadeComposicaoTransformacoes.java'))
 check('tentativa.constituir(registro).isPresent()' in escopo_web
       and 'persistencia.persistir(registro)' in escopo_web,
       'web entrega à persistência só o que a tentativa constitui')
@@ -1076,7 +1076,7 @@ check('escopoTentativa.persistir(registro)' in sorteio_web
       and 'registrarRestauracaoModelagem(restauracao)' in sorteio_web,
       'classificação e restauração web seguem pela tentativa')
 escopo_tentativa_web = text(
-    'src/gerard/aplicacao/portabilidade/EscopoTentativaWeb.java')
+    'src/gerard/aplicacao/portabilidade/EscopoTentativa.java')
 teste_restauracao_web = text(
     'tests/java/TesteRestauracaoWebEncerraSequencia.java')
 check('participantesAtuais.clear()' in escopo_tentativa_web
@@ -1103,7 +1103,7 @@ check('Foto escolhida' not in barra_categorias_web
 print('== Decisão 2026-09-28: resposta Sim/Não à confirmação do valor rejeitado ==')
 papel_q=text('src/gerard/dominio/campoaditivo/PapelQuantitativo.java')
 incog_q=text('src/gerard/dominio/campoaditivo/IncognitaQuantitativa.java')
-resposta_web=text('src/gerard/aplicacao/portabilidade/RespostaConfirmacaoValorWeb.java')
+resposta_web=text('src/gerard/aplicacao/portabilidade/RespostaConfirmacaoValor.java')
 check('registrarRespostaConfirmacaoValorRejeitado' in papel_q
       and 'CONFIRMOU_VALOR_REJEITADO' in papel_q and 'RETIROU_VALOR_REJEITADO' in papel_q
       and 'avaliarRespostaConfirmacao(' in incog_q,
@@ -1113,7 +1113,7 @@ check(main.count('registrarRespostaConfirmacaoValorIncognita(') == 2   # defini�
       'desktop registra a resposta das duas perguntas ui.question.valueMismatch')
 check('incognita.avaliarRespostaConfirmacao(' in resposta_web
       and 'escopo.persistir(registro)' in resposta_web
-      and '/api/acoes/responder-confirmacao-valor' in text('src/gerard/infraestrutura/web/ServidorPrototipoWeb.java'),
+      and 'valor/confirmacao' in text('src/gerard/infraestrutura/web/RecursosTentativa.java'),
       'web registra a resposta pela mesma operação do papel')
 check('class TesteRespostaConfirmacaoValorRejeitado'
           in text('tests/java/TesteRespostaConfirmacaoValorRejeitado.java'),
@@ -1121,33 +1121,33 @@ check('class TesteRespostaConfirmacaoValorRejeitado'
 
 print('== Fase 7.9: porta de registro da atividade web ==')
 porta_registro_web=text(
-    'src/gerard/aplicacao/portabilidade/PortaRegistroAtividadeWeb.java')
+    'src/gerard/aplicacao/portabilidade/PortaRegistroAtividade.java')
 servico_sorteio_web=text(
-    'src/gerard/aplicacao/portabilidade/ServicoSorteioAtividadeWeb.java')
+    'src/gerard/aplicacao/portabilidade/ServicoSorteioAtividade.java')
 adaptador_registro_web=text(
     'src/gerard/pesquisador/log/RegistradorAtividadeWebLogGerard.java')
 servidor_web=text('src/gerard/infraestrutura/web/ServidorPrototipoWeb.java')
 teste_porta_registro_web=text(
     'tests/java/TestePortaRegistroAtividadeWeb.java')
-check('interface PortaRegistroAtividadeWeb' in porta_registro_web
-      and 'PortaRegistroAtividadeWeb NENHUMA' in porta_registro_web
+check('interface PortaRegistroAtividade' in porta_registro_web
+      and 'PortaRegistroAtividade NENHUMA' in porta_registro_web
       and 'registrarNovaSituacao(' in porta_registro_web
       and 'registrarAcaoGranularUsuario(' in porta_registro_web,
       'porta estreita representa somente o registro factual da atividade web')
-check('PortaRegistroAtividadeWeb registroAtividade' in servico_sorteio_web
+check('PortaRegistroAtividade registroAtividade' in servico_sorteio_web
       and 'LoggerInteracaoGerard' not in servico_sorteio_web
       and 'ControladorContextoSituacao' not in servico_sorteio_web
-      and 'PortaRegistroAtividadeWeb.NENHUMA' in servico_sorteio_web,
+      and 'PortaRegistroAtividade.NENHUMA' in servico_sorteio_web,
       'serviço web depende da porta e mantém composição sem efeito para testes')
-check('implements PortaRegistroAtividadeWeb' in adaptador_registro_web
+check('implements PortaRegistroAtividade' in adaptador_registro_web
       and 'LoggerInteracaoGerard' in adaptador_registro_web
       and 'ControladorContextoSituacao' in adaptador_registro_web
       and 'Scaffolding' not in adaptador_registro_web,
       'adaptador concreto concentra somente a integração com o log factual')
 check('new RegistradorAtividadeWebLogGerard()' in servidor_web
-      and 'new ServicoSorteioAtividadeWeb(' in servidor_web,
+      and 'new ServicoSorteioAtividade(' in servidor_web,
       'raiz de composição web liga explicitamente a porta ao adaptador concreto')
-check('class PortaFalsa implements PortaRegistroAtividadeWeb'
+check('class PortaFalsa implements PortaRegistroAtividade'
           in teste_porta_registro_web
       and 'porta.situacoes == 1' in teste_porta_registro_web
       and 'porta.acoes == 1' in teste_porta_registro_web

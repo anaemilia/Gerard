@@ -52,7 +52,7 @@ async function classificarComposicao() {
   for (let i = 0; i < 60; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -70,7 +70,7 @@ async function classificarTransformacaoComIncognitaAssinada() {
   for (let i = 0; i < 120; i++) {
     await clicar('button[aria-label="Sortear Medidas"]');
     await page.waitForTimeout(400);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Transformação de medidas"]');
     const j = await (await resp).json();
     await page.waitForTimeout(400);
@@ -114,7 +114,7 @@ async function digitar(alvo, valor) {
 async function classificarRelacoes() {
   for (let i = 0; i < 300; i++) {
     await clicar('button[aria-label="Sortear Relações"]'); await page.waitForTimeout(500);
-    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('categoria'));
+    const resp = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/classificacao'));
     await clicar('button[aria-label="Composição de relações"]');
     const j = await (await resp).json(); await page.waitForTimeout(500);
     // Situação das idades ("mais velha", "mais velho"): todos os sinais positivos, a relação final é a soma.
@@ -147,7 +147,7 @@ verificar('incógnita correta aceita (a escolha de operação é o passo seguint
 
 await page.waitForSelector('g[aria-label="Subtração"]');
 const chamadas = [];
-page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/acoes/')) chamadas.push(r.url().split('/api/acoes/')[1]); });
+page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/tentativas/')) chamadas.push(r.url().replace(/^.*\/tentativas\/[^/]+\//, '')); });
 const serie = [];
 for (let k = 0; k < 6; k++) {
   const antes = linhasLog('Escolher a operação');
@@ -158,7 +158,7 @@ console.log('linhas gravadas por escolha errada (mouse real):', JSON.stringify(s
 console.log('chamadas HTTP:', JSON.stringify(chamadas));
 verificar('as 3 primeiras escolhas erradas são gravadas (a 3ª é a do limite)', serie.slice(0, 3).every(n => n > 0));
 verificar('nada é gravado depois do limite', serie.slice(3).every(n => n === 0));
-verificar('as chamadas HTTP continuaram depois do limite', chamadas.filter(c => c.includes('escolher-operacao')).length === 6);
+verificar('as chamadas HTTP continuaram depois do limite', chamadas.filter(c => c === 'operacoes').length === 6);
 const antesSoma = linhasLog('Escolher a operação');
 await clicar('g[aria-label="Soma"]'); await page.waitForTimeout(700);
 verificar('nem a escolha correta é gravada durante a ajuda visual', linhasLog('Escolher a operação') === antesSoma);

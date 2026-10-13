@@ -68,16 +68,16 @@ try{
   for(let n=1;n<=3;n++){
    const p=await centro(page.locator(`[data-figura-id="${f.id}"]`));await page.mouse.dblclick(p.x,p.y);await pausa();
    const input=page.locator(`[id="valor-${f.id}"]`);await input.fill(String(n));await pausa();
-   const enviada=page.waitForResponse(r=>r.url().endsWith('/api/acoes/posicionar'),{timeout:10000});
+   const enviada=page.waitForResponse(r=>/\/valor$/.test(r.url()),{timeout:10000});
    await input.press('Enter');await pausa();
    const sinal=page.locator('.valor-figura-sinal-tip input[aria-label="positivo"]');if(await sinal.count())await clicar(sinal.first());
    await (await enviada).finished();await pausa();
    const confirmacao=page.locator('.valor-figura-confirmacao input').first();if(await confirmacao.count()){
-    const concluida=page.waitForResponse(r=>r.url().endsWith('/api/acoes/responder-confirmacao-valor'));
+    const concluida=page.waitForResponse(r=>/\/valor\/confirmacao$/.test(r.url()));
     await clicar(confirmacao);await (await concluida).finished();
     await page.locator('.valor-figura-confirmacao').waitFor({state:'hidden'});await pausa();
    }
-   const resposta=chamadas.filter(c=>c.url.endsWith('/api/acoes/posicionar')).at(-1)?.resposta;
+   const resposta=chamadas.filter(c=>/\/valor$/.test(c.url)).at(-1)?.resposta;
    exigir(resposta?.rejeicoes_consecutivas===n,'contagem '+n+' '+esp.titulo);
    exigir(await page.locator('.historinha-passiva').count()===(n===3?1:0),'animação somente na terceira rejeição '+esp.titulo+' '+n);
    await page.screenshot({path:path.join(dir,`${slug}_rejeicao_${n}.png`)});

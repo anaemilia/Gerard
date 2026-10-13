@@ -14,12 +14,10 @@ import java.util.Map;
  * Não decide nada: quem decide o que cada escolha faz é {@link EscolhaConclusaoModelagem}; o cliente só realiza.
  */
 public final class ProjetorConclusao {
-    public static final String ROTA_ESCOLHA = "/api/acoes/conclusao";
-
     private ProjetorConclusao() {
     }
 
-    public static Map<String, Object> projetar(ServicoLocalizacao localizacao) {
+    public static Map<String, Object> projetar(ServicoLocalizacao localizacao, String tentativaId) {
         Map<String, Object> textos = new LinkedHashMap<String, Object>();
         textos.put("selo", localizacao.texto("ui.completion.completed"));
         textos.put("pergunta", localizacao.texto("ui.completion.congratulations"));
@@ -33,7 +31,7 @@ public final class ProjetorConclusao {
             Map<String, Object> acao = new LinkedHashMap<String, Object>();
             acao.put("tipo", "CONCLUSAO_" + escolha.name());
             acao.put("metodo", "POST");
-            acao.put("href", ROTA_ESCOLHA);
+            acao.put("href", RotasTentativa.conclusao(tentativaId));
             acao.put("corpo", corpo);
             acao.put("inicia_nova_situacao", Boolean.valueOf(escolha.iniciaNovaSituacao()));
             acoes.add(acao);

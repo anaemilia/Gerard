@@ -54,7 +54,7 @@ for (let rodada = 0; rodada < 40 && casos < 4; rodada++) {
   for (const nome of ['Soma', 'Subtração', 'SOMA', 'SUBTRACAO']) {
     const b = page.locator(`.op-seletor [role="button"][aria-label="${nome}"]`).first();
     if (!(await b.count())) continue;
-    const resp = page.waitForResponse(r => r.url().includes('escolher-operacao'), { timeout: 5000 }).catch(() => null);
+    const resp = page.waitForResponse(r => r.url().endsWith('/operacoes'), { timeout: 5000 }).catch(() => null);
     const c = await centro(b.locator('circle.op-anel'));
     await page.mouse.click(c.x, c.y);
     const r = await resp;

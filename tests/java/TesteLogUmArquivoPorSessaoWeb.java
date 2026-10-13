@@ -63,7 +63,7 @@ public class TesteLogUmArquivoPorSessaoWeb {
 
     @SuppressWarnings("unchecked")
     static String criarUsuario(Visitante v, String nome) throws Exception {
-        Map<String, Object> perfil = v.chamar("POST", "/api/usuarios", "{\"nome\":\"" + nome
+        Map<String, Object> perfil = v.chamar("POST", "/api/v1/usuarios", "{\"nome\":\"" + nome
                 + "\",\"idade\":30,\"sexo\":\"FEMININO\",\"midia_preferida\":\"GRAFICO\","
                 + "\"nivel_escolaridade\":\"GRADUACAO\"}");
         return String.valueOf(perfil.get("usuario_id") != null ? perfil.get("usuario_id") : perfil.get("id"));
@@ -75,23 +75,27 @@ public class TesteLogUmArquivoPorSessaoWeb {
         Visitante b = new Visitante();
         String idA = criarUsuario(a, "Teste Log A");
         String idB = criarUsuario(b, "Teste Log B");
-        a.chamar("POST", "/api/sessao/usuario", "{\"usuario_id\":\"" + idA + "\"}");
-        b.chamar("POST", "/api/sessao/usuario", "{\"usuario_id\":\"" + idB + "\"}");
+        a.chamar("POST", "/api/v1/sessao/usuario", "{\"usuario_id\":\"" + idA + "\"}");
+        b.chamar("POST", "/api/v1/sessao/usuario", "{\"usuario_id\":\"" + idB + "\"}");
 
         String situacaoA = null;
         String situacaoB = null;
+        String tentativaA = null;
+        String tentativaB = null;
         for (int i = 0; i < 12; i++) {
-            Map<String, Object> estadoA = a.chamar("POST", "/api/sorteios/medidas", "{}");
-            Map<String, Object> estadoB = b.chamar("POST", "/api/sorteios/medidas", "{}");
+            Map<String, Object> estadoA = a.chamar("POST", "/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
+            Map<String, Object> estadoB = b.chamar("POST", "/api/v1/tentativas", "{\"grupo_sorteio\":\"MEDIDAS\"}");
             situacaoA = String.valueOf(estadoA.get("situacao_id"));
             situacaoB = String.valueOf(estadoB.get("situacao_id"));
+            tentativaA = String.valueOf(estadoA.get("tentativa_id"));
+            tentativaB = String.valueOf(estadoB.get("tentativa_id"));
             if (!categoriaDe(situacaoA).equals(categoriaDe(situacaoB))) {
                 break;
             }
         }
         // As ações se alternam: A classifica depois de B ter sorteado.
-        a.chamar("POST", "/api/classificacao/categoria", "{\"categoria\":\"" + categoriaDe(situacaoA) + "\"}");
-        b.chamar("POST", "/api/classificacao/categoria", "{\"categoria\":\"" + categoriaDe(situacaoB) + "\"}");
+        a.chamar("POST", "/api/v1/tentativas/" + tentativaA + "/classificacao", "{\"categoria\":\"" + categoriaDe(situacaoA) + "\"}");
+        b.chamar("POST", "/api/v1/tentativas/" + tentativaB + "/classificacao", "{\"categoria\":\"" + categoriaDe(situacaoB) + "\"}");
 
         File arquivo = LoggerInteracaoGerard.getInstancia().getArquivoSessao();
         List<String[]> linhas = new ArrayList<String[]>();
