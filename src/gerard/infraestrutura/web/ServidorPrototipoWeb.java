@@ -135,6 +135,7 @@ public final class ServidorPrototipoWeb {
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
         servidor.createContext(RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes, aplicacao::responder));
         servidor.createContext(Problema.BASE.substring(0, Problema.BASE.length() - 1), aplicacao::problemas);
+        servidor.createContext("/api/v1", aplicacao::raizDaApi);
         servidor.createContext("/api/v1/usuarios", aplicacao::usuarios);
         servidor.createContext("/api/v1/sessao/usuario", aplicacao::entrarUsuario);
         servidor.createContext("/api/v1/relatos", aplicacao::relatoBug);
@@ -465,6 +466,9 @@ public final class ServidorPrototipoWeb {
         perfil.put("midia_preferida", modelo.getPerfilAprendizagem().getMidiaPreferida() == null ? null : modelo.getPerfilAprendizagem().getMidiaPreferida().name());
         perfil.put("nivel_escolaridade", modelo.getPerfilAprendizagem().getNivelEscolaridade() == null ? null : modelo.getPerfilAprendizagem().getNivelEscolaridade().name());
         perfil.put("possui_foto", modelo.getPerfilAluno().getFotoCaminho() != null);
+        Map<String, Object> linksDoPerfil = new LinkedHashMap<String, Object>();
+        linksDoPerfil.put("editar", RotasTentativa.link("/api/v1/usuarios/" + modelo.getPerfilAluno().getId(), "PUT"));
+        perfil.put("_links", linksDoPerfil);
         return perfil;
     }
 
@@ -523,7 +527,9 @@ public final class ServidorPrototipoWeb {
         }
         byte[] bytes = EscritorJsonSimples.escrever(corpoFinal).getBytes(StandardCharsets.UTF_8);
         troca.getResponseHeaders().set("Content-Type",
-                ehProblema ? "application/problem+json; charset=utf-8" : "application/json; charset=utf-8");
+                ehProblema ? "application/problem+json; charset=utf-8"
+                        : corpo.containsKey("_links") ? "application/hal+json; charset=utf-8"
+                        : "application/json; charset=utf-8");
         // Sem isso, GET /api/situacao pode ser servido do cache HTTP do
         // navegador num F5, mostrando estado antigo mesmo com o servidor já
         // tendo avançado — mesmo problema que motivou o no-store nos
@@ -533,6 +539,40 @@ public final class ServidorPrototipoWeb {
         try (OutputStream saida = troca.getResponseBody()) {
             saida.write(bytes);
         }
+    }
+
+    /**
+     * O ponto de entrada da API (GET /api/v1): o único endereço que o cliente conhece; tudo o mais ele alcança pelos
+     * links. Qualquer outro caminho sob /api/v1 que nenhum recurso reclamou é 404 em problem+json.
+     */
+    private void raizDaApi(HttpExchange troca) throws IOException {
+        String caminho = troca.getRequestURI().getPath();
+        if (!"/api/v1".equals(caminho) && !"/api/v1/".equals(caminho)) {
+            responder(troca, 404, Problema.RECURSO_INEXISTENTE.corpo(null, caminho));
+            return;
+        }
+        if (!"GET".equals(troca.getRequestMethod())) {
+            troca.getResponseHeaders().set("Allow", "GET");
+            responder(troca, 405, Problema.METODO_NAO_PERMITIDO.corpo(null, caminho));
+            return;
+        }
+        Map<String, Object> links = new LinkedHashMap<String, Object>();
+        links.put("self", RotasTentativa.link("/api/v1", "GET"));
+        links.put("tentativas", RotasTentativa.link(RotasTentativa.BASE, "POST"));
+        links.put("usuarios", RotasTentativa.link("/api/v1/usuarios", "GET"));
+        links.put("cadastrar_usuario", RotasTentativa.link("/api/v1/usuarios", "POST"));
+        links.put("sessao_usuario", RotasTentativa.link("/api/v1/sessao/usuario", "GET"));
+        links.put("entrar", RotasTentativa.link("/api/v1/sessao/usuario", "POST"));
+        links.put("relatos", RotasTentativa.link("/api/v1/relatos", "POST"));
+        links.put("sincronizacoes", RotasTentativa.link("/api/v1/pesquisa/sincronizacoes", "POST"));
+        links.put("curadoria_situacoes", RotasTentativa.link("/api/curadoria/situacoes", "POST"));
+        Map<String, Object> problemas = RotasTentativa.link(Problema.BASE + "{slug}", "GET");
+        problemas.put("templated", Boolean.TRUE);
+        links.put("problemas", problemas);
+        Map<String, Object> raiz = new LinkedHashMap<String, Object>();
+        raiz.put("schema", "gerard.api-raiz.v1");
+        raiz.put("_links", links);
+        responder(troca, 200, raiz);
     }
 
     private static String tituloDoStatus(int status) {

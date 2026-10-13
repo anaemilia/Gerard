@@ -9,6 +9,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
 const BASE_URL = process.env.GERARD_WEB_URL ?? 'http://localhost:8080/';
 const EVIDENCIAS = path.resolve('documentacao', 'relatorios', 'evidencias', 'web_recursos_tentativa_20261013');
 fs.mkdirSync(EVIDENCIAS, { recursive: true });
+// O nome do recurso na URI é do servidor (propriedade gerard.api.recurso.tentativas); o cliente não o conhece.
+const NOME = process.env.GERARD_API_RECURSO ?? 'tentativas';
 const resultados = [];
 function verificar(nome, ok) { resultados.push([nome, ok]); console.log(`${ok ? '[OK]' : '[FALHA]'} ${nome}`); }
 
@@ -25,7 +27,7 @@ const chamadas = [];
 page.on('response', async (r) => {
   if (!r.url().includes('/api/')) return;
   chamadas.push({ metodo: r.request().method(), status: r.status(), caminho: new URL(r.url()).pathname });
-  if (r.url().includes('/api/v1/tentativas') && r.headers()['etag']) ultimoEtag = r.headers()['etag'];
+  if (r.url().includes(`/api/v1/${NOME}`) && r.headers()['etag']) ultimoEtag = r.headers()['etag'];
   try {
     const j = await r.json();
     const e = j && j.estado ? j.estado : (j && j.schema === 'gerard.atividade-web.estado.v1' ? j : null);
@@ -52,7 +54,7 @@ for (let i = 0; i < 20 && !achou; i++) {
 }
 verificar('situação com mais de um idioma classificada pelo clique real', achou);
 const idTentativa = estado.tentativa_id;
-const recurso = (sufixo) => `/api/v1/tentativas/${idTentativa}${sufixo}`;
+const recurso = (sufixo) => `/api/v1/${NOME}/${idTentativa}${sufixo}`;
 verificar('a classificação foi ao recurso da tentativa',
   chamadas.some(c => c.metodo === 'POST' && c.caminho === recurso('/classificacao') && c.status === 200));
 
@@ -104,7 +106,12 @@ await page.screenshot({ path: path.join(EVIDENCIAS, 'depois_da_ressincronizacao.
 const antigas = chamadas.filter(c => /^\/api\/(acoes|sorteios|classificacao|reiniciar|situacao|gestos)/.test(c.caminho));
 verificar('nenhuma chamada usou as rotas antigas com verbo na URI', antigas.length === 0);
 verificar('as chamadas da tentativa usam a mesma identidade (id da tentativa em curso)',
-  chamadas.slice(marco).filter(c => c.caminho.startsWith('/api/v1/tentativas/') && !c.caminho.includes(idTentativa)).length === 0);
+  chamadas.slice(marco).filter(c => c.caminho.startsWith(`/api/v1/${NOME}/`) && !c.caminho.includes(idTentativa)).length === 0);
+if (NOME !== 'tentativas') {
+  verificar(`com o recurso renomeado para "${NOME}", nenhuma chamada usa o nome antigo (o cliente segue links)`,
+    chamadas.filter(c => c.caminho.startsWith('/api/v1/tentativas')).length === 0
+      && chamadas.some(c => c.caminho.startsWith(`/api/v1/${NOME}`)));
+}
 
 await browser.close();
 const falhas = resultados.filter(([, ok]) => !ok).length;

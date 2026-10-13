@@ -1,6 +1,14 @@
 export const SCHEMA_ESTADO = "gerard.atividade-web.estado.v1" as const;
 export const SCHEMA_RESULTADO = "gerard.atividade-web.resultado-acao.v1" as const;
-export type PerfilUsuarioWeb = Readonly<{ id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; possui_foto:boolean }>;
+/** Um link no estilo HAL; o método só vem quando não é GET. */
+export type LinkWeb = Readonly<{ href: string; metodo?: "GET" | "POST" | "PUT"; templated?: boolean }>;
+/** A entrada da API (GET /api/v1): o único endereço que o cliente conhece. */
+export type RaizApiWeb = Readonly<{
+  schema: "gerard.api-raiz.v1";
+  _links: Readonly<Record<"self" | "tentativas" | "usuarios" | "cadastrar_usuario" | "sessao_usuario" | "entrar"
+    | "relatos" | "sincronizacoes" | "curadoria_situacoes" | "problemas", LinkWeb>>;
+}>;
+export type PerfilUsuarioWeb = Readonly<{ id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; possui_foto:boolean; _links: Readonly<{ editar: LinkWeb }> }>;
 export type ListaUsuariosWeb = Readonly<{ schema:"gerard.usuarios-web.v1"; usuarios:readonly PerfilUsuarioWeb[] }>;
 export type CadastroUsuarioWeb = Readonly<{ nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; foto_data_url:string|null }>;
 export type EdicaoUsuarioWeb = Readonly<{ usuario_id:string; nome:string; idade:number; sexo:string; midia_preferida:string; nivel_escolaridade:string; foto_data_url:string|null }>;
@@ -65,9 +73,10 @@ export type EstadoClassificacao = Readonly<{
   schema: typeof SCHEMA_ESTADO; modo: "CLASSIFICACAO_CATEGORIA" |
     "AGUARDANDO_CONFIRMACAO_CATEGORIA" | "CATEGORIA_CLASSIFICADA" | "REEXPLICACAO_CATEGORIA";
   grupo_sorteio: "MEDIDAS" | "RELACOES"; situacao_id: string;
-  // Id da tentativa como recurso (/api/v1/tentativas/{id}); o tentativa_id de dentro de "modelagem" é o da
-  // tentativa de domínio registrada no log.
+  // Id da tentativa como recurso; o tentativa_id de dentro de "modelagem" é o da tentativa de domínio registrada no log.
   tentativa_id: string;
+  // Onde a tentativa está e o que se alcança a partir dela (hipermídia): o cliente segue, não monta URI.
+  _links: Readonly<{ self: LinkWeb; tentativas: LinkWeb; idioma: LinkWeb; ajudas: LinkWeb }>;
   situacao_grupo_id: string; categoria: string; categoria_selecionada: string | null;
   enunciado: string; concluida: boolean; acoes_disponiveis: readonly AcaoDisponivel[];
   idiomas_situacao: readonly IdiomaSituacaoWeb[];
@@ -168,7 +177,10 @@ export type EixoFigura = Readonly<{ escala: number; valor: number | null;
 export type FiguraCena = Readonly<{ id: string; tipo: "RETANGULO" | "ELIPSE" | "RETANGULO_ARREDONDADO" | "GRUPO_QUADRADINHOS"; x: number; y: number; largura: number; altura: number; rotulo: string;
   posicao_rotulo: "CENTRO" | "ACIMA" | "ABAIXO"; exibir_lupa: boolean; lupa_habilitada: boolean; chave_papel_semantico: string; subtitulo: string;
   requer_representacao_de_sinal: boolean; valor: number | null; conhecido: boolean; engatada: boolean; eixo?: EixoFigura;
-  interacoes_permitidas: readonly InteracaoPermitidaFigura[] }>;
+  interacoes_permitidas: readonly InteracaoPermitidaFigura[];
+  // Os recursos do papel desta figura (hipermídia); só existem para figuras que carregam um papel.
+  _links?: Readonly<{ posicionamento: LinkWeb; valor: LinkWeb; confirmacao_valor: LinkWeb; quadradinhos: LinkWeb;
+    sinal: LinkWeb; eixo_visibilidade: LinkWeb; eixo_projecao: LinkWeb }> }>;
 export type ConectorCena = Readonly<{ tipo: "SETA" | "SETA_CURVA" | "LINHA" | "CHAVE_VERTICAL" | "CHAVE_HORIZONTAL"; x1: number; y1: number; x2: number; y2: number; legenda: string; x_alvo?: number; y_alvo?: number }>;
 export type CentroSeletorOperacao = Readonly<{ cx: number; cy: number }>;
 export type RelacaoExploratoria = Readonly<{

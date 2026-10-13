@@ -991,6 +991,19 @@ public final class ServicoSorteioAtividade {
         estado.remove("curadoria");
         // As ações publicadas apontam para os recursos desta tentativa (a lista da modelagem é a mesma instância).
         RotasTentativa.resolver(listaDeAcoes(estado.get("acoes_disponiveis")), tentativaId);
+        // Hipermídia: o estado diz onde está e o que se alcança; cada figura traz os recursos do seu papel.
+        estado.put("_links", RotasTentativa.linksDaTentativa(tentativaId));
+        Object cenaComLinks = estado.get("cena");
+        if (cenaComLinks instanceof Map && ((Map<?, ?>) cenaComLinks).get("figuras") instanceof List) {
+            for (Object figura : (List<?>) ((Map<?, ?>) cenaComLinks).get("figuras")) {
+                Object papel = ((Map<?, ?>) figura).get("chave_papel_semantico");
+                if (papel != null) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> mapaFigura = (Map<String, Object>) figura;
+                    mapaFigura.put("_links", RotasTentativa.linksDoPapel(tentativaId, String.valueOf(papel)));
+                }
+            }
+        }
         return estado;
     }
 

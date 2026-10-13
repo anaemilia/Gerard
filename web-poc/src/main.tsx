@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { api } from "./api";
 import "../styles.css";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
@@ -10,5 +11,5 @@ createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictM
 // garantia de entrega (limitação real do navegador, não escolha nossa) —
 // pagehide é o evento mais confiável disponível para isso.
 window.addEventListener("pagehide", () => {
-  navigator.sendBeacon("/api/v1/pesquisa/sincronizacoes");
+  api.sincronizarLog();
 });

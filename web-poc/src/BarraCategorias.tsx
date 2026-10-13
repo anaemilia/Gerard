@@ -172,7 +172,7 @@ export function BarraCategorias({ podeSortearMedidas, podeSortearRelacoes, ocupa
     if (!nomeLimpo || !usuarioAtual) return;
     setSalvandoUsuario(true); setErroUsuario("");
     try {
-      const perfil = await api.atualizarUsuario({ usuario_id: usuarioAtual.id, nome:nomeLimpo, idade,
+      const perfil = await api.atualizarUsuario(usuarioAtual, { nome:nomeLimpo, idade,
         sexo:sexo.toUpperCase(), midia_preferida:VALORES_MIDIA[midia],
         nivel_escolaridade:escolaridade, foto_data_url:foto });
       setUsuarioAtual(perfil);

@@ -27,7 +27,8 @@ import java.util.Map;
  * </pre>
  */
 public final class RotasTentativa {
-    public static final String BASE = "/api/v1/tentativas";
+    /** Nome do recurso na URI; o cliente não o conhece (segue links a partir de /api/v1), então pode mudar. */
+    public static final String BASE = "/api/v1/" + System.getProperty("gerard.api.recurso.tentativas", "tentativas");
 
     private RotasTentativa() {
     }
@@ -94,6 +95,39 @@ public final class RotasTentativa {
 
     public static String idioma(String id) {
         return tentativa(id) + "/idioma";
+    }
+
+    /** Um link no estilo HAL; {@code metodo} só vai quando não é GET (HAL não diz o método, então é uma extensão). */
+    public static Map<String, Object> link(String href, String metodo) {
+        Map<String, Object> link = new LinkedHashMap<String, Object>();
+        link.put("href", href);
+        if (metodo != null && !"GET".equals(metodo)) {
+            link.put("metodo", metodo);
+        }
+        return link;
+    }
+
+    /** Os links do estado de uma tentativa: onde ela está e o que se alcança a partir dela. */
+    static Map<String, Object> linksDaTentativa(String id) {
+        Map<String, Object> links = new LinkedHashMap<String, Object>();
+        links.put("self", link(tentativa(id), "GET"));
+        links.put("tentativas", link(BASE, "POST"));
+        links.put("idioma", link(idioma(id), "PUT"));
+        links.put("ajudas", link(ajudas(id), "POST"));
+        return links;
+    }
+
+    /** Os links de uma figura (papel): tudo o que se faz com ela mora aqui, sem o cliente montar URI. */
+    static Map<String, Object> linksDoPapel(String id, String papel) {
+        Map<String, Object> links = new LinkedHashMap<String, Object>();
+        links.put("posicionamento", link(posicionamento(id, papel), "POST"));
+        links.put("valor", link(valor(id, papel), "POST"));
+        links.put("confirmacao_valor", link(confirmacaoValor(id, papel), "POST"));
+        links.put("quadradinhos", link(quadradinhos(id, papel), "POST"));
+        links.put("sinal", link(sinal(id, papel), "POST"));
+        links.put("eixo_visibilidade", link(visibilidadeEixo(id, papel), "PUT"));
+        links.put("eixo_projecao", link(projecaoEixo(id, papel), "POST"));
+        return links;
     }
 
     /**

@@ -11,7 +11,8 @@ Base da avaliação: leitura do código do servidor e do cliente, e um teste loc
 | P0 isolamento por usuário | **feito**: sessão por visitante (cookie `gerard_sessao`), log num arquivo só com usuário e contexto por visitante, índice de tentativas em memória. 100 usuários simultâneos: 0 erros, 0 julgamentos cruzados, p99 10 ms (`scripts/benchmark/CargaMultiusuarioGerard.java`). |
 | P1 nível 1: recursos | **feito**: a tentativa é um recurso (`/api/v1/tentativas/{id}/...`, ver `RotasTentativa`); a pessoa também (`/api/v1/usuarios/{id}`). Rotas com verbo removidas (23, mais `GET /api/situacao`, que sorteava). `TesteRecursosTentativaWeb` (HTTP), `e2e_recursos_tentativa_web.mjs` e os e2e existentes (mouse real). |
 | P2 nível 2: verbos e status | **feito para a tentativa**: `GET` só lê (com ETag e `If-None-Match`), `PUT` onde repetir dá o mesmo (`idioma`, `eixo/visibilidade`), `POST` onde cada chamada é um evento; 201 + `Location`, 404/410/409/422/400/415/405 (com `Allow`)/428/412/429 (com `Retry-After`); erros em `application/problem+json` com `type` dereferenciável (`GET /api/v1/problemas/{slug}`); `ETag`/`If-Match` em toda alteração. A tabela rota × verbo × status é o `TesteRecursosTentativaWeb` (33 linhas, HTTP real). |
-| P3, P4 | não iniciados |
+| P3 nível 3: hipermídia | **feito**: a entrada `GET /api/v1` (`application/hal+json`) publica os 10 links de onde tudo parte; o estado da tentativa traz `_links` (`self`, `tentativas`, `idioma`, `ajudas`), cada figura com papel traz os recursos do papel (`posicionamento`, `valor`, `confirmacao_valor`, `quadradinhos`, `sinal`, `eixo_visibilidade`, `eixo_projecao`), cada pessoa traz `editar`; `acoes_disponiveis` segue como a lista do que é possível agora (ação com método, href e corpo sugerido). O React só conhece `/api/v1` e segue links. Prova: `TesteHipermidiaWeb` e os e2e de mouse real com o recurso das tentativas renomeado no servidor (`-Dgerard.api.recurso.tentativas=percursos`): nada no cliente quebra. |
+| P4 contrato e operação | não iniciado |
 
 Semântica de cada verbo nas rotas da tentativa (a fonte de verdade é o teste):
 
@@ -25,6 +26,10 @@ Semântica de cada verbo nas rotas da tentativa (a fonte de verdade é o teste):
 | `.../idioma` | PUT | sim | grava o idioma; repetir dá o mesmo estado |
 | `.../papeis/{p}/eixo/visibilidade` | PUT | sim | grava revelado ou oculto |
 | `.../papeis/{p}/eixo/projecao` | POST | não | cálculo puro; não exige nem avança a versão |
+
+Formato adotado no P3: HAL para `_links` (rel → `{href, metodo?, templated?}`; o `metodo` é uma extensão, só presente quando não é GET) e,
+ao lado, `acoes_disponiveis` com o corpo sugerido de cada ação, no papel que o Siren dá às *actions*. Os `href` das ações e dos links
+saem do mesmo lugar (`RotasTentativa`), então não divergem.
 
 Fora do P2 de propósito: `usuarios`, `sessao`, `relatos`, `pesquisa/log` e `curadoria` seguem com o formato de erro novo
 (problem+json) mas sem `ETag`/`If-Match` (não há duas abas disputando a mesma pessoa). Uma aba que fica para trás depois de

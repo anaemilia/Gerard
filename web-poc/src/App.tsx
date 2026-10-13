@@ -166,7 +166,7 @@ export default function App() {
     if (!estado) return;
     setOcupado(true);
     try {
-      receberSnapshot(await api.trocarIdiomaSituacao(estado.tentativa_id, codigo));
+      receberSnapshot(await api.trocarIdiomaSituacao(estado, codigo));
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
   }
@@ -298,8 +298,10 @@ export default function App() {
       envioValorEmCurso.current = true;
       setOcupado(true);
       try {
-        const resultado = await api.responderConfirmacaoValor(
-          estado.tentativa_id, proposta.papelId, confirmou, proposta.valor);
+        const linkConfirmacao = estado.cena?.figuras
+          .find((item) => item.chave_papel_semantico === proposta.papelId)?._links?.confirmacao_valor;
+        if (!linkConfirmacao) throw new Error("a figura do papel não publicou o recurso de confirmação");
+        const resultado = await api.responderConfirmacaoValor(linkConfirmacao, confirmou, proposta.valor);
         limiteAtingido = Boolean(resultado.limite_atingido);
         estadoServidor = resultado.estado;
         if (limiteAtingido && resultado.chave_mensagem && representacoes.elementoEmEdicao) {
@@ -366,7 +368,7 @@ export default function App() {
     const engatava = figura.interacoes_permitidas.find((item) => item.tipo === "ENGATAR_INCOGNITA");
     setOcupado(true);
     try {
-      const resultado = await api.soltarNumero(estado.tentativa_id, figura.chave_papel_semantico, papelId);
+      const resultado = await api.soltarNumero(figura._links!.posicionamento, papelId);
       receberSnapshot(resultado.estado);
       if (resultado.aceita && engatava) {
         const figuraEngatada = resultado.estado.cena?.figuras.find((item) => item.id === figura.id);
@@ -418,9 +420,12 @@ export default function App() {
       return;
     }
     if (!estado) return;
+    const linkProjecao = estado.cena?.figuras
+      .find((item) => item.chave_papel_semantico === papelId)?._links?.eixo_projecao;
+    if (!linkProjecao) return;
     const sequencia = ++sequenciaProjecaoEixo.current;
     try {
-      const resultado = await api.projetarEixo(estado.tentativa_id, papelId, valor);
+      const resultado = await api.projetarEixo(linkProjecao, valor);
       if (sequencia === sequenciaProjecaoEixo.current) {
         if (resultado.aceita === false) {
           // Domínio recusou (ex.: medida negativa): volta à última projeção aceita.
@@ -441,7 +446,7 @@ export default function App() {
     setOcupado(true);
     try {
       const resultado = await api.alterarVisibilidadeEixo(
-        estado.tentativa_id, interacao.papel_id, !figura.lupa_habilitada);
+        figura._links!.eixo_visibilidade, !figura.lupa_habilitada);
       receberSnapshot(resultado.estado);
     } catch (erro) { console.error(erro); }
     finally { setOcupado(false); }
@@ -558,7 +563,7 @@ export default function App() {
               {dicaVisivel && <p className="help-tip" role="status">{estado.dica_proximo_passo}</p>}
             </div>
           : itemAjuda("TEXTO")
-            ? <MenuAjudaContextual item={itemAjuda("TEXTO")} tentativaId={estado.tentativa_id} />
+            ? <MenuAjudaContextual item={itemAjuda("TEXTO")} ajudas={estado._links.ajudas} />
             : <span className="help-mark" aria-hidden="true"><IconeAjudaContextual /></span>}
         <div className="help-mark-wrap language-switch-wrap">
           <button type="button" className="help-mark" aria-expanded={menuIdiomaAberto}
@@ -593,7 +598,7 @@ export default function App() {
       </section>
       <div className="workspace workspace-awaiting-category">
         <section className={`diagram-panel${estado.modelagem?.concluida === true ? " diagram-panel-concluido" : ""}${feedbackErroDoDiagrama ? " diagram-panel-erro" : ""}`} aria-label="Área do diagrama">
-          <MenuAjudaContextual item={itemAjuda("VERGNAUD")} tentativaId={estado.tentativa_id} />
+          <MenuAjudaContextual item={itemAjuda("VERGNAUD")} ajudas={estado._links.ajudas} />
           {acao("REINICIAR_TENTATIVA") && <span className="help-mark-wrap diagram-restore-wrap">
             <button type="button" className="help-mark"
               aria-label="Limpar a área do diagrama e recomeçar a modelagem"
@@ -652,7 +657,7 @@ export default function App() {
               conclusao={estado.conclusao} ocupado={ocupado} aoEscolher={escolherConclusao} />}
         </section>
         <aside className="response-panel" aria-label="Área complementar">
-          <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} tentativaId={estado.tentativa_id} />
+          <MenuAjudaContextual item={itemAjuda("COMPLEMENTAR")} ajudas={estado._links.ajudas} />
           {estado?.ajuda_visual_acionada && historinhasAjudaVisual.length > 0 &&
             <HistorinhaPassiva historinhas={historinhasAjudaVisual}
               codigoIdioma={codigoIdiomaSituacao} />}
