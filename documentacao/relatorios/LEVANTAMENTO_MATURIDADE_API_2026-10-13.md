@@ -35,6 +35,11 @@ Política de depreciação (P4): um caminho que sai de uso continua atendendo at
 `Link: <novo>; rel="successor-version"`; o contrato marca a operação como `deprecated`. Depois da data, o caminho é removido e o
 contrato e o teste mudam juntos. Hoje: `/api/pesquisa/log` e `/api/curadoria/situacoes` até 2027-01-11.
 
+Cobertura por mouse real das rotas da API (`tests/web`): classificação, posicionamento, valor, confirmação, conclusão, reinício, idioma e
+ajuda (e2e anteriores e `e2e_recursos_tentativa_web`); e, em `e2e_rotas_restantes_web` (14 verificações), quadradinhos, sinal,
+eixo (visibilidade nos dois sentidos e projeção) e a pessoa (cadastrar, entrar e editar pelo link `editar`). Sem mouse real: `operacoes`
+(coberta pelos e2e de registro no limite da operação), relatos e sincronizações.
+
 Não feito no P4: o teste de carga **no Render**. Rodá-lo contra o serviço publicado gravaria eventos falsos no banco de pesquisa
 (`pesquisa_log.db`) e usaria o serviço real; a carga foi medida local (100 e 300 usuários, ver `scripts/benchmark/CargaMultiusuarioGerard.java`).
 Para medir no Render é preciso um serviço de homologação com banco próprio. Também fora: contas individuais de pesquisador, rotação de
