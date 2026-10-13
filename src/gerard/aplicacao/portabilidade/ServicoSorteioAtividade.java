@@ -176,6 +176,14 @@ public final class ServicoSorteioAtividade {
         return sortear(Grupo.RELACOES);
     }
 
+    /** Lê o estado atual da tentativa, sem alterar nada. */
+    public synchronized Map<String, Object> consultarEstado() {
+        if (contextoAtual == null) {
+            throw new IllegalStateException("não há tentativa em curso");
+        }
+        return projetarEstado();
+    }
+
     /** O id da tentativa em curso (recurso /tentativas/{id}); null antes do primeiro sorteio. */
     public synchronized String getTentativaId() {
         return tentativaId;

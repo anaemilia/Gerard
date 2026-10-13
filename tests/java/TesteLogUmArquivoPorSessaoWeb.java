@@ -24,6 +24,7 @@ public class TesteLogUmArquivoPorSessaoWeb {
 
     static final class Visitante {
         String cookie;
+        String etag;
 
         @SuppressWarnings("unchecked")
         Map<String, Object> chamar(String metodo, String caminho, String corpo) throws Exception {
@@ -32,12 +33,19 @@ public class TesteLogUmArquivoPorSessaoWeb {
             if (cookie != null) {
                 c.setRequestProperty("Cookie", cookie);
             }
+            if (etag != null && caminho.matches("/api/v1/tentativas/[^/]+/.*")) {
+                c.setRequestProperty("If-Match", etag);
+            }
             if (corpo != null) {
                 c.setDoOutput(true);
                 c.setRequestProperty("Content-Type", "application/json");
                 try (OutputStream out = c.getOutputStream()) {
                     out.write(corpo.getBytes(StandardCharsets.UTF_8));
                 }
+            }
+            String novoEtag = c.getHeaderField("ETag");
+            if (novoEtag != null) {
+                etag = novoEtag;
             }
             String setCookie = c.getHeaderField("Set-Cookie");
             if (setCookie != null && cookie == null) {

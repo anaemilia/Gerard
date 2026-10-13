@@ -82,6 +82,13 @@ export default function App() {
     api.carregar().then(receberSnapshot).catch((erro: Error) => console.error(erro));
   }, []);
 
+  // Outra aba alterou a tentativa (412): a API devolve o estado verdadeiro e a tela passa a mostrá-lo.
+  useEffect(() => {
+    const aoDesatualizar = (evento: Event) => receberSnapshot((evento as CustomEvent<EstadoWeb>).detail);
+    window.addEventListener("gerard:estado-desatualizado", aoDesatualizar);
+    return () => window.removeEventListener("gerard:estado-desatualizado", aoDesatualizar);
+  }, []);
+
   const tentativaAtualId = estado?.modelagem?.tentativa_id ?? estado?.situacao_id;
   useEffect(() => {
     setEstadoExploratorio(null);

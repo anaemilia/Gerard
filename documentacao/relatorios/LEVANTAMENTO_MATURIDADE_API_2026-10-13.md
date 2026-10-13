@@ -10,8 +10,25 @@ Base da avaliação: leitura do código do servidor e do cliente, e um teste loc
 |---|---|
 | P0 isolamento por usuário | **feito**: sessão por visitante (cookie `gerard_sessao`), log num arquivo só com usuário e contexto por visitante, índice de tentativas em memória. 100 usuários simultâneos: 0 erros, 0 julgamentos cruzados, p99 10 ms (`scripts/benchmark/CargaMultiusuarioGerard.java`). |
 | P1 nível 1: recursos | **feito**: a tentativa é um recurso (`/api/v1/tentativas/{id}/...`, ver `RotasTentativa`); a pessoa também (`/api/v1/usuarios/{id}`). Rotas com verbo removidas (23, mais `GET /api/situacao`, que sorteava). `TesteRecursosTentativaWeb` (HTTP), `e2e_recursos_tentativa_web.mjs` e os e2e existentes (mouse real). |
-| P2 nível 2 | não iniciado (só vale começar com o nível 1 fechado) |
+| P2 nível 2: verbos e status | **feito para a tentativa**: `GET` só lê (com ETag e `If-None-Match`), `PUT` onde repetir dá o mesmo (`idioma`, `eixo/visibilidade`), `POST` onde cada chamada é um evento; 201 + `Location`, 404/410/409/422/400/415/405 (com `Allow`)/428/412/429 (com `Retry-After`); erros em `application/problem+json` com `type` dereferenciável (`GET /api/v1/problemas/{slug}`); `ETag`/`If-Match` em toda alteração. A tabela rota × verbo × status é o `TesteRecursosTentativaWeb` (33 linhas, HTTP real). |
 | P3, P4 | não iniciados |
+
+Semântica de cada verbo nas rotas da tentativa (a fonte de verdade é o teste):
+
+| Rota | Verbo | Altera | Por quê |
+|---|---|---|---|
+| `/tentativas` | POST | cria | cada sorteio é uma tentativa nova (201, `Location`) |
+| `/tentativas/{id}` | GET | não | leitura segura; `ETag`, 304 com `If-None-Match` |
+| `.../classificacao`, `.../classificacao/confirmacao` | POST | sim | cada escolha é um evento registrado e conta rejeição |
+| `.../papeis/{p}/posicionamento`, `.../valor`, `.../valor/confirmacao`, `.../quadradinhos`, `.../sinal` | POST | sim | cada chamada é um evento do log; não são idempotentes |
+| `.../operacoes`, `.../conclusao`, `.../ajudas`, `.../reinicio` | POST | sim | idem |
+| `.../idioma` | PUT | sim | grava o idioma; repetir dá o mesmo estado |
+| `.../papeis/{p}/eixo/visibilidade` | PUT | sim | grava revelado ou oculto |
+| `.../papeis/{p}/eixo/projecao` | POST | não | cálculo puro; não exige nem avança a versão |
+
+Fora do P2 de propósito: `usuarios`, `sessao`, `relatos`, `pesquisa/log` e `curadoria` seguem com o formato de erro novo
+(problem+json) mas sem `ETag`/`If-Match` (não há duas abas disputando a mesma pessoa). Uma aba que fica para trás depois de
+outro sorteio recebe 410 e a tela não mostra nada novo (não há texto de interface definido para isso; não inventei um).
 
 Pontos que o P1 deixou de propósito para os níveis seguintes: os verbos ainda são quase todos `POST` (o P2 troca por `PUT`/`GET`
 conforme a idempotência), os status continuam os de antes (400/422 genéricos, com 404 só para tentativa inexistente ou

@@ -19,6 +19,7 @@ public class TesteIsolamentoSessoesWeb {
 
     static final class Visitante {
         String cookie;
+        String etag;
 
         Map<String, Object> post(String caminho, String corpo) throws Exception {
             HttpURLConnection c = (HttpURLConnection) new URL(BASE + caminho).openConnection();
@@ -28,8 +29,15 @@ public class TesteIsolamentoSessoesWeb {
             if (cookie != null) {
                 c.setRequestProperty("Cookie", cookie);
             }
+            if (etag != null && caminho.matches("/api/v1/tentativas/[^/]+/.*")) {
+                c.setRequestProperty("If-Match", etag);
+            }
             try (OutputStream out = c.getOutputStream()) {
                 out.write(corpo.getBytes(StandardCharsets.UTF_8));
+            }
+            String novoEtag = c.getHeaderField("ETag");
+            if (novoEtag != null) {
+                etag = novoEtag;
             }
             String setCookie = c.getHeaderField("Set-Cookie");
             if (setCookie != null && cookie == null) {

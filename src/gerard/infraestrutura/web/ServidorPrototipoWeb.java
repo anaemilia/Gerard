@@ -133,16 +133,8 @@ public final class ServidorPrototipoWeb {
         ServidorPrototipoWeb aplicacao = new ServidorPrototipoWeb(
                 Files.isDirectory(distribuicao) ? distribuicao : Paths.get("web-poc"));
         HttpServer servidor = HttpServer.create(new InetSocketAddress(porta), 0);
-        servidor.createContext(RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes,
-                new RecursosTentativa.Respondedor() {
-                    public void responder(HttpExchange troca, int status, Map<String, Object> corpo) throws IOException {
-                        aplicacao.responder(troca, status, corpo);
-                    }
-
-                    public Map<String, Object> erro(String mensagem) {
-                        return ServidorPrototipoWeb.erro(mensagem);
-                    }
-                }));
+        servidor.createContext(RotasTentativa.BASE, new RecursosTentativa(aplicacao.sessoes, aplicacao::responder));
+        servidor.createContext(Problema.BASE.substring(0, Problema.BASE.length() - 1), aplicacao::problemas);
         servidor.createContext("/api/v1/usuarios", aplicacao::usuarios);
         servidor.createContext("/api/v1/sessao/usuario", aplicacao::entrarUsuario);
         servidor.createContext("/api/v1/relatos", aplicacao::relatoBug);
@@ -518,8 +510,20 @@ public final class ServidorPrototipoWeb {
             troca.getRequestBody().readAllBytes();
         } catch (IOException ignorado) {
         }
-        byte[] bytes = EscritorJsonSimples.escrever(corpo).getBytes(StandardCharsets.UTF_8);
-        troca.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        Map<String, Object> corpoFinal = corpo;
+        boolean ehProblema = status >= 400;
+        if (ehProblema && !corpo.containsKey("type")) {
+            // Erros montados com erro("..."): viram problem+json com o tipo genérico (RFC 9457, about:blank).
+            corpoFinal = new LinkedHashMap<String, Object>();
+            corpoFinal.put("type", "about:blank");
+            corpoFinal.put("title", tituloDoStatus(status));
+            corpoFinal.put("status", Integer.valueOf(status));
+            corpoFinal.put("detail", corpo.get("erro"));
+            corpoFinal.put("instance", troca.getRequestURI().getPath());
+        }
+        byte[] bytes = EscritorJsonSimples.escrever(corpoFinal).getBytes(StandardCharsets.UTF_8);
+        troca.getResponseHeaders().set("Content-Type",
+                ehProblema ? "application/problem+json; charset=utf-8" : "application/json; charset=utf-8");
         // Sem isso, GET /api/situacao pode ser servido do cache HTTP do
         // navegador num F5, mostrando estado antigo mesmo com o servidor já
         // tendo avançado — mesmo problema que motivou o no-store nos
@@ -529,6 +533,34 @@ public final class ServidorPrototipoWeb {
         try (OutputStream saida = troca.getResponseBody()) {
             saida.write(bytes);
         }
+    }
+
+    private static String tituloDoStatus(int status) {
+        switch (status) {
+            case 400: return "Requisição inválida";
+            case 401: return "Não autorizado";
+            case 404: return "Não encontrado";
+            case 405: return "Método não permitido";
+            case 422: return "Dados inválidos";
+            case 503: return "Serviço indisponível";
+            default: return "Erro";
+        }
+    }
+
+    /** GET /api/v1/problemas/{slug}: descreve o tipo de problema que as respostas de erro citam em "type". */
+    private void problemas(HttpExchange troca) throws IOException {
+        if (!"GET".equals(troca.getRequestMethod())) {
+            troca.getResponseHeaders().set("Allow", "GET");
+            responder(troca, 405, Problema.METODO_NAO_PERMITIDO.corpo(null, troca.getRequestURI().getPath()));
+            return;
+        }
+        String caminho = troca.getRequestURI().getPath();
+        Problema tipo = caminho.startsWith(Problema.BASE) ? Problema.porSlug(caminho.substring(Problema.BASE.length())) : null;
+        if (tipo == null) {
+            responder(troca, 404, Problema.RECURSO_INEXISTENTE.corpo(null, caminho));
+            return;
+        }
+        responder(troca, 200, tipo.descricaoDoTipo());
     }
 
     private static Map<String, Object> erro(String mensagem) {

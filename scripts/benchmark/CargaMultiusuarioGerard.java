@@ -95,8 +95,14 @@ public final class CargaMultiusuarioGerard {
         return ordenada.get(Math.min(ordenada.size() - 1, (int) Math.ceil(ordenada.size() * p / 100.0) - 1));
     }
 
+    static final ConcurrentHashMap<HttpClient, String> etags = new ConcurrentHashMap<HttpClient, String>();
+
     static String chamar(HttpClient http, String base, String metodo, String caminho, String corpo) throws Exception {
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(base + caminho)).timeout(Duration.ofSeconds(30));
+        String etag = etags.get(http);
+        if (etag != null && caminho.matches("/api/v1/tentativas/[^/]+/.*")) {
+            b.header("If-Match", etag);
+        }
         if ("GET".equals(metodo)) {
             b.GET();
         } else {
@@ -105,6 +111,7 @@ public final class CargaMultiusuarioGerard {
         long t0 = System.nanoTime();
         HttpResponse<String> r = http.send(b.build(), BodyHandlers.ofString());
         long ms = (System.nanoTime() - t0) / 1_000_000;
+        r.headers().firstValue("ETag").ifPresent(e -> etags.put(http, e));
         latencias.add(ms);
         porRota.computeIfAbsent(metodo + " " + caminho.replaceAll("/tentativas/[0-9a-f-]{36}", "/tentativas/{id}"), k -> new CopyOnWriteArrayList<Long>()).add(ms);
         if (r.statusCode() >= 500) {
