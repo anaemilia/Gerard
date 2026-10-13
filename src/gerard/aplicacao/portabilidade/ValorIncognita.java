@@ -1,8 +1,12 @@
 package gerard.aplicacao.portabilidade;
 
+import gerard.aplicacao.FluxoConfirmacaoValorIncognita;
+import gerard.aplicacao.ProtocoloValorIncognita;
+import gerard.aplicacao.adaptacao.ResultadoExecucaoAjudaIncognita;
 import gerard.dominio.atividade.ContextoAcaoInstrumental;
 import gerard.dominio.atividade.RegistroAcaoInstrumental;
 import gerard.dominio.atividade.TarefaInteracao;
+import gerard.dominio.campoaditivo.IdentidadeAcaoInstrumentalPapel;
 import gerard.dominio.campoaditivo.IncognitaQuantitativa;
 import gerard.dominio.campoaditivo.OrigemAcao;
 import gerard.dominio.campoaditivo.ResultadoRegistroTentativaPapel;
@@ -41,11 +45,61 @@ final class ValorIncognita {
     static Resultado propor(IncognitaQuantitativa incognita, ValorNumerico proposta,
             ValorNumerico esperado, ContextoAcaoInstrumental contexto,
             EscopoTentativa escopo) {
-        RegistroAcaoInstrumental registro = incognita.avaliarAcao(
-                incognita.getFluxoTentativas().iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO),
-                TarefaInteracao.TEXTO, proposta, esperado, contexto);
-        escopo.persistir(registro);
-        escopo.registrarFeedbackDaIncognita(registro);
+        // A sequência (avaliar, persistir, feedback de erro, ajuda, limite, pergunta) é a MESMA do desktop:
+        // FluxoConfirmacaoValorIncognita, escrita uma vez. Aqui só ficam os passos que dependem da tentativa web;
+        // a ajuda e o limite chegam ao cliente pelo estado (DecisorAjudaVisual, material concreto), não por diálogo.
+        final RegistroAcaoInstrumental[] avaliado = new RegistroAcaoInstrumental[1];
+        FluxoConfirmacaoValorIncognita.executar(new FluxoConfirmacaoValorIncognita.Alvo() {
+            public boolean ehIncognitaPreenchidaPeloProtocolo() {
+                return true;
+            }
+
+            public String prepararPapelDaIncognita() {
+                return null;
+            }
+
+            public IncognitaQuantitativa incognitaAtual() {
+                return incognita;
+            }
+
+            public IdentidadeAcaoInstrumentalPapel iniciarAcaoDoUsuario() {
+                return incognita.getFluxoTentativas().iniciarAcaoInstrumental(OrigemAcao.ORIGEM_USUARIO);
+            }
+
+            public void registrarPapeisDadoModificadosSeHouver() {
+            }
+
+            public RegistroAcaoInstrumental avaliar(ProtocoloValorIncognita protocolo, IncognitaQuantitativa inc,
+                    IdentidadeAcaoInstrumentalPapel identidade, String papelAlvo) {
+                avaliado[0] = inc.avaliarAcao(identidade, TarefaInteracao.TEXTO, proposta, esperado, contexto);
+                return avaliado[0];
+            }
+
+            public void persistir(RegistroAcaoInstrumental registro) {
+                escopo.persistir(registro);
+            }
+
+            public void aplicarFeedbackVisualErro() {
+                escopo.registrarFeedbackDaIncognita(avaliado[0]);
+            }
+
+            public void limparFeedbackVisualErro() {
+                escopo.registrarFeedbackDaIncognita(avaliado[0]);
+            }
+
+            public ResultadoExecucaoAjudaIncognita executarAjuda(RegistroAcaoInstrumental registro,
+                    ResultadoRegistroTentativaPapel resultadoTentativa) {
+                return null;
+            }
+
+            public void processarLimiteTentativasAtingido(ResultadoRegistroTentativaPapel resultadoTentativa) {
+            }
+
+            public void perguntarConfirmacao(ProtocoloValorIncognita protocolo, RegistroAcaoInstrumental registro,
+                    IncognitaQuantitativa inc, String papelAlvo) {
+            }
+        }, null, null);
+        RegistroAcaoInstrumental registro = avaliado[0];
         boolean aceita = registro.possuiCriterioAplicavel()
                 ? registro.foiCorreta()
                 : Boolean.TRUE.equals(incognita.correspondeAoEsperado(proposta, esperado));
