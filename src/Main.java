@@ -9406,6 +9406,7 @@ public class Main extends JFrame {
          * implementa o seu atendimento.
          */
         private final CadeiaDeAtendimento cadeiaPressionamento = new CadeiaDeAtendimento()
+                .adicionar("número relativo aguardando sinal", this::exigirEscolhaDoSinalPendente)
                 .adicionar("controles de unidades", this::pressionarControlesUnidades)
                 .adicionar("controle da comparação", this::pressionarControleComparacao)
                 .adicionar("lupa do painel de eixo", this::pressionarLupaDoEixo)
@@ -9438,6 +9439,37 @@ public class Main extends JFrame {
                 quadradinhoVennFocado = null;
                 repaint();
             }
+        }
+
+        /**
+         * A modelagem não continua com um número relativo esperando o sinal: enquanto houver um no diagrama, qualquer
+         * pressionamento (e duplo clique) só reabre o menu de sinal dele, em vez de seguir para outra peça. Um número
+         * posicionado de forma incorreta fica de fora: a pergunta persistente é quem o conduz até o lugar certo.
+         */
+        private boolean exigirEscolhaDoSinalPendente(int x, int y, MouseEvent e) {
+            ItemTextoArrastavel item = encontrarItemDeNumeroRelativoAguardandoSinal();
+            if (item == null) {
+                return false;
+            }
+            solicitarSinalNumeroRelativoParaItem(item, encontrarNumeroRelativoPorItem(item), false);
+            return true;
+        }
+
+        private ItemTextoArrastavel encontrarItemDeNumeroRelativoAguardandoSinal() {
+            for (ItemTextoArrastavel item : itensArrastaveis) {
+                if (item == null || !item.estaNoDiagrama()
+                        || !scaffoldingNumeroRelativo.aguardaEscolhaDeSinal(item.valor)
+                        || encontrarNumeroRelativoPorItem(item) == null) {
+                    continue;
+                }
+                ResultadoQuestionamentoPosicionamento posicionamento = avaliarQuestionamentoPosicionamento(item,
+                        gerard.pesquisador.auditoria.OrigemAvaliacao.SINCRONIZACAO_REPRESENTACOES);
+                if (posicionamento.isAplicavel() && !posicionamento.isCorreto()) {
+                    continue;
+                }
+                return item;
+            }
+            return null;
         }
 
         /** Elo "controles de unidades" da cadeia de pressionamento (ver cadeiaPressionamento). */
@@ -9896,6 +9928,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
          * elo só bloqueia: o duplo clique sobre os controles de adicionar/remover quadradinho não edita nada.
          */
         private final CadeiaDeAtendimento cadeiaCliqueDuplo = new CadeiaDeAtendimento()
+                .adicionar("número relativo aguardando sinal", this::exigirEscolhaDoSinalPendente)
                 .adicionar("controles de quadradinho", this::cliqueSobreControleDeQuadradinho)
                 .adicionar("número editável no diagrama", this::editarNumeroDoItemNoDiagrama)
                 .adicionar("texto do quadradinho de Venn", this::editarTextoDoQuadradinho)
@@ -10528,7 +10561,11 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             // mudança fica só no próprio item: as outras representações
             // (texto, Venn, eixo) não devem refletir uma resposta ainda não
             // confirmada como correta — ver incognitaAguardandoConfirmacaoDeValor.
-            if (!incognitaAguardandoConfirmacaoDeValor(item)) {
+            // Um número relativo ainda sem sinal não propaga: a escolha do sinal (AlvoEscolhaSinal.sincronizarRepresentacoes) é
+            // quem sincroniza, já com o valor verdadeiro.
+            boolean aguardaSinal = encontrarNumeroRelativoPorItem(item) != null
+                    && scaffoldingNumeroRelativo.aguardaEscolhaDeSinal(item.valor);
+            if (!aguardaSinal && !incognitaAguardandoConfirmacaoDeValor(item)) {
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         elemento, EstadoSemanticoCompartilhado.Origem.ARRASTE);
             }

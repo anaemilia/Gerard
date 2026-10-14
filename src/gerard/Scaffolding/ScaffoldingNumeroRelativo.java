@@ -27,6 +27,15 @@ public class ScaffoldingNumeroRelativo {
         return limpo.matches("[0-9]+|\\?");
     }
 
+    /**
+     * Um número relativo solto no diagrama ainda sem sinal: o valor dele não existe até a pessoa escolher o sinal. Propagá-lo
+     * antes disso, como magnitude positiva, fazia o sistema completar os outros papéis com um valor que não é o dela (por
+     * exemplo, a transformação resultante saía 5 - 2 = 3 em vez de -5 - 2 = -7) e esse valor ficava como se fosse conhecido.
+     */
+    public boolean aguardaEscolhaDeSinal(String valor) {
+        return ehNumeroOuInterrogacao(valor) && !temSinal(valor);
+    }
+
     public boolean temSinal(String valor) {
         if (valor == null) {
             return false;

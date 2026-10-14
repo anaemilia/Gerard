@@ -327,8 +327,24 @@ public final class ServicoSorteioAtividade {
                 || atividadeModelagem instanceof ServicoAtividadeEscolhaOperacao;
     }
 
+    /**
+     * A modelagem não continua com um número relativo esperando o sinal: enquanto um papel conhecido foi posicionado e o sinal
+     * ainda não foi escolhido, qualquer outra ação sobre a modelagem é incompatível com o estado (409). Só a escolha do sinal,
+     * reiniciar e sortear seguem. O estado publicado já traz o papel pendente (papel_aguardando_sinal).
+     */
+    private void exigirSemNumeroRelativoAguardandoSinal() {
+        Map<String, Object> atividade = atividadeModelagem != null ? atividadeModelagem.estadoAtual()
+                : atividadeEscolhaOperacao != null ? atividadeEscolhaOperacao.estadoAtual() : null;
+        Object pendente = atividade == null ? null : atividade.get("papel_aguardando_sinal");
+        if (pendente != null) {
+            throw new IllegalStateException(
+                    "escolha o sinal de " + pendente + " antes de continuar a modelagem");
+        }
+    }
+
     public synchronized Map<String, Object> responderConfirmacaoValor(
             String papelId, boolean confirmou, int valor) {
+        exigirSemNumeroRelativoAguardandoSinal();
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
             resultado = atividadeModelagem.responderConfirmacaoValor(papelId, confirmou, valor);
@@ -344,6 +360,7 @@ public final class ServicoSorteioAtividade {
     }
 
     public synchronized Map<String, Object> proporValor(String papelId, int valor) {
+        exigirSemNumeroRelativoAguardandoSinal();
         Map<String, Object> resultado;
         if (atividadeModelagem != null) {
             resultado = atividadeModelagem.proporValor(papelId, valor);
@@ -397,6 +414,7 @@ public final class ServicoSorteioAtividade {
      * conhecido ou engatar a incógnita); sem efeito oferecido, o posicionamento correto não muda nada.
      */
     public synchronized Map<String, Object> soltarNumero(String papelAlvoId, String origemPapelId) {
+        exigirSemNumeroRelativoAguardandoSinal();
         Map<String, Object> rejeitado = julgarSoltura(papelAlvoId, origemPapelId);
         if (rejeitado != null) {
             return rejeitado;
@@ -651,6 +669,7 @@ public final class ServicoSorteioAtividade {
      * ainda não têm representação complementar portada.
      */
     public synchronized Map<String, Object> ajustarQuadradinho(String papelId, int delta) {
+        exigirSemNumeroRelativoAguardandoSinal();
         if (!(atividadeModelagem instanceof ServicoAtividadeComposicao)) {
             throw new IllegalStateException(
                     "a situação atual não possui material concreto implementado");
@@ -688,6 +707,7 @@ public final class ServicoSorteioAtividade {
     }
 
     public synchronized Map<String, Object> escolherOperacao(String seletor, String operacao) {
+        exigirSemNumeroRelativoAguardandoSinal();
         Map<String, Object> resultado;
         // Mesma capacidade opcional já usada por escolherSinalNumeroRelativo
         // (ver ServicoAtividadeComSinal): uma atividadeModelagem pode
