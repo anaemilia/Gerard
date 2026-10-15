@@ -1063,8 +1063,9 @@ servicos_web=''.join(text(port_dir+n) for n in (
 check('tentativa.constituir(registro).isPresent()' in escopo_web
       and 'persistencia.persistir(registro)' in escopo_web,
       'web entrega à persistência só o que a tentativa constitui')
-check('incognita.avaliarAcao(' in valor_web and 'escopo.persistir(registro)' in valor_web,
-      'web avalia a incógnita pela mesma IncognitaQuantitativa do desktop')
+check('FluxoConfirmacaoValorIncognita.executar(' in valor_web and '.avaliarAcao(' in valor_web
+      and 'escopo.persistir(registro)' in valor_web,
+      'web avalia a incógnita pela mesma IncognitaQuantitativa e pela mesma sequência do desktop (FluxoConfirmacaoValorIncognita)')
 check('diagnosticarValorProposto(' not in servicos_web
       and 'Integer.signum(valorEscolhido)' not in servicos_web
       and 'boolean aceita = AvaliacaoEscolhaOperacaoRelacao' not in servicos_web,

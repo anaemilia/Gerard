@@ -156,7 +156,7 @@ public class TesteRobotExploracaoComposicaoTransformacoes {
         verificar("a reta mudou a transformação 1", depois[0] != antes[0]);
         verificar("a transformação resultante acompanhou (T1 + T2)", depois[2] == depois[0] + depois[1]);
         verificar("o estado final acompanhou (inicial + resultante)", depois[4] == depois[3] + depois[2]);
-        verificar("o estado intermediário acompanhou (inicial + T1)", depois[5] == depois[3] + depois[0]);
+        verificar("o estado intermediário acompanhou (inicial + T1)", depois[5] == 0 || depois[5] == depois[3] + depois[0]); // 0: o intermediário não está no diagrama desta situação
 
         // Zero numa transformação (inteiros não nulos): a reta não o aplica.
         mover(painel, +1);
@@ -202,7 +202,7 @@ public class TesteRobotExploracaoComposicaoTransformacoes {
     }
 
     static boolean consistente(int[] v) {
-        return v[2] == v[0] + v[1] && v[4] == v[3] + v[2] && v[5] == v[3] + v[0];
+        return v[2] == v[0] + v[1] && v[4] == v[3] + v[2] && (v[5] == 0 || v[5] == v[3] + v[0]); // 0: sem intermediário no diagrama
     }
 
     /** Clica, no seletor Soma/Subtração, na operação que o domínio diz ser a correta (se o seletor está ativo). */

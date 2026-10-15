@@ -1012,6 +1012,8 @@ public class Main extends JFrame {
                 new SeletorIndicesEstadoCompartilhado();
         final PlanejadorAplicacaoEstadoVergnaud planejadorAplicacaoEstadoVergnaud =
                 new PlanejadorAplicacaoEstadoVergnaud();
+        final gerard.ui.vergnaud.AcompanhamentoDosEstadosDaComposicao acompanhamentoEstadosDaComposicao =
+                new gerard.ui.vergnaud.AcompanhamentoDosEstadosDaComposicao();
         final ApresentadorItemVergnaud apresentadorItemVergnaud =
                 new ApresentadorItemVergnaud();
         int[] indicesElementosEstadoCompartilhado = new int[] {0, 1, 2};
@@ -4818,8 +4820,14 @@ public class Main extends JFrame {
             for (int i = 0; i < elementosVergnaud.size(); i++) {
                 papeisDaCena.add(obterPapelElementoParaConclusao(i));
             }
+            java.util.Set<String> comElementoNoEnunciado = new java.util.HashSet<String>();
+            for (ElementoTextoMovel texto : elementosTexto) {
+                if (texto.possuiVinculoSemantico()) {
+                    comElementoNoEnunciado.add(texto.chavePapelSemantico);
+                }
+            }
             return seletorPapeisConclusaoModelagem.selecionar(
-                    papeisDaCena, situacaoProblemaAtual, localizacao);
+                    papeisDaCena, comElementoNoEnunciado, situacaoProblemaAtual, localizacao);
         }
 
         private java.util.List<EstadoPosicionamentoModelagem> capturarPosicionamentosConclusao() {
@@ -6931,6 +6939,13 @@ public class Main extends JFrame {
                                      Math.max(0, valor),
                                      situacaoProblemaAtual));
                 }
+            }
+            // Na Composição de Transformações os estados acompanham as transformações.
+            for (AtualizacaoElementoVergnaud estado : acompanhamentoEstadosDaComposicao.planejar(
+                    tipoSituacaoSelecionada, elementosVergnaud, leitorValoresDoVergnaud())) {
+                definirValorNoElementoMedida(elementosVergnaud.get(estado.getIndiceElemento()),
+                        servicoQuantidadeContextual.formatarMedidaParaDiagrama(
+                                estado.getValor(), situacaoProblemaAtual));
             }
         }
 
@@ -10709,7 +10724,18 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
             int indiceVisual = obterIndiceVisualPorIdentidadeSemantica(relacao);
             int indicePapel = converterIndiceRealParaPapel(indiceVisual);
             return estadoSemanticoCompartilhado.tentativaPreservaDominios(
-                    indicePapel, Integer.valueOf(valorRelativo));
+                    indicePapel, Integer.valueOf(valorRelativo))
+                    && acompanhamentoEstadosDaComposicao.admite(tipoSituacaoSelecionada, elementosVergnaud,
+                            leitorValoresDoVergnaud(), relacao.chavePapelSemantico, valorRelativo);
+        }
+
+        private gerard.ui.vergnaud.AcompanhamentoDosEstadosDaComposicao.LeitorValores leitorValoresDoVergnaud() {
+            return new gerard.ui.vergnaud.AcompanhamentoDosEstadosDaComposicao.LeitorValores() {
+                @Override
+                public Integer valorDe(ElementoVergnaud elemento) {
+                    return obterValorNumericoDoElemento(elemento);
+                }
+            };
         }
 
         private void informarBloqueioQuantidadeNegativa() {

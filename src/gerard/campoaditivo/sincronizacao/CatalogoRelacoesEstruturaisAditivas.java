@@ -121,6 +121,12 @@ public final class CatalogoRelacoesEstruturaisAditivas {
             };
         }
 
+        /** Se o domínio do papel deste índice (ex.: transformação não nula) aceita o valor. */
+        public boolean papelAceita(int indice, int valor) {
+            return indice < 0 || indice >= papeis.length
+                    || papeis[indice].aceita(new gerard.semantica.numero.NumeroInteiro(valor));
+        }
+
         public int indiceDoPapel(PapelQuantitativo papel) {
             for (int i = 0; i < papeis.length; i++) {
                 if (papeis[i] == papel) {

@@ -14,15 +14,19 @@ public final class TesteSeletorPapeisConclusaoModelagem {
         List<String> cena = Arrays.asList("papel.parte1", "papel.valor",
                 "papel.parte2", "papel.todo", " ", null);
 
-        exigir(seletor.selecionar(cena, null, null),
+        exigir(seletor.selecionar(cena, null, null, null),
                 "papel.parte1", "papel.parte2", "papel.todo");
 
         SituacaoProblemaAditiva parcial = new SituacaoProblemaAditiva(
                 "teste", true, TipoSituacaoAditiva.COMPOSICAO_MEDIDAS,
                 IdiomaInterface.PORTUGUES, "Situacao parcial", "", "", "",
                 "", "", "", "6", "", "?", "resultado", "", "");
-        exigir(seletor.selecionar(cena, parcial,
+        exigir(seletor.selecionar(cena, null, parcial,
                         ServicoLocalizacao.getInstancia()),
+                "papel.parte1", "papel.todo");
+
+        // Papel derivado, sem elemento no enunciado, não é exigido: não há o que posicionar.
+        exigir(seletor.selecionar(cena, Arrays.asList("papel.parte1", "papel.todo"), null, null),
                 "papel.parte1", "papel.todo");
     }
 
