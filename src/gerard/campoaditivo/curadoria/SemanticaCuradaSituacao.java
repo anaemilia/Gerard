@@ -128,9 +128,11 @@ public final class SemanticaCuradaSituacao {
             adicionar(papeis, loc, "papel.diferenca", primeiroNaoVazio(aplicarSinal(situacao.getValorRelativo(), situacao.getSinalValorRelativo()), situacao.getResultado()), "", desconhecido);
             adicionar(papeis, loc, "papel.referendo", primeiroNaoVazio(situacao.getReferendo(), situacao.getQuantidade1()), situacao.getPersonagem2(), desconhecido);
         } else if (tipo == TipoSituacaoAditiva.COMPOSICAO_TRANSFORMACOES) {
-            adicionar(papeis, loc, "papel.transformacao1", situacao.getQuantidade1(), situacao.getPersonagem1(), desconhecido);
-            adicionar(papeis, loc, "papel.transformacao2", situacao.getQuantidade2(), situacao.getPersonagem2(), desconhecido);
-            adicionar(papeis, loc, "papel.transformacaoFinal", situacao.getResultado(), situacao.getPersonagem3(), desconhecido);
+            // O sinal curado da situação (sinal_transformacao) vale para as três transformações: quem "deu" rosas
+            // tem transformações negativas, e a resultante é a soma delas.
+            adicionar(papeis, loc, "papel.transformacao1", aplicarSinal(situacao.getQuantidade1(), situacao.getSinalTransformacao()), situacao.getPersonagem1(), desconhecido);
+            adicionar(papeis, loc, "papel.transformacao2", aplicarSinal(situacao.getQuantidade2(), situacao.getSinalTransformacao()), situacao.getPersonagem2(), desconhecido);
+            adicionar(papeis, loc, "papel.transformacaoFinal", aplicarSinal(situacao.getResultado(), situacao.getSinalTransformacao()), situacao.getPersonagem3(), desconhecido);
             // Os 3 estados também são papéis semânticos (2026-08-23, pedido
             // da usuária: "deixe todos os elementos como elementos
             // semânticos"). Ficam DEPOIS das 3 transformações de propósito:

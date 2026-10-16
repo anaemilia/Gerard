@@ -495,8 +495,11 @@ public final class ServicoAtividadeComposicaoTransformacoes extends ServicoAtivi
         if (estadoInicial != papelDesconhecido && !estadoInicial.estaPreenchido()
                 && temValorCurado(estadoInicial) && ehDerivado(estadoInicial)
                 && estadoInicialParte1.estaPreenchido() && estadoInicialParte2.estaPreenchido()) {
-            int soma = estadoInicialParte1.valorAtual().valorOuNull() + estadoInicialParte2.valorAtual().valorOuNull();
-            estadoInicial.posicionar(new NumeroNatural(soma), OrigemAcao.ORIGEM_SISTEMA, contexto);
+            Integer soma = gerard.campoaditivo.sincronizacao.EstadosDaComposicaoDeTransformacoes.estadoInicialDasPartes(
+                    estadoInicialParte1.valorAtual().valorOuNull(), estadoInicialParte2.valorAtual().valorOuNull());
+            if (soma != null) {
+                estadoInicial.posicionar(new NumeroNatural(soma.intValue()), OrigemAcao.ORIGEM_SISTEMA, contexto);
+            }
         }
     }
 

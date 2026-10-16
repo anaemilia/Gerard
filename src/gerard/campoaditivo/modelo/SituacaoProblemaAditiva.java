@@ -380,6 +380,11 @@ public class SituacaoProblemaAditiva implements ContextoQuantidade {
     public String getSubtipo() { return subtipo; }
     public String getEstadoInicial() { return estadoInicial; }
     public String getEstadoInicialParte1() { return estadoInicialParte1; }
+
+    /** A situação curada traz o estado inicial como composição de duas partes (o diagrama as desenha). */
+    public boolean temEstadoInicialDecomposto() {
+        return estadoInicialParte1 != null && !estadoInicialParte1.trim().isEmpty();
+    }
     public String getEstadoInicialParte1Personagem() { return estadoInicialParte1Personagem; }
     public String getEstadoInicialParte2() { return estadoInicialParte2; }
     public String getEstadoInicialParte2Personagem() { return estadoInicialParte2Personagem; }

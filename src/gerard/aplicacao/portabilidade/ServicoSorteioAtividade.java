@@ -1174,8 +1174,7 @@ public final class ServicoSorteioAtividade {
             boolean escaladaNoLimite, boolean faseExploratoria, boolean feedbackDeErro,
             PosicionamentoQuestionado questionado) {
         GeradorCenaDiagramaAditivo gerador = new GeradorCenaDiagramaAditivo();
-        boolean estadoInicialDecomposto =
-                !contexto.getSituacao().getEstadoInicialParte1().trim().isEmpty();
+        boolean estadoInicialDecomposto = contexto.getSituacao().temEstadoInicialDecomposto();
         CenaDiagramaAditivo cena = gerador.gerar(
                 contexto.getSituacao().getTipo(), new AreaDiagrama(0, 0, 840, 480),
                 contexto.getDefinicao(), new int[] {0, 0, 0}, estadoInicialDecomposto);

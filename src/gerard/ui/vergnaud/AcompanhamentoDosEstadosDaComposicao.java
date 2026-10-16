@@ -41,6 +41,17 @@ public final class AcompanhamentoDosEstadosDaComposicao {
         }
         Map<String, Object> atuais = valoresAtuais(elementos, leitor);
         Integer inicial = inteiro(atuais.get(EstadosDaComposicaoDeTransformacoes.ESTADO_INICIAL));
+        if (inicial == null) {
+            // Estado inicial dado em duas partes: sem elemento próprio no enunciado, vem das partes já posicionadas.
+            inicial = EstadosDaComposicaoDeTransformacoes.estadoInicialDasPartes(
+                    inteiro(atuais.get(EstadosDaComposicaoDeTransformacoes.PARTE_1_DO_ESTADO_INICIAL)),
+                    inteiro(atuais.get(EstadosDaComposicaoDeTransformacoes.PARTE_2_DO_ESTADO_INICIAL)));
+            int indiceInicial = indiceDe(elementos, EstadosDaComposicaoDeTransformacoes.ESTADO_INICIAL);
+            if (inicial != null && indiceInicial >= 0) {
+                atualizacoes.add(new AtualizacaoElementoVergnaud(indiceInicial, inicial.intValue(),
+                        AtualizacaoElementoVergnaud.NaturezaVisual.MEDIDA));
+            }
+        }
         Map<String, Integer> estados = EstadosDaComposicaoDeTransformacoes.recalcular(inicial,
                 inteiro(atuais.get("papel.transformacao1")), inteiro(atuais.get("papel.transformacaoFinal")),
                 atuais.get(EstadosDaComposicaoDeTransformacoes.ESTADO_INTERMEDIARIO) != null);
@@ -55,6 +66,15 @@ public final class AcompanhamentoDosEstadosDaComposicao {
             }
         }
         return atualizacoes;
+    }
+
+    private static int indiceDe(List<ElementoVergnaud> elementos, String chave) {
+        for (int i = 0; i < elementos.size(); i++) {
+            if (chave.equals(elementos.get(i).chavePapelSemantico)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static Map<String, Object> valoresAtuais(List<ElementoVergnaud> elementos, LeitorValores leitor) {

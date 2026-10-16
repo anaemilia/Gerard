@@ -34,6 +34,13 @@ public class GeradorCenaDiagramaAditivo {
                 definicao, valores);
     }
 
+    public CenaDiagramaAditivo gerar(TipoSituacaoAditiva tipo, Rectangle area, DefinicaoDiagramaAditivo definicao,
+            int[] valores, boolean estadoInicialDecomposto) {
+        if (area == null) throw new IllegalArgumentException("área é obrigatória");
+        return gerar(tipo, new AreaDiagrama(area.x, area.y, area.width, area.height),
+                definicao, valores, estadoInicialDecomposto);
+    }
+
     /**
      * Projeta na cena o subtítulo de cada figura. O gerador não decide quem é o
      * personagem de cada papel: recebe a resposta de quem a conhece e a renderiza.

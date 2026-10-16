@@ -4173,7 +4173,7 @@ public class Main extends JFrame {
             CenaDiagramaAditivo cenaAtualizada = geradorCenaDiagrama.comSubtitulos(
                     geradorCenaDiagrama.gerar(
                             tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
-                            extrairValoresDoTexto()),
+                            extrairValoresDoTexto(), situacaoTemEstadoInicialDecomposto()),
                     participantePorPapelDaSituacaoAtual());
 
             if (cenaAtualizada == null) {
@@ -4811,6 +4811,14 @@ public class Main extends JFrame {
         }
 
         private String obterPapelElementoParaConclusao(int indiceElemento) {
+            // O próprio elemento sabe seu papel (inclusive os que o catálogo por índice não conhece, como as partes
+            // do estado inicial); o catálogo por índice só cobre elemento sem identidade.
+            ElementoVergnaud elemento = indiceElemento >= 0 && indiceElemento < elementosVergnaud.size()
+                    ? elementosVergnaud.get(indiceElemento) : null;
+            if (elemento != null && elemento.chavePapelSemantico != null
+                    && elemento.chavePapelSemantico.trim().length() > 0) {
+                return elemento.chavePapelSemantico;
+            }
             return catalogoPapeisSemanticos.obterChavePapelDoElemento(
                     tipoSituacaoSelecionada, indiceElemento);
         }
@@ -6940,7 +6948,11 @@ public class Main extends JFrame {
                                      situacaoProblemaAtual));
                 }
             }
-            // Na Composição de Transformações os estados acompanham as transformações.
+            aplicarEstadosDaComposicaoNoVergnaud();
+        }
+
+        /** Na Composição de Transformações os estados acompanham as transformações (e o inicial vem das partes). */
+        private void aplicarEstadosDaComposicaoNoVergnaud() {
             for (AtualizacaoElementoVergnaud estado : acompanhamentoEstadosDaComposicao.planejar(
                     tipoSituacaoSelecionada, elementosVergnaud, leitorValoresDoVergnaud())) {
                 definirValorNoElementoMedida(elementosVergnaud.get(estado.getIndiceElemento()),
@@ -7314,7 +7326,7 @@ public class Main extends JFrame {
             cenaDiagramaAtual = geradorCenaDiagrama.comSubtitulos(
                     geradorCenaDiagrama.gerar(
                             tipoSituacaoSelecionada, area, definicaoDiagramaAtual,
-                            extrairValoresDoTexto()),
+                            extrairValoresDoTexto(), situacaoTemEstadoInicialDecomposto()),
                     participantePorPapelDaSituacaoAtual());
 
             if (cenaDiagramaAtual == null) {
@@ -7467,6 +7479,10 @@ public class Main extends JFrame {
         }
 
         /** Quem conhece o participante de cada papel é a situação curada; o gerador só o projeta. */
+        private boolean situacaoTemEstadoInicialDecomposto() {
+            return situacaoProblemaAtual != null && situacaoProblemaAtual.temEstadoInicialDecomposto();
+        }
+
         private java.util.function.Function<String, String> participantePorPapelDaSituacaoAtual() {
             return new java.util.function.Function<String, String>() {
                 public String apply(String chavePapel) {
@@ -10584,6 +10600,7 @@ ItemTextoArrastavel itemEncontrado = encontrarItemArrastavel(x, y);
                 sincronizarTodasAsRepresentacoesAPartirDoVergnaud(
                         elemento, EstadoSemanticoCompartilhado.Origem.ARRASTE);
             }
+            aplicarEstadosDaComposicaoNoVergnaud();
             verificarConclusaoModelagem();
         }
 

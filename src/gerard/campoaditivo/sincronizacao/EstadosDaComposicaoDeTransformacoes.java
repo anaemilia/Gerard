@@ -20,8 +20,25 @@ public final class EstadosDaComposicaoDeTransformacoes {
     public static final String ESTADO_INICIAL = "papel.estadoInicial";
     public static final String ESTADO_INTERMEDIARIO = "papel.estadoIntermediario";
     public static final String ESTADO_FINAL = "papel.estadoFinal";
+    public static final String PARTE_1_DO_ESTADO_INICIAL = "papel.estadoInicialParte1";
+    public static final String PARTE_2_DO_ESTADO_INICIAL = "papel.estadoInicialParte2";
 
     private EstadosDaComposicaoDeTransformacoes() {
+    }
+
+    /**
+     * O estado inicial de uma situação cujo enunciado o dá em duas partes: a soma delas (Parte 1 + Parte 2 = Estado inicial).
+     * Um papel derivado, sem elemento próprio no enunciado — web e desktop o preenchem por esta mesma regra.
+     *
+     * @return a soma, ou {@code null} se faltar uma parte ou o resultado sair do domínio do estado inicial
+     */
+    public static Integer estadoInicialDasPartes(Integer parte1, Integer parte2) {
+        if (parte1 == null || parte2 == null) {
+            return null;
+        }
+        int soma = parte1.intValue() + parte2.intValue();
+        return FabricaPapeisComposicaoDeTransformacoes.estadoInicial(PublicadorEventoDominio.NENHUM)
+                .aceita(new NumeroInteiro(soma)) ? Integer.valueOf(soma) : null;
     }
 
     /** As chaves dos estados que acompanham as transformações (para a relação exploratória as publicar). */
